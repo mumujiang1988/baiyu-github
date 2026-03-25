@@ -16,9 +16,9 @@ param(
     [Parameter(Mandatory=$true, Position=1, HelpMessage="模块中文名称（如：销售订单管理）")]
     [string]$ModuleTitle,
     
-    # 路径配置（通常不需要修改）
-    [string]$SourcePath = "d:\baiyuyunma\gitee-baiyu\baiyu-web\src\views\erp\pageTemplate",
-    [string]$DestBasePath = "d:\baiyuyunma\gitee-baiyu\baiyu-web\src\views\erp\ConfigDrivenPage",
+    # 路径配置（通常不需要修改，会自动基于脚本位置计算）
+    [string]$SourcePath = "",
+    [string]$DestBasePath = "",
     
     # 菜单配置
     [string]$ParentMenuName = "ERP 业务菜单",
@@ -221,15 +221,39 @@ function Get-SnowflakeId {
 # 主流程
 # ============================================
 
-Write-Host ""
+# 自动计算路径（基于当前脚本位置）
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# 如果未指定 SourcePath，使用脚本所在目录
+if ([string]::IsNullOrEmpty($SourcePath)) {
+    $SourcePath = $ScriptDir
+}
+
+# 如果未指定 DestBasePath，使用脚本的上级目录\ConfigDrivenPage
+if ([string]::IsNullOrEmpty($DestBasePath)) {
+    $DestBasePath = Join-Path $ScriptDir "..\ConfigDrivenPage"
+    # 转换为绝对路径（处理 .. 符号）
+    try {
+        $DestBasePath = (Resolve-Path $DestBasePath).Path
+    } catch {
+        # 如果目录不存在，创建它
+        $DestBasePath = (New-Item -ItemType Directory -Path $DestBasePath -Force).FullName
+    }
+}
+
+Write-Host "" -ForegroundColor Cyan
 Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║   ERP 配置化页面生成器 v4.1           ║" -ForegroundColor Cyan
+Write-Host "║   ERP 配置化页面生成器 v4.2           ║" -ForegroundColor Cyan
 Write-Host "║   3 分钟完成新模块开发                ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📋 模块信息:" -ForegroundColor Yellow
 Write-Host "  • 模块编码：$ModuleName" -ForegroundColor Cyan
 Write-Host "  • 模块名称：$ModuleTitle" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "⚙️  路径配置:" -ForegroundColor Yellow
+Write-Host "  • 源路径：$SourcePath" -ForegroundColor Gray
+Write-Host "  • 目标路径：$DestBasePath" -ForegroundColor Gray
 Write-Host ""
 Write-Host "⚙️  功能配置:" -ForegroundColor Yellow
 $auditStatus = if ($EnableAudit) { "✅ 启用" } else { "❌ 禁用" }
@@ -255,9 +279,11 @@ Write-Host "[2/7] 检查目标路径..." -ForegroundColor Yellow
 # 使用全小写命名（避免路由大小写问题）
 $lowerCaseName = $ModuleName.ToLower()
 $moduleDest = Join-Path $DestBasePath $lowerCaseName
-$configFile = Join-Path $moduleDest "configs\$ModuleName.config.json"
-$vueFile = Join-Path $moduleDest "configurable\$lowerCaseName.vue"
-$cssFile = Join-Path $moduleDest "configurable\$lowerCaseName.styles.css"
+$configDir = Join-Path $moduleDest "configs"
+$configurableDir = Join-Path $moduleDest "configurable"
+$configFile = Join-Path $configDir "$ModuleName.config.json"
+$vueFile = Join-Path $configurableDir "$lowerCaseName.vue"
+$cssFile = Join-Path $configurableDir "$lowerCaseName.styles.css"
 
 if (Test-Path $moduleDest) {
     Handle-Error "目标文件夹已存在：$moduleDest`n   请先删除该文件夹或选择其他模块名称"
@@ -290,25 +316,25 @@ Write-Host ""
 Write-Host "[4/7] 重命名组件文件..." -ForegroundColor Yellow
 
 $pascalCaseName = Get-PascalCase $ModuleName
-$vueNewName = Join-Path $moduleDest "configurable\$lowerCaseName.vue"
-$cssNewName = Join-Path $moduleDest "configurable\$lowerCaseName.styles.css"
-$configNewName = Join-Path $moduleDest "configs\$ModuleName.config.json"
+$vueNewName = Join-Path $configurableDir "$lowerCaseName.vue"
+$cssNewName = Join-Path $configurableDir "$lowerCaseName.styles.css"
+$configNewName = Join-Path $configDir "$ModuleName.config.json"
 
 try {
     # 重命名 Vue 文件（使用全小写）
-    $vueOldName = Join-Path $moduleDest "configurable\BusinessConfigurable.vue"
+    $vueOldName = Join-Path $configurableDir "BusinessConfigurable.vue"
     if (Test-Path $vueOldName) {
         Rename-Item -Path $vueOldName -NewName "$lowerCaseName.vue" -Force
     }
     
     # 重命名 CSS 文件（使用全小写）
-    $cssOldName = Join-Path $moduleDest "configurable\BusinessConfigurable.styles.css"
+    $cssOldName = Join-Path $configurableDir "BusinessConfigurable.styles.css"
     if (Test-Path $cssOldName) {
         Rename-Item -Path $cssOldName -NewName "$lowerCaseName.styles.css" -Force
     }
     
     # 重命名配置文件
-    $configOldName = Join-Path $moduleDest "configs\business.config.template.json"
+    $configOldName = Join-Path $configDir "business.config.template.json"
     if (Test-Path $configOldName) {
         Rename-Item -Path $configOldName -NewName "$ModuleName.config.json" -Force
     }
@@ -350,9 +376,10 @@ try {
     $configContent = Get-Content $configNewName -Raw -Encoding UTF8
     $configObj = $configContent | ConvertFrom-Json
     
-    # 更新页面配置
+    # 更新页面配置（统一为小写）
     $configObj.pageConfig.title = $ModuleTitle
-    $configObj.pageConfig.permissionPrefix = "k3:$ModuleName"
+    $configObj.pageConfig.moduleCode = $lowerCaseName
+    $configObj.pageConfig.permissionPrefix = "k3:$lowerCaseName"
     $configObj.pageConfig.apiPrefix = "/erp/engine"  # ✅ 使用通用引擎 API
     
     # 注意：apiConfig.modulePath 字段已废弃，不再设置
@@ -361,10 +388,11 @@ try {
     $configObj.businessConfig.entityName = $ModuleTitle
     $configObj.businessConfig.entityNameSingular = $ModuleTitle.Replace("管理", "")
     
-    # 保存配置文件
-    $configObj | ConvertTo-Json -Depth 100 | Set-Content -Path $configNewName -Encoding UTF8 -NoNewline
+    # 保存配置文件（压缩格式，减少空格）
+    $jsonString = $configObj | ConvertTo-Json -Depth 100 -Compress
+    Set-Content -Path $configNewName -Value $jsonString -Encoding UTF8 -NoNewline
     
-    Write-Host "  ✓ 业务配置文件更新完成" -ForegroundColor Green
+    Write-Host "  ✓ 业务配置文件更新完成（压缩格式）" -ForegroundColor Green
 } catch {
     Handle-Error "更新配置文件失败：$_"
 }
@@ -427,16 +455,6 @@ for ($i = 0; $i -lt $buttons.Count; $i++) {
 
 # 将数组转换为多行字符串
 $buttonValuesString = [string]::Join(",`r`n", $buttonInsertsForTemp)
-
-# 读取 JSON 配置文件并生成配置 ID
-$configId = Get-SnowflakeId -workerId $moduleHash -datacenterId 10
-try {
-    $configJson = Get-Content $configNewName -Raw -Encoding UTF8
-    # 转义单引号、反斜杠和特殊字符
-    $configJsonEscaped = $configJson -replace '\\', '\\\\' -replace "'", "\\''"
-} catch {
-    Handle-Error "读取配置文件失败：$_"
-}
 
 $menuSql = @"
 -- ============================================

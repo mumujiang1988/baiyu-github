@@ -1,12 +1,12 @@
 {
   "pageConfig": {
     "title": "销售订单管理",
-    "moduleCode": "saleOrder",
-    "permissionPrefix": "k3:{moduleCode}",
+    "moduleCode": "saleorder",
+    "permissionPrefix": "k3:saleorder",
     "apiPrefix": "/erp/engine",
     "layout": "standard",
     "primaryKey": "id",
-    "billNoField": "fbillNo"
+    "billNoField": "FBillNo"
   },
 
   "apiConfig": {
@@ -38,7 +38,7 @@
       "add": "新增{entityName}",
       "edit": "修改{entityName}"
     },
-    "drawerTitle": "{entityName}详情 - {fbillNo}",
+    "drawerTitle": "{entityName}详情 - {billNo}",
     "messages": {
       "selectOne": "请选择一条数据",
       "confirmDelete": "是否确认删除选中的 {count} 条数据？",
@@ -66,7 +66,7 @@
     "defaultExpand": true,
     "fields": [
       {
-        "field": "fdate",
+        "field": "FDate",
         "label": "日期区间",
         "component": "daterange",
         "props": {
@@ -79,7 +79,7 @@
         "changeEvent": "handleQuery"
       },
       {
-        "field": "fbillno",
+        "field": "FBillNo",
         "label": "单据编号",
         "component": "input",
         "props": {
@@ -90,7 +90,7 @@
         }
       },
       {
-        "field": "f_ora_baseproperty",
+        "field": "F_ora_BaseProperty",
         "label": "客户简称",
         "component": "input",
         "props": {
@@ -101,7 +101,7 @@
         }
       },
       {
-        "field": "fsalerid",
+        "field": "FSalerId",
         "label": "销售员",
         "component": "select",
         "props": {
@@ -117,7 +117,7 @@
         "defaultValue": ""
       },
       {
-        "field": "orderstatus",
+        "field": "orderStatus",
         "label": "订单状态",
         "component": "select",
         "props": {
@@ -133,7 +133,7 @@
         "defaultValue": ""
       },
       {
-        "field": "fdocumentstatus",
+        "field": "FDocumentStatus",
         "label": "单据状态",
         "component": "select",
         "props": {
@@ -170,7 +170,7 @@
         "label": "详情"
       },
       {
-        "prop": "fbillno",
+        "prop": "FBillNo",
         "label": "单据编号",
         "width": 150,
         "fixed": "left",
@@ -180,7 +180,7 @@
         "renderType": "text"
       },
       {
-        "prop": "f_ora_baseproperty",
+        "prop": "F_ora_BaseProperty",
         "label": "客户简称",
         "width": 150,
         "fixed": "left",
@@ -189,7 +189,7 @@
         "resizable": true
       },
       {
-        "prop": "orderstatus",
+        "prop": "orderStatus",
         "label": "订单状态",
         "width": 120,
         "align": "center",
@@ -198,7 +198,7 @@
         "dictionary": "orderStatus"
       },
       {
-        "prop": "fdocumentstatus",
+        "prop": "FDocumentStatus",
         "label": "单据状态",
         "width": 140,
         "align": "center",
@@ -207,7 +207,7 @@
         "dictionary": "documentStatus"
       },
       {
-        "prop": "fdate",
+        "prop": "FDate",
         "label": "销售合同日期",
         "width": 140,
         "align": "center",
@@ -216,7 +216,7 @@
         "format": "YYYY-MM-DD"
       },
       {
-        "prop": "fsalerid",
+        "prop": "FSalerId",
         "label": "销售员",
         "width": 120,
         "align": "left",
@@ -225,7 +225,7 @@
         "dictionary": "salespersons"
       },
       {
-        "prop": "fbillamount",
+        "prop": "FBillAmount",
         "label": "订单金额",
         "width": 140,
         "align": "right",
@@ -234,7 +234,7 @@
         "precision": 2
       },
       {
-        "prop": "fbilltaxamount",
+        "prop": "FBillTaxAmount",
         "label": "税额",
         "width": 100,
         "align": "right",
@@ -243,7 +243,7 @@
         "precision": 2
       },
       {
-        "prop": "fsettlecurrid",
+        "prop": "FSettleCurrId",
         "label": "结算币别",
         "width": 140,
         "align": "center",
@@ -252,7 +252,7 @@
         "dictionary": "currency"
       },
       {
-        "prop": "fcreatedate",
+        "prop": "FCreateDate",
         "label": "创建时间",
         "width": 160,
         "align": "center",
@@ -261,7 +261,7 @@
         "format": "YYYY-MM-DD HH:mm:ss"
       },
       {
-        "prop": "fcreatorid",
+        "prop": "FCreatorId",
         "label": "创建人",
         "width": 100,
         "align": "left",
@@ -278,7 +278,7 @@
           "name": "entry",
           "label": "销售订单明细",
           "dataField": "entryList",
-          "api": "/erp/engine/custom/entry?moduleCode={moduleCode}&billNo={fbillNo}",
+          "api": "/erp/engine/custom/entry?moduleCode={moduleCode}&billNo={billNo}",
           "table": {
             "columns": [
               { "prop": "fPlanMaterialId", "label": "物料编码", "width": 120 },
@@ -297,7 +297,7 @@
           "name": "cost",
           "label": "成本暂估",
           "dataField": "costData",
-          "api": "/erp/engine/custom/cost?moduleCode={moduleCode}&billNo={fbillNo}",
+          "api": "/erp/engine/custom/cost?moduleCode={moduleCode}&billNo={billNo}",
           "type": "descriptions",
           "columns": 3,
           "fields": [
@@ -316,13 +316,13 @@
     "enabled": true,
     "trigger": "click",
     "loadStrategy": "lazy",
-    "title": "销售订单详情 - {fbillNo}",
+    "title": "销售订单详情 - {billNo}",
     "tabs": [
       {
         "name": "entry",
         "label": "销售订单明细",
         "dataField": "entryList",
-        "api": "/erp/engine/custom/entry?moduleCode={moduleCode}&billNo={fbillNo}",
+        "api": "/erp/engine/custom/entry?moduleCode={moduleCode}&billNo={billNo}",
         "type": "table",
         "table": {
           "columns": [
@@ -346,7 +346,7 @@
         "name": "cost",
         "label": "成本暂估",
         "dataField": "costData",
-        "api": "/erp/engine/custom/cost?moduleCode={moduleCode}&billNo={fbillNo}",
+        "api": "/erp/engine/custom/cost?moduleCode={moduleCode}&billNo={billNo}",
         "type": "descriptions",
         "columns": 3,
         "fields": [

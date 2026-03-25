@@ -507,26 +507,26 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, View, Document, Money } from '@element-plus/icons-vue'
-import ERPConfigParser from '@/utils/erpConfigParser'
+import ERPConfigParser from '@/views/erp/utils/ERPConfigParser'
 import dayjs from 'dayjs'
 import request from '@/utils/request'
 
 // ==================== 导入公共工具模块 ====================
-import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/utils/formatters'
-import { isSuccessResponse, getResponseData } from '@/utils/responseHelper'
+import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils'
+import { isSuccessResponse, getResponseData } from '@/views/erp/utils'
 
 // ==================== 导入引擎 API====================
 import {
   executeDynamicQuery,
   buildQueryConditions,
   getAvailableQueryTypes
-} from '../../api/engine/query'
+} from '../../../api/engine/query'
 import {
   executeValidation,
   batchValidate,
   getAvailableValidationRules,
   validateField
-} from '../../api/engine/validation'
+} from '../../../api/engine/validation'
 import {
   getCurrentApprovalStep,
   executeApproval,
@@ -535,7 +535,7 @@ import {
   getWorkflowDefinition,
   transferApproval,
   withdrawApproval
-} from '../../api/engine/approval'
+} from '../../../api/engine/approval'
 import {
   getPushTargets,
   executePushDown,
@@ -545,7 +545,7 @@ import {
   validatePushData,
   cancelPushDown,
   getPushHistory
-} from '../../api/engine/push'
+} from '../../../api/engine/push'
 
 // ==================== Props 定义（强制在线模式）====================
 const props = defineProps({
@@ -581,7 +581,6 @@ const apiModules = import.meta.glob('@/api/k3/*.js', { eager: true })
 const getApiMethod = async (methodKey) => {
   const apiConfig = BusinessTemplate.value?.apiConfig
   if (!apiConfig || !apiConfig.modulePath) {
-    console.warn('⚠️ apiConfig 或 modulePath 未定义，跳过 API 方法加载:', methodKey)
     return null
   }
   
@@ -603,7 +602,6 @@ const getApiMethod = async (methodKey) => {
     const apiModule = apiModules[moduleKey]
     
     if (!apiModule) {
-      console.error(`未找到 API 模块：${moduleKey}，可用的模块有:`, Object.keys(apiModules))
       return null
     }
     
@@ -615,10 +613,8 @@ const getApiMethod = async (methodKey) => {
       return method
     }
     
-    console.warn(`API 方法 ${methodName} 未在模块中找到`)
     return null
   } catch (error) {
-    console.error(`动态导入 API 模块失败:`, error)
     return null
   }
 }
@@ -750,10 +746,6 @@ const initConfig = async () => {
     // 从路由或 props 获取 moduleCode
     const moduleCode = getModuleCode()
     
-    console.log('📦 接收到的 moduleCode:', moduleCode)
-    console.log('🔍 路由 query 参数:', route.query)
-    console.log('🔍 Props moduleCode:', props.moduleCode)
-    
     // 从数据库加载配置
     await loadDatabaseConfig(moduleCode)
     
@@ -765,12 +757,13 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
-    // 加载字典
-    await parser.loadDictionaries()
-    
-    console.log('✅ 数据库配置加载成功:', currentConfig.value.pageConfig?.title)
+    // 加载字典（允许失败，不影响主流程）
+    try {
+      await parser.loadDictionaries()
+    } catch (dictError) {
+      // 忽略字典加载错误
+    }
   } catch (error) {
-    console.error('❌ 配置加载失败:', error)
     ElMessage.error(`加载配置失败：${error.message}`)
     throw error
   }
@@ -782,8 +775,6 @@ const initConfig = async () => {
  */
 const loadDatabaseConfig = async (moduleCode) => {
   try {
-    console.log('🌐 正在从数据库加载配置:', moduleCode)
-    
     // 使用 ERPConfigParser 的静态方法加载（带缓存）
     const configContent = await ERPConfigParser.loadFromDatabase(moduleCode)
     
@@ -796,11 +787,7 @@ const loadDatabaseConfig = async (moduleCode) => {
     
     // 创建配置解析器
     parser = new ERPConfigParser(configContent)
-    
-    console.log('✅ 数据库配置加载成功:', configContent.pageConfig?.title)
-    console.log('📦 配置版本:', configContent.version || 'N/A')
   } catch (error) {
-    console.error('❌ 加载数据库配置失败:', error)
     throw new Error(`无法加载配置：${error.message}`)
   }
 }
@@ -848,7 +835,12 @@ const getList = async () => {
       ElMessage.error('API 未配置')
       return
     }
-    const response = await apiMethod(queryParams.value)
+    // 添加 moduleCode 参数
+    const requestData = {
+      ...queryParams.value,
+      moduleCode: BusinessTemplate.value?.pageConfig?.moduleCode || 'business'
+    }
+    const response = await apiMethod(requestData)
     tableData.value = response.rows || []
     total.value = response.total || 0
   } catch (error) {
@@ -909,22 +901,30 @@ const handleRowClick = (row) => {
 // 查看详情 - 使用配置中的标题
 const handleViewDetail = async (row) => {
   drawerVisible.value = true
-  // 使用配置化的抽屉标题
-  const titleTemplate = businessConfig.value.drawerTitle || '{entityName}详情 - {fbillNo}'
+  
+  // 从配置中获取单据编号字段名（完全配置化，无转换）
+  const billNoField = parsedConfig.page?.billNoField || 'FBillNo'
+  
+  // 使用配置化的抽屉标题模板
+  const titleTemplate = businessConfig.value.drawerTitle || '{entityName}详情 - {billNo}'
   const entityName = businessConfig.value.entityName || '订单'
+  
+  // 动态替换模板变量（支持任意字段名）
   drawerTitle.value = titleTemplate
     .replace(/{entityName}/g, entityName)
-    .replace(/{fbillNo}/g, row.fbillNo || '')
+    .replace(/{billNo}/g, row[billNoField] || row.FBillNo || '')
+  
   drawerLoading.value = true
   currentDetailRow.value = { ...row }
   
   try {
-    // 加载明细数据
+    // 加载明细数据（使用配置的字段名）
     if (!row.entryList || row.entryList.length === 0) {
-      if (row.fbillNo) {
+      const billNoValue = row[billNoField] || row.FBillNo
+      if (billNoValue) {
         const entryMethod = await getApiMethod('entry')
         if (entryMethod) {
-          const entryResponse = await entryMethod(row.fbillNo)
+          const entryResponse = await entryMethod(billNoValue)
           if (entryResponse.code === 200 || entryResponse.code === 0 || entryResponse.errorCode === 0) {
             currentDetailRow.value.entryList = entryResponse.data && Array.isArray(entryResponse.data) 
               ? entryResponse.data 
@@ -936,12 +936,13 @@ const handleViewDetail = async (row) => {
       currentDetailRow.value.entryList = row.entryList
     }
     
-    // 加载成本数据
+    // 加载成本数据（使用配置的字段名）
     if (!row.costData || Object.keys(row.costData).length === 0) {
-      if (row.fbillNo) {
+      const billNoValue = row[billNoField] || row.FBillNo
+      if (billNoValue) {
         const costMethod = await getApiMethod('cost')
         if (costMethod) {
-          const costResponse = await costMethod(row.fbillNo)
+          const costResponse = await costMethod(billNoValue)
           if (costResponse.code === 200 || costResponse.code === 0 || costResponse.errorCode === 0) {
             currentDetailRow.value.costData = costResponse.data && typeof costResponse.data === 'object' && Object.keys(costResponse.data).length > 0
               ? costResponse.data
@@ -959,7 +960,6 @@ const handleViewDetail = async (row) => {
     detailActiveTab.value = hasEntryData ? 'entry' : (hasCostData ? 'cost' : 'entry')
     
   } catch (error) {
-    console.error('加载详情数据失败:', error)
     ElMessage.error('加载详情数据失败')
   } finally {
     drawerLoading.value = false
@@ -1038,11 +1038,15 @@ const loadFormData = async (id) => {
     const response = await apiMethod(id)
     formData.value = response.data || response
     
+    // 从配置中获取单据编号字段名（完全配置化）
+    const billNoField = parsedConfig.page?.billNoField || 'FBillNo'
+    const billNoValue = formData.value[billNoField] || formData.value.FBillNo
+    
     // 加载明细数据
-    if (formData.value.fbillNo) {
+    if (billNoValue) {
       const entryMethod = await getApiMethod('entry')
       if (entryMethod) {
-        const entryResponse = await entryMethod(formData.value.fbillNo)
+        const entryResponse = await entryMethod(billNoValue)
         if (entryResponse.code === 200 || entryResponse.code === 0 || entryResponse.errorCode === 0) {
           entryList.value = entryResponse.data && Array.isArray(entryResponse.data) 
             ? entryResponse.data 
@@ -1053,7 +1057,7 @@ const loadFormData = async (id) => {
       // 加载成本数据
       const costMethod = await getApiMethod('cost')
       if (costMethod) {
-        const costResponse = await costMethod(formData.value.fbillNo)
+        const costResponse = await costMethod(billNoValue)
         if (costResponse.code === 200 || costResponse.code === 0 || costResponse.errorCode === 0) {
           costData.value = costResponse.data && typeof costResponse.data === 'object' && Object.keys(costResponse.data).length > 0
             ? costResponse.data
@@ -1271,7 +1275,6 @@ const searchNations = async (keyword) => {
       }))
     }
   } catch (error) {
-    console.error('搜索国家失败:', error)
     nationOptions.value = []
   } finally {
     nationSearchLoading.value = false
@@ -1349,10 +1352,8 @@ const initEngineConfig = async () => {
       // 加载可下推目标
       await loadPushTargets(moduleCode)
     }
-    
-    console.log('引擎配置初始化完成:', engineConfig)
   } catch (error) {
-    console.error('初始化引擎配置失败:', error)
+    // 忽略错误
   }
 }
 
@@ -1364,10 +1365,9 @@ const loadWorkflowDefinition = async (moduleCode) => {
     const response = await getWorkflowDefinition(moduleCode)
     if (response.code === 200 || response.code === 0) {
       workflowDefinition.value = response.data
-      console.log('加载审批流程定义成功:', workflowDefinition.value)
     }
   } catch (error) {
-    console.error('加载审批流程定义失败:', error)
+    // 忽略错误
   }
 }
 
@@ -1379,10 +1379,9 @@ const loadPushTargets = async (moduleCode) => {
     const response = await getPushTargets(moduleCode)
     if (response.code === 200 || response.code === 0) {
       pushTargets.value = response.data || []
-      console.log('加载可下推目标成功:', pushTargets.value)
     }
   } catch (error) {
-    console.error('加载可下推目标失败:', error)
+    // 忽略错误
   }
 }
 
@@ -1406,7 +1405,6 @@ const executeEngineQuery = async (queryParams) => {
     }
     return null
   } catch (error) {
-    console.error('执行动态查询失败:', error)
     return null
   }
 }
@@ -1431,7 +1429,6 @@ const executeEngineValidation = async (formData) => {
     }
     return { valid: false, message: '验证失败' }
   } catch (error) {
-    console.error('执行表单验证失败:', error)
     return { valid: false, message: error.message }
   }
 }
@@ -1457,7 +1454,6 @@ const getCurrentStep = async (billData) => {
     }
     return null
   } catch (error) {
-    console.error('获取当前审批步骤失败:', error)
     return null
   }
 }
@@ -1487,7 +1483,6 @@ const executeEngineApproval = async (billId, action, opinion = '') => {
     }
     throw new Error(response.msg || '审批失败')
   } catch (error) {
-    console.error('执行审批操作失败:', error)
     throw error
   }
 }
@@ -1508,7 +1503,7 @@ const loadApprovalHistory = async (billId) => {
       approvalHistory.value = response.data || []
     }
   } catch (error) {
-    console.error('加载审批历史失败:', error)
+    // 忽略错误
   }
 }
 
@@ -1536,7 +1531,6 @@ const executeEnginePushDown = async (sourceId, targetModule, confirmData = {}) =
     }
     throw new Error(response.msg || '下推失败')
   } catch (error) {
-    console.error('执行下推操作失败:', error)
     throw error
   }
 }
@@ -1561,7 +1555,6 @@ const previewEnginePushDown = async (sourceId, targetModule) => {
     }
     return null
   } catch (error) {
-    console.error('预览下推数据失败:', error)
     return null
   }
 }
@@ -1580,10 +1573,9 @@ const loadPushHistory = async (billId) => {
     
     if (response.code === 200 || response.code === 0) {
       // 可以在这里更新 UI
-      console.log('下推历史:', response.data)
     }
   } catch (error) {
-    console.error('加载下推历史失败:', error)
+    // 忽略错误
   }
 }
 

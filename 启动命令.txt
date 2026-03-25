@@ -1,0 +1,50 @@
+https://codeup.aliyun.com/68d2511d4da2f7c77e493880/By-middleground-web.git
+
+
+https://codeup.aliyun.com/68d2511d4da2f7c77e493880/By-web.git
+
+
+根据前端公共配置页面  查看现有的后端实现方式 帮我构建完整通用可快速实现的的ruoyi后端接口方案 少冗余高复用
+
+./start-services.ps1
+
+
+# 方式 1：使用 Maven 直接运行（推荐用于开发）
+cd d:\baiyuyunma\By-middleground-web\ruoyi-admin-wms
+mvn spring-boot:run
+
+# 方式 2：先编译再运行（确保捕获编译错误）
+cd d:\baiyuyunma\By-middleground-web\ruoyi-admin-wms
+mvn clean compile
+mvn spring-boot:run
+
+# 方式 3：打包后运行 JAR
+cd d:\baiyuyunma\By-middleground-web\ruoyi-admin-wms
+mvn clean package
+java -jar target/ruoyi-admin-wms.jar
+
+
+
+# 首次启动需要安装依赖
+cd d:\baiyuyunma\By-web
+npm install
+
+# 启动开发服务器（推荐）
+cd d:\baiyuyunma\By-web
+npm run dev
+
+# 生产环境构建
+cd d:\baiyuyunma\By-web
+npm run build:prod
+
+模块复用命令
+.\copy-module-v2.ps1 -ModuleName "yourModule" -ModuleTitle "你的模块标题"
+
+
+gitee仓库
+前端 https://gitee.com/mumujiang/baiyu-web.git
+后端 https://gitee.com/mumujiang/baiyu-ruoyi.git
+
+Remove-Item -Path "d:\baiyuyunma\gitee-baiyu\baiyu-web\src\views\k3\ConfigDrivenPage\saleorder" -Recurse -Force
+.\copy-module-v4.ps1 saleOrder "销售订单管理"
+初始化页面命令 cd d:\baiyuyunma\gitee-baiyu\baiyu-web\src\views\erp\pageTemplate; .\copy-module-v4.ps1 saleOrder "销售订单管理"
