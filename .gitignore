@@ -44,6 +44,10 @@ temp/
 baiyu-ruoyi/target/
 baiyu-ruoyi/**/target/
 
+# Java 编译临时文件（保留 .java 源码，只忽略 .class）
+baiyu-ruoyi/**/*.class
+baiyu-ruoyi/src/test/java/**/*.class
+
 # 若依框架默认生成的临时目录
 baiyu-ruoyi/temp/
 baiyu-ruoyi/uploadPath/
@@ -57,11 +61,7 @@ baiyu-ruoyi/src/main/resources/application-druid.yml
 baiyu-ruoyi/src/main/resources/application.yml  # 若包含数据库密码、密钥，建议忽略；若仅通用配置，可保留
 baiyu-ruoyi/src/main/resources/bootstrap.yml
 
-# Java 编译临时文件
-baiyu-ruoyi/src/main/java/**/*.class
-baiyu-ruoyi/src/test/java/**/*.class
-
-# 第三方依赖（若依可能引入的本地jar，无需提交）
+# 第三方依赖（若依可能引入的本地 jar，无需提交）
 baiyu-ruoyi/lib/
 
 
