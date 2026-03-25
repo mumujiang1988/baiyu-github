@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SaleOrderCostMapper">
+
+    <resultMap id="SaleOrderCostMap" type="com.ruoyi.business.entity.SaleOrderCost">
+        <id column="FID" property="fid"/>
+        <result column="F_hyf" property="fHyf"/>
+        <result column="FBillNo" property="fbillno"/>
+        <result column="FBillAllAmount" property="fBillAllAmount"/>
+        <result column="FBillAllAmount_LC" property="fBillAllAmountLc"/>
+        <result column="F_bxf" property="fBxf"/>
+        <result column="F_gwyhfy" property="fGwyhfy"/>
+        <result column="F_qtwbfy" property="fQtwbfy"/>
+        <result column="F_mxcbhj" property="fMxcbhj"/>
+        <result column="F_mxtshj" property="fMxtshj"/>
+        <result column="F_cbxj" property="fCbxj"/>
+        <result column="F_bzf" property="fBzf"/>
+        <result column="F_dlf" property="fDlf"/>
+        <result column="F_rzf" property="fRzf"/>
+        <result column="F_kdf" property="fKdf"/>
+        <result column="F_hdf" property="fHdf"/>
+        <result column="F_lyf" property="fLyf"/>
+        <result column="F_qtfy" property="fQtfy"/>
+        <result column="F_mjf" property="fMjf"/>
+        <result column="F_jcf" property="fJcf"/>
+        <result column="F_fyxj" property="fFyxj"/>
+        <result column="F_lrl" property="fLrl"/>
+        <result column="F_wbyk" property="fWbyk"/>
+        <result column="F_jlrl" property="fJlrl"/>
+        <result column="F_jlre" property="fJlre"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="SaleOrderCostMap">
+        SELECT
+            FID, FBillNo,F_hyf, FBillAllAmount, FBillAllAmount_LC,
+            F_bxf, F_gwyhfy, F_qtwbfy, F_mxcbhj, F_mxtshj,
+            F_cbxj, F_bzf, F_dlf, F_rzf, F_kdf, F_hdf,
+            F_lyf, F_qtfy, F_mjf, F_jcf, F_fyxj,
+            F_lrl, F_wbyk, F_jlrl, F_jlre
+        FROM t_sale_order_cost
+        WHERE FID = #{fid}
+    </select>
+
+    <!-- 根据单据编号查询销售订单成本 -->
+    <select id="selectByBillNo" resultMap="SaleOrderCostMap">
+        SELECT
+            FID, FBillNo,F_hyf, FBillAllAmount, FBillAllAmount_LC,
+            F_bxf, F_gwyhfy, F_qtwbfy, F_mxcbhj, F_mxtshj,
+            F_cbxj, F_bzf, F_dlf, F_rzf, F_kdf, F_hdf,
+            F_lyf, F_qtfy, F_mjf, F_jcf, F_fyxj,
+            F_lrl, F_wbyk, F_jlrl, F_jlre
+        FROM t_sale_order_cost
+        WHERE FBillNo = #{fbillNo}
+    </select>
+
+    <!-- 插入销售订单成本 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.SaleOrderCost">
+        INSERT INTO t_sale_order_cost (
+            FID,FBillNo, F_hyf, FBillAllAmount, FBillAllAmount_LC,
+            F_bxf, F_gwyhfy, F_qtwbfy, F_mxcbhj, F_mxtshj,
+            F_cbxj, F_bzf, F_dlf, F_rzf, F_kdf, F_hdf,
+            F_lyf, F_qtfy, F_mjf, F_jcf, F_fyxj,
+            F_lrl, F_wbyk, F_jlrl, F_jlre
+        ) VALUES (
+                     #{fid},#{fbillno}, #{fHyf}, #{fBillAllAmount}, #{fBillAllAmountLc},
+                     #{fBxf}, #{fGwyhfy}, #{fQtwbfy}, #{fMxcbhj}, #{fMxtshj},
+                     #{fCbxj}, #{fBzf}, #{fDlf}, #{fRzf}, #{fKdf}, #{fHdf},
+                     #{fLyf}, #{fQtfy}, #{fMjf}, #{fJcf}, #{fFyxj},
+                     #{fLrl}, #{fWbyk}, #{fJlrl}, #{fJlre}
+                 )
+    </insert>
+
+    <!-- 根据主键删除销售订单成本 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM t_sale_order_cost WHERE FID = #{fid}
+    </delete>
+
+    <!-- 批量插入销售订单成本 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO t_sale_order_cost (
+        FID,FBillNo, F_hyf, FBillAllAmount, FBillAllAmount_LC,
+        F_bxf, F_gwyhfy, F_qtwbfy, F_mxcbhj, F_mxtshj,
+        F_cbxj, F_bzf, F_dlf, F_rzf, F_kdf, F_hdf,
+        F_lyf, F_qtfy, F_mjf, F_jcf, F_fyxj,
+        F_lrl, F_wbyk, F_jlrl, F_jlre
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.fid},#{item.fbillno}, #{item.fHyf}, #{item.fBillAllAmount}, #{item.fBillAllAmountLc},
+            #{item.fBxf}, #{item.fGwyhfy}, #{item.fQtwbfy}, #{item.fMxcbhj}, #{item.fMxtshj},
+            #{item.fCbxj}, #{item.fBzf}, #{item.fDlf}, #{item.fRzf}, #{item.fKdf}, #{item.fHdf},
+            #{item.fLyf}, #{item.fQtfy}, #{item.fMjf}, #{item.fJcf}, #{item.fFyxj},
+            #{item.fLrl}, #{item.fWbyk}, #{item.fJlrl}, #{item.fJlre}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除销售订单成本 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE FROM t_sale_order_cost
+        WHERE FID IN
+        <foreach collection="list" item="fid" open="(" separator="," close=")">
+            #{fid}
+        </foreach>
+    </delete>
+
+    <!-- 查询已存在的FID列表 -->
+    <select id="selectExistingFids" parameterType="java.util.List" resultType="long">
+        SELECT FID FROM t_sale_order_cost
+        WHERE FID IN
+        <foreach collection="list" item="fid" open="(" separator="," close=")">
+            #{fid}
+        </foreach>
+    </select>
+
+
+    <!-- 根据FID更新销售订单成本 -->
+    <update id="updateByFid" parameterType="com.ruoyi.business.entity.SaleOrderCost">
+        UPDATE t_sale_order_cost
+        <set>
+            F_hyf = #{fHyf},
+            FBillNo = #{fbillno},
+            FBillAllAmount = #{fBillAllAmount},
+            FBillAllAmount_LC = #{fBillAllAmountLc},
+            F_bxf = #{fBxf},
+            F_gwyhfy = #{fGwyhfy},
+            F_qtwbfy = #{fQtwbfy},
+            F_mxcbhj = #{fMxcbhj},
+            F_mxtshj = #{fMxtshj},
+            F_cbxj = #{fCbxj},
+            F_bzf = #{fBzf},
+            F_dlf = #{fDlf},
+            F_rzf = #{fRzf},
+            F_kdf = #{fKdf},
+            F_hdf = #{fHdf},
+            F_lyf = #{fLyf},
+            F_qtfy = #{fQtfy},
+            F_mjf = #{fMjf},
+            F_jcf = #{fJcf},
+            F_fyxj = #{fFyxj},
+            F_lrl = #{fLrl},
+            F_wbyk = #{fWbyk},
+            F_jlrl = #{fJlrl},
+            F_jlre = #{fJlre}
+        </set>
+        WHERE FID = #{fid}
+    </update>
+
+    <!-- 删除所有销售订单成本数据 -->
+    <delete id="deleteAll">
+        DELETE FROM t_sale_order_cost
+    </delete>
+</mapper>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SaleChangeBillMapper">
+
+    <resultMap id="SaleChangeBillMap" type="com.ruoyi.business.entity.SaleChangeBillFlat">
+        <id column="id" property="id"/>
+        <result column="fid" property="fid"/>
+        <result column="bill_no" property="billNo"/>
+        <result column="document_status" property="documentStatus"/>
+        <result column="bill_date" property="billDate"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="create_date" property="createDate"/>
+        <result column="modifier_id" property="modifierId"/>
+        <result column="modify_date" property="modifyDate"/>
+        <result column="auditor" property="auditor"/>
+        <result column="audit_date" property="auditDate"/>
+        <result column="customer_short_name" property="customerShortName"/>
+    </resultMap>
+
+    <select id="selectByFid" resultMap="SaleChangeBillMap">
+        SELECT id, fid, bill_no, document_status, bill_date, creator_id, create_date,
+               modifier_id, modify_date, auditor, audit_date, customer_short_name
+        FROM sale_change_bill
+        WHERE fid = #{fid}
+    </select>
+
+    <select id="selectLatestByFid" resultMap="SaleChangeBillMap">
+        SELECT id, fid, bill_no, document_status, bill_date, creator_id, create_date,
+               modifier_id, modify_date, auditor, audit_date, customer_short_name
+        FROM sale_change_bill
+        WHERE fid = #{fid}
+
+            LIMIT 1
+    </select>
+
+    <select id="selectById" resultMap="SaleChangeBillMap">
+        SELECT
+            b.id,
+            b.fid,
+            b.bill_no,
+            b.document_status,
+            b.bill_date,
+            cu.user_name  AS creator_id,
+            b.create_date,
+            mu.user_name  AS modifier_id,
+            b.modify_date,
+            au.user_name  AS auditor,
+            b.audit_date,
+
+            b.customer_short_name
+        FROM sale_change_bill b
+                 LEFT JOIN sys_user cu ON b.creator_id = cu.k3_key
+                 LEFT JOIN sys_user mu ON b.modifier_id = mu.k3_key
+                 LEFT JOIN sys_user au ON b.auditor    = au.k3_key
+        WHERE b.id = #{id};
+
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sale_change_bill (
+            fid, bill_no, document_status, bill_date, creator_id, create_date,
+            modifier_id, modify_date, auditor, audit_date, customer_short_name,
+            create_time
+        ) VALUES (
+                     #{fid}, #{billNo}, #{documentStatus}, #{billDate},
+                     #{creatorId}, #{createDate}, #{modifierId},
+                     #{modifyDate}, #{auditor}, #{auditDate}, #{customerShortName},
+                     NOW()
+                 )
+    </insert>
+
+    <insert id="batchInsert">
+        INSERT INTO sale_change_bill (
+        fid, bill_no, document_status, bill_date, creator_id, create_date,
+        modifier_id, modify_date, auditor, audit_date, customer_short_name,
+        create_time, update_time
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.fid}, #{item.billNo}, #{item.documentStatus}, #{item.billDate},
+            #{item.creatorId}, #{item.createDate}, #{item.modifierId},
+            #{item.modifyDate}, #{item.auditor}, #{item.auditDate}, #{item.customerShortName},
+            NOW(), NOW()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        bill_no = VALUES(bill_no),
+        document_status = VALUES(document_status),
+        bill_date = VALUES(bill_date),
+        modifier_id = VALUES(modifier_id),
+        modify_date = VALUES(modify_date),
+        auditor = VALUES(auditor),
+        audit_date = VALUES(audit_date),
+        customer_short_name = VALUES(customer_short_name)
+    </insert>
+
+    <update id="update">
+        UPDATE sale_change_bill
+        <set>
+            <if test="billNo != null">bill_no = #{billNo},</if>
+            <if test="documentStatus != null">document_status = #{documentStatus},</if>
+            <if test="billDate != null">bill_date = #{billDate},</if>
+            <if test="creatorId != null">creator_id = #{creatorId},</if>
+            <if test="createDate != null">create_date = #{createDate},</if>
+            <if test="modifierId != null">modifier_id = #{modifierId},</if>
+            <if test="modifyDate != null">modify_date = #{modifyDate},</if>
+            <if test="auditor != null">auditor = #{auditor},</if>
+            <if test="auditDate != null">audit_date = #{auditDate},</if>
+            <if test="customerShortName != null">customer_short_name = #{customerShortName},</if>
+        </set>
+        WHERE fid = #{fid}
+    </update>
+
+    <delete id="deleteByFid">
+        DELETE FROM sale_change_bill WHERE fid = #{fid}
+    </delete>
+
+</mapper>

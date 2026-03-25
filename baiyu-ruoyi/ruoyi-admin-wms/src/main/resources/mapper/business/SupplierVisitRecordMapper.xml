@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.SupplierVisitRecordMapper">
+
+    <!-- 供应商回访记录结果映射 -->
+    <resultMap id="SupplierVisitRecordResultMap" type="com.ruoyi.business.entity.SupplierVisitRecord">
+        <id property="id" column="id"/>
+        <result property="supplierNumber" column="supplier_number"/>
+        <result property="visitTime" column="visit_time"/>
+        <result property="visitor" column="visitor"/>
+        <result property="visitContent" column="visit_content"/>
+        <result property="attachment" column="attachment"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 新增供应商回访记录 -->
+    <insert id="insertSupplierVisitRecord"
+            parameterType="com.ruoyi.business.entity.SupplierVisitRecord"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO supplier_visit_record
+        (
+            supplier_number, visit_time, visitor, visit_content, attachment, created_by, created_at
+        )
+        VALUES
+        (
+            #{supplierNumber}, #{visitTime}, #{visitor}, #{visitContent}, #{attachment}, #{createdBy}, NOW()
+        )
+    </insert>
+
+    <!-- 修改供应商回访记录 -->
+    <update id="updateSupplierVisitRecord"
+            parameterType="com.ruoyi.business.entity.SupplierVisitRecord">
+        UPDATE supplier_visit_record
+        <set>
+            <if test="supplierNumber != null">supplier_number = #{supplierNumber},</if>
+            <if test="visitTime != null and visitTime != ''">visit_time = #{visitTime},</if>
+            <if test="visitor != null and visitor != ''">visitor = #{visitor},</if>
+            <if test="visitContent != null and visitContent != ''">visit_content = #{visitContent},</if>
+            <if test="attachment != null and attachment != ''">attachment = #{attachment},</if>
+            <if test="createdBy != null and createdBy != ''">created_by = #{createdBy},</if>
+            created_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除供应商回访记录 -->
+    <delete id="deleteSupplierVisitRecordById" parameterType="java.lang.Long">
+        DELETE FROM supplier_visit_record WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除供应商回访记录 -->
+    <delete id="deleteSupplierVisitRecordByIds" parameterType="java.lang.Long">
+        DELETE FROM supplier_visit_record WHERE id IN
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 查询供应商回访记录 -->
+    <select id="selectSupplierVisitRecordById" resultMap="SupplierVisitRecordResultMap">
+        SELECT
+            id, supplier_number, visit_time, visitor, visit_content, attachment, created_by, created_at
+        FROM supplier_visit_record
+        WHERE supplier_number = #{supplierNumber}
+    </select>
+
+    <!-- 查询供应商回访记录列表 -->
+    <select id="selectSupplierVisitRecordList" parameterType="com.ruoyi.business.entity.SupplierVisitRecord" resultMap="SupplierVisitRecordResultMap">
+        SELECT
+            id, supplier_number, visit_time, visitor, visit_content, attachment, created_by, created_at
+        FROM supplier_visit_record
+        <where>
+            <if test="id != null">AND id = #{id}</if>
+            <if test="supplierNumber != null">AND supplier_number = #{supplierNumber}</if>
+            <if test="visitTime != null and visitTime != ''">AND visit_time = #{visitTime}</if>
+            <if test="visitor != null and visitor != ''">AND visitor LIKE CONCAT('%', #{visitor}, '%')</if>
+            <if test="visitContent != null and visitContent != ''">AND visit_content LIKE CONCAT('%', #{visitContent}, '%')</if>
+            <if test="attachment != null and attachment != ''">AND attachment LIKE CONCAT('%', #{attachment}, '%')</if>
+            <if test="createdBy != null and createdBy != ''">AND created_by LIKE CONCAT('%', #{createdBy}, '%')</if>
+            <if test="createdAt != null and createdAt != ''">AND created_at = #{createdAt}</if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据供应商ID查询回访记录 -->
+    <select id="selectSupplierVisitRecordBySupplierId" parameterType="java.lang.String" resultMap="SupplierVisitRecordResultMap">
+        SELECT
+        id, supplier_number, visit_time, visitor, visit_content, attachment,u.nick_name as created_by, created_at
+        FROM supplier_visit_record sv
+        LEFT JOIN sys_user u ON sv.created_by = u.staff_id
+        WHERE supplier_number = #{supplierNumber}
+    </select>
+
+    <!-- 根据供应商ID和访问时间查询回访记录 -->
+    <select id="selectSupplierVisitRecordBySupplierIdAndTime" parameterType="java.lang.Long" resultMap="SupplierVisitRecordResultMap">
+        SELECT
+            id, supplier_number, visit_time, visitor, visit_content, attachment, created_by, created_at
+        FROM supplier_visit_record
+        WHERE supplier_number = #{supplierId} AND visit_time = #{visitTime}
+    </select>
+
+    <!-- 根据供应商ID删除回访记录 -->
+    <delete id="deleteSupplierVisitRecordBySupplierId" parameterType="java.lang.String">
+        DELETE FROM supplier_visit_record WHERE supplier_number = #{supplierNumber}
+    </delete>
+
+</mapper>

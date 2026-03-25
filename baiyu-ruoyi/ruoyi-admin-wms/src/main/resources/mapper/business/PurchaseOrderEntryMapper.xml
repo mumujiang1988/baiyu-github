@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.PurchaseOrderEntryMapper">
+
+    <!-- ==================== ResultMap ==================== -->
+    <resultMap id="BaseResultMap" type="com.ruoyi.business.entity.PoOrderBillHeadEntry">
+        <id column="id" property="id"/>
+        <result column="fid" property="fid"/>
+        <result column="f_sfbg" property="fSfbg"/>
+        <result column="f_jqhx" property="fJqhx"/>
+        <result column="f_cplb" property="fCplb"/>
+        <result column="f_bzbz" property="fBzbz"/>
+        <result column="f_khhh" property="fKhhh"/>
+        <result column="f_cpdm" property="fCpdm"/>
+        <result column="f_ora_baseproperty" property="fOraBaseproperty"/>
+        <result column="f_ora_baseproperty1" property="fOraBaseproperty1"/>
+        <result column="f_gyswlbm" property="fGyswlbm"/>
+        <result column="f_gyswlmc" property="fGyswlmc"/>
+        <result column="fqty" property="fqty"/>
+        <result column="f_cpsl" property="fCpsl"/>
+        <result column="funitid" property="funitid"/>
+        <result column="fpriceunitid" property="fpriceunitid"/>
+        <result column="fstockunitid" property="fstockunitid"/>
+        <result column="fstockqty" property="fstockqty"/>
+        <result column="fbaseunitid" property="fbaseunitid"/>
+        <result column="fdeliverydate" property="fdeliverydate"/>
+        <result column="f_ckj" property="fCkj"/>
+        <result column="f_cbj" property="fCbj"/>
+        <result column="fprice" property="fprice"/>
+        <result column="ftaxprice" property="ftaxprice"/>
+        <result column="f_jjhsdj" property="fJjhsdj"/>
+        <result column="f_jjjshj" property="fJjjshj"/>
+        <result column="f_kphsdj" property="fKphsdj"/>
+        <result column="fentrydiscountrate" property="fentrydiscountrate"/>
+        <result column="fentrytaxrate" property="fentrytaxrate"/>
+        <result column="fentrytaxamount" property="fentrytaxamount"/>
+        <result column="fallamount" property="fallamount"/>
+        <result column="fentryamount" property="fentryamount"/>
+        <result column="fsalqty" property="fsalqty"/>
+        <result column="fstockbasefinapqty" property="fstockbasefinapqty"/>
+        <result column="f_ora_decimal" property="fOraDecimal"/>
+        <result column="fsumaccallamount" property="fsumaccallamount"/>
+        <result column="fsumaccrate" property="fsumaccrate"/>
+        <result column="f_xss" property="fXss"/>
+        <result column="f_tp" property="fTp"/>
+        <result column="f_tp2" property="fTp2"/>
+        <result column="f_bgzwpm" property="fBgzwpm"/>
+        <result column="f_bgywpm" property="fBgywpm"/>
+        <result column="f_yhs" property="fYhs"/>
+        <result column="fbillstatus" property="fbillstatus"/>
+        <result column="f_zxs" property="fZxs"/>
+        <result column="f_mzz" property="fMzz"/>
+        <result column="f_xs" property="fXs"/>
+        <result column="f_bcfysl" property="fBcfysl"/>
+        <result column="fbillstatus1" property="fbillstatus1"/>
+        <result column="f_xtslddsl" property="fXtslddsl"/>
+        <result column="fbillstatus3" property="fbillstatus3"/>
+        <result column="f_yhbl" property="fYhbl"/>
+        <result column="f_bzfs" property="fBzfs"/>
+        <result column="f_khjc1" property="fKhjc1"/>
+        <result column="f_kh1" property="fKh1"/>
+        <result column="f_smsfj" property="fSmsfj"/>
+        <result column="f_cpgys" property="fCpgys"/>
+        <result column="f_bcjsd" property="fBcjsd"/>
+        <result column="f_bcjsr" property="fBcjsr"/>
+        <result column="f_bcjsrdh" property="fBcjsrdh"/>
+        <result column="f_bgdw" property="fBgdw"/>
+        <result column="f_sbys" property="fSbys"/>
+        <result column="f_cys" property="fCys"/>
+        <result column="f_kddh" property="fKddh"/>
+        <result column="f_jcrq" property="fJcrq"/>
+        <result column="f_jgtzyy" property="fJgtzyy"/>
+        <result column="f_cpzlyq" property="fCpzlyq"/>
+        <result column="fbzyq" property="fbzyq"/>
+        <result column="ftsyq" property="ftsyq"/>
+        <result column="fcptp" property="fcptp"/>
+        <result column="fbzgctg" property="fbzgctg"/>
+        <result column="fgchh" property="fgchh"/>
+        <result column="fxsddh" property="fxsddh"/>
+        <result column="fxsddhh" property="fxsddhh"/>
+        <result column="fshrq" property="fshrq"/>
+        <result column="fxddrkts" property="fxddrkts"/>
+        <result column="fbjr" property="fbjr"/>
+        <result column="ftpr" property="ftpr"/>
+        <result column="f_tm" property="fTm"/>
+        <result column="f_cplb1" property="fCplb1"/>
+        <result column="fentrynote" property="fentrynote"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectByBillNo" resultMap="BaseResultMap">
+        SELECT
+            pbhe.fid,
+            pbhe.f_sfbg,
+            pbhe.f_jqhx,
+            pbhe.f_cplb,
+            pbhe.f_bzbz,
+            pbhe.f_khhh,
+            pbhe.f_cpdm,
+            pbhe.f_ora_baseproperty,
+            pbhe.f_ora_baseproperty1,
+            bm.name AS f_gyswlbm_name,
+            pbhe.f_gyswlmc,
+            pbhe.fqty,
+            pbhe.f_cpsl,
+            bd.name  AS funit_name,
+            bld.name AS fpriceunit_name,
+
+            pbhe.fstockunitid,
+            pbhe.fstockqty,
+            pbhe.fbaseunitid,
+
+            pbhe.fdeliverydate,
+            pbhe.f_ckj,
+            pbhe.f_cbj,
+            pbhe.ftaxprice,
+
+            pbhe.f_jjhsdj,
+            pbhe.f_jjjshj,
+            pbhe.f_kphsdj,
+            pbhe.fentrydiscountrate,
+            pbhe.fentrytaxrate,
+            pbhe.fentrytaxamount,
+            pbhe.fallamount,
+            pbhe.fentryamount,
+
+            pbhe.fsalqty,
+            pbhe.fstockbasefinapqty,
+            pbhe.f_ora_decimal,
+
+            pbhe.fsumaccallamount,
+            pbhe.fsumaccrate,
+            pbhe.f_xss,
+            pbhe.f_tp,
+            pbhe.f_tp2,
+            pbhe.f_bgzwpm,
+            pbhe.f_bgywpm,
+            pbhe.f_yhs,
+            pbhe.fbillstatus,
+            pbhe.f_zxs,
+            pbhe.f_mzz,
+            pbhe.f_xs,
+
+            pbhe.f_bcfysl,
+            pbhe.fbillstatus1,
+            pbhe.f_xtslddsl,
+            pbhe.fbillstatus3,
+            pbhe.f_yhbl,
+            pbhe.f_bzfs,
+            pbhe.f_khjc1,
+            pbhe.f_kh1,
+            pbhe.f_smsfj,
+            pbhe.f_cpgys,
+            pbhe.f_bcjsd,
+            pbhe.f_bcjsr,
+            pbhe.f_bcjsrdh,
+            pbhe.f_bgdw,
+            pbhe.f_sbys,
+            pbhe.f_cys,
+            pbhe.f_kddh,
+            pbhe.f_jcrq,
+            pbhe.f_jgtzyy,
+            pbhe.f_cpzlyq,
+            pbhe.fbzyq,
+            pbhe.ftsyq,
+            pbhe.fcptp,
+
+            pbhe.fbzgctg,
+            pbhe.fgchh,
+
+            pbhe.fxsddh,
+            pbhe.fxsddhh,
+
+            pbhe.fshrq,
+            pbhe.fxddrkts,
+
+            pbhe.fbjr,
+            pbhe.ftpr,
+            pbhe.f_tm,
+            pbhe.f_cplb1,
+
+            pbhe.fentrynote,
+            pbhe.create_time,
+            pbhe.update_time
+
+        FROM po_order_bill_head_entry pbhe
+                 LEFT JOIN by_material bm
+                           ON bm.k3_id = pbhe.f_gyswlbm
+                 LEFT JOIN bymaterial_dictionary bd
+                           ON bd.kingdee = pbhe.funitid
+
+                 LEFT JOIN bymaterial_dictionary bld
+                           ON bld.kingdee = pbhe.fpriceunitid
+
+        WHERE pbhe.fbillNo = #{fbillNo}
+    </select>
+
+    <select id="selectByFidAndFgyswlbm" resultMap="BaseResultMap">
+        SELECT *
+        FROM po_order_bill_head_entry
+        WHERE fid = #{fid} AND f_gyswlbm = #{fGyswlbm}
+    </select>
+
+    <delete id="deleteByBillNo">
+        DELETE FROM po_order_bill_head_entry
+        WHERE fid = #{fid}
+    </delete>
+
+    <update id="updateByBillNo" parameterType="com.ruoyi.business.entity.PoOrderBillHeadEntry">
+        UPDATE po_order_bill_head_entry
+        SET
+            f_sfbg = #{entity.fSfbg},
+            f_jqhx = #{entity.fJqhx},
+            f_cplb = #{entity.fCplb},
+            f_bzbz = #{entity.fBzbz},
+            f_khhh = #{entity.fKhhh},
+            f_cpdm = #{entity.fCpdm},
+            f_ora_baseproperty = #{entity.fOraBaseproperty},
+            f_ora_baseproperty1 = #{entity.fOraBaseproperty1},
+            f_gyswlbm = #{entity.fGyswlbm},
+            f_gyswlmc = #{entity.fGyswlmc},
+            fqty = #{entity.fqty},
+            f_cpsl = #{entity.fCpsl},
+            funitid = #{entity.funitid},
+            fpriceunitid = #{entity.fpriceunitid},
+            fstockunitid = #{entity.fstockunitid},
+            fstockqty = #{entity.fstockqty},
+            fbaseunitid = #{entity.fbaseunitid},
+            fdeliverydate = #{entity.fdeliverydate},
+            f_ckj = #{entity.fCkj},
+            f_cbj = #{entity.fCbj},
+            fprice = #{entity.fprice},
+            ftaxprice = #{entity.ftaxprice},
+            f_jjhsdj = #{entity.fJjhsdj},
+            f_jjjshj = #{entity.fJjjshj},
+            f_kphsdj = #{entity.fKphsdj},
+            fentrydiscountrate = #{entity.fentrydiscountrate},
+            fentrytaxrate = #{entity.fentrytaxrate},
+            fentrytaxamount = #{entity.fentrytaxamount},
+            fallamount = #{entity.fallamount},
+            fentryamount = #{entity.fentryamount},
+            fsalqty = #{entity.fsalqty},
+            fstockbasefinapqty = #{entity.fstockbasefinapqty},
+            f_ora_decimal = #{entity.fOraDecimal},
+            fsumaccallamount = #{entity.fsumaccallamount},
+            fsumaccrate = #{entity.fsumaccrate},
+            f_xss = #{entity.fXss},
+            f_tp = #{entity.fTp},
+            f_tp2 = #{entity.fTp2},
+            f_bgzwpm = #{entity.fBgzwpm},
+            f_bgywpm = #{entity.fBgywpm},
+            f_yhs = #{entity.fYhs},
+            fbillstatus = #{entity.fbillstatus},
+            f_zxs = #{entity.fZxs},
+            f_mzz = #{entity.fMzz},
+            f_xs = #{entity.fXs},
+            f_bcfysl = #{entity.fBcfysl},
+            fbillstatus1 = #{entity.fbillstatus1},
+            f_xtslddsl = #{entity.fXtslddsl},
+            fbillstatus3 = #{entity.fbillstatus3},
+            f_yhbl = #{entity.fYhbl},
+            f_bzfs = #{entity.fBzfs},
+            f_khjc1 = #{entity.fKhjc1},
+            f_kh1 = #{entity.fKh1},
+            f_smsfj = #{entity.fSmsfj},
+            f_cpgys = #{entity.fCpgys},
+            f_bcjsd = #{entity.fBcjsd},
+            f_bcjsr = #{entity.fBcjsr},
+            f_bcjsrdh = #{entity.fBcjsrdh},
+            f_bgdw = #{entity.fBgdw},
+            f_sbys = #{entity.fSbys},
+            f_cys = #{entity.fCys},
+            f_kddh = #{entity.fKddh},
+            f_jcrq = #{entity.fJcrq},
+            f_jgtzyy = #{entity.fJgtzyy},
+            f_cpzlyq = #{entity.fCpzlyq},
+            fbzyq = #{entity.fbzyq},
+            ftsyq = #{entity.ftsyq},
+            fcptp = #{entity.fcptp},
+            fbzgctg = #{entity.fbzgctg},
+            fgchh = #{entity.fgchh},
+            fxsddh = #{entity.fxsddh},
+            fxsddhh = #{entity.fxsddhh},
+            fshrq = #{entity.fshrq},
+            fxddrkts = #{entity.fxddrkts},
+            fbjr = #{entity.fbjr},
+            ftpr = #{entity.ftpr},
+            f_tm = #{entity.fTm},
+            f_cplb1 = #{entity.fCplb1},
+            fentrynote = #{entity.fentrynote},
+            update_time = #{entity.updateTime}
+        WHERE fid = #{entity.fid}
+    </update>
+
+    <update id="updateByFidAndFgyswlbm" parameterType="com.ruoyi.business.entity.PoOrderBillHeadEntry">
+        UPDATE po_order_bill_head_entry
+        SET
+            f_sfbg = #{entity.fSfbg},
+            f_jqhx = #{entity.fJqhx},
+            fbillNo = #{entity.fbillNo},
+            f_cplb = #{entity.fCplb},
+            f_bzbz = #{entity.fBzbz},
+            f_khhh = #{entity.fKhhh},
+            f_cpdm = #{entity.fCpdm},
+            f_ora_baseproperty = #{entity.fOraBaseproperty},
+            f_ora_baseproperty1 = #{entity.fOraBaseproperty1},
+            f_gyswlbm = #{entity.fGyswlbm},
+            f_gyswlmc = #{entity.fGyswlmc},
+            fqty = #{entity.fqty},
+            f_cpsl = #{entity.fCpsl},
+            funitid = #{entity.funitid},
+            fpriceunitid = #{entity.fpriceunitid},
+            fstockunitid = #{entity.fstockunitid},
+            fstockqty = #{entity.fstockqty},
+            fbaseunitid = #{entity.fbaseunitid},
+            fdeliverydate = #{entity.fdeliverydate},
+            f_ckj = #{entity.fCkj},
+            f_cbj = #{entity.fCbj},
+            fprice = #{entity.fprice},
+            ftaxprice = #{entity.ftaxprice},
+            f_jjhsdj = #{entity.fJjhsdj},
+            f_jjjshj = #{entity.fJjjshj},
+            f_kphsdj = #{entity.fKphsdj},
+            fentrydiscountrate = #{entity.fentrydiscountrate},
+            fentrytaxrate = #{entity.fentrytaxrate},
+            fentrytaxamount = #{entity.fentrytaxamount},
+            fallamount = #{entity.fallamount},
+            fentryamount = #{entity.fentryamount},
+            fsalqty = #{entity.fsalqty},
+            fstockbasefinapqty = #{entity.fstockbasefinapqty},
+            f_ora_decimal = #{entity.fOraDecimal},
+            fsumaccallamount = #{entity.fsumaccallamount},
+            fsumaccrate = #{entity.fsumaccrate},
+            f_xss = #{entity.fXss},
+            f_tp = #{entity.fTp},
+            f_tp2 = #{entity.fTp2},
+            f_bgzwpm = #{entity.fBgzwpm},
+            f_bgywpm = #{entity.fBgywpm},
+            f_yhs = #{entity.fYhs},
+            fbillstatus = #{entity.fbillstatus},
+            f_zxs = #{entity.fZxs},
+            f_mzz = #{entity.fMzz},
+            f_xs = #{entity.fXs},
+            f_bcfysl = #{entity.fBcfysl},
+            fbillstatus1 = #{entity.fbillstatus1},
+            f_xtslddsl = #{entity.fXtslddsl},
+            fbillstatus3 = #{entity.fbillstatus3},
+            f_yhbl = #{entity.fYhbl},
+            f_bzfs = #{entity.fBzfs},
+            f_khjc1 = #{entity.fKhjc1},
+            f_kh1 = #{entity.fKh1},
+            f_smsfj = #{entity.fSmsfj},
+            f_cpgys = #{entity.fCpgys},
+            f_bcjsd = #{entity.fBcjsd},
+            f_bcjsr = #{entity.fBcjsr},
+            f_bcjsrdh = #{entity.fBcjsrdh},
+            f_bgdw = #{entity.fBgdw},
+            f_sbys = #{entity.fSbys},
+            f_cys = #{entity.fCys},
+            f_kddh = #{entity.fKddh},
+            f_jcrq = #{entity.fJcrq},
+            f_jgtzyy = #{entity.fJgtzyy},
+            f_cpzlyq = #{entity.fCpzlyq},
+            fbzyq = #{entity.fbzyq},
+            ftsyq = #{entity.ftsyq},
+            fcptp = #{entity.fcptp},
+            fbzgctg = #{entity.fbzgctg},
+            fgchh = #{entity.fgchh},
+            fxsddh = #{entity.fxsddh},
+            fxsddhh = #{entity.fxsddhh},
+            fshrq = #{entity.fshrq},
+            fxddrkts = #{entity.fxddrkts},
+            fbjr = #{entity.fbjr},
+            ftpr = #{entity.ftpr},
+            f_tm = #{entity.fTm},
+            f_cplb1 = #{entity.fCplb1},
+            fentrynote = #{entity.fentrynote},
+            update_time = #{entity.updateTime}
+        WHERE fid = #{entity.fid} AND f_gyswlbm = #{entity.fGyswlbm}
+    </update>
+
+    <!-- ==================== 插入 ==================== -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO po_order_bill_head_entry (
+            fid,fbillNo, f_sfbg, f_jqhx, f_cplb, f_bzbz,
+            f_khhh, f_cpdm, f_ora_baseproperty, f_ora_baseproperty1,
+            f_gyswlbm, f_gyswlmc,
+            fqty, f_cpsl,
+            funitid, fpriceunitid, fstockunitid, fstockqty, fbaseunitid,
+            fdeliverydate,
+            f_ckj, f_cbj, fprice, ftaxprice, f_jjhsdj, f_jjjshj, f_kphsdj,
+            fentrydiscountrate, fentrytaxrate, fentrytaxamount,
+            fallamount, fentryamount,
+            fsalqty, fstockbasefinapqty, f_ora_decimal,
+            fsumaccallamount, fsumaccrate, f_xss,
+            f_tp, f_tp2, f_bgzwpm, f_bgywpm, f_yhs, fbillstatus,
+            f_zxs, f_mzz, f_xs, f_bcfysl, fbillstatus1,
+            f_xtslddsl, fbillstatus3, f_yhbl, f_bzfs,
+            f_khjc1, f_kh1, f_smsfj, f_cpgys, f_bcjsd, f_bcjsr, f_bcjsrdh, f_bgdw, f_sbys, f_cys,
+            f_kddh, f_jcrq, f_jgtzyy, f_cpzlyq, fbzyq, ftsyq, fcptp,
+            fbzgctg, fgchh, fxsddh, fxsddhh, fshrq, fxddrkts, fbjr, ftpr, f_tm, f_cplb1,
+            fentrynote,
+            create_time, update_time
+        ) VALUES (
+                     #{fid}, #{fbillNo}, #{fSfbg}, #{fJqhx}, #{fCplb}, #{fBzbz},
+                     #{fKhhh}, #{fCpdm}, #{fOraBaseproperty}, #{fOraBaseproperty1},
+                     #{fGyswlbm}, #{fGyswlmc},
+                     #{fqty}, #{fCpsl},
+                     #{funitid}, #{fpriceunitid}, #{fstockunitid}, #{fstockqty}, #{fbaseunitid},
+                     #{fdeliverydate},
+                     #{fCkj}, #{fCbj}, #{fprice}, #{ftaxprice}, #{fJjhsdj}, #{fJjjshj}, #{fKphsdj},
+                     #{fentrydiscountrate}, #{fentrytaxrate}, #{fentrytaxamount},
+                     #{fallamount}, #{fentryamount},
+                     #{fsalqty}, #{fstockbasefinapqty}, #{fOraDecimal},
+                     #{fsumaccallamount}, #{fsumaccrate}, #{fXss},
+                     #{fTp}, #{fTp2}, #{fBgzwpm}, #{fBgywpm}, #{fYhs}, #{fbillstatus},
+                     #{fZxs}, #{fMzz}, #{fXs}, #{fBcfysl}, #{fbillstatus1},
+                     #{fXtslddsl}, #{fbillstatus3}, #{fYhbl}, #{fBzfs},
+                     #{fKhjc1}, #{fKh1}, #{fSmsfj}, #{fCpgys}, #{fBcjsd}, #{fBcjsr}, #{fBcjsrdh}, #{fBgdw}, #{fSbys}, #{fCys},
+                     #{fKddh}, #{fJcrq}, #{fJgtzyy}, #{fCpzlyq}, #{fbzyq}, #{ftsyq}, #{fcptp},
+                     #{fbzgctg}, #{fgchh}, #{fxsddh}, #{fxsddhh}, #{fshrq}, #{fxddrkts}, #{fbjr}, #{ftpr}, #{fTm}, #{fCplb1},
+                     #{fentrynote},
+                     #{createTime}, #{updateTime}
+                 )
+    </insert>
+
+</mapper>

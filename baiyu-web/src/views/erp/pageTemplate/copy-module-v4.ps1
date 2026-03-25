@@ -360,6 +360,17 @@ try {
     # 更新 CSS 文件引用（使用全小写）
     $vueContent = $vueContent -replace 'BusinessConfigurable\.styles\.css', "$lowerCaseName.styles.css"
     
+    # 🔧 修复 DictionaryBuilder 导入路径（从相对路径改为绝对路径）
+    $vueContent = $vueContent -replace "from '\.\./utils/DictionaryBuilder'", "from '@/views/erp/utils/DictionaryBuilder'"
+    
+    # 🔧 移除 preloadApiMethods 调用（这个函数不存在且不需要）
+    $vueContent = $vueContent -replace "\s+// 2\. 再预加载 API 方法.*?await preloadApiMethods\(\)\s+", "`
+  "
+    
+    # 调整初始化步骤编号
+    $vueContent = $vueContent -replace '// 3\. 预加载字典数据', '// 2. 预加载字典数据'
+    $vueContent = $vueContent -replace '// 4\. 初始化引擎配置', '// 3. 初始化引擎配置'
+    
     # 写回文件
     Set-Content -Path $vueNewName -Value $vueContent -Encoding UTF8 -NoNewline
     

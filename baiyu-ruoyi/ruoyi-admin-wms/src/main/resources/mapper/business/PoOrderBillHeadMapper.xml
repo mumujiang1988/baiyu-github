@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.PoOrderBillHeadMapper">
+
+    <!-- ResultMap映射 -->
+    <resultMap id="PoOrderBillHeadMap" type="com.ruoyi.business.entity.PoOrderBillHead">
+        <id property="fid" column="fid"/>
+        <result property="fbillNo" column="fbill_no"/>
+        <result property="fid" column="fid"/>
+        <result property="fdocumentStatus" column="fdocument_status"/>
+        <result property="fdate" column="fdate"/>
+        <result property="fsupplierId" column="fsupplier_id"/>
+
+        <result property="fcreatorId" column="fcreator_id"/>
+        <result property="fcreateDate" column="fcreate_date"/>
+        <result property="fmodifierId" column="fmodifier_id"/>
+        <result property="fmodifyDate" column="fmodify_date"/>
+        <result property="fapproverId" column="fapprover_id"/>
+        <result property="fapproveDate" column="fapprove_date"/>
+        <result property="fcancellerId" column="fcanceller_id"/>
+        <result property="fcancelDate" column="fcancel_date"/>
+        <result property="fcloseStatus" column="fclose_status"/>
+        <result property="fcloserId" column="fcloser_id"/>
+        <result property="fcloseDate" column="fclose_date"/>
+        <result property="fbillTypeId" column="fbill_type_id"/>
+        <result property="fsettleId" column="fsettle_id"/>
+        <result property="fchargeId" column="fcharge_id"/>
+        <result property="fproviderId" column="fprovider_id"/>
+        <result property="fchangerId" column="fchanger_id"/>
+        <result property="fchangeDate" column="fchange_date"/>
+        <result property="fchangeReason" column="fchange_reason"/>
+        <result property="fbusinessType" column="fbusiness_type"/>
+        <result property="fproviderAddress" column="fprovider_address"/>
+        <result property="fassignSupplierId" column="fassign_supplier_id"/>
+        <result property="fconfirmStatus" column="fconfirm_status"/>
+        <result property="fconfirmerId" column="fconfirmer_id"/>
+        <result property="fconfirmDate" column="fconfirm_date"/>
+        <result property="fproviderContactId" column="fprovider_contact_id"/>
+        <result property="fproviderJob" column="fprovider_job"/>
+        <result property="fproviderPhone" column="fprovider_phone"/>
+        <result property="fsourceBillNo" column="fsource_bill_no"/>
+        <result property="fchangeStatus" column="fchange_status"/>
+        <result property="facctype" column="facctype"/>
+        <result property="fproviderEmail" column="fprovider_email"/>
+        <result property="fcloseReason" column="fclose_reason"/>
+        <result property="fisUseDrpSalePoPush" column="fis_use_drp_sale_po_push"/>
+        <result property="fisCreateStraightOutIn" column="fis_create_straight_out_in"/>
+        <result property="fcontractType" column="fcontract_type"/>
+        <result property="fYpdd" column="f_ypdd"/>
+        <result property="fOraDate" column="f_ora_date"/>
+        <result property="fZlbz" column="f_zlbz"/>
+        <result property="fZmtp1" column="f_zmtp1"/>
+        <result property="fZmtp2" column="f_zmtp2"/>
+        <result property="fZmtp3" column="f_zmtp3"/>
+        <result property="fZmtxm" column="f_zmtxm"/>
+        <result property="fZmms" column="f_zmms"/>
+        <result property="fCmtp1" column="f_cmtp1"/>
+        <result property="fCmtp2" column="f_cmtp2"/>
+        <result property="fCmms" column="f_cmms"/>
+        <result property="fCmtxm" column="f_cmtxm"/>
+        <result property="fBzbzjyq" column="f_bzbzjyq"/>
+        <result property="fKh" column="f_kh"/>
+        <result property="fJjdbl" column="f_jjdbl"/>
+        <result property="fGxhth" column="f_gxhth"/>
+        <result property="fKhjc" column="f_khjc"/>
+        <result property="fZje" column="f_zje"/>
+        <result property="fGdy1" column="f_gdy1"/>
+        <result property="fOraCheckbox1" column="f_ora_checkbox1"/>
+        <result property="fGcbz" column="f_gcbz"/>
+        <result property="fXsy" column="f_xsy"/>
+        <result property="fKhjqnew" column="f_khjqnew"/>
+        <result property="fShdd" column="f_shdd"/>
+        <result property="fYebz" column="f_yebz"/>
+        <result property="fbggysyy" column="fbggysyy"/>
+        <result property="fjsfsjjq" column="fjsfsjjq"/>
+        <result property="fhttk13" column="fhttk13"/>
+        <result property="fhttk510" column="fhttk510"/>
+        <result property="fCtyBaseproperty1" column="f_cty_baseproperty1"/>
+        <result property="fCtyBaseproperty2" column="f_cty_baseproperty2"/>
+        <result property="fwcl" column="fwcl"/>
+        <result property="fzzqrjq" column="fzzqrjq"/>
+        <result property="fGyszh" column="f_gyszh"/>
+        <result property="fSz" column="f_sz"/>
+        <result property="fSettleCurrId" column="f_settle_curr_id"/>
+        <result property="fExchangeTypeId" column="f_exchange_type_id"/>
+        <result property="fExchangeRate" column="f_exchange_rate"/>
+        <result property="fPriceListId" column="f_price_list_id"/>
+        <result property="fPriceTimePoint" column="f_price_time_point"/>
+        <result property="FDiscountListId" column="f_discount_list_id"/>
+        <result property="fDepositRatio" column="f_deposit_ratio"/>
+        <result property="FDeposit" column="f_deposit"/>
+        <result property="FAllDisCount" column="f_all_discount"/>
+        <result property="FIsIncludedTax" column="f_is_included_tax"/>
+        <result property="FIspriceExcludetax" column="f_is_price_exclude_tax"/>
+        <result property="fBillAmount" column="f_bill_amount"/>
+        <result property="fBillTaxAmount" column="f_bill_tax_amount"/>
+        <result property="fBillAllAmount" column="f_bill_all_amount"/>
+        <result property="fLocalCurrId" column="f_local_curr_id"/>
+        <result property="fBillAmountLc" column="f_bill_amount_lc"/>
+        <result property="fBillTaxAmountLc" column="f_bill_tax_amount_lc"/>
+        <result property="FBillAllAmount_LC" column="f_bill_all_amount_lc"/>
+        <result property="fAllPayApplyAmount" column="f_all_pay_apply_amount"/>
+        <result property="fAllPayAmount" column="f_all_pay_amount"/>
+        <result property="fAllApplyNoPayAmount" column="f_all_apply_no_pay_amount"/>
+        <result property="fAllRefundAmount" column="f_all_refund_amount"/>
+        <result property="fAllNoPayAmount" column="f_all_no_pay_amount"/>
+        <result property="FAllAppyNoPayAmount" column="f_all_appy_no_pay_amount"/>
+        <result property="FPayConditionId" column="f_pay_condition_id"/>
+    </resultMap>
+
+    <!-- 插入采购订单 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.PoOrderBillHead" useGeneratedKeys="true" keyProperty="fid">
+        INSERT INTO po_order_bill_head (
+            fbill_no,fid, fdocument_status, fdate, fsupplier_id,
+            fcreator_id, fcreate_date, fmodifier_id, fmodify_date, fapprover_id, fapprove_date,
+            fcanceller_id, fcancel_date, fclose_status,  fcloser_id, fclose_date,
+            fbill_type_id, fsettle_id, fcharge_id, fprovider_id, fchanger_id, fchange_date,
+            fchange_reason, fbusiness_type, fprovider_address, fassign_supplier_id, fconfirm_status,
+            fconfirmer_id, fconfirm_date, fprovider_contact_id, fprovider_job, fprovider_phone,
+            fsource_bill_no, fchange_status, facctype, fprovider_email, fclose_reason,
+           fcontract_type, f_ypdd, f_ora_date,
+            f_zlbz, f_zmtp1, f_zmtp2, f_zmtp3, f_zmtxm, f_zmms, f_cmtp1, f_cmtp2, f_cmms, f_cmtxm,
+            f_bzbzjyq, f_kh, f_jjdbl, f_gxhth, f_khjc, f_zje, f_gdy1, f_ora_checkbox1, f_gcbz,
+            f_xsy, f_khjqnew, f_shdd, f_yebz, fbggysyy, fjsfsjjq, fhttk13, fhttk510,
+            f_cty_baseproperty1, f_cty_baseproperty2, fwcl, fzzqrjq, f_gyszh,
+            f_settle_curr_id, f_exchange_type_id, f_exchange_rate, f_price_list_id, f_price_time_point,
+            f_discount_list_id, f_deposit_ratio, f_deposit, f_all_discount, f_is_included_tax, f_is_price_exclude_tax,
+            f_bill_amount, f_bill_tax_amount, f_bill_all_amount, f_local_curr_id, f_bill_amount_lc, f_bill_tax_amount_lc,
+            f_bill_all_amount_lc, f_all_pay_apply_amount, f_all_pay_amount, f_all_apply_no_pay_amount,
+            f_all_refund_amount, f_all_no_pay_amount, f_all_appy_no_pay_amount, f_pay_condition_id
+        ) VALUES (
+            #{fbillNo},#{fid}, #{fdocumentStatus}, #{fdate}, #{fsupplierId},
+            #{fcreatorId}, #{fcreateDate}, #{fmodifierId}, #{fmodifyDate}, #{fapproverId}, #{fapproveDate},
+            #{fcancellerId}, #{fcancelDate}, #{fcloseStatus},#{fcloserId}, #{fcloseDate},
+            #{fbillTypeId}, #{fsettleId}, #{fchargeId}, #{fproviderId}, #{fchangerId}, #{fchangeDate},
+            #{fchangeReason}, #{fbusinessType}, #{fproviderAddress}, #{fassignSupplierId}, #{fconfirmStatus},
+            #{fconfirmerId}, #{fconfirmDate}, #{fproviderContactId}, #{fproviderJob}, #{fproviderPhone},
+            #{fsourceBillNo}, #{fchangeStatus}, #{facctype}, #{fproviderEmail}, #{fcloseReason},
+            #{fcontractType}, #{fYpdd}, #{fOraDate},
+            #{fZlbz}, #{fZmtp1}, #{fZmtp2}, #{fZmtp3}, #{fZmtxm}, #{fZmms}, #{fCmtp1}, #{fCmtp2}, #{fCmms}, #{fCmtxm},
+            #{fBzbzjyq}, #{fKh}, #{fJjdbl}, #{fGxhth}, #{fKhjc}, #{fZje}, #{fGdy1}, #{fOraCheckbox1}, #{fGcbz},
+            #{fXsy}, #{fKhjqnew}, #{fShdd}, #{fYebz}, #{fbggysyy}, #{fjsfsjjq}, #{fhttk13}, #{fhttk510},
+            #{fCtyBaseproperty1}, #{fCtyBaseproperty2}, #{fwcl}, #{fzzqrjq}, #{fGyszh},
+            #{fSettleCurrId}, #{fExchangeTypeId}, #{fExchangeRate}, #{fPriceListId}, #{fPriceTimePoint},
+            #{FDiscountListId}, #{fDepositRatio}, #{FDeposit}, #{FAllDisCount}, #{FIsIncludedTax}, #{FIspriceExcludetax},
+            #{fBillAmount}, #{fBillTaxAmount}, #{fBillAllAmount}, #{fLocalCurrId}, #{fBillAmountLc}, #{fBillTaxAmountLc},
+            #{FBillAllAmount_LC}, #{fAllPayApplyAmount}, #{fAllPayAmount}, #{fAllApplyNoPayAmount},
+            #{fAllRefundAmount}, #{fAllNoPayAmount}, #{FAllAppyNoPayAmount}, #{FPayConditionId}
+        )
+    </insert>
+
+
+        <update id="updateByBillNo" parameterType="com.ruoyi.business.entity.PoOrderBillHead">
+            UPDATE po_order_bill_head
+            <set>
+                <if test="fdocumentStatus != null">fdocument_status = #{fdocumentStatus},</if>
+                <if test="fdate != null">fdate = #{fdate},</if>
+                <if test="fsupplierId != null">fsupplier_id = #{fsupplierId},</if>
+                <if test="fcreatorId != null">fcreator_id = #{fcreatorId},</if>
+                <if test="fcreateDate != null">fcreate_date = #{fcreateDate},</if>
+                <if test="fmodifierId != null">fmodifier_id = #{fmodifierId},</if>
+                <if test="fmodifyDate != null">fmodify_date = #{fmodifyDate},</if>
+                <if test="fapproverId != null">fapprover_id = #{fapproverId},</if>
+                <if test="fapproveDate != null">fapprove_date = #{fapproveDate},</if>
+                <if test="fcancellerId != null">fcanceller_id = #{fcancellerId},</if>
+                <if test="fcancelDate != null">fcancel_date = #{fcancelDate},</if>
+                <if test="fcloseStatus != null">fclose_status = #{fcloseStatus},</if>
+                <if test="fcloserId != null">fcloser_id = #{fcloserId},</if>
+                <if test="fcloseDate != null">fclose_date = #{fcloseDate},</if>
+                <if test="fbillTypeId != null">fbill_type_id = #{fbillTypeId},</if>
+                <if test="fsettleId != null">fsettle_id = #{fsettleId},</if>
+                <if test="fchargeId != null">fcharge_id = #{fchargeId},</if>
+                <if test="fproviderId != null">fprovider_id = #{fproviderId},</if>
+                <if test="fchangerId != null">fchanger_id = #{fchangerId},</if>
+                <if test="fchangeDate != null">fchange_date = #{fchangeDate},</if>
+                <if test="fchangeReason != null">fchange_reason = #{fchangeReason},</if>
+                <if test="fbusinessType != null">fbusiness_type = #{fbusinessType},</if>
+                <if test="fproviderAddress != null">fprovider_address = #{fproviderAddress},</if>
+                <if test="fassignSupplierId != null">fassign_supplier_id = #{fassignSupplierId},</if>
+                <if test="fconfirmStatus != null">fconfirm_status = #{fconfirmStatus},</if>
+                <if test="fconfirmerId != null">fconfirmer_id = #{fconfirmerId},</if>
+                <if test="fconfirmDate != null">fconfirm_date = #{fconfirmDate},</if>
+                <if test="fproviderContactId != null">fprovider_contact_id = #{fproviderContactId},</if>
+                <if test="fproviderJob != null">fprovider_job = #{fproviderJob},</if>
+                <if test="fproviderPhone != null">fprovider_phone = #{fproviderPhone},</if>
+                <if test="fsourceBillNo != null">fsource_bill_no = #{fsourceBillNo},</if>
+                <if test="fchangeStatus != null">fchange_status = #{fchangeStatus},</if>
+                <if test="facctype != null">facctype = #{facctype},</if>
+                <if test="fproviderEmail != null">fprovider_email = #{fproviderEmail},</if>
+                <if test="fcloseReason != null">fclose_reason = #{fcloseReason},</if>
+                <if test="fcontractType != null">fcontract_type = #{fcontractType},</if>
+                <if test="fYpdd != null">f_ypdd = #{fYpdd},</if>
+                <if test="fOraDate != null">f_ora_date = #{fOraDate},</if>
+                <if test="fZlbz != null">f_zlbz = #{fZlbz},</if>
+                <if test="fZmtp1 != null">f_zmtp1 = #{fZmtp1},</if>
+                <if test="fZmtp2 != null">f_zmtp2 = #{fZmtp2},</if>
+                <if test="fZmtp3 != null">f_zmtp3 = #{fZmtp3},</if>
+                <if test="fZmtxm != null">f_zmtxm = #{fZmtxm},</if>
+                <if test="fZmms != null">f_zmms = #{fZmms},</if>
+                <if test="fCmtp1 != null">f_cmtp1 = #{fCmtp1},</if>
+                <if test="fCmtp2 != null">f_cmtp2 = #{fCmtp2},</if>
+                <if test="fCmms != null">f_cmms = #{fCmms},</if>
+                <if test="fCmtxm != null">f_cmtxm = #{fCmtxm},</if>
+                <if test="fBzbzjyq != null">f_bzbzjyq = #{fBzbzjyq},</if>
+                <if test="fKh != null">f_kh = #{fKh},</if>
+                <if test="fJjdbl != null">f_jjdbl = #{fJjdbl},</if>
+                <if test="fGxhth != null">f_gxhth = #{fGxhth},</if>
+                <if test="fKhjc != null">f_khjc = #{fKhjc},</if>
+                <if test="fZje != null">f_zje = #{fZje},</if>
+                <if test="fGdy1 != null">f_gdy1 = #{fGdy1},</if>
+                <if test="fOraCheckbox1 != null">f_ora_checkbox1 = #{fOraCheckbox1},</if>
+                <if test="fGcbz != null">f_gcbz = #{fGcbz},</if>
+                <if test="fXsy != null">f_xsy = #{fXsy},</if>
+                <if test="fKhjqnew != null">f_khjqnew = #{fKhjqnew},</if>
+                <if test="fShdd != null">f_shdd = #{fShdd},</if>
+                <if test="fYebz != null">f_yebz = #{fYebz},</if>
+                <if test="fbggysyy != null">f_bggysyy = #{fbggysyy},</if>
+                <if test="fjsfsjjq != null">fjsfsjjq = #{fjsfsjjq},</if>
+                <if test="fhttk13 != null">fhttk13 = #{fhttk13},</if>
+                <if test="fhttk510 != null">fhttk510 = #{fhttk510},</if>
+                <if test="fCtyBaseproperty1 != null">f_cty_baseproperty1 = #{fCtyBaseproperty1},</if>
+                <if test="fCtyBaseproperty2 != null">f_cty_baseproperty2 = #{fCtyBaseproperty2},</if>
+                <if test="fwcl != null">fwcl = #{fwcl},</if>
+                <if test="fzzqrjq != null">fzzqrjq = #{fzzqrjq},</if>
+                <if test="fGyszh != null">f_gyszh = #{fGyszh},</if>
+                <if test="fSettleCurrId != null">f_settle_curr_id = #{fSettleCurrId},</if>
+                <if test="fExchangeTypeId != null">f_exchange_type_id = #{fExchangeTypeId},</if>
+                <if test="fExchangeRate != null">f_exchange_rate = #{fExchangeRate},</if>
+                <if test="fPriceListId != null">f_price_list_id = #{fPriceListId},</if>
+                <if test="fPriceTimePoint != null">f_price_time_point = #{fPriceTimePoint},</if>
+                <if test="FDiscountListId != null">f_discount_list_id = #{FDiscountListId},</if>
+                <if test="fDepositRatio != null">f_deposit_ratio = #{fDepositRatio},</if>
+                <if test="FDeposit != null">f_deposit = #{FDeposit},</if>
+                <if test="FAllDisCount != null">f_all_discount = #{FAllDisCount},</if>
+                <if test="FIsIncludedTax != null">f_is_included_tax = #{FIsIncludedTax},</if>
+                <if test="FIspriceExcludetax != null">f_is_price_exclude_tax = #{FIspriceExcludetax},</if>
+                <if test="fBillAmount != null">f_bill_amount = #{fBillAmount},</if>
+                <if test="fBillTaxAmount != null">f_bill_tax_amount = #{fBillTaxAmount},</if>
+                <if test="fBillAllAmount != null">f_bill_all_amount = #{fBillAllAmount},</if>
+                <if test="fLocalCurrId != null">f_local_curr_id = #{fLocalCurrId},</if>
+                <if test="fBillAmountLc != null">f_bill_amount_lc = #{fBillAmountLc},</if>
+                <if test="fBillTaxAmountLc != null">f_bill_tax_amount_lc = #{fBillTaxAmountLc},</if>
+                <if test="FBillAllAmount_LC != null">f_bill_all_amount_lc = #{FBillAllAmount_LC},</if>
+                <if test="fAllPayApplyAmount != null">f_all_pay_apply_amount = #{fAllPayApplyAmount},</if>
+                <if test="fAllPayAmount != null">f_all_pay_amount = #{fAllPayAmount},</if>
+                <if test="fAllApplyNoPayAmount != null">f_all_apply_no_pay_amount = #{fAllApplyNoPayAmount},</if>
+                <if test="fAllRefundAmount != null">f_all_refund_amount = #{fAllRefundAmount},</if>
+                <if test="fAllNoPayAmount != null">f_all_no_pay_amount = #{fAllNoPayAmount},</if>
+                <if test="FAllAppyNoPayAmount != null">f_all_appy_no_pay_amount = #{FAllAppyNoPayAmount},</if>
+                <if test="FPayConditionId != null">f_pay_condition_id = #{FPayConditionId},</if>
+            </set>
+            WHERE fbill_no = #{fbillNo}
+        </update>
+
+        <!-- 根据K3 ID更新采购订单 -->
+        <update id="updateByK3Id" parameterType="com.ruoyi.business.entity.PoOrderBillHead">
+            UPDATE po_order_bill_head
+            <set>
+                <if test="fbillNo != null and fbillNo != ''">fbill_no = #{fbillNo},</if>
+                <if test="fdocumentStatus != null">fdocument_status = #{fdocumentStatus},</if>
+                <if test="fdate != null">fdate = #{fdate},</if>
+                <if test="fsupplierId != null">fsupplier_id = #{fsupplierId},</if>
+                <if test="fcreatorId != null">fcreator_id = #{fcreatorId},</if>
+                <if test="fcreateDate != null">fcreate_date = #{fcreateDate},</if>
+                <if test="fmodifierId != null">fmodifier_id = #{fmodifierId},</if>
+                <if test="fmodifyDate != null">fmodify_date = #{fmodifyDate},</if>
+                <if test="fapproverId != null">fapprover_id = #{fapproverId},</if>
+                <if test="fapproveDate != null">fapprove_date = #{fapproveDate},</if>
+                <if test="fcancellerId != null">fcanceller_id = #{fcancellerId},</if>
+                <if test="fcancelDate != null">fcancel_date = #{fcancelDate},</if>
+                <if test="fcloseStatus != null">fclose_status = #{fcloseStatus},</if>
+                <if test="fcloserId != null">fcloser_id = #{fcloserId},</if>
+                <if test="fcloseDate != null">fclose_date = #{fcloseDate},</if>
+                <if test="fbillTypeId != null">fbill_type_id = #{fbillTypeId},</if>
+                <if test="fsettleId != null">fsettle_id = #{fsettleId},</if>
+                <if test="fchargeId != null">fcharge_id = #{fchargeId},</if>
+                <if test="fproviderId != null">fprovider_id = #{fproviderId},</if>
+                <if test="fchangerId != null">fchanger_id = #{fchangerId},</if>
+                <if test="fchangeDate != null">fchange_date = #{fchangeDate},</if>
+                <if test="fchangeReason != null">fchange_reason = #{fchangeReason},</if>
+                <if test="fbusinessType != null">fbusiness_type = #{fbusinessType},</if>
+                <if test="fproviderAddress != null">fprovider_address = #{fproviderAddress},</if>
+                <if test="fassignSupplierId != null">fassign_supplier_id = #{fassignSupplierId},</if>
+                <if test="fconfirmStatus != null">fconfirm_status = #{fconfirmStatus},</if>
+                <if test="fconfirmerId != null">fconfirmer_id = #{fconfirmerId},</if>
+                <if test="fconfirmDate != null">fconfirm_date = #{fconfirmDate},</if>
+                <if test="fproviderContactId != null">fprovider_contact_id = #{fproviderContactId},</if>
+                <if test="fproviderJob != null">fprovider_job = #{fproviderJob},</if>
+                <if test="fproviderPhone != null">fprovider_phone = #{fproviderPhone},</if>
+                <if test="fsourceBillNo != null">fsource_bill_no = #{fsourceBillNo},</if>
+                <if test="fchangeStatus != null">fchange_status = #{fchangeStatus},</if>
+                <if test="facctype != null">facctype = #{facctype},</if>
+                <if test="fproviderEmail != null">fprovider_email = #{fproviderEmail},</if>
+                <if test="fcloseReason != null">fclose_reason = #{fcloseReason},</if>
+                <if test="fisUseDrpSalePoPush != null">fis_use_drp_sale_po_push = #{fisUseDrpSalePoPush},</if>
+                <if test="fisCreateStraightOutIn != null">fis_create_straight_out_in = #{fisCreateStraightOutIn},</if>
+                <if test="fcontractType != null">fcontract_type = #{fcontractType},</if>
+                <if test="fYpdd != null">f_ypdd = #{fYpdd},</if>
+                <if test="fOraDate != null">f_ora_date = #{fOraDate},</if>
+                <if test="fZlbz != null">f_zlbz = #{fZlbz},</if>
+                <if test="fZmtp1 != null">f_zmtp1 = #{fZmtp1},</if>
+                <if test="fZmtp2 != null">f_zmtp2 = #{fZmtp2},</if>
+                <if test="fZmtp3 != null">f_zmtp3 = #{fZmtp3},</if>
+                <if test="fZmtxm != null">f_zmtxm = #{fZmtxm},</if>
+                <if test="fZmms != null">f_zmms = #{fZmms},</if>
+                <if test="fCmtp1 != null">f_cmtp1 = #{fCmtp1},</if>
+                <if test="fCmtp2 != null">f_cmtp2 = #{fCmtp2},</if>
+                <if test="fCmms != null">f_cmms = #{fCmms},</if>
+                <if test="fCmtxm != null">f_cmtxm = #{fCmtxm},</if>
+                <if test="fBzbzjyq != null">f_bzbzjyq = #{fBzbzjyq},</if>
+                <if test="fKh != null">f_kh = #{fKh},</if>
+                <if test="fJjdbl != null">f_jjdbl = #{fJjdbl},</if>
+                <if test="fGxhth != null">f_gxhth = #{fGxhth},</if>
+                <if test="fKhjc != null">f_khjc = #{fKhjc},</if>
+                <if test="fZje != null">f_zje = #{fZje},</if>
+                <if test="fGdy1 != null">f_gdy1 = #{fGdy1},</if>
+                <if test="fOraCheckbox1 != null">f_ora_checkbox1 = #{fOraCheckbox1},</if>
+                <if test="fGcbz != null">f_gcbz = #{fGcbz},</if>
+                <if test="fXsy != null">f_xsy = #{fXsy},</if>
+                <if test="fKhjqnew != null">f_khjqnew = #{fKhjqnew},</if>
+                <if test="fShdd != null">f_shdd = #{fShdd},</if>
+                <if test="fYebz != null">f_yebz = #{fYebz},</if>
+                <if test="fbggysyy != null">f_bggysyy = #{fbggysyy},</if>
+                <if test="fjsfsjjq != null">fjsfsjjq = #{fjsfsjjq},</if>
+                <if test="fhttk13 != null">fhttk13 = #{fhttk13},</if>
+                <if test="fhttk510 != null">fhttk510 = #{fhttk510},</if>
+                <if test="fCtyBaseproperty1 != null">f_cty_baseproperty1 = #{fCtyBaseproperty1},</if>
+                <if test="fCtyBaseproperty2 != null">f_cty_baseproperty2 = #{fCtyBaseproperty2},</if>
+                <if test="fwcl != null">fwcl = #{fwcl},</if>
+                <if test="fzzqrjq != null">fzzqrjq = #{fzzqrjq},</if>
+                <if test="fGyszh != null">f_gyszh = #{fGyszh},</if>
+                <if test="fSettleCurrId != null">f_settle_curr_id = #{fSettleCurrId},</if>
+                <if test="fExchangeTypeId != null">f_exchange_type_id = #{fExchangeTypeId},</if>
+                <if test="fExchangeRate != null">f_exchange_rate = #{fExchangeRate},</if>
+                <if test="fPriceListId != null">f_price_list_id = #{fPriceListId},</if>
+                <if test="fPriceTimePoint != null">f_price_time_point = #{fPriceTimePoint},</if>
+                <if test="FDiscountListId != null">f_discount_list_id = #{FDiscountListId},</if>
+                <if test="fDepositRatio != null">f_deposit_ratio = #{fDepositRatio},</if>
+                <if test="FDeposit != null">f_deposit = #{FDeposit},</if>
+                <if test="FAllDisCount != null">f_all_discount = #{FAllDisCount},</if>
+                <if test="FIsIncludedTax != null">f_is_included_tax = #{FIsIncludedTax},</if>
+                <if test="FIspriceExcludetax != null">f_is_price_exclude_tax = #{FIspriceExcludetax},</if>
+                <if test="fBillAmount != null">f_bill_amount = #{fBillAmount},</if>
+                <if test="fBillTaxAmount != null">f_bill_tax_amount = #{fBillTaxAmount},</if>
+                <if test="fBillAllAmount != null">f_bill_all_amount = #{fBillAllAmount},</if>
+                <if test="fLocalCurrId != null">f_local_curr_id = #{fLocalCurrId},</if>
+                <if test="fBillAmountLc != null">f_bill_amount_lc = #{fBillAmountLc},</if>
+                <if test="fBillTaxAmountLc != null">f_bill_tax_amount_lc = #{fBillTaxAmountLc},</if>
+                <if test="FBillAllAmount_LC != null">f_bill_all_amount_lc = #{FBillAllAmount_LC},</if>
+                <if test="fAllPayApplyAmount != null">f_all_pay_apply_amount = #{fAllPayApplyAmount},</if>
+                <if test="fAllPayAmount != null">f_all_pay_amount = #{fAllPayAmount},</if>
+                <if test="fAllApplyNoPayAmount != null">f_all_apply_no_pay_amount = #{fAllApplyNoPayAmount},</if>
+                <if test="fAllRefundAmount != null">f_all_refund_amount = #{fAllRefundAmount},</if>
+                <if test="fAllNoPayAmount != null">f_all_no_pay_amount = #{fAllNoPayAmount},</if>
+                <if test="FAllAppyNoPayAmount != null">f_all_appy_no_pay_amount = #{FAllAppyNoPayAmount},</if>
+                <if test="FPayConditionId != null">f_pay_condition_id = #{FPayConditionId},</if>
+            </set>
+            WHERE fid = #{fid}
+        </update>
+
+
+
+
+    <!-- 根据单据编号查询采购订单 -->
+    <select id="selectByBillNo" resultMap="PoOrderBillHeadMap">
+        SELECT
+            pbh.fbill_no,
+            pbh.fdocument_status,
+            pbh.fdate,
+            sr.name as fsupplier_id,
+            su.user_name as fcreator_id,
+            pbh.fcreate_date,
+            pbh.fmodifier_id,
+            pbh.fmodify_date,
+            pbh.fapprover_id,
+            pbh.fapprove_date,
+            pbh.fcanceller_id,
+            pbh.fcancel_date,
+            pbh.fclose_status,
+            pbh.fcloser_id,
+            pbh.fclose_date,
+            bd.name as fbill_type_id,
+            ser.name as fsettle_id,
+            spr.name as fcharge_id,
+            pbh.fchanger_id,
+            pbh.fchange_date,
+            pbh.fchange_reason,
+            pbh.fbusiness_type,
+            pbh.fprovider_address,
+            pbh.fassign_supplier_id,
+            pbh.fconfirm_status,
+            pbh.fconfirmer_id,
+            pbh.fconfirm_date,
+            sc.contact_name as fprovider_contact_id,
+            pbh.fprovider_job,
+            pbh.fprovider_phone,
+            pbh.fsource_bill_no,
+            pbh.fchange_status,
+            pbh.facctype,
+            pbh.fprovider_email,
+            pbh.fclose_reason,
+            pbh.fcontract_type,
+            pbh.f_ypdd,
+            pbh.f_ora_date,
+            pbh.f_zlbz,
+            pbh.f_zmtp1,
+            pbh.f_zmtp2,
+            pbh.f_zmtp3,
+            pbh.f_zmtxm,
+            pbh.f_zmms,
+            pbh.f_cmtp1,
+            pbh.f_cmtp2,
+            pbh.f_cmms,
+            pbh.f_cmtxm,
+            pbh.f_bzbzjyq,
+            pbh.f_kh,
+            pbh.f_jjdbl,
+            pbh.f_gxhth,
+            pbh.f_khjc,
+            pbh.f_zje,
+            se.fname as f_gdy1,
+            pbh.f_ora_checkbox1,
+            pbh.f_gcbz,
+            sle.fname as  f_xsy,
+            pbh.f_khjqnew,
+            pbh.f_shdd,
+            pbh.f_yebz,
+            pbh.fbggysyy,
+            pbh.fjsfsjjq,
+            pbh.fhttk13,
+            pbh.fhttk510,
+            pbh.f_cty_baseproperty1,
+            pbh.f_cty_baseproperty2,
+            pbh.fwcl,
+            pbh.fzzqrjq,
+            pbh.f_gyszh,
+            bld.name as f_settle_curr_id,
+            bldy.name as f_exchange_type_id,
+            pbh.f_exchange_rate,
+            pbh.f_price_list_id,
+            pbh.f_price_time_point,
+            pbh.f_discount_list_id,
+            pbh.f_deposit_ratio,
+            pbh.f_deposit,
+            pbh.f_all_discount,
+            pbh.f_is_included_tax,
+            pbh.f_is_price_exclude_tax,
+            pbh.f_bill_amount,
+            pbh.f_bill_tax_amount,
+            pbh.f_bill_all_amount,
+            bldy.name as f_local_curr_id,
+            pbh.f_bill_amount_lc,
+            pbh.f_bill_tax_amount_lc,
+            pbh.f_bill_all_amount_lc,
+            pbh.f_all_pay_apply_amount,
+            pbh.f_all_pay_amount,
+            pbh.f_all_apply_no_pay_amount,
+            pbh.f_all_refund_amount,
+            pbh.f_all_no_pay_amount,
+            pbh.f_all_appy_no_pay_amount,
+            pbh.f_pay_condition_id
+        FROM
+            po_order_bill_head pbh
+                LEFT JOIN  supplier sr on pbh.fsupplier_id=sr.supplierid
+                LEFT JOIN  supplier ser on pbh.fsettle_id=ser.supplierid
+                LEFT JOIN  supplier spr on pbh.fcharge_id=spr.supplierid
+                LEFT JOIN  sys_user su on pbh.fcreator_id=su.k3_key
+                LEFT JOIN  bymaterial_dictionary bd on pbh.fbill_type_id=bd.kingdee
+                LEFT JOIN  bymaterial_dictionary bld on pbh.f_settle_curr_id=bld.kingdee and bld.category='currency'
+                LEFT JOIN  bymaterial_dictionary bldy on pbh.f_local_curr_id=bldy.kingdee and bldy.category='currency'
+                LEFT JOIN  supplier_contact sc on pbh.fprovider_contact_id=sc.defaultContact
+                LEFT JOIN  sys_employee se on pbh.f_gdy1=se.salesman_id
+                LEFT JOIN  sys_employee sle on pbh.f_xsy=sle.salesman_id
+        WHERE pbh.fbill_no = #{fbillNo}
+    </select>
+
+    <!-- 根据主键查询采购订单 -->
+    <select id="selectById" resultMap="PoOrderBillHeadMap">
+        SELECT
+            pbh.fbill_no,
+            pbh.fdocument_status,
+            pbh.fdate,
+            sr.name as fsupplier_id,
+            su.user_name as fcreator_id,
+            pbh.fcreate_date,
+            pbh.fmodifier_id,
+            pbh.fmodify_date,
+            pbh.fapprover_id,
+            pbh.fapprove_date,
+            pbh.fcanceller_id,
+            pbh.fcancel_date,
+            pbh.fclose_status,
+            pbh.fcloser_id,
+            pbh.fclose_date,
+            bd.name as fbill_type_id,
+            ser.name as fsettle_id,
+            spr.name as fcharge_id,
+            pbh.fchanger_id,
+            pbh.fchange_date,
+            pbh.fchange_reason,
+            pbh.fbusiness_type,
+            pbh.fprovider_address,
+            pbh.fassign_supplier_id,
+            pbh.fconfirm_status,
+            pbh.fconfirmer_id,
+            pbh.fconfirm_date,
+            sc.contact_name as fprovider_contact_id,
+            pbh.fprovider_job,
+            pbh.fprovider_phone,
+            pbh.fsource_bill_no,
+            pbh.fchange_status,
+            pbh.facctype,
+            pbh.fprovider_email,
+            pbh.fclose_reason,
+            pbh.fcontract_type,
+            pbh.f_ypdd,
+            pbh.f_ora_date,
+            pbh.f_zlbz,
+            pbh.f_zmtp1,
+            pbh.f_zmtp2,
+            pbh.f_zmtp3,
+            pbh.f_zmtxm,
+            pbh.f_zmms,
+            pbh.f_cmtp1,
+            pbh.f_cmtp2,
+            pbh.f_cmms,
+            pbh.f_cmtxm,
+            pbh.f_bzbzjyq,
+            pbh.f_kh,
+            pbh.f_jjdbl,
+            pbh.f_gxhth,
+            pbh.f_khjc,
+            pbh.f_zje,
+            se.fname as f_gdy1,
+            pbh.f_ora_checkbox1,
+            pbh.f_gcbz,
+            sle.fname as  f_xsy,
+            pbh.f_khjqnew,
+            pbh.f_shdd,
+            pbh.f_yebz,
+            pbh.fbggysyy,
+            pbh.fjsfsjjq,
+            pbh.fhttk13,
+            pbh.fhttk510,
+            pbh.f_cty_baseproperty1,
+            pbh.f_cty_baseproperty2,
+            pbh.fwcl,
+            pbh.fzzqrjq,
+            pbh.f_gyszh,
+            bld.name as f_settle_curr_id,
+            bldy.name as f_exchange_type_id,
+            pbh.f_exchange_rate,
+            pbh.f_price_list_id,
+            pbh.f_price_time_point,
+            pbh.f_discount_list_id,
+            pbh.f_deposit_ratio,
+            pbh.f_deposit,
+            pbh.f_all_discount,
+            pbh.f_is_included_tax,
+            pbh.f_is_price_exclude_tax,
+            pbh.f_bill_amount,
+            pbh.f_bill_tax_amount,
+            pbh.f_bill_all_amount,
+            bldy.name as f_local_curr_id,
+            pbh.f_bill_amount_lc,
+            pbh.f_bill_tax_amount_lc,
+            pbh.f_bill_all_amount_lc,
+            pbh.f_all_pay_apply_amount,
+            pbh.f_all_pay_amount,
+            pbh.f_all_apply_no_pay_amount,
+            pbh.f_all_refund_amount,
+            pbh.f_all_no_pay_amount,
+            pbh.f_all_appy_no_pay_amount,
+            pbh.f_pay_condition_id
+        FROM
+            po_order_bill_head pbh
+                LEFT JOIN  supplier sr on pbh.fsupplier_id=sr.supplierid
+                LEFT JOIN  supplier ser on pbh.fsettle_id=ser.supplierid
+                LEFT JOIN  supplier spr on pbh.fcharge_id=spr.supplierid
+                LEFT JOIN  sys_user su on pbh.fcreator_id=su.k3_key
+                LEFT JOIN  bymaterial_dictionary bd on pbh.fbill_type_id=bd.kingdee
+                LEFT JOIN  bymaterial_dictionary bld on pbh.f_settle_curr_id=bld.kingdee and bld.category='currency'
+                LEFT JOIN  bymaterial_dictionary bldy on pbh.f_local_curr_id=bldy.kingdee and bldy.category='currency'
+                LEFT JOIN  supplier_contact sc on pbh.fprovider_contact_id=sc.defaultContact
+                LEFT JOIN  sys_employee se on pbh.f_gdy1=se.salesman_id
+                LEFT JOIN  sys_employee sle on pbh.f_xsy=sle.salesman_id
+     WHERE pbh.id = #{id}
+    </select>
+
+    <!-- 查询所有采购订单 -->
+    <select id="selectAll" resultMap="PoOrderBillHeadMap">
+        SELECT
+            pbh.fbill_no,
+            pbh.fdocument_status,
+            pbh.fdate,
+            sr.name as fsupplier_id,
+            su.user_name as fcreator_id,
+            pbh.fcreate_date,
+            pbh.fmodifier_id,
+            pbh.fmodify_date,
+            pbh.fapprover_id,
+            pbh.fapprove_date,
+            pbh.fcanceller_id,
+            pbh.fcancel_date,
+            pbh.fclose_status,
+            pbh.fcloser_id,
+            pbh.fclose_date,
+            bd.name as fbill_type_id,
+            ser.name as fsettle_id,
+            spr.name as fcharge_id,
+            pbh.fchanger_id,
+            pbh.fchange_date,
+            pbh.fchange_reason,
+            pbh.fbusiness_type,
+            pbh.fprovider_address,
+            pbh.fassign_supplier_id,
+            pbh.fconfirm_status,
+            pbh.fconfirmer_id,
+            pbh.fconfirm_date,
+            sc.contact_name as fprovider_contact_id,
+            pbh.fprovider_job,
+            pbh.fprovider_phone,
+            pbh.fsource_bill_no,
+            pbh.fchange_status,
+            pbh.facctype,
+            pbh.fprovider_email,
+            pbh.fclose_reason,
+            pbh.fcontract_type,
+            pbh.f_ypdd,
+            pbh.f_ora_date,
+            pbh.f_zlbz,
+            pbh.f_zmtp1,
+            pbh.f_zmtp2,
+            pbh.f_zmtp3,
+            pbh.f_zmtxm,
+            pbh.f_zmms,
+            pbh.f_cmtp1,
+            pbh.f_cmtp2,
+            pbh.f_cmms,
+            pbh.f_cmtxm,
+            pbh.f_bzbzjyq,
+            pbh.f_kh,
+            pbh.f_jjdbl,
+            pbh.f_gxhth,
+            pbh.f_khjc,
+            pbh.f_zje,
+            se.fname as f_gdy1,
+            pbh.f_ora_checkbox1,
+            pbh.f_gcbz,
+            sle.fname as  f_xsy,
+            pbh.f_khjqnew,
+            pbh.f_shdd,
+            pbh.f_yebz,
+            pbh.fbggysyy,
+            pbh.fjsfsjjq,
+            pbh.fhttk13,
+            pbh.fhttk510,
+            pbh.f_cty_baseproperty1,
+            pbh.f_cty_baseproperty2,
+            pbh.fwcl,
+            pbh.fzzqrjq,
+            pbh.f_gyszh,
+            bld.name as f_settle_curr_id,
+            bldy.name as f_exchange_type_id,
+            pbh.f_exchange_rate,
+            pbh.f_price_list_id,
+            pbh.f_price_time_point,
+            pbh.f_discount_list_id,
+            pbh.f_deposit_ratio,
+            pbh.f_deposit,
+            pbh.f_all_discount,
+            pbh.f_is_included_tax,
+            pbh.f_is_price_exclude_tax,
+            pbh.f_bill_amount,
+            pbh.f_bill_tax_amount,
+            pbh.f_bill_all_amount,
+            bldy.name as f_local_curr_id,
+            pbh.f_bill_amount_lc,
+            pbh.f_bill_tax_amount_lc,
+            pbh.f_bill_all_amount_lc,
+            pbh.f_all_pay_apply_amount,
+            pbh.f_all_pay_amount,
+            pbh.f_all_apply_no_pay_amount,
+            pbh.f_all_refund_amount,
+            pbh.f_all_no_pay_amount,
+            pbh.f_all_appy_no_pay_amount,
+            pbh.f_pay_condition_id
+        FROM
+            po_order_bill_head pbh
+                LEFT JOIN  supplier sr on pbh.fsupplier_id=sr.supplierid
+                LEFT JOIN  supplier ser on pbh.fsettle_id=ser.supplierid
+                LEFT JOIN  supplier spr on pbh.fcharge_id=spr.supplierid
+                LEFT JOIN  sys_user su on pbh.fcreator_id=su.k3_key
+                LEFT JOIN  bymaterial_dictionary bd on pbh.fbill_type_id=bd.kingdee
+                LEFT JOIN  bymaterial_dictionary bld on pbh.f_settle_curr_id=bld.kingdee and bld.category='currency'
+                LEFT JOIN  bymaterial_dictionary bldy on pbh.f_local_curr_id=bldy.kingdee and bldy.category='currency'
+                LEFT JOIN  supplier_contact sc on pbh.fprovider_contact_id=sc.defaultContact
+                LEFT JOIN  sys_employee se on pbh.f_gdy1=se.salesman_id
+                LEFT JOIN  sys_employee sle on pbh.f_xsy=sle.salesman_id
+        ORDER BY pbh.fcreate_date DESC
+    </select>
+    <select id="selectAllBillNos" resultType="java.lang.String">
+        SELECT fid FROM po_order_bill_head
+    </select>
+
+    <!-- 查询已存在的K3 ID列表 -->
+    <select id="selectExistingK3Ids" parameterType="java.util.List" resultType="java.lang.String">
+        SELECT fid FROM po_order_bill_head
+        WHERE fid IN
+        <foreach collection="list" item="fids" open="(" separator="," close=")">
+            #{fids}
+        </foreach>
+    </select>
+
+
+    <!-- 删除所有采购订单 -->
+    <delete id="deleteAll">
+        DELETE FROM po_order_bill_head
+    </delete>
+
+    <!-- 高效批量更新（使用 INSERT ... ON DUPLICATE KEY UPDATE，包含所有字段）-->
+    <insert id="batchUpdateByBillNo">
+        INSERT INTO po_order_bill_head (
+            fbill_no,fid, fdocument_status, fdate, fsupplier_id,
+            fcreator_id, fcreate_date, fmodifier_id, fmodify_date, fapprover_id, fapprove_date,
+            fcanceller_id, fcancel_date, fclose_status,  fcloser_id, fclose_date,
+            fbill_type_id, fsettle_id, fcharge_id, fprovider_id, fchanger_id, fchange_date,
+            fchange_reason, fbusiness_type, fprovider_address, fassign_supplier_id, fconfirm_status,
+            fconfirmer_id, fconfirm_date, fprovider_contact_id, fprovider_job, fprovider_phone,
+            fsource_bill_no, fchange_status, facctype, fprovider_email, fclose_reason,
+              fcontract_type, f_ypdd, f_ora_date,
+            f_zlbz, f_zmtp1, f_zmtp2, f_zmtp3, f_zmtxm, f_zmms, f_cmtp1, f_cmtp2, f_cmms, f_cmtxm,
+            f_bzbzjyq, f_kh, f_jjdbl, f_gxhth, f_khjc, f_zje, f_gdy1, f_ora_checkbox1, f_gcbz,
+            f_xsy, f_khjqnew, f_shdd, f_yebz, fbggysyy, fjsfsjjq, fhttk13, fhttk510,
+            f_cty_baseproperty1, f_cty_baseproperty2, fwcl, fzzqrjq, f_gyszh,
+            f_settle_curr_id, f_exchange_type_id, f_exchange_rate, f_price_list_id, f_price_time_point,
+            f_discount_list_id, f_deposit_ratio, f_deposit, f_all_discount, f_is_included_tax, f_is_price_exclude_tax,
+            f_bill_amount, f_bill_tax_amount, f_bill_all_amount, f_local_curr_id, f_bill_amount_lc, f_bill_tax_amount_lc,
+            f_bill_all_amount_lc, f_all_pay_apply_amount, f_all_pay_amount, f_all_apply_no_pay_amount,
+            f_all_refund_amount, f_all_no_pay_amount, f_all_appy_no_pay_amount, f_pay_condition_id
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.fbillNo}, #{item.fid}, #{item.fdocumentStatus}, #{item.fdate},  #{item.fsupplierId},
+            #{item.fcreatorId}, #{item.fcreateDate}, #{item.fmodifierId}, #{item.fmodifyDate}, #{item.fapproverId}, #{item.fapproveDate},
+            #{item.fcancellerId}, #{item.fcancelDate}, #{item.fcloseStatus}, #{item.fcloserId}, #{item.fcloseDate},
+            #{item.fbillTypeId}, #{item.fsettleId}, #{item.fchargeId}, #{item.fproviderId}, #{item.fchangerId}, #{item.fchangeDate},
+            #{item.fchangeReason}, #{item.fbusinessType}, #{item.fproviderAddress}, #{item.fassignSupplierId}, #{item.fconfirmStatus},
+            #{item.fconfirmerId}, #{item.fconfirmDate}, #{item.fproviderContactId}, #{item.fproviderJob}, #{item.fproviderPhone},
+            #{item.fsourceBillNo}, #{item.fchangeStatus}, #{item.facctype}, #{item.fproviderEmail}, #{item.fcloseReason},
+             #{item.fisCreateStraightOutIn}, #{item.fcontractType}, #{item.fYpdd}, #{item.fOraDate},
+            #{item.fZlbz}, #{item.fZmtp1}, #{item.fZmtp2}, #{item.fZmtp3}, #{item.fZmtxm}, #{item.fZmms}, #{item.fCmtp1}, #{item.fCmtp2}, #{item.fCmms}, #{item.fCmtxm},
+            #{item.fBzbzjyq}, #{item.fKh}, #{item.fJjdbl}, #{item.fGxhth}, #{item.fKhjc}, #{item.fZje}, #{item.fGdy1}, #{item.fOraCheckbox1}, #{item.fGcbz},
+            #{item.fXsy}, #{item.fKhjqnew}, #{item.fShdd}, #{item.fYebz}, #{item.fbggysyy}, #{item.fjsfsjjq}, #{item.fhttk13}, #{item.fhttk510},
+            #{item.fCtyBaseproperty1}, #{item.fCtyBaseproperty2}, #{item.fwcl}, #{item.fzzqrjq}, #{item.fGyszh},
+            #{item.fSettleCurrId}, #{item.fExchangeTypeId}, #{item.fExchangeRate}, #{item.fPriceListId}, #{item.fPriceTimePoint},
+            #{item.FDiscountListId}, #{item.fDepositRatio}, #{item.FDeposit}, #{item.FAllDisCount}, #{item.FIsIncludedTax}, #{item.FIspriceExcludetax},
+            #{item.fBillAmount}, #{item.fBillTaxAmount}, #{item.fBillAllAmount}, #{item.fLocalCurrId}, #{item.fBillAmountLc}, #{item.fBillTaxAmountLc},
+            #{item.FBillAllAmount_LC}, #{item.fAllPayApplyAmount}, #{item.fAllPayAmount}, #{item.fAllApplyNoPayAmount},
+            #{item.fAllRefundAmount}, #{item.fAllNoPayAmount}, #{item.FAllAppyNoPayAmount}, #{item.FPayConditionId}
+        )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            fdocument_status = VALUES(fdocument_status),
+            fdate = VALUES(fdate),
+            fsupplier_id = VALUES(fsupplier_id),
+            fpurchaser_group_id = VALUES(fpurchaser_group_id),
+            fcreator_id = VALUES(fcreator_id),
+            fcreate_date = VALUES(fcreate_date),
+            fmodifier_id = VALUES(fmodifier_id),
+            fmodify_date = VALUES(fmodify_date),
+            fapprover_id = VALUES(fapprover_id),
+            fapprove_date = VALUES(fapprove_date),
+            fcanceller_id = VALUES(fcanceller_id),
+            fcancel_date = VALUES(fcancel_date),
+            fclose_status = VALUES(fclose_status),
+            fpurchaser_id = VALUES(fpurchaser_id),
+            fcloser_id = VALUES(fcloser_id),
+            fclose_date = VALUES(fclose_date),
+            fbill_type_id = VALUES(fbill_type_id),
+            fsettle_id = VALUES(fsettle_id),
+            fcharge_id = VALUES(fcharge_id),
+            fprovider_id = VALUES(fprovider_id),
+            fchanger_id = VALUES(fchanger_id),
+            fchange_date = VALUES(fchange_date),
+            fchange_reason = VALUES(fchange_reason),
+            fbusiness_type = VALUES(fbusiness_type),
+            fprovider_address = VALUES(fprovider_address),
+            fassign_supplier_id = VALUES(fassign_supplier_id),
+            fconfirm_status = VALUES(fconfirm_status),
+            fconfirmer_id = VALUES(fconfirmer_id),
+            fconfirm_date = VALUES(fconfirm_date),
+            fprovider_contact_id = VALUES(fprovider_contact_id),
+            fprovider_job = VALUES(fprovider_job),
+            fprovider_phone = VALUES(fprovider_phone),
+            fsource_bill_no = VALUES(fsource_bill_no),
+            fchange_status = VALUES(fchange_status),
+            facctype = VALUES(facctype),
+            fprovider_email = VALUES(fprovider_email),
+            fclose_reason = VALUES(fclose_reason),
+            fcontract_type = VALUES(fcontract_type),
+            f_ypdd = VALUES(f_ypdd),
+            f_ora_date = VALUES(f_ora_date),
+            f_zlbz = VALUES(f_zlbz),
+            f_zmtp1 = VALUES(f_zmtp1),
+            f_zmtp2 = VALUES(f_zmtp2),
+            f_zmtp3 = VALUES(f_zmtp3),
+            f_zmtxm = VALUES(f_zmtxm),
+            f_zmms = VALUES(f_zmms),
+            f_cmtp1 = VALUES(f_cmtp1),
+            f_cmtp2 = VALUES(f_cmtp2),
+            f_cmms = VALUES(f_cmms),
+            f_cmtxm = VALUES(f_cmtxm),
+            f_bzbzjyq = VALUES(f_bzbzjyq),
+            f_kh = VALUES(f_kh),
+            f_jjdbl = VALUES(f_jjdbl),
+            f_gxhth = VALUES(f_gxhth),
+            f_khjc = VALUES(f_khjc),
+            f_zje = VALUES(f_zje),
+            f_gdy1 = VALUES(f_gdy1),
+            f_ora_checkbox1 = VALUES(f_ora_checkbox1),
+            f_gcbz = VALUES(f_gcbz),
+            f_xsy = VALUES(f_xsy),
+            f_khjqnew = VALUES(f_khjqnew),
+            f_shdd = VALUES(f_shdd),
+            f_yebz = VALUES(f_yebz),
+            fbggysyy = VALUES(fbggysyy),
+            fhttk13 = VALUES(fhttk13),
+            fhttk510 = VALUES(fhttk510),
+            f_cty_baseproperty1 = VALUES(f_cty_baseproperty1),
+            f_cty_baseproperty2 = VALUES(f_cty_baseproperty2),
+            fwcl = VALUES(fwcl),
+            fzzqrjq = VALUES(fzzqrjq),
+            f_gyszh = VALUES(f_gyszh),
+            f_settle_curr_id = VALUES(f_settle_curr_id),
+            f_exchange_type_id = VALUES(f_exchange_type_id),
+            f_exchange_rate = VALUES(f_exchange_rate),
+            f_price_list_id = VALUES(f_price_list_id),
+            f_price_time_point = VALUES(f_price_time_point),
+            f_discount_list_id = VALUES(f_discount_list_id),
+            f_deposit_ratio = VALUES(f_deposit_ratio),
+            f_deposit = VALUES(f_deposit),
+            f_all_discount = VALUES(f_all_discount),
+            f_is_included_tax = VALUES(f_is_included_tax),
+            f_is_price_exclude_tax = VALUES(f_is_price_exclude_tax),
+            f_bill_amount = VALUES(f_bill_amount),
+            f_bill_tax_amount = VALUES(f_bill_tax_amount),
+            f_bill_all_amount = VALUES(f_bill_all_amount),
+            f_local_curr_id = VALUES(f_local_curr_id),
+            f_bill_amount_lc = VALUES(f_bill_amount_lc),
+            f_bill_tax_amount_lc = VALUES(f_bill_tax_amount_lc),
+            f_bill_all_amount_lc = VALUES(f_bill_all_amount_lc),
+            f_all_pay_apply_amount = VALUES(f_all_pay_apply_amount),
+            f_all_pay_amount = VALUES(f_all_pay_amount),
+            f_all_apply_no_pay_amount = VALUES(f_all_apply_no_pay_amount),
+            f_all_refund_amount = VALUES(f_all_refund_amount),
+            f_all_no_pay_amount = VALUES(f_all_no_pay_amount),
+            f_all_appy_no_pay_amount = VALUES(f_all_appy_no_pay_amount),
+            f_pay_condition_id = VALUES(f_pay_condition_id)
+    </insert>
+
+    <!-- 分页查询采购订单 -->
+    <select id="selectPage" resultType="com.ruoyi.business.entity.PoOrderBillHead">
+        SELECT
+        pbh.fbill_no,
+        pbh.fdocument_status,
+        pbh.fdate,
+        sr.name as fsupplier_id,
+        su.user_name as fcreator_id,
+        pbh.fcreate_date,
+        pbh.fmodifier_id,
+        pbh.fmodify_date,
+        pbh.fapprover_id,
+        pbh.fapprove_date,
+        pbh.fcanceller_id,
+        pbh.fcancel_date,
+        pbh.fclose_status,
+        pbh.fcloser_id,
+        pbh.fclose_date,
+        bd.name as fbill_type_id,
+        ser.name as fsettle_id,
+        spr.name as fcharge_id,
+        pbh.fchanger_id,
+        pbh.fchange_date,
+        pbh.fchange_reason,
+        pbh.fbusiness_type,
+        pbh.fprovider_address,
+        pbh.fassign_supplier_id,
+        pbh.fconfirm_status,
+        pbh.fconfirmer_id,
+        pbh.fconfirm_date,
+        sc.contact_name as fprovider_contact_id,
+        pbh.fprovider_job,
+        pbh.fprovider_phone,
+        pbh.fsource_bill_no,
+        pbh.fchange_status,
+        pbh.facctype,
+        pbh.fprovider_email,
+        pbh.fclose_reason,
+        pbh.fcontract_type,
+        pbh.f_ypdd,
+        pbh.f_ora_date,
+        pbh.f_zlbz,
+        pbh.f_zmtp1,
+        pbh.f_zmtp2,
+        pbh.f_zmtp3,
+        pbh.f_zmtxm,
+        pbh.f_zmms,
+        pbh.f_cmtp1,
+        pbh.f_cmtp2,
+        pbh.f_cmms,
+        pbh.f_cmtxm,
+        pbh.f_bzbzjyq,
+        pbh.f_kh,
+        pbh.f_jjdbl,
+        pbh.f_gxhth,
+        pbh.f_khjc,
+        pbh.f_zje,
+        se.fname as f_gdy1,
+        pbh.f_ora_checkbox1,
+        pbh.f_gcbz,
+        sle.fname as  f_xsy,
+        pbh.f_khjqnew,
+        pbh.f_shdd,
+        pbh.f_yebz,
+        pbh.fbggysyy,
+        pbh.fjsfsjjq,
+        pbh.fhttk13,
+        pbh.fhttk510,
+        pbh.f_cty_baseproperty1,
+        pbh.f_cty_baseproperty2,
+        pbh.fwcl,
+        pbh.fzzqrjq,
+        pbh.f_gyszh,
+        bld.name as f_settle_curr_id,
+        bldy.name as f_exchange_type_id,
+        pbh.f_exchange_rate,
+        pbh.f_price_list_id,
+        pbh.f_price_time_point,
+        pbh.f_discount_list_id,
+        pbh.f_deposit_ratio,
+        pbh.f_deposit,
+        pbh.f_all_discount,
+        pbh.f_is_included_tax,
+        pbh.f_is_price_exclude_tax,
+        pbh.f_bill_amount,
+        pbh.f_bill_tax_amount,
+        pbh.f_bill_all_amount,
+        bldy.name as f_local_curr_id,
+        pbh.f_bill_amount_lc,
+        pbh.f_bill_tax_amount_lc,
+        pbh.f_bill_all_amount_lc,
+        pbh.f_all_pay_apply_amount,
+        pbh.f_all_pay_amount,
+        pbh.f_all_apply_no_pay_amount,
+        pbh.f_all_refund_amount,
+        pbh.f_all_no_pay_amount,
+        pbh.f_all_appy_no_pay_amount,
+        pbh.f_pay_condition_id
+        FROM
+        po_order_bill_head pbh
+        LEFT JOIN  supplier sr on pbh.fsupplier_id=sr.supplierid
+        LEFT JOIN  supplier ser on pbh.fsettle_id=ser.supplierid
+        LEFT JOIN  supplier spr on pbh.fcharge_id=spr.supplierid
+        LEFT JOIN  sys_user su on pbh.fcreator_id=su.k3_key
+        LEFT JOIN  bymaterial_dictionary bd on pbh.fbill_type_id=bd.kingdee
+        LEFT JOIN  bymaterial_dictionary bld on pbh.f_settle_curr_id=bld.kingdee and bld.category='currency'
+        LEFT JOIN  bymaterial_dictionary bldy on pbh.f_local_curr_id=bldy.kingdee and bldy.category='currency'
+        LEFT JOIN  supplier_contact sc on pbh.fprovider_contact_id=sc.defaultContact
+        LEFT JOIN  sys_employee se on pbh.f_gdy1=se.salesman_id
+        LEFT JOIN  sys_employee sle on pbh.f_xsy=sle.salesman_id
+
+        <where>
+            <if test="poOrderBillHead.fid != null">AND fid = #{poOrderBillHead.fid}</if>
+            <if test="poOrderBillHead.fbillNo != null and poOrderBillHead.fbillNo != ''">AND f_bill_no = #{poOrderBillHead.fbillNo}</if>
+            <if test="poOrderBillHead.fdate != null">AND f_date = #{poOrderBillHead.fdate}</if>
+            <if test="poOrderBillHead.fbusinessType != null and poOrderBillHead.fbusinessType != ''">AND f_business_type = #{poOrderBillHead.fbusinessType}</if>
+            <if test="poOrderBillHead.fbillTypeId != null and poOrderBillHead.fbillTypeId != ''">AND f_bill_type_id = #{poOrderBillHead.fbillTypeId}</if>
+            <if test="poOrderBillHead.fsupplierId != null">AND f_supplier_id = #{poOrderBillHead.fsupplierId}</if>
+            <if test="poOrderBillHead.fcreatorId != null and poOrderBillHead.fcreatorId != ''">AND f_creator_id = #{poOrderBillHead.fcreatorId}</if>
+            <if test="poOrderBillHead.fcreateDate != null">AND fcreate_date = #{poOrderBillHead.fcreateDate}</if>
+            <if test="poOrderBillHead.fcloseStatus != null and poOrderBillHead.fcloseStatus != ''">AND f_close_status = #{poOrderBillHead.fcloseStatus}</if>
+            <if test="poOrderBillHead.fGyszh != null and poOrderBillHead.fGyszh != ''">AND f_gyszh = #{poOrderBillHead.fGyszh}</if>
+            <if test="poOrderBillHead.facctype != null and poOrderBillHead.facctype != ''">AND f_acct_type = #{poOrderBillHead.facctype}</if>
+            <if test="poOrderBillHead.fGdy1 != null and poOrderBillHead.fGdy1 != ''">AND f_gdy1 = #{poOrderBillHead.fGdy1}</if>
+            <if test="poOrderBillHead.fOraDate != null and poOrderBillHead.fOraDate != ''">AND f_ora_date = #{poOrderBillHead.fOraDate}</if>
+            <if test="poOrderBillHead.fPayConditionId != null and poOrderBillHead.fPayConditionId != ''">AND f_pay_condition_id = #{poOrderBillHead.fPayConditionId}</if>
+            <if test="poOrderBillHead.fXsy != null and poOrderBillHead.fXsy != ''">AND f_xsy = #{poOrderBillHead.fXsy}</if>
+            <if test="poOrderBillHead.fKhjqnew != null and poOrderBillHead.fKhjqnew != ''">AND f_khjqnew = #{poOrderBillHead.fKhjqnew}</if>
+            <if test="poOrderBillHead.fAllRefundAmount != null">AND f_all_refund_amount = #{poOrderBillHead.fAllRefundAmount}</if>
+            <if test="poOrderBillHead.fAllNoPayAmount != null">AND f_all_no_pay_amount = #{poOrderBillHead.fAllNoPayAmount}</if>
+            <if test="poOrderBillHead.fBillAmount != null">AND f_bill_amount = #{poOrderBillHead.fBillAmount}</if>
+            <if test="poOrderBillHead.FBillAllAmount_LC != null">AND f_bill_all_amount_lc = #{poOrderBillHead.FBillAllAmount_LC}</if>
+        </where>
+        ORDER BY pbh.fcreate_date DESC
+    </select>
+
+    <select id="selectByK3Id" resultMap="PoOrderBillHeadMap">
+
+            SELECT * FROM po_order_bill_head WHERE fid = #{fid}</select>
+</mapper>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.PriceListEntryMapper">
+
+    <!-- 新增价目表明细 -->
+    <insert id="insertEntry"
+            parameterType="com.ruoyi.business.entity.PriceListEntry"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO price_list_entry
+        (
+            price_list_number,FMaterialId,FMaterialName,F_cty_BaseProperty,F_GCHH, FPrice,F_GGSM,FNote, FTaxPrice, FUnitID, FTaxRate, F100t5,
+            FPriceCoefficient, FUpPrice, FDownPrice, FEntryEffectiveDate, FEntryExpiryDate,
+            F_WBZC, F_WBZK, F_WBZG, F_WBZTJ, F_WBZSL, F_WBZDW, F_MZ, F_JZ, F_bzsm,
+            FRECENTDATE, F_cgshys, F_dzshqdl, F_ZXSMS, F_ZXSMSTP, F_BCGG, F_kppm,
+            Fxjr, Fsfyyywxj, Fcpzlyq, F_QDL,created_at, updated_at
+        )
+        VALUES
+        (
+            #{priceListNumber},#{FMaterialId},#{FMaterialName}, #{F_cty_BaseProperty},#{F_GCHH},#{FPrice},#{F_GGSM}, #{FNote}, #{FTaxPrice}, #{FUnitID}, #{FTaxRate}, #{F100t5},
+            #{FPriceCoefficient}, #{FUpPrice}, #{FDownPrice}, #{FEntryEffectiveDate}, #{FEntryExpiryDate},
+            #{F_WBZC}, #{F_WBZK}, #{F_WBZG}, #{F_WBZTJ}, #{F_WBZSL}, #{F_WBZDW}, #{F_MZ}, #{F_JZ}, #{F_bzsm},
+            #{FRECENTDATE}, #{F_cgshys}, #{F_dzshqdl}, #{F_ZXSMS}, #{F_ZXSMSTP}, #{F_BCGG}, #{F_kppm},
+            #{Fxjr}, #{Fsfyyywxj}, #{Fcpzlyq}, #{F_QDL}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 批量插入价目表明细 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO price_list_entry
+        (
+        price_list_number,FMaterialId,FMaterialName,F_cty_BaseProperty,F_GCHH, FPrice,F_GGSM,FNote, FTaxPrice, FUnitID, FTaxRate, F100t5,
+        FPriceCoefficient, FUpPrice, FDownPrice, FEntryEffectiveDate, FEntryExpiryDate,
+        F_WBZC, F_WBZK, F_WBZG, F_WBZTJ, F_WBZSL, F_WBZDW, F_MZ, F_JZ, F_bzsm,
+        FRECENTDATE, F_cgshys, F_dzshqdl, F_ZXSMS, F_ZXSMSTP, F_BCGG, F_kppm,
+        Fxjr, Fsfyyywxj, Fcpzlyq, F_QDL, created_at, updated_at
+        )
+        VALUES
+        <foreach collection="entries" item="entry" separator=",">
+        (
+            #{entry.priceListNumber},
+            <if test="entry.FMaterialId != null">#{entry.FMaterialId}</if><if test="entry.FMaterialId == null">NULL</if>,
+            <if test="entry.FMaterialName != null">#{entry.FMaterialName}</if><if test="entry.FMaterialName == null">NULL</if>,
+            <if test="entry.F_cty_BaseProperty != null">#{entry.F_cty_BaseProperty}</if><if test="entry.F_cty_BaseProperty == null">NULL</if>,
+            <if test="entry.F_GCHH != null">#{entry.F_GCHH}</if><if test="entry.F_GCHH == null">NULL</if>,
+            <if test="entry.FPrice != null">#{entry.FPrice}</if><if test="entry.FPrice == null">NULL</if>,
+            <if test="entry.F_GGSM != null">#{entry.F_GGSM}</if><if test="entry.F_GGSM == null">NULL</if>,
+            <if test="entry.FNote != null">#{entry.FNote}</if><if test="entry.FNote == null">NULL</if>,
+            <if test="entry.FTaxPrice != null">#{entry.FTaxPrice}</if><if test="entry.FTaxPrice == null">NULL</if>,
+            <if test="entry.FUnitID != null">#{entry.FUnitID}</if><if test="entry.FUnitID == null">NULL</if>,
+            <if test="entry.FTaxRate != null">#{entry.FTaxRate}</if><if test="entry.FTaxRate == null">NULL</if>,
+            <if test="entry.F100t5 != null">#{entry.F100t5}</if><if test="entry.F100t5 == null">NULL</if>,
+            <if test="entry.FPriceCoefficient != null">#{entry.FPriceCoefficient}</if><if test="entry.FPriceCoefficient == null">NULL</if>,
+            <if test="entry.FUpPrice != null">#{entry.FUpPrice}</if><if test="entry.FUpPrice == null">NULL</if>,
+            <if test="entry.FDownPrice != null">#{entry.FDownPrice}</if><if test="entry.FDownPrice == null">NULL</if>,
+            <if test="entry.FEntryEffectiveDate != null">#{entry.FEntryEffectiveDate}</if><if test="entry.FEntryEffectiveDate == null">NULL</if>,
+            <if test="entry.FEntryExpiryDate != null">#{entry.FEntryExpiryDate}</if><if test="entry.FEntryExpiryDate == null">NULL</if>,
+            <if test="entry.F_WBZC != null">#{entry.F_WBZC}</if><if test="entry.F_WBZC == null">NULL</if>,
+            <if test="entry.F_WBZK != null">#{entry.F_WBZK}</if><if test="entry.F_WBZK == null">NULL</if>,
+            <if test="entry.F_WBZG != null">#{entry.F_WBZG}</if><if test="entry.F_WBZG == null">NULL</if>,
+            <if test="entry.F_WBZTJ != null">#{entry.F_WBZTJ}</if><if test="entry.F_WBZTJ == null">NULL</if>,
+            <if test="entry.F_WBZSL != null">#{entry.F_WBZSL}</if><if test="entry.F_WBZSL == null">NULL</if>,
+            <if test="entry.F_WBZDW != null">#{entry.F_WBZDW}</if><if test="entry.F_WBZDW == null">NULL</if>,
+            <if test="entry.F_MZ != null">#{entry.F_MZ}</if><if test="entry.F_MZ == null">NULL</if>,
+            <if test="entry.F_JZ != null">#{entry.F_JZ}</if><if test="entry.F_JZ == null">NULL</if>,
+            <if test="entry.F_bzsm != null">#{entry.F_bzsm}</if><if test="entry.F_bzsm == null">NULL</if>,
+            <if test="entry.FRECENTDATE != null">#{entry.FRECENTDATE}</if><if test="entry.FRECENTDATE == null">NULL</if>,
+            <if test="entry.F_cgshys != null">#{entry.F_cgshys}</if><if test="entry.F_cgshys == null">NULL</if>,
+            <if test="entry.F_dzshqdl != null">#{entry.F_dzshqdl}</if><if test="entry.F_dzshqdl == null">NULL</if>,
+            <if test="entry.F_ZXSMS != null">#{entry.F_ZXSMS}</if><if test="entry.F_ZXSMS == null">NULL</if>,
+            <if test="entry.F_ZXSMSTP != null">#{entry.F_ZXSMSTP}</if><if test="entry.F_ZXSMSTP == null">NULL</if>,
+            <if test="entry.F_BCGG != null">#{entry.F_BCGG}</if><if test="entry.F_BCGG == null">NULL</if>,
+            <if test="entry.F_kppm != null">#{entry.F_kppm}</if><if test="entry.F_kppm == null">NULL</if>,
+            <if test="entry.Fxjr != null">#{entry.Fxjr}</if><if test="entry.Fxjr == null">NULL</if>,
+            <if test="entry.Fsfyyywxj != null">#{entry.Fsfyyywxj}</if><if test="entry.Fsfyyywxj == null">NULL</if>,
+            <if test="entry.Fcpzlyq != null">#{entry.Fcpzlyq}</if><if test="entry.Fcpzlyq == null">NULL</if>,
+            <if test="entry.F_QDL != null">#{entry.F_QDL}</if><if test="entry.F_QDL == null">NULL</if>,
+            NOW(), NOW()
+        )
+        </foreach>
+    </insert>
+
+    <!-- 修改价目表明细（仅更新非空字段） -->
+    <update id="updateEntry" parameterType="com.ruoyi.business.entity.PriceListEntry">
+        UPDATE price_list_entry
+        <set>
+            <if test="priceListNumber != null">price_list_number = #{priceListNumber},</if>
+            <if test="FMaterialId != null">FMaterialId = #{FMaterialId},</if>
+            <if test="FMaterialName != null">FMaterialName = #{FMaterialName},</if>
+            <if test="F_cty_BaseProperty != null">F_cty_BaseProperty = #{F_cty_BaseProperty},</if>
+            <if test="F_GCHH != null">F_GCHH = #{F_GCHH},</if>
+            <if test="FPrice != null">FPrice = #{FPrice},</if>
+            <if test="F_GGSM != null">F_GGSM = #{F_GGSM},</if>
+            <if test="FNote != null">FNote = #{FNote},</if>
+            <if test="FTaxPrice != null">FTaxPrice = #{FTaxPrice},</if>
+            <if test="FUnitID != null">FUnitID = #{FUnitID},</if>
+            <if test="FTaxRate != null">FTaxRate = #{FTaxRate},</if>
+            <if test="F100t5 != null">F100t5 = #{F100t5},</if>
+            <if test="FPriceCoefficient != null">FPriceCoefficient = #{FPriceCoefficient},</if>
+            <if test="FUpPrice != null">FUpPrice = #{FUpPrice},</if>
+            <if test="FDownPrice != null">FDownPrice = #{FDownPrice},</if>
+            <if test="FEntryEffectiveDate != null">FEntryEffectiveDate = #{FEntryEffectiveDate},</if>
+            <if test="FEntryExpiryDate != null">FEntryExpiryDate = #{FEntryExpiryDate},</if>
+            <if test="F_WBZC != null">F_WBZC = #{F_WBZC},</if>
+            <if test="F_WBZK != null">F_WBZK = #{F_WBZK},</if>
+            <if test="F_WBZG != null">F_WBZG = #{F_WBZG},</if>
+            <if test="F_WBZTJ != null">F_WBZTJ = #{F_WBZTJ},</if>
+            <if test="F_WBZSL != null">F_WBZSL = #{F_WBZSL},</if>
+            <if test="F_WBZDW != null and F_WBZDW != ''">F_WBZDW = #{F_WBZDW},</if>
+            <if test="F_MZ != null">F_MZ = #{F_MZ},</if>
+            <if test="F_JZ != null">F_JZ = #{F_JZ},</if>
+            <if test="F_bzsm != null and F_bzsm != ''">F_bzsm = #{F_bzsm},</if>
+            <if test="FRECENTDATE != null">FRECENTDATE = #{FRECENTDATE},</if>
+            <if test="F_cgshys != null and F_cgshys != ''">F_cgshys = #{F_cgshys},</if>
+            <if test="F_dzshqdl != null">F_dzshqdl = #{F_dzshqdl},</if>
+            <if test="F_ZXSMS != null and F_ZXSMS != ''">F_ZXSMS = #{F_ZXSMS},</if>
+            <if test="F_ZXSMSTP != null and F_ZXSMSTP != ''">F_ZXSMSTP = #{F_ZXSMSTP},</if>
+            <if test="F_BCGG != null and F_BCGG != ''">F_BCGG = #{F_BCGG},</if>
+            <if test="F_kppm != null and F_kppm != ''">F_kppm = #{F_kppm},</if>
+            <if test="Fxjr != null and Fxjr != ''">Fxjr = #{Fxjr},</if>
+            <if test="Fsfyyywxj != null">Fsfyyywxj = #{Fsfyyywxj},</if>
+            <if test="Fcpzlyq != null and Fcpzlyq != ''">Fcpzlyq = #{Fcpzlyq},</if>
+            <if test="F_QDL != null">F_QDL = #{F_QDL},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除明细 -->
+    <delete id="deleteById">
+        DELETE FROM price_list_entry WHERE id = #{id}
+    </delete>
+
+    <!-- 根据主表ID删除所有明细 -->
+    <delete id="deleteByPriceListId">
+        DELETE FROM price_list_entry WHERE price_list_number = #{priceListNumber}
+    </delete>
+
+
+
+    <!-- 根据主表ID查询所有明细 -->
+    <select id="selectByPriceListId" resultType="com.ruoyi.business.entity.PriceListEntry">
+        SELECT
+        ple.id,ple.price_list_number,	b.number as FMaterialId,ple.FMaterialName,ple.F_GGSM,ple.FEntryEffectiveDate,
+        ple.FEntryExpiryDate,ple.F_WBZC,ple.F_WBZK,ple.F_WBZG,ple.F_MZ,ple.F_JZ,ple.F_bzsm,ple.F_GCHH,ple.FTaxPrice,ple.F_QDL,ple.F_WBZDW,ple.FRECENTDATE,ple.F_ZXSMS,ple.Fsfyyywxj,
+        ple.F_WBZSL,ple.FPrice,bd.`code` as FUnitID,ple.F_BCGG,ple.F_WBZTJ,ple.F_TP1
+        FROM price_list_entry ple
+        LEFT JOIN by_material b ON ple.FMaterialId = b.k3_id
+        LEFT JOIN bymaterial_dictionary bd ON ple.FUnitID = bd.kingdee
+        ple.FEntryExpiryDate,ple.F_WBZC,ple.F_WBZK,ple.F_WBZG,ple.F_MZ,ple.F_JZ,ple.F_bzsm,ple.F_GCHH,ple.FTaxPrice,ple.F_QDL,bds.name as F_WBZDW,ple.FRECENTDATE,ple.F_ZXSMS,ple.Fsfyyywxj,ple.F_TP1,
+        ple.F_WBZSL,ple.FPrice,bd.`code` as FUnitID,ple.F_BCGG,ple.F_WBZTJ
+        FROM price_list_entry ple
+        LEFT JOIN by_material b ON ple.FMaterialId = b.k3_id
+        LEFT JOIN bymaterial_dictionary bd ON ple.FUnitID = bd.kingdee
+        LEFT JOIN bymaterial_dictionary bds ON ple.F_WBZDW = bds.kingdee
+        WHERE ple.price_list_number = #{priceListNumber}
+        ORDER BY ple.created_at ASC
+    </select>
+
+    <!-- 查询所有价目表明细（支持条件查询） -->
+    <select id="selectAll" resultType="com.ruoyi.business.entity.PriceListEntry">
+        SELECT
+        pe.price_list_number,
+        bm.number as FMaterialId,
+        pe.FMaterialName,
+        pe.F_cty_BaseProperty,
+        pe.F_GCHH,
+        pe.FPrice,
+        pe.F_GGSM,
+        pe.FNote,
+        pe.FTaxPrice,
+        bd.name as FUnitID,
+        pe.FTaxRate,
+        pe.F100t5,
+        pe.FPriceCoefficient,
+        pe.FUpPrice,
+        pe.FDownPrice,
+        pe.FEntryEffectiveDate,
+        pe.FEntryExpiryDate,
+        pe.F_WBZC,
+        pe.F_WBZK,
+        pe.F_WBZG,
+        pe.F_WBZTJ,
+        pe.F_WBZSL,
+        bdy.name as F_WBZDW,
+        pe.F_MZ,
+        pe.F_JZ,
+        pe.F_bzsm,
+        pe.FRECENTDATE,
+        pe.F_cgshys,
+        pe.F_dzshqdl,
+        pe.F_ZXSMS,
+        pe.F_ZXSMSTP,
+        pe.F_BCGG,
+        pe.F_kppm,
+        pe.Fxjr,
+        pe.Fsfyyywxj,
+        pe.Fcpzlyq,
+        pe.F_QDL,
+        pe.created_at AS createdAt,
+        pe.updated_at AS updatedAt
+        FROM
+        price_list_entry  pe
+        LEFT JOIN bymaterial_dictionary bd on pe.FUnitID=bd.kingdee and bd.category='unit'
+        LEFT JOIN bymaterial_dictionary bdy on pe.F_WBZDW=bd.kingdee and bdy.category='unit'
+        LEFT JOIN by_material bm on pe.FMaterialId=bm.k3_id
+        <where>
+            <if test="priceListNumber != null">AND price_list_number = #{priceListNumber}</if>
+            <if test="FMaterialId != null">AND FMaterialId = #{FMaterialId}</if>
+            <if test="FMaterialName != null">AND FMaterialName = #{FMaterialName}</if>
+            <if test="F_cty_BaseProperty != null">AND F_cty_BaseProperty = #{F_cty_BaseProperty}</if>
+            <if test="F_GCHH != null">AND F_GCHH = #{F_GCHH}</if>
+            <if test="FPrice != null">AND FPrice = #{FPrice}</if>
+            <if test="F_GGSM != null">AND F_GGSM = #{F_GGSM}</if>
+            <if test="FNote != null">AND FNote = #{FNote}</if>
+            <if test="FTaxPrice != null">AND FTaxPrice = #{FTaxPrice}</if>
+            <if test="FUnitID != null">AND FUnitID = #{FUnitID}</if>
+            <if test="FTaxRate != null">AND FTaxRate = #{FTaxRate}</if>
+            <if test="F100t5 != null">AND F100t5 = #{F100t5}</if>
+            <if test="FPriceCoefficient != null">AND FPriceCoefficient = #{FPriceCoefficient}</if>
+            <if test="FUpPrice != null">AND FUpPrice = #{FUpPrice}</if>
+            <if test="FPriceCoefficient != null">AND FPriceCoefficient = #{FPriceCoefficient}</if>
+            <if test="FDownPrice != null">AND FDownPrice = #{FDownPrice}</if>
+            <if test="FEntryEffectiveDate != null">AND FEntryEffectiveDate &gt;= #{FEntryEffectiveDate}</if>
+            <if test="FEntryExpiryDate != null">AND FEntryExpiryDate &lt;= #{FEntryExpiryDate}</if>
+            <if test="F_WBZDW != null and F_WBZDW != ''">AND F_WBZDW = #{F_WBZDW}</if>
+            <if test="F_bzsm != null and F_bzsm != ''">AND F_bzsm LIKE CONCAT('%', #{F_bzsm}, '%')</if>
+            <if test="F_cgshys != null and F_cgshys != ''">AND F_cgshys = #{F_cgshys}</if>
+            <if test="F_ZXSMS != null and F_ZXSMS != ''">AND F_ZXSMS LIKE CONCAT('%', #{F_ZXSMS}, '%')</if>
+            <if test="F_kppm != null and F_kppm != ''">AND F_kppm LIKE CONCAT('%', #{F_kppm}, '%')</if>
+            <if test="Fxjr != null and Fxjr != ''">AND Fxjr = #{Fxjr}</if>
+            <if test="Fsfyyywxj != null">AND Fsfyyywxj = #{Fsfyyywxj}</if>
+            <if test="Fcpzlyq != null and Fcpzlyq != ''">AND Fcpzlyq LIKE CONCAT('%', #{Fcpzlyq}, '%')</if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+    <select id="selectMaterialId" resultType="com.ruoyi.business.entity.PriceListEntry">
+        SELECT
+            pe.price_list_number,
+            bm.number as FMaterialId,
+            pe.FMaterialName,
+            pe.F_cty_BaseProperty,
+            pe.F_GCHH,
+            pe.FPrice,
+            pe.F_GGSM,
+            pe.FNote,
+            pe.FTaxPrice,
+            bd.name as FUnitID,
+            pe.FTaxRate,
+            pe.F100t5,
+            pe.FPriceCoefficient,
+            pe.FUpPrice,
+            pe.FDownPrice,
+            pe.FEntryEffectiveDate,
+            pe.FEntryExpiryDate,
+            pe.F_WBZC,
+            pe.F_WBZK,
+            pe.F_WBZG,
+            pe.F_WBZTJ,
+            pe.F_WBZSL,
+            bdy.name as F_WBZDW,
+            pe.F_MZ,
+            pe.F_JZ,
+            pe.F_bzsm,
+            pe.FRECENTDATE,
+            pe.F_cgshys,
+            pe.F_dzshqdl,
+            pe.F_ZXSMS,
+            pe.F_ZXSMSTP,
+            pe.F_BCGG,
+            pe.F_kppm,
+            pe.Fxjr,
+            pe.Fsfyyywxj,
+            pe.Fcpzlyq,
+            pe.F_QDL,
+            pe.created_at AS createdAt,
+            pe.updated_at AS updatedAt
+        FROM
+            price_list_entry  pe
+                LEFT JOIN bymaterial_dictionary bd on pe.FUnitID=bd.kingdee and bd.category='unit'
+                LEFT JOIN bymaterial_dictionary bdy on pe.F_WBZDW=bd.kingdee and bdy.category='unit'
+                LEFT JOIN by_material bm on pe.FMaterialId=bm.k3_id
+        WHERE pe.FMaterialId = #{FMaterialId}
+        ORDER BY pe.id ASC
+    </select>
+</mapper>

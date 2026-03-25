@@ -519,7 +519,7 @@ import { isSuccessResponse, getResponseData } from '@/views/erp/utils'
 import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
 
 // ==================== 导入字典构建器 ====================
-import dictionaryBuilderEngine, { DictionaryBuilder } from '../utils/DictionaryBuilder'
+import dictionaryBuilderEngine, { DictionaryBuilder } from '@/views/erp/utils/DictionaryBuilder'
 
 // ==================== 导入引擎 API====================
 import {
@@ -879,12 +879,7 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
-    // 加载字典（允许失败，不影响主流程）
-    try {
-      await parser.loadDictionaries()
-    } catch (dictError) {
-      // 忽略字典加载错误
-    }
+    // ✅ 构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
   } catch (error) {
     ElMessage.error(`加载配置失败：${error.message}`)
     throw error
@@ -914,13 +909,14 @@ const loadDatabaseConfig = async (moduleCode) => {
   }
 }
 
-// 获取字典选项（使用构建器模式）
+// 获取字典选项（纯构建器模式）
 const getDictOptions = (dictName, staticOptions) => {
+  // 优先使用静态配置
   if (staticOptions && Array.isArray(staticOptions)) {
     return staticOptions
   }
   
-  // 如果是国家字典且启用了远程搜索，优先使用搜索结果
+  // 国家字典特殊处理（远程搜索）
   if (dictName === 'nation') { 
     if (nationOptions.value.length > 0) {
       return nationOptions.value
@@ -929,14 +925,15 @@ const getDictOptions = (dictName, staticOptions) => {
     return []
   }
   
-  // 使用字典构建器引擎获取
+  // ✅ 使用字典构建器引擎获取（无降级方案）
   const data = dictionaryBuilderEngine.get(dictName)
   if (data && data.length > 0) {
     return data
   }
   
-  // 兼容旧版：从 parser 获取
-  return parser?.getDictOptions(dictName) || []
+  // ⚠️ 如果字典未注册，返回空数组（不再降级到 parser）
+  console.warn(`⚠️ 字典未注册：${dictName}`)
+  return []
 }
 
 // 获取按钮禁用状态
@@ -1411,13 +1408,10 @@ onMounted(async () => {
   // 1. 先加载配置
   await initConfig()
   
-  // 2. 再预加载 API 方法（配置加载完成后）
-  await preloadApiMethods()
-  
-  // 3. 预加载字典数据（国家、销售人员等）
+  // 2. 预加载字典数据（国家、销售人员等）
   await preloadDictionaries()
   
-  // 4. 初始化引擎配置
+  // 3. 初始化引擎配置
   await initEngineConfig()
   
   // 设置默认日期区间为当月

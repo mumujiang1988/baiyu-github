@@ -95,8 +95,8 @@ public class ErpEngineController {
         try {
             String moduleCode = (String) params.get("moduleCode");
             
-            //  动态检查权限
-            checkModulePermission(moduleCode, "query");
+            // ⭐⭐⭐ 使用注入的权限检查器（同时检查数据库配置和权限） ⭐⭐⭐
+            permissionChecker.checkModulePermission(moduleCode, "query");
             
             //  tableName 为必填参数，来自前端 JSON 配置的 pageConfig.tableName
             String tableName = (String) params.get("tableName");
@@ -160,7 +160,7 @@ public class ErpEngineController {
     public R<?> getAvailableOperators(@RequestParam(required = false) String moduleCode) {
         //  如果有 moduleCode 则检查权限
         if (moduleCode != null && !moduleCode.isEmpty()) {
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
         }
         // 返回构建器模式支持的所有运算符
         List<String> operators = java.util.Arrays.asList(
@@ -190,7 +190,7 @@ public class ErpEngineController {
     public R<?> executeValidation(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = extractModuleCode(params);
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             Map<String, Object> formData = (Map<String, Object>) params.get("formData");
             Map<String, Object> validationConfig = (Map<String, Object>) params.get("validationConfig");
             
@@ -208,7 +208,7 @@ public class ErpEngineController {
     public R<?> batchValidate(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = extractModuleCode(params);
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             Object formDataListObj = params.get("formDataList");
             Map<String, Object> validationConfig = (Map<String, Object>) params.get("validationConfig");
             
@@ -233,7 +233,7 @@ public class ErpEngineController {
     public R<?> getAvailableValidationRules(@RequestParam(required = false) String moduleCode) {
         //  如果有 moduleCode 则检查权限
         if (moduleCode != null && !moduleCode.isEmpty()) {
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
         }
         // 返回支持的验证规则列表
         List<String> rules = java.util.Arrays.asList("required", "email", "phone", "number", "integer", 
@@ -248,7 +248,7 @@ public class ErpEngineController {
     public R<?> validateField(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = extractModuleCode(params);
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             String field = (String) params.get("field");
             Object value = params.get("value");
             Map<String, Object> rule = (Map<String, Object>) params.get("rule");
@@ -278,7 +278,7 @@ public class ErpEngineController {
     public R<?> getCurrentApprovalStep(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             Map<String, Object> billData = (Map<String, Object>) params.get("billData");
             
             //  从数据库获取 workflow 配置
@@ -322,7 +322,7 @@ public class ErpEngineController {
     public R<?> executeApproval(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            checkModulePermission(moduleCode, "audit");
+                        permissionChecker.checkModulePermission(moduleCode, "audit");
             String billId = (String) params.get("billId");
             String action = (String) params.get("action"); // APPROVE/AUDIT/REJECT
             String opinion = (String) params.get("opinion");
@@ -392,7 +392,7 @@ public class ErpEngineController {
     public R<?> getApprovalHistory(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             Long billId = (Long) params.get("billId");
             
             // 直接使用注入的 Mapper 查询
@@ -436,7 +436,7 @@ public class ErpEngineController {
         //  检查权限
         String moduleCode = params.get("moduleCode");
         if (moduleCode != null && !moduleCode.isEmpty()) {
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
         }
         // 转换为 POST 请求的参数格式
         Map<String, Object> postParams = new HashMap<>();
@@ -483,7 +483,7 @@ public class ErpEngineController {
     public R<?> checkApprovalPermission(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             // String billId = (String) params.get("billId"); // 暂未使用
             String userId = (String) params.get("userId");
             List<String> userRoles = (List<String>) params.get("userRoles");
@@ -543,7 +543,7 @@ public class ErpEngineController {
     public R<?> getApprovalHistoryDetail(@RequestParam Map<String, String> params) {
         try {
             String moduleCode = params.get("moduleCode");
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             
             //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
@@ -565,7 +565,7 @@ public class ErpEngineController {
     @GetMapping("/approval/workflow")
     public R<?> getWorkflowDefinition(@RequestParam String moduleCode) {
         try {
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
@@ -586,7 +586,7 @@ public class ErpEngineController {
     public R<?> transferApproval(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            checkModulePermission(moduleCode, "audit");
+                        permissionChecker.checkModulePermission(moduleCode, "audit");
             String billId = (String) params.get("billId");
             String currentUserId = (String) params.get("currentUserId");
             List<String> currentUserRoles = (List<String>) params.get("currentUserRoles");
@@ -667,7 +667,7 @@ public class ErpEngineController {
     public R<?> withdrawApproval(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            checkModulePermission(moduleCode, "audit");
+                        permissionChecker.checkModulePermission(moduleCode, "audit");
             String billId = (String) params.get("billId");
             String userId = (String) params.get("userId");
             List<String> userRoles = (List<String>) params.get("userRoles");
@@ -752,7 +752,7 @@ public class ErpEngineController {
     @GetMapping("/push/targets")
     public R<?> getPushTargets(@RequestParam String moduleCode) {
         try {
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             //  从数据库获取该模块的所有下推关系配置
             // 注意：ErpPushRelationBo 没有 builder() 方法，直接 new 对象
             ErpPushRelationBo bo = new ErpPushRelationBo();
@@ -1178,7 +1178,7 @@ public class ErpEngineController {
     public R<?> getPushHistory(@RequestParam Map<String, String> params) {
         try {
             String moduleCode = params.get("moduleCode");
-            checkModulePermission(moduleCode, "query");
+            permissionChecker.checkModulePermission(moduleCode, "query");
             
             //  从数据库获取该模块的所有下推关系配置
             List<ErpPushRelationVo> relations = pushRelationService.selectList(new ErpPushRelationBo() {{ setSourceModule(moduleCode); }});
@@ -1202,7 +1202,7 @@ public class ErpEngineController {
     public R<?> getDictionary(@PathVariable String name, @RequestParam(required = false) String moduleCode) {
         try {
             if (moduleCode != null && !moduleCode.isEmpty()) {
-                checkModulePermission(moduleCode, "query");
+                permissionChecker.checkModulePermission(moduleCode, "query");
             }
             
             List<Map<String, Object>> data = dictionaryBuilderEngine.get(name);
@@ -1223,7 +1223,7 @@ public class ErpEngineController {
                                @RequestParam(required = false) String moduleCode) {
         try {
             if (moduleCode != null && !moduleCode.isEmpty()) {
-                checkModulePermission(moduleCode, "query");
+                permissionChecker.checkModulePermission(moduleCode, "query");
             }
             
             DictionaryBuilderEngine.DictionaryLoader loader = () -> {
@@ -1250,7 +1250,7 @@ public class ErpEngineController {
                                  @RequestParam(required = false) String moduleCode) {
         try {
             if (moduleCode != null && !moduleCode.isEmpty()) {
-                checkModulePermission(moduleCode, "query");
+                permissionChecker.checkModulePermission(moduleCode, "query");
             }
             
             DictionaryBuilderEngine.DictionarySearcher searcher = (kw) -> {
@@ -1327,7 +1327,7 @@ public class ErpEngineController {
         try {
             // ✅ 权限检查
             if (moduleCode != null && !moduleCode.isEmpty()) {
-                checkModulePermission(moduleCode, "query");
+                permissionChecker.checkModulePermission(moduleCode, "query");
             }
             
             // ✅ 从配置中读取表名和查询条件

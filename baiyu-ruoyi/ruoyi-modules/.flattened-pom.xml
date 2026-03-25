@@ -16,6 +16,5 @@
     <module>ruoyi-demo</module>
     <module>ruoyi-generator</module>
     <module>ruoyi-system</module>
-    <module>ruoyi-erp-api</module>
   </modules>
 </project>

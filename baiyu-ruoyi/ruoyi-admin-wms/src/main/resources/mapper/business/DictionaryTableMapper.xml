@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.DictionaryTableMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="DictionaryTableResult" type="com.ruoyi.business.entity.DictionaryTable">
+        <id property="id" column="id"/>
+        <result property="dictName" column="dict_name"/>
+        <result property="dictCode" column="dict_code"/>
+        <result property="parentCode" column="parent_code"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateDate" column="update_date"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="sortOrder" column="sort_order"/>
+    </resultMap>
+
+    <!-- 供应商字典结构 -->
+    <resultMap id="supplierGroupsResult" type="com.ruoyi.business.entity.SupplierGroups">
+        <id property="id" column="id"/>
+        <result property="supplierGroup" column="k3_id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="encoding" column="encoding"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="groupPing" column="grou_ping"/>
+        <result property="delFlag" column="del_flag"/>
+    </resultMap>
+
+
+    <!-- 表名 -->
+    <sql id="table_name">dictionary_table</sql>
+
+    <!-- 字段列表 -->
+    <sql id="field_list">
+        id, dict_name, dict_code, parent_code, create_date, update_date, remark, status, sort_order
+    </sql>
+
+    <!-- 新增字典项 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.DictionaryTable" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table_name"/> (
+        dict_name, dict_code, parent_code, create_date, update_date, remark, status, sort_order
+        ) VALUES (
+        #{dictName}, #{dictCode}, #{parentCode}, NOW(), NOW(), #{remark}, #{status}, #{sortOrder}
+        )
+    </insert>
+
+    <!-- 修改字典项 -->
+    <update id="update" parameterType="com.ruoyi.business.entity.DictionaryTable">
+        UPDATE <include refid="table_name"/>
+        <set>
+            <if test="dictName != null and dictName != ''">dict_name = #{dictName},</if>
+            <if test="dictCode != null and dictCode != ''">dict_code = #{dictCode},</if>
+            <if test="parentCode != null">parent_code = #{parentCode},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            update_date = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除字典项 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM <include refid="table_name"/> WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除字典项 -->
+    <delete id="batchDelete">
+        DELETE FROM <include refid="table_name"/> WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据ID查询字典项 -->
+    <select id="selectById" parameterType="Long" resultMap="DictionaryTableResult">
+        SELECT <include refid="field_list"/> FROM <include refid="table_name"/> WHERE id = #{id}
+    </select>
+
+    <!-- 查询所有字典项 -->
+    <select id="selectAll" resultMap="DictionaryTableResult">
+        SELECT id, bilhead, CONCAT(dict_code,'(',dict_name,')') AS dict_name, dict_code, parent_code FROM <include refid="table_name"/> ORDER BY sort_order, create_date
+    </select>
+
+    <!-- 查询所有供应商分组 -->
+    <select id="selectSupplierGroupsAll" resultMap="supplierGroupsResult">
+        SELECT
+        id,
+        k3_id,
+        encoding,
+        parent_id,
+        grou_ping,
+        group_name
+        FROM supplier_groups
+        WHERE del_flag = 0
+        ORDER BY
+        CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,
+        COALESCE(parent_id, 0),
+        id
+    </select>
+
+    <!-- 根据k3id查询供应商分组字典 -->
+    <select id="SupplierGroupsK3id" parameterType="String" resultMap="supplierGroupsResult">
+        SELECT
+        id,
+        k3_id,
+        encoding,
+        parent_id,
+        grou_ping,
+        group_name
+        FROM supplier_groups
+       WHERE k3_id = #{supplierGroup}
+    </select>
+
+    <!-- 根据k3_id查询字典项 -->
+    <select id="selectBySupplierGroup" parameterType="String" resultMap="supplierGroupsResult">
+        SELECT encoding,group_name FROM supplier_groups WHERE k3_id = #{supplierGroup}
+    </select>
+
+    <!-- 根据名称查询字典项 -->
+    <select id="selectByGroupName" parameterType="String" resultMap="supplierGroupsResult">
+        SELECT k3_id,encoding,group_name FROM supplier_groups WHERE group_name = #{groupName}
+    </select>
+
+    <!-- 根据分组名称查询供应商分组 -->
+    <select id="selectSupplierGroupByName" parameterType="String" resultMap="supplierGroupsResult">
+        SELECT id, k3_id, encoding, parent_id, grou_ping, group_name
+        FROM dictionary_table
+        WHERE group_name = #{groupName}
+    </select>
+
+    <!-- 根据父级编码查询子级字典项 -->
+    <select id="selectByParentCode" parameterType="String" resultMap="DictionaryTableResult">
+        SELECT <include refid="field_list"/> FROM <include refid="table_name"/>
+        WHERE parent_code = #{parentCode} ORDER BY sort_order
+    </select>
+
+    <!-- 根据字典编码查询字典项 -->
+    <select id="selectByDictCode" parameterType="String" resultMap="DictionaryTableResult">
+        SELECT <include refid="field_list"/> FROM <include refid="table_name"/> WHERE dict_code = #{dictCode}
+    </select>
+
+    <select id="selectByDictBilhead" parameterType="String" resultMap="DictionaryTableResult">
+        SELECT
+        id,
+        bilhead,
+        dict_name,
+        dict_code,
+        parent_code,
+        create_date,
+        update_date,
+        remark,
+        status,
+        sort_order
+        FROM dictionary_table
+        WHERE bilhead = #{bilhead}
+    </select>
+
+    <select id="selectByCondition" resultMap="DictionaryTableResult">
+        SELECT
+        id,
+        bilhead,
+        dict_name,
+        dict_code,
+        parent_code,
+        create_date,
+        update_date,
+        remark,
+        status,
+        sort_order
+        FROM dictionary_table
+        <where>
+            <if test="condition != null">
+                <if test="condition.id != null and condition.id != ''">
+                    and id = #{condition.id}
+                </if>
+                <if test="condition.dictName != null and condition.dictName != ''">
+                    AND dict_name LIKE CONCAT('%', #{condition.dictName}, '%')
+                </if>
+                <if test="condition.bilhead != null and condition.bilhead != ''">
+                    AND bilhead = #{condition.bilhead}
+                </if>
+                <if test="condition.dictCode != null and condition.dictCode != ''">
+                    AND dict_code = #{condition.dictCode}
+                </if>
+                <if test="condition.parentCode != null and condition.parentCode != ''">
+                    AND parent_code = #{condition.parentCode}
+                </if>
+                <if test="condition.status != null">
+                    AND status = #{condition.status}
+                </if>
+            </if>
+        </where>
+        ORDER BY sort_order, create_date DESC
+    </select>
+
+</mapper>

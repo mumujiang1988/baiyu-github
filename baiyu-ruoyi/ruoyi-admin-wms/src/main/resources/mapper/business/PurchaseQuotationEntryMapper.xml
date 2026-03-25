@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.PurchaseQuotationEntryMapper">
+
+    <resultMap id="PurchaseQuotationEntryMap" type="com.ruoyi.business.entity.PurchaseQuotationEntry">
+        <id column="id" property="id"/>
+        <result column="fid" property="fid"/>
+        <result column="fbillno" property="fbillno"/>
+        <result column="f_ora_unitid" property="fOraUnitId"/>
+        <result column="f_bz" property="fBz"/>
+        <result column="f_tp" property="fTp"/>
+        <result column="f_gys" property="fGys"/>
+        <result column="f_cptp1" property="fCptp1"/>
+        <result column="f_jgyxq" property="fJgyxq"/>
+        <result column="f_cgjg" property="fCgjg"/>
+        <result column="f_zxqdl" property="fZxqdl"/>
+        <result column="f_xcpms" property="fXcpms"/>
+        <result column="f_stgys" property="fStgys"/>
+        <result column="f_xdl" property="fXdl"/>
+        <result column="f_cpdm1" property="fCpdm1"/>
+        <result column="f_ywbz" property="fYwbz"/>
+        <result column="f_wltp" property="fWltp"/>
+        <result column="f_cpms1" property="fCpms1"/>
+        <result column="f_bzmx" property="fBzmx"/>
+        <result column="f_cty_baseproperty4" property="fCtyBaseproperty4"/>
+        <result column="f_ywtp1" property="fYwtp1"/>
+        <result column="f_ywtp2" property="fYwtp2"/>
+        <result column="f_zxs" property="fZxs"/>
+        <result column="f_mz" property="fMz"/>
+        <result column="f_jz" property="fJz"/>
+        <result column="f_c" property="fC"/>
+        <result column="f_k" property="fK"/>
+        <result column="f_g" property="fG"/>
+        <result column="f_cghsj" property="fCghsj"/>
+        <result column="f_cty_baseproperty" property="fCtyBaseproperty"/>
+        <result column="fgctp" property="fgctp"/>
+        <result column="fyjjhrq" property="fyjjhrq"/>
+        <result column="fbzcc" property="fbzcc"/>
+        <result column="fcgshys" property="fcgshys"/>
+        <result column="f_fbjry" property="fFbjry"/>
+        <result column="f_ywpm" property="fYwpm"/>
+        <result column="f_ywms" property="fYwms"/>
+        <result column="f_cty_text" property="fCtyText"/>
+        <result column="fkhhh" property="fkhhh"/>
+        <result column="fqty_kc" property="fqtyKc"/>
+        <result column="fzxss" property="fzxss"/>
+        <result column="ftj" property="ftj"/>
+        <result column="fmzz" property="fmzz"/>
+        <result column="fkhxq" property="fkhxq"/>
+        <result column="fcgxpms" property="fcgxpms"/>
+        <result column="fxgyslxr" property="fxgyslxr"/>
+        <result column="fxgyslxfs" property="fxgyslxfs"/>
+    </resultMap>
+
+    <!-- 根据主表ID查询明细列表 -->
+    <select id="selectByFid" parameterType="string" resultMap="PurchaseQuotationEntryMap">
+        SELECT
+            pqe.id,
+            pqe.fid,
+            pqe.fbillno,
+            bd.name as f_ora_unitid,
+            pqe.f_bz,
+            pqe.f_tp,
+            suer.name as f_gys,
+            pqe.f_cptp1,
+            pqe.f_jgyxq,
+            pqe.f_cgjg,
+            pqe.f_zxqdl,
+            pqe.f_xcpms,
+            pqe.f_stgys,
+            pqe.f_xdl,
+            bm.number as f_cpdm1,
+            pqe.f_ywbz,
+            bm.image as f_wltp,
+            pqe.f_cpms1,
+            pqe.f_bzmx,
+            pqe.f_cty_baseproperty4,
+            pqe.f_ywtp1,
+            pqe.f_ywtp2,
+            pqe.f_zxs,
+            pqe.f_mz,
+            pqe.f_jz,
+            pqe.f_c,
+            pqe.f_k,
+            pqe.f_g,
+            pqe.f_cghsj,
+            pqe.f_cty_baseproperty,
+            pqe.fgctp,
+            pqe.fyjjhrq,
+            pqe.fbzcc,
+            pqe.fcgshys,
+            su.user_name as f_fbjry,
+            pqe.f_ywpm,
+            pqe.f_ywms,
+            pqe.f_cty_text,
+            pqe.fkhhh,
+            pqe.fqty_kc,
+            pqe.fzxss,
+            pqe.ftj,
+            pqe.fmzz,
+            pqe.fkhxq,
+            pqe.fcgxpms,
+            pqe.fxgyslxr,
+            pqe.fxgyslxfs
+        FROM
+            purchase_quotation_entry  pqe
+
+                LEFT JOIN bymaterial_dictionary bd on pqe.f_ora_unitid=bd.kingdee
+                LEFT JOIN supplier suer on pqe.f_gys=suer.supplierid
+                LEFT JOIN by_material bm on pqe.f_cpdm1=bm.k3_id
+                LEFT JOIN sys_user su on pqe.f_fbjry=su.k3_key
+
+
+        WHERE pqe.fid = #{fid}
+        ORDER BY pqe.id
+    </select>
+
+    <!-- 根据单据编号查询明细列表 -->
+    <select id="selectByBillNo" parameterType="string" resultMap="PurchaseQuotationEntryMap">
+        SELECT
+            pqe.id,
+            pqe.fid,
+            pqe.fbillno,
+            bd.name as f_ora_unitid,
+            pqe.f_bz,
+            pqe.f_tp,
+            suer.name as f_gys,
+            pqe.f_cptp1,
+            pqe.f_jgyxq,
+            pqe.f_cgjg,
+            pqe.f_zxqdl,
+            pqe.f_xcpms,
+            pqe.f_stgys,
+            pqe.f_xdl,
+            bm.number as f_cpdm1,
+            pqe.f_ywbz,
+            bm.image as f_wltp,
+            pqe.f_cpms1,
+            pqe.f_bzmx,
+            pqe.f_cty_baseproperty4,
+            pqe.f_ywtp1,
+            pqe.f_ywtp2,
+            pqe.f_zxs,
+            pqe.f_mz,
+            pqe.f_jz,
+            pqe.f_c,
+            pqe.f_k,
+            pqe.f_g,
+            pqe.f_cghsj,
+            pqe.f_cty_baseproperty,
+            pqe.fgctp,
+            pqe.fyjjhrq,
+            pqe.fbzcc,
+            pqe.fcgshys,
+            su.user_name as f_fbjry,
+            pqe.f_ywpm,
+            pqe.f_ywms,
+            pqe.f_cty_text,
+            pqe.fkhhh,
+            pqe.fqty_kc,
+            pqe.fzxss,
+            pqe.ftj,
+            pqe.fmzz,
+            pqe.fkhxq,
+            pqe.fcgxpms,
+            pqe.fxgyslxr,
+            pqe.fxgyslxfs
+        FROM
+            purchase_quotation_entry  pqe
+
+                LEFT JOIN bymaterial_dictionary bd on pqe.f_ora_unitid=bd.kingdee
+                LEFT JOIN supplier suer on pqe.f_gys=suer.supplierid
+                LEFT JOIN by_material bm on pqe.f_cpdm1=bm.k3_id
+                LEFT JOIN sys_user su on pqe.f_fbjry=su.k3_key
+        WHERE pqe.fbillno = #{billNo}
+        ORDER BY pqe.id
+    </select>
+
+    <!-- 批量插入明细 -->
+    <insert id="insertBatch">
+        INSERT INTO purchase_quotation_entry (
+        id,
+        fid,
+        fbillno,
+        f_ora_unitid,
+        f_bz,
+        f_tp,
+        f_gys,
+        f_cptp1,
+        f_jgyxq,
+        f_cgjg,
+        f_zxqdl,
+        f_xcpms,
+        f_stgys,
+        f_xdl,
+        f_cpdm1,
+        f_ywbz,
+        f_wltp,
+        f_cpms1,
+        f_bzmx,
+        f_cty_baseproperty4,
+        f_ywtp1,
+        f_ywtp2,
+        f_zxs,
+        f_mz,
+        f_jz,
+        f_c,
+        f_k,
+        f_g,
+        f_cghsj,
+        f_cty_baseproperty,
+        fgctp,
+        fyjjhrq,
+        fbzcc,
+        fcgshys,
+        f_fbjry,
+        f_ywpm,
+        f_ywms,
+        f_cty_text,
+        fkhhh,
+        fqty_kc,
+        fzxss,
+        ftj,
+        fmzz,
+        fkhxq,
+        fcgxpms,
+        fxgyslxr,
+        fxgyslxfs
+        ) VALUES
+        <foreach collection="entries" item="item" separator=",">
+            (
+            #{item.id},
+            #{item.fid},
+            #{item.fbillno},
+            #{item.fOraUnitId},
+            #{item.fBz},
+            #{item.fTp},
+            #{item.fGys},
+            #{item.fCptp1},
+            #{item.fJgyxq},
+            #{item.fCgjg},
+            #{item.fZxqdl},
+            #{item.fXcpms},
+            #{item.fStgys},
+            #{item.fXdl},
+            #{item.fCpdm1},
+            #{item.fYwbz},
+            #{item.fWltp},
+            #{item.fCpms1},
+            #{item.fBzmx},
+            #{item.fCtyBaseproperty4},
+            #{item.fYwtp1},
+            #{item.fYwtp2},
+            #{item.fZxs},
+            #{item.fMz},
+            #{item.fJz},
+            #{item.fC},
+            #{item.fK},
+            #{item.fG},
+            #{item.fCghsj},
+            #{item.fCtyBaseproperty},
+            #{item.fgctp},
+            #{item.fyjjhrq},
+            #{item.fbzcc},
+            #{item.fcgshys},
+            #{item.fFbjry},
+            #{item.fYwpm},
+            #{item.fYwms},
+            #{item.fCtyText},
+            #{item.fkhhh},
+            #{item.fqtyKc},
+            #{item.fzxss},
+            #{item.ftj},
+            #{item.fmzz},
+            #{item.fkhxq},
+            #{item.fcgxpms},
+            #{item.fxgyslxr},
+            #{item.fxgyslxfs}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据主表ID删除明细 -->
+    <delete id="deleteByFid" parameterType="string">
+        DELETE FROM purchase_quotation_entry WHERE id = #{id}
+    </delete>
+
+    <!-- 根据单据编号和产品名称查询明细 -->
+    <select id="selectByBillNoAndProductName" resultMap="PurchaseQuotationEntryMap">
+        SELECT
+            pqe.id,
+            pqe.fid,
+            pqe.fbillno,
+            bd.name as f_ora_unitid,
+            pqe.f_bz,
+            pqe.f_tp,
+            suer.name as f_gys,
+            pqe.f_cptp1,
+            pqe.f_jgyxq,
+            pqe.f_cgjg,
+            pqe.f_zxqdl,
+            pqe.f_xcpms,
+            pqe.f_stgys,
+            pqe.f_xdl,
+            bm.number as f_cpdm1,
+            pqe.f_ywbz,
+            bm.image as f_wltp,
+            pqe.f_cpms1,
+            pqe.f_bzmx,
+            pqe.f_cty_baseproperty4,
+            pqe.f_ywtp1,
+            pqe.f_ywtp2,
+            pqe.f_zxs,
+            pqe.f_mz,
+            pqe.f_jz,
+            pqe.f_c,
+            pqe.f_k,
+            pqe.f_g,
+            pqe.f_cghsj,
+            pqe.f_cty_baseproperty,
+            pqe.fgctp,
+            pqe.fyjjhrq,
+            pqe.fbzcc,
+            pqe.fcgshys,
+            su.user_name as f_fbjry,
+            pqe.f_ywpm,
+            pqe.f_ywms,
+            pqe.f_cty_text,
+            pqe.fkhhh,
+            pqe.fqty_kc,
+            pqe.fzxss,
+            pqe.ftj,
+            pqe.fmzz,
+            pqe.fkhxq,
+            pqe.fcgxpms,
+            pqe.fxgyslxr,
+            pqe.fxgyslxfs
+        FROM
+            purchase_quotation_entry  pqe
+
+                LEFT JOIN bymaterial_dictionary bd on pqe.f_ora_unitid=bd.kingdee
+                LEFT JOIN supplier suer on pqe.f_gys=suer.supplierid
+                LEFT JOIN by_material bm on pqe.f_cpdm1=bm.k3_id
+                LEFT JOIN sys_user su on pqe.f_fbjry=su.k3_key
+
+        WHERE pqe.fbillno = #{billNo}
+          AND pqe.f_cpms1 = #{productName}
+    </select>
+
+</mapper>

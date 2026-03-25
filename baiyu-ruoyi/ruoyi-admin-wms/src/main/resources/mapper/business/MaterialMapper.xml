@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.MaterialMapper">
+
+    <!-- 基础字段映射 -->
+    <resultMap id="BaseResultMap" type="com.ruoyi.business.entity.Bymaterial">
+        <result property="k3Id" column="k3_id" />
+        <result property="name" column="name" />
+        <result property="number" column="number" />
+        <result property="image" column="image" />
+        <result property="specification" column="specification" />
+        <result property="description1" column="description1" />
+        <result property="erpClsId" column="erpClsId" />
+        <result property="fxlcp" column="fxlcp" />
+        <result property="fnumber" column="fnumber" />
+        <result property="volume" column="volume" />
+        <result property="materialgroup" column="materialgroup" />
+        <result property="hsbm" column="hsbm" />
+        <result property="bcfwgys" column="bcfwgys" />
+        <result property="productCategory" column="product_category" />
+        <result property="inspectionReport" column="inspection_report" />
+        <result property="creator" column="creator" />
+        <result property="modifier" column="modifier" />
+        <result property="creator_time" column="creator_time" />
+        <result property="modification_time" column="modification_time" />
+        <result property="formerNumber" column="former_number" />
+        <result property="fstate" column="f_state" />
+        <result property="fstateTime" column="fstateTime" />
+        <result property="fstateName" column="fstate_name" />
+    </resultMap>
+
+    <!-- 通用查询 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        bm.id,bm.k3_id,bm.name,bm.number,bm.image,bm.specification,bm.description1,bm.erpClsId,bm.volume,bm.inspection_report,bm.hsbm,description2,ser.name AS bcfwgys,bc.fname AS fnumber,
+        bm.product_category,bm.fxLcp,u.user_name as creator,bm.modifier,bm.english_product_name,bm.delivery_state,bm.creator_time,bm.modification_time,bm.f_state,CONCAT(dt.dict_code, '(', dt.dict_name, ')') AS materialgroup,GROUP_CONCAT(DISTINCT bd.name) AS erpName,GROUP_CONCAT(DISTINCT bds.name) AS fxlcpName,
+        GROUP_CONCAT(DISTINCT bdy.name) AS productName
+        FROM by_material bm
+        LEFT JOIN dictionary_table dt
+        ON bm.materialgroup = dt.bilhead
+        COLLATE utf8mb4_unicode_ci
+        LEFT JOIN supplier ser
+        ON bm.bcfwgys = ser.supplierid
+        COLLATE utf8mb4_unicode_ci
+        LEFT JOIN bd_customer bc ON bm.fnumber = bc.fnumber COLLATE utf8mb4_unicode_ci
+        LEFT JOIN sys_user u
+        ON bm.creator = u.k3_key
+        COLLATE utf8mb4_unicode_ci
+        LEFT JOIN bymaterial_dictionary bd
+        ON bm.erpClsId = bd.kingdee
+        AND bd.category = 'erpclsId_property'
+        COLLATE utf8mb4_unicode_ci
+        LEFT JOIN bymaterial_dictionary bds
+        ON bm.fxLcp = bds.kingdee
+        AND bds.category = 'product_type'
+        COLLATE utf8mb4_unicode_ci
+        LEFT JOIN bymaterial_dictionary bdy
+        ON bm.product_category = bdy.kingdee
+        AND bdy.category = 'product_category'
+        COLLATE utf8mb4_unicode_ci
+        <where>
+            1=1
+            <if test="bymaterial != null">
+                <!-- 名称 -->
+                <if test="bymaterial.name != null and bymaterial.name != ''">
+                    AND bm.name LIKE CONCAT('%', #{bymaterial.name}, '%')
+                </if>
+                <!-- 编码 -->
+                <if test="bymaterial.number != null and bymaterial.number != ''">
+                    AND bm.number LIKE CONCAT('%', #{bymaterial.number}, '%')
+                </if>
+                <!-- 规格型号 -->
+                <if test="bymaterial.specification != null and bymaterial.specification != ''">
+                    AND bm.specification LIKE CONCAT('%', #{bymaterial.specification}, '%')
+                </if>
+                <if test="bymaterial.description1 != null and bymaterial.description1 != ''">
+                    AND bm.description1 LIKE CONCAT('%', #{bymaterial.description1}, '%')
+                </if>
+                <!-- 物料属性 -->
+                <if test="bymaterial.erpClsId != null and bymaterial.erpClsId != ''">
+                    AND bm.erpClsId = #{bymaterial.erpClsId}
+                </if>
+
+                <!-- 物料属性 -->
+                <if test="bymaterial.fxlcp != null and bymaterial.fxlcp != ''">
+                    AND bm.fxlcp = #{bymaterial.fxlcp}
+                </if>
+
+                <if test="bymaterial.volume != null and bymaterial.volume != ''">
+                    AND bm.volume = #{bymaterial.volume}
+                </if>
+                <!-- 物料产品类别 -->
+                <if test="bymaterial.productCategory != null and bymaterial.productCategory != ''">
+                    AND bm.product_category = #{bymaterial.productCategory}
+                </if>
+                <!-- 物料分组 -->
+                <if test="bymaterial.materialgroup != null and bymaterial.materialgroup != ''">
+                    AND bm.materialgroup = #{bymaterial.materialgroup}
+                </if>
+                <if test="bymaterial.creator != null and bymaterial.creator != ''">
+                    AND bm.creator = #{bymaterial.creator}
+                </if>
+                <if test="bymaterial.modifier != null and bymaterial.modifier != ''">
+                    AND bm.modifier = #{bymaterial.modifier}
+                </if>
+                <if test="bymaterial.creator_time != null and bymaterial.creator_time != ''">
+                    AND DATE(bm.creator_time) = DATE(#{bymaterial.creator_time})
+                </if>
+                <if test="bymaterial.modification_time != null and bymaterial.modification_time != ''">
+                    AND DATE(bm.modification_time) = DATE(#{bymaterial.modification_time})
+                </if>
+                <!-- 旧物料编码 -->
+                <if test="bymaterial.formerNumber != null and bymaterial.formerNumber != ''">
+                    AND bm.former_number = #{bymaterial.formerNumber}
+                </if>
+                <!-- 物料状态 -->
+                <if test="bymaterial.fstate != null and bymaterial.fstate != ''">
+                    AND bm.f_state = #{bymaterial.fstate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bm.id,bm.k3_id,bm.name,bm.number,bm.image,bm.specification,bm.description1,bm.erpClsId,u.k3_key,u.user_name,
+        bm.volume,bm.inspection_report,bm.hsbm,bm.product_category,bm.fxLcp,bm.creator,bm.modifier,ser.name,bc.fname,
+        bm.english_product_name,bm.delivery_state,bm.creator_time,bm.modification_time,bm.former_number,  <!-- 添加旧物料编码字段到GROUP BY -->
+        dt.dict_code,dt.dict_name
+        ORDER BY
+        <choose>
+            <when test="isAsc != null and isAsc != ''">
+                bm.number ${isAsc}
+            </when>
+            <otherwise>
+                bm.creator_time DESC
+            </otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 查询总数 -->
+    <select id="countByCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM by_material bm
+        LEFT JOIN dictionary_table dt ON bm.materialgroup = dt.bilhead
+        <where>
+            <if test="bymaterial != null">
+                <!-- 名称 -->
+                <if test="bymaterial.name != null and bymaterial.name != ''">
+                    AND bm.name LIKE CONCAT('%', #{bymaterial.name}, '%')
+                </if>
+                <!-- 编码 -->
+                <if test="bymaterial.number != null and bymaterial.number != ''">
+                    AND bm.number LIKE CONCAT('%', #{bymaterial.number}, '%')
+                </if>
+                <!-- 规格型号 -->
+                <if test="bymaterial.specification != null and bymaterial.specification != ''">
+                    AND bm.specification LIKE CONCAT('%', #{bymaterial.specification}, '%')
+                </if>
+                <if test="bymaterial.description1 != null and bymaterial.description1 != ''">
+                    AND bm.description1 LIKE CONCAT('%', #{bymaterial.description1}, '%')
+                </if>
+                <!-- 物料属性 -->
+                <if test="bymaterial.erpClsId != null and bymaterial.erpClsId != ''">
+                    AND bm.erpClsId = #{bymaterial.erpClsId}
+                </if>
+
+                <!-- 物料属性 -->
+                <if test="bymaterial.fxlcp != null and bymaterial.fxlcp != ''">
+                    AND bm.fxlcp = #{bymaterial.fxlcp}
+                </if>
+
+                <if test="bymaterial.volume != null and bymaterial.volume != ''">
+                    AND bm.volume = #{bymaterial.volume}
+                </if>
+                <!-- 物料产品类别 -->
+                <if test="bymaterial.productCategory != null and bymaterial.productCategory != ''">
+                    AND bm.product_category = #{bymaterial.productCategory}
+                </if>
+                <!-- 物料分组 -->
+                <if test="bymaterial.materialgroup != null and bymaterial.materialgroup != ''">
+                    AND bm.materialgroup = #{bymaterial.materialgroup}
+                </if>
+                <if test="bymaterial.creator != null and bymaterial.creator != ''">
+                    AND bm.creator = #{bymaterial.creator}
+                </if>
+                <if test="bymaterial.modifier != null and bymaterial.modifier != ''">
+                    AND bm.modifier = #{bymaterial.modifier}
+                </if>
+                <if test="bymaterial.creator_time != null and bymaterial.creator_time != ''">
+                    AND DATE(bm.creator_time) = DATE(#{bymaterial.creator_time})
+                </if>
+                <if test="bymaterial.modification_time != null and bymaterial.modification_time != ''">
+                    AND DATE(bm.modification_time) = DATE(#{bymaterial.modification_time})
+                </if>
+                <!-- 旧物料编码 -->
+                <if test="bymaterial.formerNumber != null and bymaterial.formerNumber != ''">
+                    AND bm.former_number = #{bymaterial.formerNumber}
+                </if>
+                <if test="bymaterial.fstate != null and bymaterial.fstate != ''">
+                    AND bm.f_state = #{bymaterial.fstate}
+                </if>
+            </if>
+        </where>
+    </select>
+    <!-- 根据编码查询物料 -->
+    <select id="selectById" resultType="com.ruoyi.business.entity.Bymaterial">
+        SELECT * FROM by_material WHERE id = #{id}
+    </select>
+
+    <select id="selectByNumber" resultType="com.ruoyi.business.entity.Bymaterial">
+        SELECT * FROM by_material WHERE number = #{number}
+    </select>
+
+    <select id="selectByConditionList" resultType="com.ruoyi.business.entity.Bymaterial">
+        SELECT * FROM by_material WHERE `number` IN
+        <foreach item="item" collection="list" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+    <!-- 根据编码更新物料 -->
+    <update id="updateByNumber" parameterType="com.ruoyi.business.entity.Bymaterial">
+        UPDATE by_material
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="image != null and image != ''">image = #{image},</if>
+            <if test="specification != null and specification != ''">specification = #{specification},</if>
+            <if test="description1 != null and description1 != ''">description1 = #{description1},</if>
+            <if test="description2 != null and description2 != ''">description2 = #{description2},</if>
+            <if test="erpClsId != null and erpClsId != ''">erpClsId = #{erpClsId},</if>
+            <if test="fnumber != null and fnumber != ''">fnumber = #{fnumber},</if>
+            <if test="bcfwgys != null and bcfwgys != ''">bcfwgys = #{bcfwgys},</if>
+            <if test="volume != null and volume != ''">volume = #{volume},</if>
+            <if test="fxlcp != null and fxlcp != ''">fxlcp = #{fxlcp},</if>
+            <if test="materialgroup != null and materialgroup != ''">materialgroup = #{materialgroup},</if>
+            <if test="inspectionReport != null and inspectionReport != ''">inspection_report = #{inspectionReport},</if>
+            <if test="hsbm != null and hsbm != ''">hsbm = #{hsbm},</if>
+            <if test="creator != null and creator != ''">creator = #{creator},</if>
+            <if test="creator_time != null">creator_time = #{creator_time},</if>
+            <if test="productCategory != null and productCategory != ''">product_category = #{productCategory},</if>
+            <if test="modifier != null and modifier != ''">modifier = #{modifier},</if>
+            <if test="modification_time != null">modification_time = #{modification_time},</if>
+            <if test="k3Id != null and k3Id != ''">k3_id = #{k3Id},</if>
+            <if test="englishProductName != null and englishProductName != ''">english_product_name = #{englishProductName},</if>
+            <if test="deliveryState != null and deliveryState != ''">delivery_state = #{deliveryState},</if>
+            <if test="formerNumber != null">former_number = #{formerNumber},</if>
+            <if test="fstateTime != null">fstateTime = #{fstateTime},</if>
+            <if test="fstateName != null">fstate_name = #{fstateName},</if>
+            <if test="fstate != null">f_state = #{fstate},</if>
+        </set>
+        WHERE number = #{number}
+    </update>
+
+    <!-- 交付红线 -->
+    <update id="updateBymaterial" parameterType="com.ruoyi.business.entity.Bymaterial">
+        UPDATE by_material
+        <set>
+            <if test="deliveryState != null and deliveryState != ''">delivery_state = #{deliveryState},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据编码删除物料 -->
+    <delete id="deleteByNumber">
+        DELETE FROM by_material WHERE id = #{id}
+    </delete>
+
+    <select id="selectByFmaterialId" resultMap="BaseResultMap">
+        SELECT * FROM by_material WHERE k3_id = #{fmaterialId}
+    </select>
+</mapper>

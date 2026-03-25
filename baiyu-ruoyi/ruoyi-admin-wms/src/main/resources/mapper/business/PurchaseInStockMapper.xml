@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.PurchaseInStockMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.business.entity.PurchaseInStock">
+        <id property="id" column="id"/>
+        <result property="fid" column="fid"/>
+        <result property="fBillNo" column="f_bill_no"/>
+        <result property="FDocumentStatus" column="f_document_status"/>
+        <result property="FBillTypeID" column="f_bill_type_id"/>
+        <result property="FDate" column="f_date"/>
+        <result property="FSupplierId" column="f_supplier_id"/>
+        <result property="FSupplyId" column="f_supply_id"/>
+        <result property="FSettleId" column="f_settle_id"/>
+        <result property="FChargeId" column="f_charge_id"/>
+        <result property="FPurchaserId" column="f_purchaser_id"/>
+        <result property="FCreatorId" column="f_creator_id"/>
+        <result property="FCreateDate" column="f_create_date"/>
+        <result property="FModifierId" column="f_modifier_id"/>
+        <result property="FModifyDate" column="f_modify_date"/>
+        <result property="FApproverId" column="f_approver_id"/>
+        <result property="FApproveDate" column="f_approve_date"/>
+        <result property="FConfirmerId" column="f_confirmer_id"/>
+        <result property="FConfirmDate" column="f_confirm_date"/>
+        <result property="FSupplyAddress" column="f_supply_address"/>
+        <result property="FStockerId" column="f_stocker_id"/>
+        <result property="FSettleCurrId" column="f_settle_curr_id"/>
+        <result property="FLocalCurrId" column="f_local_curr_id"/>
+        <result property="FExchangeTypeId" column="f_exchange_type_id"/>
+        <result property="FExchangeRate" column="f_exchange_rate"/>
+        <result property="FIsIncludedTax" column="f_is_included_tax"/>
+        <result property="FPayConditionId" column="f_pay_condition_id"/>
+        <result property="FSettleTypeId" column="f_settle_type_id"/>
+        <result property="FPriceTimePoint" column="f_price_time_point"/>
+        <result property="FSettleOrgId" column="f_settle_org_id"/>
+        <result property="FBillAmount" column="f_bill_amount"/>
+        <result property="FBillTaxAmount" column="f_bill_tax_amount"/>
+        <result property="FBillAllAmount" column="f_bill_all_amount"/>
+
+    </resultMap>
+
+
+    <!-- 基础查询字段 -->
+    <sql id="selectPurchaseInStockVo">
+        SELECT
+            inst.id,
+            inst.fid,
+            inst.f_bill_no,
+            inst.f_document_status,
+            inst.f_date,
+            su.name as f_supplier_id,
+            sp.name as f_supply_id,
+            se.name as f_settle_id,
+            sl.name as f_charge_id,
+            sely.fname as f_purchaser_id,
+            sy.user_name as f_creator_id,
+            inst.f_create_date,
+            sysu.user_name as f_modifier_id,
+            inst.f_modify_date,
+            syse.user_name as f_approver_id,
+            inst.f_approve_date,
+            inst.f_confirmer_id,
+            inst.f_confirm_date,
+            inst. f_supply_address,
+            inst.f_stocker_id,
+            byd.name as f_settle_curr_id,
+            bydy.name as f_local_curr_id,
+            bdy.name as f_exchange_type_id,
+            inst.f_exchange_rate,
+            inst.f_is_included_tax,
+            inst.f_pay_condition_id,
+            inst.f_settle_type_id,
+            inst.f_price_time_point,
+            inst.f_bill_amount,
+            inst.f_bill_tax_amount,
+            inst.f_bill_all_amount
+        FROM
+            purchase_instock  inst
+                LEFT JOIN supplier su  on inst.f_supplier_id=su.supplierid
+                LEFT JOIN supplier sp  on inst.f_supply_id=sp.supplierid
+                LEFT JOIN supplier se  on inst.f_settle_id=se.supplierid
+                LEFT JOIN supplier sl  on inst.f_charge_id=sl.supplierid
+                LEFT JOIN sys_user sy  on inst.f_creator_id=sy.k3_key
+                LEFT JOIN sys_user sysu  on inst.f_modifier_id=sysu.k3_key
+                LEFT JOIN sys_user syse  on inst.f_approver_id=syse.k3_key
+                LEFT JOIN sys_employee sely  on inst.f_purchaser_id=sely.salesman_id
+                LEFT JOIN bymaterial_dictionary byd  on inst.f_settle_curr_id=byd.kingdee and byd.category='currency'
+                LEFT JOIN bymaterial_dictionary bydy  on inst.f_local_curr_id=bydy.kingdee and bydy.category='currency'
+                LEFT JOIN bymaterial_dictionary bdy  on inst.f_exchange_type_id=bdy.kingdee and bdy.category='exchange_type'
+    </sql>
+
+    <!-- 查询采购入库单详情 -->
+    <select id="selectById" parameterType="String" resultMap="BaseResultMap">
+        <include refid="selectPurchaseInStockVo"/>
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询采购入库单列表（分页） -->
+    <select id="selectList" resultType="com.ruoyi.business.entity.PurchaseInStock">
+        <include refid="selectPurchaseInStockVo"/>
+        <where>
+            1=1
+        </where>
+        ORDER BY inst.f_create_date DESC
+        LIMIT #{page}, #{pageSize}
+    </select>
+
+    <!-- 新增采购入库单 - 主表 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.PurchaseInStock">
+        INSERT INTO purchase_instock
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">id,</if>
+            <if test="fid != null and fid != ''">fid,</if>
+            <if test="fBillNo != null and fBillNo != ''">f_bill_no,</if>
+            <if test="FDocumentStatus != null and FDocumentStatus != ''">f_document_status,</if>
+            <if test="FBillTypeID != null and FBillTypeID != ''">f_bill_type_id,</if>
+            <if test="FDate != null">f_date,</if>
+            <if test="FSupplierId != null and FSupplierId != ''">f_supplier_id,</if>
+            <if test="FSupplyId != null and FSupplyId != ''">f_supply_id,</if>
+            <if test="FSettleId != null and FSettleId != ''">f_settle_id,</if>
+            <if test="FChargeId != null and FChargeId != ''">f_charge_id,</if>
+            <if test="FPurchaserId != null and FPurchaserId != ''">f_purchaser_id,</if>
+            <if test="FCreatorId != null and FCreatorId != ''">f_creator_id,</if>
+            <if test="FCreateDate != null">f_create_date,</if>
+            <if test="FModifierId != null and FModifierId != ''">f_modifier_id,</if>
+            <if test="FModifyDate != null">f_modify_date,</if>
+            <if test="FApproverId != null and FApproverId != ''">f_approver_id,</if>
+            <if test="FApproveDate != null">f_approve_date,</if>
+            <if test="FConfirmerId != null and FConfirmerId != ''">f_confirmer_id,</if>
+            <if test="FConfirmDate != null">f_confirm_date,</if>
+            <if test="FSupplyAddress != null and FSupplyAddress != ''">f_supply_address,</if>
+            <if test="FStockerId != null and FStockerId != ''">f_stocker_id,</if>
+            <if test="FSettleCurrId != null and FSettleCurrId != ''">f_settle_curr_id,</if>
+            <if test="FLocalCurrId != null and FLocalCurrId != ''">f_local_curr_id,</if>
+            <if test="FExchangeTypeId != null and FExchangeTypeId != ''">f_exchange_type_id,</if>
+            <if test="FExchangeRate != null">f_exchange_rate,</if>
+            <if test="FIsIncludedTax != null">f_is_included_tax,</if>
+            <if test="FPayConditionId != null and FPayConditionId != ''">f_pay_condition_id,</if>
+            <if test="FSettleTypeId != null and FSettleTypeId != ''">f_settle_type_id,</if>
+            <if test="FPriceTimePoint != null and FPriceTimePoint != ''">f_price_time_point,</if>
+            <if test="FSettleOrgId != null and FSettleOrgId != ''">f_settle_org_id,</if>
+            <if test="FBillAmount != null">f_bill_amount,</if>
+            <if test="FBillTaxAmount != null">f_bill_tax_amount,</if>
+            <if test="FBillAllAmount != null">f_bill_all_amount,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">#{id},</if>
+            <if test="fid != null and fid != ''">#{fid},</if>
+            <if test="fBillNo != null and fBillNo != ''">#{fBillNo},</if>
+            <if test="FDocumentStatus != null and FDocumentStatus != ''">#{FDocumentStatus},</if>
+            <if test="FBillTypeID != null and FBillTypeID != ''">#{FBillTypeID},</if>
+            <if test="FDate != null">#{FDate},</if>
+            <if test="FSupplierId != null and FSupplierId != ''">#{FSupplierId},</if>
+            <if test="FSupplyId != null and FSupplyId != ''">#{FSupplyId},</if>
+            <if test="FSettleId != null and FSettleId != ''">#{FSettleId},</if>
+            <if test="FChargeId != null and FChargeId != ''">#{FChargeId},</if>
+            <if test="FPurchaserId != null and FPurchaserId != ''">#{FPurchaserId},</if>
+            <if test="FCreatorId != null and FCreatorId != ''">#{FCreatorId},</if>
+            <if test="FCreateDate != null">#{FCreateDate},</if>
+            <if test="FModifierId != null and FModifierId != ''">#{FModifierId},</if>
+            <if test="FModifyDate != null">#{FModifyDate},</if>
+            <if test="FApproverId != null and FApproverId != ''">#{FApproverId},</if>
+            <if test="FApproveDate != null">#{FApproveDate},</if>
+            <if test="FConfirmerId != null and FConfirmerId != ''">#{FConfirmerId},</if>
+            <if test="FConfirmDate != null">#{FConfirmDate},</if>
+            <if test="FSupplyAddress != null and FSupplyAddress != ''">#{FSupplyAddress},</if>
+            <if test="FStockerId != null and FStockerId != ''">#{FStockerId},</if>
+            <if test="FSettleCurrId != null and FSettleCurrId != ''">#{FSettleCurrId},</if>
+            <if test="FLocalCurrId != null and FLocalCurrId != ''">#{FLocalCurrId},</if>
+            <if test="FExchangeTypeId != null and FExchangeTypeId != ''">#{FExchangeTypeId},</if>
+            <if test="FExchangeRate != null">#{FExchangeRate},</if>
+            <if test="FIsIncludedTax != null">#{FIsIncludedTax},</if>
+            <if test="FPayConditionId != null and FPayConditionId != ''">#{FPayConditionId},</if>
+            <if test="FSettleTypeId != null and FSettleTypeId != ''">#{FSettleTypeId},</if>
+            <if test="FPriceTimePoint != null and FPriceTimePoint != ''">#{FPriceTimePoint},</if>
+            <if test="FSettleOrgId != null and FSettleOrgId != ''">#{FSettleOrgId},</if>
+            <if test="FBillAmount != null">#{FBillAmount},</if>
+            <if test="FBillTaxAmount != null">#{FBillTaxAmount},</if>
+            <if test="FBillAllAmount != null">#{FBillAllAmount},</if>
+        </trim>
+    </insert>
+
+    <!-- 更新采购入库单 -->
+    <update id="update" parameterType="com.ruoyi.business.entity.PurchaseInStock">
+        UPDATE purchase_instock
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fBillNo != null and fBillNo != ''">f_bill_no = #{fBillNo},</if>
+            <if test="FDocumentStatus != null and FDocumentStatus != ''">f_document_status = #{FDocumentStatus},</if>
+            <if test="FBillTypeID != null and FBillTypeID != ''">f_bill_type_id = #{FBillTypeID},</if>
+            <if test="FDate != null">f_date = #{FDate},</if>
+            <if test="FSupplierId != null and FSupplierId != ''">f_supplier_id = #{FSupplierId},</if>
+            <if test="FSupplyId != null and FSupplyId != ''">f_supply_id = #{FSupplyId},</if>
+            <if test="FSettleId != null and FSettleId != ''">f_settle_id = #{FSettleId},</if>
+            <if test="FChargeId != null and FChargeId != ''">f_charge_id = #{FChargeId},</if>
+            <if test="FPurchaserId != null and FPurchaserId != ''">f_purchaser_id = #{FPurchaserId},</if>
+            <if test="FModifierId != null and FModifierId != ''">f_modifier_id = #{FModifierId},</if>
+            <if test="FModifyDate != null">f_modify_date = #{FModifyDate},</if>
+            <if test="FApproverId != null and FApproverId != ''">f_approver_id = #{FApproverId},</if>
+            <if test="FApproveDate != null">f_approve_date = #{FApproveDate},</if>
+            <if test="FConfirmerId != null and FConfirmerId != ''">f_confirmer_id = #{FConfirmerId},</if>
+            <if test="FConfirmDate != null">f_confirm_date = #{FConfirmDate},</if>
+            <if test="FSupplyAddress != null and FSupplyAddress != ''">f_supply_address = #{FSupplyAddress},</if>
+            <if test="FStockerId != null and FStockerId != ''">f_stocker_id = #{FStockerId},</if>
+            <if test="FSettleCurrId != null and FSettleCurrId != ''">f_settle_curr_id = #{FSettleCurrId},</if>
+            <if test="FLocalCurrId != null and FLocalCurrId != ''">f_local_curr_id = #{FLocalCurrId},</if>
+            <if test="FExchangeTypeId != null and FExchangeTypeId != ''">f_exchange_type_id = #{FExchangeTypeId},</if>
+            <if test="FExchangeRate != null">f_exchange_rate = #{FExchangeRate},</if>
+            <if test="FIsIncludedTax != null">f_is_included_tax = #{FIsIncludedTax},</if>
+            <if test="FPayConditionId != null and FPayConditionId != ''">f_pay_condition_id = #{FPayConditionId},</if>
+            <if test="FSettleTypeId != null and FSettleTypeId != ''">f_settle_type_id = #{FSettleTypeId},</if>
+            <if test="FPriceTimePoint != null and FPriceTimePoint != ''">f_price_time_point = #{FPriceTimePoint},</if>
+            <if test="FSettleOrgId != null and FSettleOrgId != ''">f_settle_org_id = #{FSettleOrgId},</if>
+            <if test="FBillAmount != null">f_bill_amount = #{FBillAmount},</if>
+            <if test="FBillTaxAmount != null">f_bill_tax_amount = #{FBillTaxAmount},</if>
+            <if test="FBillAllAmount != null">f_bill_all_amount = #{FBillAllAmount},</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除采购入库单 -->
+    <delete id="deleteById" parameterType="String">
+        DELETE FROM purchase_instock WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除采购入库单 -->
+    <delete id="deleteByIds" parameterType="String">
+        DELETE FROM purchase_instock WHERE id IN
+        <foreach collection="fids" item="fid" open="(" separator="," close=")">
+            #{fid}
+        </foreach>
+    </delete>
+
+    <!-- 新增采购入库单明细 -->
+    <insert id="insertEntry">
+        INSERT INTO purchase_instock_entry
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="et.id != null and et.id != ''">id,</if>
+            <if test="et.fbillno != null and et.fbillno != ''">fbillno,</if>
+            <if test="et.fcplb != null and et.fcplb != ''">fcplb,</if>
+            <if test="et.fjqhx != null and et.fjqhx != ''">fjqhx,</if>
+            <if test="et.fmaterialId != null and et.fmaterialId != ''">fmaterialId,</if>
+            <if test="et.fstockid != null and et.fstockid != ''">fstockid,</if>
+            <if test="et.fproducedate != null">fproducedate,</if>
+            <if test="et.fnote != null and et.fnote != ''">fnote,</if>
+            <if test="et.fwwintype != null and et.fwwintype != ''">fwwintype,</if>
+            <if test="et.flot != null and et.flot != ''">flot,</if>
+            <if test="et.fstocklocid != null and et.fstocklocid != ''">fstocklocid,</if>
+            <if test="et.freceivelot != null and et.freceivelot != ''">freceivelot,</if>
+            <if test="et.fsupplierlot != null and et.fsupplierlot != ''">fsupplierlot,</if>
+            <if test="et.fgrossweight != null">fgrossweight,</if>
+            <if test="et.fnetweight != null">fnetweight,</if>
+            <if test="et.fmaterialname != null and et.fmaterialname != ''">fmaterialname,</if>
+            <if test="et.fmaterialtype != null and et.fmaterialtype != ''">fmaterialtype,</if>
+            <if test="et.fuom != null and et.fuom != ''">fuom,</if>
+            <if test="et.fcontractlno != null and et.fcontractlno != ''">fcontractlno,</if>
+            <if test="et.fmustqty != null">fmustqty,</if>
+            <if test="et.frealqty != null">frealqty,</if>
+            <if test="et.fauxunitqty != null">fauxunitqty,</if>
+            <if test="et.fexpirydate != null">fexpirydate,</if>
+            <if test="et.fstockstatusid != null and et.fstockstatusid != ''">fstockstatusid,</if>
+            <if test="et.frejectsdiscountamount != null">frejectsdiscountamount,</if>
+            <if test="et.fkhhh != null and et.fkhhh != ''">fkhhh,</if>
+            <if test="et.fbzfyzt != null and et.fbzfyzt != ''">fbzfyzt,</if>
+            <if test="et.fkh != null and et.fkh != ''">fkh,</if>
+            <if test="et.fxsyy != null and et.fxsyy != ''">fxsyy,</if>
+            <if test="et.fgdy1 != null and et.fgdy1 != ''">fgdy1,</if>
+            <if test="et.fbzyq != null and et.fbzyq != ''">fbzyq,</if>
+            <if test="et.ftsyq != null and et.ftsyq != ''">ftsyq,</if>
+            <if test="et.fctybaseproperty != null and et.fctybaseproperty != ''">fctybaseproperty,</if>
+            <if test="et.fbcjsr != null and et.fbcjsr != ''">fbcjsr,</if>
+            <if test="et.fbcjsdh != null and et.fbcjsdh != ''">fbcjsdh,</if>
+            <if test="et.fckj != null">fckj,</if>
+            <if test="et.fjgtzyy != null and et.fjgtzyy != ''">fjgtzyy,</if>
+            <if test="et.fzdrq != null">fzdrq,</if>
+            <if test="et.fddshrq != null">fddshrq,</if>
+            <if test="et.frkzq != null and et.frkzq != ''">frkzq,</if>
+            <if test="et.fkcsl != null">fkcsl,</if>
+            <if test="et.fc != null and et.fc != ''">fc,</if>
+            <if test="et.fsljzrq != null">fsljzrq,</if>
+            <if test="et.ftaxprice != null">ftaxprice,</if>
+            <if test="et.fcostprice != null">fcostprice,</if>
+            <if test="et.fentrytax_rate != null">fentrytax_rate,</if>
+            <if test="et.fentrytaxamount != null">fentrytaxamount,</if>
+            <if test="et.fdiscountrate != null">fdiscountrate,</if>
+            <if test="et.fpricecoefficient != null">fpricecoefficient,</if>
+            <if test="et.fpriceunitqty != null">fpriceunitqty,</if>
+            <if test="et.ftaxnetprice != null">ftaxnetprice,</if>
+            <if test="et.fentrycostamount != null">fentrycostamount,</if>
+            <if test="et.fallamount != null">fallamount,</if>
+            <if test="et.ftaxamountlc != null">ftaxamountlc,</if>
+            <if test="et.fcostamountlc != null">fcostamountlc,</if>
+            <if test="et.fallamountlc != null">fallamountlc,</if>
+            <if test="et.fstockflag != null">fstockflag,</if>
+            <if test="et.fbaseunitprice != null">fbaseunitprice,</if>
+            <if test="et.funitid != null and et.funitid != ''">funitid,</if>
+            <if test="et.fbaseunit_id != null and et.fbaseunit_id != ''">fbaseunit_id,</if>
+            <if test="et.fbaseunitqty != null">fbaseunitqty,</if>
+            <if test="et.fauxunitid != null and et.fauxunitid != ''">fauxunitid,</if>
+            <if test="et.fpriceunitid != null and et.fpriceunitid != ''">fpriceunitid,</if>
+            <if test="et.fpoorderno != null and et.fpoorderno != ''">fpoorderno,</if>
+            <if test="et.freceivestockstatus != null and et.freceivestockstatus != ''">freceivestockstatus,</if>
+            <if test="et.fctytext1 != null and et.fctytext1 != ''">fctytext1,</if>
+            <if test="et.fpeuuattachmenttzk != null and et.fpeuuattachmenttzk != ''">fpeuuattachmenttzk,</if>
+            <if test="et.ftj != null">ftj,</if>
+            <if test="et.fpeuubasepropertyre5 != null and et.fpeuubasepropertyre5 != ''">fpeuubasepropertyre5,</if>
+            <if test="et.fssxs != null">fssxs,</if>
+            <if test="et.foradecimal != null">foradecimal,</if>
+            <if test="et.foramulcombo != null and et.foramulcombo != ''">foramulcombo,</if>
+            <if test="et.forapicture != null and et.forapicture != ''">forapicture,</if>
+            <if test="et.fxsdd != null and et.fxsdd != ''">fxsdd,</if>
+            <if test="et.fjyzt != null and et.fjyzt != ''">fjyzt,</if>
+            <if test="et.fjydsl != null">fjydsl,</if>
+            <if test="et.fcpbm != null and et.fcpbm != ''">fcpbm,</if>
+            <if test="et.forabaseproperty != null and et.forabaseproperty != ''">forabaseproperty,</if>
+            <if test="et.fyhbl != null and et.fyhbl != ''">fyhbl,</if>
+            <if test="et.fyhrq != null">fyhrq,</if>
+            <if test="et.ftaxrate != null">ftaxrate,</if>
+            <if test="et.ftaxamount != null">ftaxamount,</if>
+            <if test="et.fcostpercent != null">fcostpercent,</if>
+            <if test="et.ftaxcostamount != null">ftaxcostamount,</if>
+            <if test="et.fvat != null">fvat,</if>
+            <if test="et.fisreconciliationing != null">fisreconciliationing,</if>
+            <if test="et.freconciliationbillno != null and et.freconciliationbillno != ''">freconciliationbillno,</if>
+            <if test="et.fctt != null and et.fctt != ''">fctt,</if>
+            <if test="et.fjgdz != null and et.fjgdz != ''">fjgdz,</if>
+            <if test="et.fwxzm != null and et.fwxzm != ''">fwxzm,</if>
+            <if test="et.fwxcm != null and et.fwxcm != ''">fwxcm,</if>
+            <if test="et.fct != null and et.fct != ''">fct,</if>
+            <if test="et.fch != null and et.fch != ''">fch,</if>
+            <if test="et.fbaozt != null and et.fbaozt != ''">fbaozt,</if>
+            <if test="et.fnxzm != null and et.fnxzm != ''">fnxzm,</if>
+            <if test="et.fnxcm != null and et.fnxcm != ''">fnxcm,</if>
+            <if test="et.fctyattachment != null and et.fctyattachment != ''">fctyattachment,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="et.id != null and et.id != ''">#{et.id},</if>
+            <if test="et.fbillno != null and et.fbillno != ''">#{et.fbillno},</if>
+            <if test="et.fcplb != null and et.fcplb != ''">#{et.fcplb},</if>
+            <if test="et.fjqhx != null and et.fjqhx != ''">#{et.fjqhx},</if>
+            <if test="et.fmaterialId != null and et.fmaterialId != ''">#{et.fmaterialId},</if>
+            <if test="et.fstockid != null and et.fstockid != ''">#{et.fstockid},</if>
+            <if test="et.fproducedate != null">#{et.fproducedate},</if>
+            <if test="et.fnote != null and et.fnote != ''">#{et.fnote},</if>
+            <if test="et.fwwintype != null and et.fwwintype != ''">#{et.fwwintype},</if>
+            <if test="et.flot != null and et.flot != ''">#{et.flot},</if>
+            <if test="et.fstocklocid != null and et.fstocklocid != ''">#{et.fstocklocid},</if>
+            <if test="et.freceivelot != null and et.freceivelot != ''">#{et.freceivelot},</if>
+            <if test="et.fsupplierlot != null and et.fsupplierlot != ''">#{et.fsupplierlot},</if>
+            <if test="et.fgrossweight != null">#{et.fgrossweight},</if>
+            <if test="et.fnetweight != null">#{et.fnetweight},</if>
+            <if test="et.fmaterialname != null and et.fmaterialname != ''">#{et.fmaterialname},</if>
+            <if test="et.fmaterialtype != null and et.fmaterialtype != ''">#{et.fmaterialtype},</if>
+            <if test="et.fuom != null and et.fuom != ''">#{et.fuom},</if>
+            <if test="et.fcontractlno != null and et.fcontractlno != ''">#{et.fcontractlno},</if>
+            <if test="et.fmustqty != null">#{et.fmustqty},</if>
+            <if test="et.frealqty != null">#{et.frealqty},</if>
+            <if test="et.fauxunitqty != null">#{et.fauxunitqty},</if>
+            <if test="et.fexpirydate != null">#{et.fexpirydate},</if>
+            <if test="et.fstockstatusid != null and et.fstockstatusid != ''">#{et.fstockstatusid},</if>
+            <if test="et.frejectsdiscountamount != null">#{et.frejectsdiscountamount},</if>
+            <if test="et.fkhhh != null and et.fkhhh != ''">#{et.fkhhh},</if>
+            <if test="et.fbzfyzt != null and et.fbzfyzt != ''">#{et.fbzfyzt},</if>
+            <if test="et.fkh != null and et.fkh != ''">#{et.fkh},</if>
+            <if test="et.fxsyy != null and et.fxsyy != ''">#{et.fxsyy},</if>
+            <if test="et.fgdy1 != null and et.fgdy1 != ''">#{et.fgdy1},</if>
+            <if test="et.fbzyq != null and et.fbzyq != ''">#{et.fbzyq},</if>
+            <if test="et.ftsyq != null and et.ftsyq != ''">#{et.ftsyq},</if>
+            <if test="et.fctybaseproperty != null and et.fctybaseproperty != ''">#{et.fctybaseproperty},</if>
+            <if test="et.fbcjsr != null and et.fbcjsr != ''">#{et.fbcjsr},</if>
+            <if test="et.fbcjsdh != null and et.fbcjsdh != ''">#{et.fbcjsdh},</if>
+            <if test="et.fckj != null">#{et.fckj},</if>
+            <if test="et.fjgtzyy != null and et.fjgtzyy != ''">#{et.fjgtzyy},</if>
+            <if test="et.fzdrq != null">#{et.fzdrq},</if>
+            <if test="et.fddshrq != null">#{et.fddshrq},</if>
+            <if test="et.frkzq != null and et.frkzq != ''">#{et.frkzq},</if>
+            <if test="et.fkcsl != null">#{et.fkcsl},</if>
+            <if test="et.fc != null and et.fc != ''">#{et.fc},</if>
+            <if test="et.fsljzrq != null">#{et.fsljzrq},</if>
+            <if test="et.ftaxprice != null">#{et.ftaxprice},</if>
+            <if test="et.fcostprice != null">#{et.fcostprice},</if>
+            <if test="et.fentrytax_rate != null">#{et.fentrytax_rate},</if>
+            <if test="et.fentrytaxamount != null">#{et.fentrytaxamount},</if>
+            <if test="et.fdiscountrate != null">#{et.fdiscountrate},</if>
+            <if test="et.fpricecoefficient != null">#{et.fpricecoefficient},</if>
+            <if test="et.fpriceunitqty != null">#{et.fpriceunitqty},</if>
+            <if test="et.ftaxnetprice != null">#{et.ftaxnetprice},</if>
+            <if test="et.fentrycostamount != null">#{et.fentrycostamount},</if>
+            <if test="et.fallamount != null">#{et.fallamount},</if>
+            <if test="et.ftaxamountlc != null">#{et.ftaxamountlc},</if>
+            <if test="et.fcostamountlc != null">#{et.fcostamountlc},</if>
+            <if test="et.fallamountlc != null">#{et.fallamountlc},</if>
+            <if test="et.fstockflag != null">#{et.fstockflag},</if>
+            <if test="et.fbaseunitprice != null">#{et.fbaseunitprice},</if>
+            <if test="et.funitid != null and et.funitid != ''">#{et.funitid},</if>
+            <if test="et.fbaseunit_id != null and et.fbaseunit_id != ''">#{et.fbaseunit_id},</if>
+            <if test="et.fbaseunitqty != null">#{et.fbaseunitqty},</if>
+            <if test="et.fauxunitid != null and et.fauxunitid != ''">#{et.fauxunitid},</if>
+            <if test="et.fpriceunitid != null and et.fpriceunitid != ''">#{et.fpriceunitid},</if>
+            <if test="et.fpoorderno != null and et.fpoorderno != ''">#{et.fpoorderno},</if>
+            <if test="et.freceivestockstatus != null and et.freceivestockstatus != ''">#{et.freceivestockstatus},</if>
+            <if test="et.fctytext1 != null and et.fctytext1 != ''">#{et.fctytext1},</if>
+            <if test="et.fpeuuattachmenttzk != null and et.fpeuuattachmenttzk != ''">#{et.fpeuuattachmenttzk},</if>
+            <if test="et.ftj != null">#{et.ftj},</if>
+            <if test="et.fpeuubasepropertyre5 != null and et.fpeuubasepropertyre5 != ''">#{et.fpeuubasepropertyre5},</if>
+            <if test="et.fssxs != null">#{et.fssxs},</if>
+            <if test="et.foradecimal != null">#{et.foradecimal},</if>
+            <if test="et.foramulcombo != null and et.foramulcombo != ''">#{et.foramulcombo},</if>
+            <if test="et.forapicture != null and et.forapicture != ''">#{et.forapicture},</if>
+            <if test="et.fxsdd != null and et.fxsdd != ''">#{et.fxsdd},</if>
+            <if test="et.fjyzt != null and et.fjyzt != ''">#{et.fjyzt},</if>
+            <if test="et.fjydsl != null">#{et.fjydsl},</if>
+            <if test="et.fcpbm != null and et.fcpbm != ''">#{et.fcpbm},</if>
+            <if test="et.forabaseproperty != null and et.forabaseproperty != ''">#{et.forabaseproperty},</if>
+            <if test="et.fyhbl != null and et.fyhbl != ''">#{et.fyhbl},</if>
+            <if test="et.fyhrq != null">#{et.fyhrq},</if>
+            <if test="et.ftaxrate != null">#{et.ftaxrate},</if>
+            <if test="et.ftaxamount != null">#{et.ftaxamount},</if>
+            <if test="et.fcostpercent != null">#{et.fcostpercent},</if>
+            <if test="et.ftaxcostamount != null">#{et.ftaxcostamount},</if>
+            <if test="et.fvat != null">#{et.fvat},</if>
+            <if test="et.fisreconciliationing != null">#{et.fisreconciliationing},</if>
+            <if test="et.freconciliationbillno != null and et.freconciliationbillno != ''">#{et.freconciliationbillno},</if>
+            <if test="et.fctt != null and et.fctt != ''">#{et.fctt},</if>
+            <if test="et.fjgdz != null and et.fjgdz != ''">#{et.fjgdz},</if>
+            <if test="et.fwxzm != null and et.fwxzm != ''">#{et.fwxzm},</if>
+            <if test="et.fwxcm != null and et.fwxcm != ''">#{et.fwxcm},</if>
+            <if test="et.fct != null and et.fct != ''">#{et.fct},</if>
+            <if test="et.fch != null and et.fch != ''">#{et.fch},</if>
+            <if test="et.fbaozt != null and et.fbaozt != ''">#{et.fbaozt},</if>
+            <if test="et.fnxzm != null and et.fnxzm != ''">#{et.fnxzm},</if>
+            <if test="et.fnxcm != null and et.fnxcm != ''">#{et.fnxcm},</if>
+            <if test="et.fctyattachment != null and et.fctyattachment != ''">#{et.fctyattachment},</if>
+        </trim>
+    </insert>
+
+    <!-- 更新采购入库单明细 -->
+    <update id="updateEntry">
+        UPDATE purchase_instock_entry
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="et.fcplb != null and et.fcplb != ''">fcplb = #{et.fcplb},</if>
+            <if test="et.fjqhx != null and et.fjqhx != ''">fjqhx = #{et.fjqhx},</if>
+            <if test="et.fmaterialId != null and et.fmaterialId != ''">fmaterialId = #{et.fmaterialId},</if>
+            <if test="et.fstockid != null and et.fstockid != ''">fstockid = #{et.fstockid},</if>
+            <if test="et.fproducedate != null">fproducedate = #{et.fproducedate},</if>
+            <if test="et.fnote != null and et.fnote != ''">fnote = #{et.fnote},</if>
+            <if test="et.fwwintype != null and et.fwwintype != ''">fwwintype = #{et.fwwintype},</if>
+            <if test="et.flot != null and et.flot != ''">flot = #{et.flot},</if>
+            <if test="et.fstocklocid != null and et.fstocklocid != ''">fstocklocid = #{et.fstocklocid},</if>
+            <if test="et.freceivelot != null and et.freceivelot != ''">freceivelot = #{et.freceivelot},</if>
+            <if test="et.fsupplierlot != null and et.fsupplierlot != ''">fsupplierlot = #{et.fsupplierlot},</if>
+            <if test="et.fgrossweight != null">fgrossweight = #{et.fgrossweight},</if>
+            <if test="et.fnetweight != null">fnetweight = #{et.fnetweight},</if>
+            <if test="et.fmaterialname != null and et.fmaterialname != ''">fmaterialname = #{et.fmaterialname},</if>
+            <if test="et.fmaterialtype != null and et.fmaterialtype != ''">fmaterialtype = #{et.fmaterialtype},</if>
+            <if test="et.fuom != null and et.fuom != ''">fuom = #{et.fuom},</if>
+            <if test="et.fcontractlno != null and et.fcontractlno != ''">fcontractlno = #{et.fcontractlno},</if>
+            <if test="et.fmustqty != null">fmustqty = #{et.fmustqty},</if>
+            <if test="et.frealqty != null">frealqty = #{et.frealqty},</if>
+            <if test="et.fauxunitqty != null">fauxunitqty = #{et.fauxunitqty},</if>
+            <if test="et.fexpirydate != null">fexpirydate = #{et.fexpirydate},</if>
+            <if test="et.fstockstatusid != null and et.fstockstatusid != ''">fstockstatusid = #{et.fstockstatusid},</if>
+            <if test="et.frejectsdiscountamount != null">frejectsdiscountamount = #{et.frejectsdiscountamount},</if>
+            <if test="et.fkhhh != null and et.fkhhh != ''">fkhhh = #{et.fkhhh},</if>
+            <if test="et.fbzfyzt != null and et.fbzfyzt != ''">fbzfyzt = #{et.fbzfyzt},</if>
+            <if test="et.fkh != null and et.fkh != ''">fkh = #{et.fkh},</if>
+            <if test="et.fxsyy != null and et.fxsyy != ''">fxsyy = #{et.fxsyy},</if>
+            <if test="et.fgdy1 != null and et.fgdy1 != ''">fgdy1 = #{et.fgdy1},</if>
+            <if test="et.fbzyq != null and et.fbzyq != ''">fbzyq = #{et.fbzyq},</if>
+            <if test="et.ftsyq != null and et.ftsyq != ''">ftsyq = #{et.ftsyq},</if>
+            <if test="et.fctybaseproperty != null and et.fctybaseproperty != ''">fctybaseproperty = #{et.fctybaseproperty},</if>
+            <if test="et.fbcjsr != null and et.fbcjsr != ''">fbcjsr = #{et.fbcjsr},</if>
+            <if test="et.fbcjsdh != null and et.fbcjsdh != ''">fbcjsdh = #{et.fbcjsdh},</if>
+            <if test="et.fckj != null">fckj = #{et.fckj},</if>
+            <if test="et.fjgtzyy != null and et.fjgtzyy != ''">fjgtzyy = #{et.fjgtzyy},</if>
+            <if test="et.fzdrq != null">fzdrq = #{et.fzdrq},</if>
+            <if test="et.fddshrq != null">fddshrq = #{et.fddshrq},</if>
+            <if test="et.frkzq != null and et.frkzq != ''">frkzq = #{et.frkzq},</if>
+            <if test="et.fkcsl != null">fkcsl = #{et.fkcsl},</if>
+            <if test="et.fc != null and et.fc != ''">fc = #{et.fc},</if>
+            <if test="et.fsljzrq != null">fsljzrq = #{et.fsljzrq},</if>
+            <if test="et.ftaxprice != null">ftaxprice = #{et.ftaxprice},</if>
+            <if test="et.fcostprice != null">fcostprice = #{et.fcostprice},</if>
+            <if test="et.fentrytax_rate != null">fentrytax_rate = #{et.fentrytax_rate},</if>
+            <if test="et.fentrytaxamount != null">fentrytaxamount = #{et.fentrytaxamount},</if>
+            <if test="et.fdiscountrate != null">fdiscountrate = #{et.fdiscountrate},</if>
+            <if test="et.fpricecoefficient != null">fpricecoefficient = #{et.fpricecoefficient},</if>
+            <if test="et.fpriceunitqty != null">fpriceunitqty = #{et.fpriceunitqty},</if>
+            <if test="et.ftaxnetprice != null">ftaxnetprice = #{et.ftaxnetprice},</if>
+            <if test="et.fentrycostamount != null">fentrycostamount = #{et.fentrycostamount},</if>
+            <if test="et.fallamount != null">fallamount = #{et.fallamount},</if>
+            <if test="et.ftaxamountlc != null">ftaxamountlc = #{et.ftaxamountlc},</if>
+            <if test="et.fcostamountlc != null">fcostamountlc = #{et.fcostamountlc},</if>
+            <if test="et.fallamountlc != null">fallamountlc = #{et.fallamountlc},</if>
+            <if test="et.fstockflag != null">fstockflag = #{et.fstockflag},</if>
+            <if test="et.fbaseunitprice != null">fbaseunitprice = #{et.fbaseunitprice},</if>
+            <if test="et.funitid != null and et.funitid != ''">funitid = #{et.funitid},</if>
+            <if test="et.fbaseunit_id != null and et.fbaseunit_id != ''">fbaseunit_id = #{et.fbaseunit_id},</if>
+            <if test="et.fbaseunitqty != null">fbaseunitqty = #{et.fbaseunitqty},</if>
+            <if test="et.fauxunitid != null and et.fauxunitid != ''">fauxunitid = #{et.fauxunitid},</if>
+            <if test="et.fpriceunitid != null and et.fpriceunitid != ''">fpriceunitid = #{et.fpriceunitid},</if>
+            <if test="et.fpoorderno != null and et.fpoorderno != ''">fpoorderno = #{et.fpoorderno},</if>
+            <if test="et.freceivestockstatus != null and et.freceivestockstatus != ''">freceivestockstatus = #{et.freceivestockstatus},</if>
+            <if test="et.fctytext1 != null and et.fctytext1 != ''">fctytext1 = #{et.fctytext1},</if>
+            <if test="et.fpeuuattachmenttzk != null and et.fpeuuattachmenttzk != ''">fpeuuattachmenttzk = #{et.fpeuuattachmenttzk},</if>
+            <if test="et.ftj != null">ftj = #{et.ftj},</if>
+            <if test="et.fpeuubasepropertyre5 != null and et.fpeuubasepropertyre5 != ''">fpeuubasepropertyre5 = #{et.fpeuubasepropertyre5},</if>
+            <if test="et.fssxs != null">fssxs = #{et.fssxs},</if>
+            <if test="et.foradecimal != null">foradecimal = #{et.foradecimal},</if>
+            <if test="et.foramulcombo != null and et.foramulcombo != ''">foramulcombo = #{et.foramulcombo},</if>
+            <if test="et.forapicture != null and et.forapicture != ''">forapicture = #{et.forapicture},</if>
+            <if test="et.fxsdd != null and et.fxsdd != ''">fxsdd = #{et.fxsdd},</if>
+            <if test="et.fjyzt != null and et.fjyzt != ''">fjyzt = #{et.fjyzt},</if>
+            <if test="et.fjydsl != null">fjydsl = #{et.fjydsl},</if>
+            <if test="et.fcpbm != null and et.fcpbm != ''">fcpbm = #{et.fcpbm},</if>
+            <if test="et.forabaseproperty != null and et.forabaseproperty != ''">forabaseproperty = #{et.forabaseproperty},</if>
+            <if test="et.fyhbl != null and et.fyhbl != ''">fyhbl = #{et.fyhbl},</if>
+            <if test="et.fyhrq != null">fyhrq = #{et.fyhrq},</if>
+            <if test="et.ftaxrate != null">ftaxrate = #{et.ftaxrate},</if>
+            <if test="et.ftaxamount != null">ftaxamount = #{et.ftaxamount},</if>
+            <if test="et.fcostpercent != null">fcostpercent = #{et.fcostpercent},</if>
+            <if test="et.ftaxcostamount != null">ftaxcostamount = #{et.ftaxcostamount},</if>
+            <if test="et.fvat != null">fvat = #{et.fvat},</if>
+            <if test="et.fisreconciliationing != null">fisreconciliationing = #{et.fisreconciliationing},</if>
+            <if test="et.freconciliationbillno != null and et.freconciliationbillno != ''">freconciliationbillno = #{et.freconciliationbillno},</if>
+            <if test="et.fctt != null and et.fctt != ''">fctt = #{et.fctt},</if>
+            <if test="et.fjgdz != null and et.fjgdz != ''">fjgdz = #{et.fjgdz},</if>
+            <if test="et.fwxzm != null and et.fwxzm != ''">fwxzm = #{et.fwxzm},</if>
+            <if test="et.fwxcm != null and et.fwxcm != ''">fwxcm = #{et.fwxcm},</if>
+            <if test="et.fct != null and et.fct != ''">fct = #{et.fct},</if>
+            <if test="et.fch != null and et.fch != ''">fch = #{et.fch},</if>
+            <if test="et.fbaozt != null and et.fbaozt != ''">fbaozt = #{et.fbaozt},</if>
+            <if test="et.fnxzm != null and et.fnxzm != ''">fnxzm = #{et.fnxzm},</if>
+            <if test="et.fnxcm != null and et.fnxcm != ''">fnxcm = #{et.fnxcm},</if>
+            <if test="et.fctyattachment != null and et.fctyattachment != ''">fctyattachment = #{et.fctyattachment},</if>
+        </trim>
+        WHERE fbillno = #{et.fbillno} and fmaterialId = #{et.fmaterialId}
+    </update>
+
+    <!-- 根据 ID 查询采购入库单明细 -->
+    <select id="selectEntryByFbillno" parameterType="String" resultType="com.ruoyi.business.entity.PurchaseInStockEntry">
+        SELECT * FROM purchase_instock_entry WHERE fbillno = #{fbillno} and fmaterialId = #{fmaterialId}
+    </select>
+
+    <select id="selectEntryById" resultType="com.ruoyi.business.entity.PurchaseInStockEntry">
+        SELECT
+            pin.fbillno,
+            byl.number as fmaterialId,
+            pin.fmaterialname,
+            pin.fmaterialtype,
+            pin.fuom,
+            bm.name as fstockid,
+            pin.fproducedate,
+            pin.fnote,
+            pin.fwwintype,
+            pin.flot,
+            wl.location_name as fstocklocid,
+            pin.freceivelot,
+            pin.fsupplierlot,
+            pin.fgrossweight,
+            pin.fcontractlno,
+            pin.fmustqty,
+            pin.frealqty,
+            pin.fauxunitqty,
+            pin.fexpirydate,
+            bymat.name as fstockstatusid,
+            pin.fkhhh,
+            pin.fbzfyzt,
+            cu.fname as fkh,
+            syse.fname as fxsyy,
+            sysu.user_name as fgdy1,
+            pin.fbzyq,
+            pin.ftsyq,
+            pin.fctybaseproperty,
+            pin.fckj,
+            pin.fzdrq,
+            pin.fddshrq,
+            pin.frkzq,
+            pin.fkcsl,
+            pin.fc,
+            pin.fsljzrq,
+            pin.ftaxprice,
+            pin.fcostprice,
+            pin.fentrytax_rate,
+            pin.fentrytaxamount,
+            pin.fdiscountrate,
+            pin.fpricecoefficient,
+            pin.fpriceunitqty,
+            pin.ftaxnetprice,
+            pin.fentrycostamount,
+            pin.fallamount,
+            pin.ftaxamountlc,
+            pin.fcostamountlc,
+            pin.fallamountlc,
+            pin.fstockflag,
+            bdy.name as funitid,
+            bldy.name as fbaseunit_id,
+            pin.fbaseunitqty,
+            pin.fauxunitid,
+            byldy.name as fpriceunitid,
+            pin.fpoorderno,
+            pin.freceivestockstatus,
+            pin.fctytext1,
+            pin.fpeuuattachmenttzk,
+            pin.ftj,
+            pin.fpeuubasepropertyre5,
+            pin.fssxs,
+            pin.foradecimal,
+            pin.foramulcombo,
+            pin.forapicture,
+            pin.fxsdd,
+            pin.fjyzt,
+            pin.fjydsl,
+            bymal.number as fcpbm,
+            pin.forabaseproperty,
+            pin.fyhbl,
+            pin.fyhrq,
+            pin.ftaxrate,
+            pin.fvat,
+            pin.fisreconciliationing,
+            pin.freconciliationbillno,
+            pin.fctt,
+            pin.fjgdz,
+            pin.fwxzm,
+            pin. fwxcm,
+            pin.fct,
+            pin.fch,
+            pin.fbaozt,
+            pin.fnxzm,
+            pin.fnxcm,
+            pin.fctyattachment
+        FROM purchase_instock_entry   pin
+
+                 LEFT JOIN by_material byl on pin.fmaterialId=byl.k3_id
+                 LEFT JOIN warehouse_location wl on pin.fstocklocid=wl.location_id
+                 LEFT JOIN bd_customer cu on pin.fkh=cu.fcustid
+                 LEFT JOIN sys_employee syse on pin.fxsyy=syse.salesman_id
+                 LEFT JOIN sys_user sysu on pin.fgdy1=sysu.k3_key
+                 LEFT JOIN by_material bymal on pin.fcpbm=bymal.k3_id
+                 LEFT JOIN bymaterial_dictionary bdy on pin.funitid=bdy.kingdee and bdy.category='unit'
+                 LEFT JOIN bymaterial_dictionary bldy on pin.fbaseunit_id=bldy.kingdee and bldy.category='unit'
+                 LEFT JOIN bymaterial_dictionary byldy on pin.fpriceunitid=byldy.kingdee and byldy.category='unit'
+                 LEFT JOIN bymaterial_dictionary bm on pin.fstockid=bm.kingdee and bm.category='warehouse'
+                 LEFT JOIN bymaterial_dictionary bymat on pin.fstockstatusid=bymat.kingdee and bm.category='inventory_status'
+
+
+        WHERE fbillno = #{fbillno}
+    </select>
+</mapper>

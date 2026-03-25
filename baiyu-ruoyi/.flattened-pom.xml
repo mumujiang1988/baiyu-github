@@ -50,6 +50,7 @@
     <satoken.version>1.37.0</satoken.version>
     <redisson.version>3.29.0</redisson.version>
     <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
+    <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
     <velocity.version>2.3</velocity.version>
   </properties>
   <dependencyManagement>

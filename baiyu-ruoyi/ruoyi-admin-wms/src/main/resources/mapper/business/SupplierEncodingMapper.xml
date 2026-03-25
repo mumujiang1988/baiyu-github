@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.SupplierEncodingMapper">
+
+    <resultMap id="SupplierEncodingResultMap" type="com.ruoyi.business.entity.SupplierEncoding">
+        <id property="id" column="id"/>
+        <result property="number" column="number"/>
+        <result property="supplierGroup" column="supplier_group"/>
+        <result property="creatorTime" column="creator_time"/>
+    </resultMap>
+
+    <!-- 通过供应商分组查询最新一条数据 -->
+    <select id="selectBySupplierGroup" resultType="com.ruoyi.business.entity.SupplierEncoding">
+        SELECT
+        number
+        FROM supplier_encoding
+        WHERE supplier_group = #{supplierGroup}
+        ORDER BY creator_time DESC LIMIT 1;
+    </select>
+
+
+</mapper>

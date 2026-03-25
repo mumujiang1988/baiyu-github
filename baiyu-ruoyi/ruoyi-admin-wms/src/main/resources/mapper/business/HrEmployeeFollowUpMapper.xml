@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.HrEmployeeFollowUpMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.business.entity.HrEmployeeFollowUp">
+        <id column="id" property="id"/>
+        <result column="employee_number" property="employeeNumber"/>
+        <result column="employee_name" property="employeeName"/>
+        <result column="status" property="status"/>
+        <result column="follow_date" property="followDate"/>
+        <result column="follow_content" property="followContent"/>
+        <result column="follow_result" property="followResult"/>
+        <result column="job_transfer" property="jobTransfer"/>
+        <result column="salary_adjust_time" property="salaryAdjustTime"/>
+        <result column="salary_adjust_reason" property="salaryAdjustReason"/>
+        <result column="salary_adjust_doc_old" property="salaryAdjustDocOld"/>
+        <result column="position_adjust_doc_old" property="positionAdjustDocOld"/>
+        <result column="business_data_doc_old" property="businessDataDocOld"/>
+        <result column="salary_adjust_doc" property="salaryAdjustDoc"/>
+        <result column="position_adjust_doc" property="positionAdjustDoc"/>
+        <result column="business_data_doc" property="businessDataDoc"/>
+        <result column="regular_notice_doc" property="regularNoticeDoc"/>
+        <result column="communication_follow_doc" property="communicationFollowDoc"/>
+        <result column="event_type" property="eventType"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ruoyi.business.entity.HrEmployeeFollowUp">
+        INSERT INTO hr_employee_follow_up (
+            employee_number, employee_name, status, follow_date, follow_content, follow_result,
+            job_transfer, salary_adjust_time, salary_adjust_reason,
+            salary_adjust_doc_old, position_adjust_doc_old, business_data_doc_old,
+            salary_adjust_doc, position_adjust_doc, business_data_doc,
+            regular_notice_doc, communication_follow_doc, event_type, create_time
+        ) VALUES (
+            #{employeeNumber}, #{employeeName}, #{status}, #{followDate}, #{followContent}, #{followResult},
+            #{jobTransfer}, #{salaryAdjustTime}, #{salaryAdjustReason},
+            #{salaryAdjustDocOld}, #{positionAdjustDocOld}, #{businessDataDocOld},
+            #{salaryAdjustDoc}, #{positionAdjustDoc}, #{businessDataDoc},
+            #{regularNoticeDoc}, #{communicationFollowDoc}, #{eventType}, NOW()
+        )
+    </insert>
+
+    <update id="updateById" parameterType="com.ruoyi.business.entity.HrEmployeeFollowUp">
+        UPDATE hr_employee_follow_up
+        SET
+            employee_name = #{employeeName},
+            status = #{status},
+            follow_date = #{followDate},
+            follow_content = #{followContent},
+            follow_result = #{followResult},
+            job_transfer = #{jobTransfer},
+            salary_adjust_time = #{salaryAdjustTime},
+            salary_adjust_reason = #{salaryAdjustReason},
+            salary_adjust_doc_old = #{salaryAdjustDocOld},
+            position_adjust_doc_old = #{positionAdjustDocOld},
+            business_data_doc_old = #{businessDataDocOld},
+            salary_adjust_doc = #{salaryAdjustDoc},
+            position_adjust_doc = #{positionAdjustDoc},
+            business_data_doc = #{businessDataDoc},
+            regular_notice_doc = #{regularNoticeDoc},
+            communication_follow_doc = #{communicationFollowDoc},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM hr_employee_follow_up WHERE id = #{id}
+    </select>
+
+    <select id="selectByEmployeeId" resultMap="BaseResultMap">
+        SELECT * FROM hr_employee_follow_up
+        WHERE employee_number = #{employeeNumber}
+        ORDER BY follow_date DESC
+    </select>
+
+    <select id="selectByEmployeeNumber" resultMap="BaseResultMap">
+        SELECT * FROM hr_employee_follow_up WHERE employee_number = #{employeeNumber} LIMIT 1
+    </select>
+
+    <select id="selectAllEmployeeNumbers" resultType="java.lang.String">
+        SELECT DISTINCT employee_number FROM hr_employee_follow_up WHERE employee_number IS NOT NULL
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hr_employee_follow_up (
+            employee_number, employee_name, status, follow_date, follow_content, follow_result,
+            job_transfer, salary_adjust_time, salary_adjust_reason,
+            salary_adjust_doc_old, position_adjust_doc_old, business_data_doc_old,
+            salary_adjust_doc, position_adjust_doc, business_data_doc,
+            regular_notice_doc, communication_follow_doc, event_type, create_time
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.employeeNumber}, #{item.employeeName}, #{item.status}, #{item.followDate},
+                #{item.followContent}, #{item.followResult}, #{item.jobTransfer},
+                #{item.salaryAdjustTime}, #{item.salaryAdjustReason},
+                #{item.salaryAdjustDocOld}, #{item.positionAdjustDocOld}, #{item.businessDataDocOld},
+                #{item.salaryAdjustDoc}, #{item.positionAdjustDoc}, #{item.businessDataDoc},
+                #{item.regularNoticeDoc}, #{item.communicationFollowDoc}, #{item.eventType}, NOW()
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE hr_employee_follow_up
+            SET
+                employee_name = #{item.employeeName},
+                status = #{item.status},
+                follow_date = #{item.followDate},
+                follow_content = #{item.followContent},
+                follow_result = #{item.followResult},
+                job_transfer = #{item.jobTransfer},
+                salary_adjust_time = #{item.salaryAdjustTime},
+                salary_adjust_reason = #{item.salaryAdjustReason},
+                salary_adjust_doc_old = #{item.salaryAdjustDocOld},
+                position_adjust_doc_old = #{item.positionAdjustDocOld},
+                business_data_doc_old = #{item.businessDataDocOld},
+                salary_adjust_doc = #{item.salaryAdjustDoc},
+                position_adjust_doc = #{item.positionAdjustDoc},
+                business_data_doc = #{item.businessDataDoc},
+                regular_notice_doc = #{item.regularNoticeDoc},
+                communication_follow_doc = #{item.communicationFollowDoc},
+                update_time = NOW()
+            WHERE employee_number = #{item.employeeNumber}
+        </foreach>
+    </update>
+
+</mapper>
