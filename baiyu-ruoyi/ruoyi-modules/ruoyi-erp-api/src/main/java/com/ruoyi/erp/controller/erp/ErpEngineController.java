@@ -1215,60 +1215,6 @@ public class ErpEngineController {
     }
 
     /**
-     * 加载字典数据（构建器模式）
-     */
-    @PostMapping("/dictionary/{name}/load")
-    public R<?> loadDictionary(@PathVariable String name, 
-                               @RequestBody Map<String, Object> params,
-                               @RequestParam(required = false) String moduleCode) {
-        try {
-            if (moduleCode != null && !moduleCode.isEmpty()) {
-                permissionChecker.checkModulePermission(moduleCode, "query");
-            }
-            
-            DictionaryBuilderEngine.DictionaryLoader loader = () -> {
-                // TODO: 根据配置调用对应的 Service 加载数据
-                // 这里需要从 JSON 配置中读取加载逻辑
-                return new ArrayList<>();
-            };
-            
-            List<Map<String, Object>> data = dictionaryBuilderEngine.load(name, loader);
-            log.info("📦 加载字典：{}, 共 {} 条", name, data.size());
-            return R.ok(data);
-        } catch (Exception e) {
-            log.error("❌ 加载字典失败：{}", name, e);
-            return R.fail("加载字典失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 搜索字典（构建器模式）
-     */
-    @GetMapping("/dictionary/{name}/search")
-    public R<?> searchDictionary(@PathVariable String name,
-                                 @RequestParam String keyword,
-                                 @RequestParam(required = false) String moduleCode) {
-        try {
-            if (moduleCode != null && !moduleCode.isEmpty()) {
-                permissionChecker.checkModulePermission(moduleCode, "query");
-            }
-            
-            DictionaryBuilderEngine.DictionarySearcher searcher = (kw) -> {
-                // TODO: 根据配置调用对应的 Service 搜索数据
-                // 这里需要从 JSON 配置中读取搜索逻辑
-                return new ArrayList<>();
-            };
-            
-            List<Map<String, Object>> data = dictionaryBuilderEngine.search(name, keyword, searcher);
-            log.info("🔍 搜索字典：{}, 关键词：{}, 共 {} 条", name, keyword, data.size());
-            return R.ok(data);
-        } catch (Exception e) {
-            log.error("❌ 搜索字典失败：{}, keyword: {}", name, keyword, e);
-            return R.fail("搜索字典失败：" + e.getMessage());
-        }
-    }
-
-    /**
      * 清除字典缓存
      */
     @DeleteMapping("/dictionary/{name}/cache")

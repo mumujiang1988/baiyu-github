@@ -91,12 +91,6 @@
             <artifactId>ruoyi-common-doc</artifactId>
         </dependency>
 
-        <!-- MapStruct Plus 显式依赖 -->
-        <dependency>
-            <groupId>io.github.linpeilie</groupId>
-            <artifactId>mapstruct-plus-spring-boot-starter</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>
