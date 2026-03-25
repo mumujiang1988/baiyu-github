@@ -133,14 +133,6 @@
             <el-button
               link
               type="primary"
-              icon="Edit"
-              @click.stop="handleEdit(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              type="primary"
               icon="Clock"
               @click.stop="handleHistory(scope.row)"
             >
@@ -182,154 +174,150 @@
     <!-- 配置查看对话框 -->
     <el-dialog
       v-model="viewDialogVisible"
-      title="查看配置"
+      :title="isEditMode ? '编辑配置' : '查看配置'"
       width="90%"
       top="5vh"
       :close-on-click-modal="false"
       class="config-view-dialog"
     >
-      <el-descriptions :column="3" border size="small">
-        <el-descriptions-item label="配置 ID">{{ currentConfig.configId }}</el-descriptions-item>
-        <el-descriptions-item label="模块编码">{{ currentConfig.moduleCode }}</el-descriptions-item>
-        <el-descriptions-item label="配置名称">{{ currentConfig.configName }}</el-descriptions-item>
-        <el-descriptions-item label="配置类型">
-          <el-tag :type="getConfigTypeTag(currentConfig.configType)" size="small">
-            {{ getConfigTypeLabel(currentConfig.configType) }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="版本号">v{{ currentConfig.version }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="currentConfig.status === '1' ? 'success' : 'danger'" size="small">
-            {{ currentConfig.status === '1' ? '正常' : '停用' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="是否公共">{{ currentConfig.isPublic === '1' ? '是' : '否' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ currentConfig.createTime }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ currentConfig.updateTime }}</el-descriptions-item>
-        <el-descriptions-item label="备注">{{ currentConfig.remark }}</el-descriptions-item>
-      </el-descriptions>
+      <!-- 查看模式 -->
+      <div v-if="!isEditMode">
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="配置 ID">{{ currentConfig.configId }}</el-descriptions-item>
+          <el-descriptions-item label="模块编码">{{ currentConfig.moduleCode }}</el-descriptions-item>
+          <el-descriptions-item label="配置名称">{{ currentConfig.configName }}</el-descriptions-item>
+          <el-descriptions-item label="配置类型">
+            <el-tag :type="getConfigTypeTag(currentConfig.configType)" size="small">
+              {{ getConfigTypeLabel(currentConfig.configType) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="版本号">v{{ currentConfig.version }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="currentConfig.status === '1' ? 'success' : 'danger'" size="small">
+              {{ currentConfig.status === '1' ? '正常' : '停用' }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="是否公共">{{ currentConfig.isPublic === '1' ? '是' : '否' }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ currentConfig.createTime }}</el-descriptions-item>
+          <el-descriptions-item label="更新时间">{{ currentConfig.updateTime }}</el-descriptions-item>
+          <el-descriptions-item label="备注">{{ currentConfig.remark }}</el-descriptions-item>
+        </el-descriptions>
 
-      <el-divider>配置内容</el-divider>
+        <el-divider>配置内容</el-divider>
 
-      <div class="config-content">
-        <codemirror
-          v-model="currentConfig.configContent"
-          :extensions="[json()]"
-          :style="{ height: '45vh' }"
-          :readonly="true"
-        />
+        <div class="config-content">
+          <codemirror
+            v-model="currentConfig.configContent"
+            :extensions="[json()]"
+            :style="{ height: '45vh' }"
+            :readonly="true"
+          />
+        </div>
       </div>
 
-      <template #footer>
-        <el-button @click="viewDialogVisible = false">关闭</el-button>
-        <el-button type="primary" @click="openEditDialog">编辑配置</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 配置编辑对话框 (Drawer 形式) -->
-    <el-drawer
-      v-model="editDialogVisible"
-      :title="isEditMode ? '编辑配置' : '新增配置'"
-      size="900px"
-      :close-on-click-modal="false"
-      :before-close="handleEditClose"
-      class="config-edit-drawer"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editFormData"
-        :rules="editFormRules"
-        label-width="120px"
-      >
-        <el-form-item label="模块编码" prop="moduleCode">
-          <el-input
-            v-model="editFormData.moduleCode"
-            placeholder="如：saleOrder, purchaseOrder"
-            :disabled="isEditMode"
-            maxlength="50"
-            show-word-limit
-          />
-          <div class="form-tip">
-            模块编码在创建后不可修改，使用小驼峰命名
-          </div>
-        </el-form-item>
-
-        <el-form-item label="配置名称" prop="configName">
-          <el-input
-            v-model="editFormData.configName"
-            placeholder="如：销售订单页面配置"
-            maxlength="100"
-            show-word-limit
-          />
-        </el-form-item>
-
-        <el-form-item label="配置类型" prop="configType">
-          <el-select
-            v-model="editFormData.configType"
-            placeholder="请选择配置类型"
-            style="width: 100%"
-            :disabled="isEditMode"
-          >
-            <el-option
-              v-for="option in getConfigTypeOptions()"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
+      <!-- 编辑模式 -->
+      <div v-else>
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="配置 ID">
+            {{ editFormData.configId || '新增中' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="模块编码">
+            <el-input
+              v-model="editFormData.moduleCode"
+              placeholder="如：saleorder, purchaseorder"
+              :disabled="!!editFormData.configId"
+              maxlength="50"
+              size="small"
             />
-          </el-select>
-        </el-form-item>
+          </el-descriptions-item>
+          <el-descriptions-item label="配置名称">
+            <el-input
+              v-model="editFormData.configName"
+              placeholder="请输入配置名称"
+              maxlength="100"
+              size="small"
+            />
+          </el-descriptions-item>
+          <el-descriptions-item label="配置类型">
+            <el-select
+              v-model="editFormData.configType"
+              placeholder="请选择"
+              size="small"
+              style="width: 100%"
+              :disabled="!!editFormData.configId"
+            >
+              <el-option
+                v-for="option in getConfigTypeOptions()"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-descriptions-item>
+          <el-descriptions-item label="版本号">
+            <el-tag size="small">v{{ editFormData.version || 1 }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="是否公共">
+            <el-radio-group v-model="editFormData.isPublic" size="small">
+              <el-radio label="1">是</el-radio>
+              <el-radio label="0">否</el-radio>
+            </el-radio-group>
+          </el-descriptions-item>
+          <el-descriptions-item label="备注" :span="3">
+            <el-input
+              v-model="editFormData.remark"
+              type="textarea"
+              :rows="2"
+              placeholder="请输入备注信息"
+              maxlength="500"
+              show-word-limit
+            />
+          </el-descriptions-item>
+        </el-descriptions>
 
-        <el-form-item label="是否公共" prop="isPublic">
-          <el-radio-group v-model="editFormData.isPublic">
-            <el-radio label="1">是</el-radio>
-            <el-radio label="0">否</el-radio>
-          </el-radio-group>
-          <div class="form-tip">
-            公共配置可被所有用户访问，私有配置仅限创建者使用
-          </div>
-        </el-form-item>
+        <el-divider>配置内容</el-divider>
 
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="editFormData.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注信息"
-            maxlength="500"
-            show-word-limit
-          />
-        </el-form-item>
-
-        <el-form-item label="配置内容" prop="configContent">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
+          <span style="font-size: 14px; color: var(--el-text-color-regular)">JSON 格式配置</span>
+          <el-button
+            type="info"
+            size="small"
+            icon="MagicStick"
+            @click="formatJson"
+          >
+            格式化 JSON
+          </el-button>
+        </div>
+        <div class="config-content">
           <codemirror
             v-model="editFormData.configContent"
             :extensions="[json()]"
-            :style="{ height: '500px' }"
+            :style="{ height: 'calc(100vh - 400px)', minHeight: '400px' }"
             :autofocus="true"
             :indent-with-tab="true"
             :tab-size="2"
           />
-          <el-alert
-            v-if="jsonError"
-            type="error"
-            :closable="false"
-            show-icon
-            class="mt-2"
-          >
-            {{ jsonError }}
-          </el-alert>
-          <el-alert
-            v-else-if="jsonValid"
-            type="success"
-            :closable="false"
-            show-icon
-            class="mt-2"
-          >
-            JSON 格式验证通过
-          </el-alert>
-        </el-form-item>
+        </div>
+        <el-alert
+          v-if="jsonError"
+          type="error"
+          :closable="false"
+          show-icon
+          class="mt-2"
+        >
+          {{ jsonError }}
+        </el-alert>
+        <el-alert
+          v-else-if="jsonValid"
+          type="success"
+          :closable="false"
+          show-icon
+          class="mt-2"
+        >
+          JSON 格式验证通过
+        </el-alert>
 
-        <el-form-item label="变更原因" prop="changeReason">
+        <div style="margin-top: 16px">
           <el-input
             v-model="editFormData.changeReason"
             type="textarea"
@@ -338,16 +326,25 @@
             maxlength="500"
             show-word-limit
           />
-        </el-form-item>
+        </div>
+      </div>
 
-        <el-form-item>
+      <!-- 底部按钮区域 -->
+      <template #footer>
+        <div v-if="!isEditMode">
+          <el-button @click="viewDialogVisible = false">关闭</el-button>
+          <el-button type="primary" @click="enterEditMode">编辑配置</el-button>
+        </div>
+        <div v-else>
           <el-button type="primary" @click="handleEditSubmit" :loading="submitLoading">
             保存配置
           </el-button>
-          <el-button @click="handleEditClose">取消</el-button>
-        </el-form-item>
-      </el-form>
-    </el-drawer>
+          <el-button @click="cancelEditMode">取消编辑</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+
 
     <!-- 配置历史对话框 -->
     <el-dialog
@@ -445,7 +442,6 @@ const configList = ref([])
 
 // 对话框状态
 const viewDialogVisible = ref(false)
-const editDialogVisible = ref(false)
 const historyDialogVisible = ref(false)
 
 const currentConfig = ref({})
@@ -455,7 +451,6 @@ const historyLoading = ref(false)
 
 // 编辑相关
 const isEditMode = ref(false)
-const editFormRef = ref(null)
 const submitLoading = ref(false)
 const jsonValid = ref(false)
 const jsonError = ref('')
@@ -480,37 +475,9 @@ const queryParams = reactive({
   status: ''
 })
 
-// ==================== 表单验证规则 ====================
-const editFormRules = {
-  moduleCode: [
-    { required: true, message: '模块编码不能为空', trigger: 'blur' },
-    { pattern: /^[a-z]+([A-Z][a-z0-9]*)*$/, message: '模块编码必须为小驼峰命名', trigger: 'blur' }
-  ],
-  configName: [
-    { required: true, message: '配置名称不能为空', trigger: 'blur' }
-  ],
-  configType: [
-    { required: true, message: '配置类型不能为空', trigger: 'change' }
-  ],
-  configContent: [
-    { required: true, message: '配置内容不能为空', trigger: 'blur' },
-    {
-      validator: (rule, value, callback) => {
-        try {
-          JSON.parse(value)
-          jsonValid.value = true
-          jsonError.value = ''
-          callback()
-        } catch (e) {
-          jsonValid.value = false
-          jsonError.value = 'JSON 格式错误：' + e.message
-          callback(new Error('配置必须是有效的 JSON 格式'))
-        }
-      },
-      trigger: 'blur'
-    }
-  ]
-}
+// ==================== 已移除的验证规则 ====================
+// ✅ 不再使用表单验证（已移除 el-form 组件）
+// const editFormRules = { ... }
 
 // ==================== 方法定义 ====================
 
@@ -562,7 +529,8 @@ function refreshList() {
 function handleAdd() {
   isEditMode.value = false
   resetEditForm()
-  editDialogVisible.value = true
+  // 新增时直接打开对话框
+  viewDialogVisible.value = true
 }
 
 /**
@@ -570,34 +538,108 @@ function handleAdd() {
  */
 function handleEdit(row) {
   isEditMode.value = true
-  loadEditData(row.configId)
-  editDialogVisible.value = true
+  currentConfig.value = { ...row }
+  loadEditData(row.configId).then(() => {
+    viewDialogVisible.value = true
+  })
 }
 
 /**
- * 从查看页面进入编辑
+ * 从查看模式进入编辑模式
  */
-function openEditDialog() {
-  viewDialogVisible.value = false
-  handleEdit(currentConfig.value)
+function enterEditMode() {
+  isEditMode.value = true
+  // 准备编辑数据
+  const data = currentConfig.value
+  Object.assign(editFormData, {
+    configId: data.configId,
+    moduleCode: data.moduleCode,
+    configName: data.configName,
+    configType: data.configType,
+    configContent: data.configContent,
+    isPublic: data.isPublic,
+    remark: data.remark,
+    version: data.version || 1
+  })
+}
+
+/**
+ * 格式化 JSON
+ */
+function formatJson() {
+  if (!editFormData.configContent) {
+    ElMessage.warning('配置内容为空')
+    return
+  }
+  
+  try {
+    const parsed = JSON.parse(editFormData.configContent)
+    editFormData.configContent = JSON.stringify(parsed, null, 2)
+    jsonValid.value = true
+    jsonError.value = ''
+    ElMessage.success('JSON 格式化成功')
+  } catch (e) {
+    jsonValid.value = false
+    jsonError.value = 'JSON 格式错误：' + e.message
+    ElMessage.error('JSON 格式无效，无法格式化')
+  }
+}
+
+/**
+ * 取消编辑，返回查看模式
+ */
+function cancelEditMode() {
+  ElMessageBox.confirm('确定要取消编辑吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    isEditMode.value = false
+    // ✅ 不再需要清除验证（已移除 el-form）
+  })
 }
 
 /**
  * 加载编辑数据
  */
 function loadEditData(configId) {
-  getConfig(configId)
+  console.log('🔍 开始加载配置数据，configId:', configId)
+  
+  return getConfig(configId)
     .then(res => {
-      const data = res.data
+      console.log('📦 API 响应:', res)
+      
+      const data = res.data || res
+      console.log('📋 解析后的数据:', data)
+      
+      // ✅ 自动格式化 JSON 内容
+      let configContent = data.configContent || ''
+      console.log('📝 原始配置内容:', configContent)
+      
+      try {
+        const parsed = JSON.parse(configContent)
+        configContent = JSON.stringify(parsed, null, 2)
+        console.log('✅ JSON 格式化成功')
+      } catch (e) {
+        console.warn('❌ JSON 解析失败，保持原始格式:', e.message)
+      }
+      
       Object.assign(editFormData, {
         configId: data.configId,
         moduleCode: data.moduleCode,
         configName: data.configName,
         configType: data.configType,
-        configContent: data.configContent,
+        configContent: configContent,
         isPublic: data.isPublic,
-        remark: data.remark
+        remark: data.remark,
+        version: data.version || 1  // ✅ 加载版本号
       })
+      
+      console.log('✅ 编辑表单数据已更新:', editFormData)
+    })
+    .catch(error => {
+      console.error('❌ 加载配置数据失败:', error)
+      ElMessage.error('加载配置数据失败：' + (error.message || '未知错误'))
     })
 }
 
@@ -622,54 +664,41 @@ function resetEditForm() {
   }
 }
 
-/**
- * 关闭编辑对话框
- */
-function handleEditClose() {
-  editFormRef.value?.validateField().then(() => {
-    // 有未保存的修改
-    ElMessageBox.confirm('有未保存的修改，确定要关闭吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(() => {
-      editDialogVisible.value = false
-    })
-  }).catch(() => {
-    editDialogVisible.value = false
-  })
-}
+// ==================== 已移除的方法 ====================
+// handleEditClose - 已移除（不再需要）
 
 /**
  * 提交编辑表单
  */
 function handleEditSubmit() {
-  editFormRef.value.validate(valid => {
-    if (!valid) return
+  // ✅ 不再需要表单验证（已移除 el-form）
+  // 直接执行保存逻辑
+  submitLoading.value = true
 
-    submitLoading.value = true
+  const data = {
+    configId: editFormData.configId,
+    moduleCode: editFormData.moduleCode,
+    configName: editFormData.configName,
+    configType: editFormData.configType,
+    configContent: editFormData.configContent,
+    isPublic: editFormData.isPublic,
+    remark: editFormData.remark,
+    changeReason: editFormData.changeReason,
+    version: editFormData.version || 1  // ✅ 添加默认版本号，防止后端空指针
+  }
 
-    const data = {
-      configId: editFormData.configId,
-      moduleCode: editFormData.moduleCode,
-      configName: editFormData.configName,
-      configType: editFormData.configType,
-      configContent: editFormData.configContent,
-      isPublic: editFormData.isPublic,
-      remark: editFormData.remark,
-      changeReason: editFormData.changeReason
-    }
-
-    saveConfig(data)
-      .then(res => {
-        ElMessage.success(isEditMode.value ? '修改成功' : '新增成功')
-        editDialogVisible.value = false
-        getList()
-      })
-      .finally(() => {
-        submitLoading.value = false
-      })
-  })
+  saveConfig(data)
+    .then(res => {
+      ElMessage.success(isEditMode.value ? '修改成功' : '新增成功')
+      viewDialogVisible.value = false
+      getList()
+    })
+    .catch(error => {
+      ElMessage.error('保存失败：' + (error.message || '未知错误'))
+    })
+    .finally(() => {
+      submitLoading.value = false
+    })
 }
 
 /**
@@ -870,30 +899,7 @@ onMounted(() => {
   margin-top: 8px;
 }
 
-/* 编辑抽屉样式优化 */
-.config-edit-drawer :deep(.el-drawer__header) {
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--el-border-color-light);
-}
-
-.config-edit-drawer :deep(.el-drawer__body) {
-  padding: 0 24px 24px;
-}
-
-.config-edit-drawer :deep(.el-form) {
-  padding-top: 8px;
-}
-
-.config-edit-drawer :deep(.el-form-item) {
-  margin-bottom: 18px;
-}
-
-.config-edit-drawer :deep(.el-form-item:last-child) {
-  margin-bottom: 0;
-}
-
-/* 查看对话框样式优化 */
+/* 查看/编辑对话框样式优化 */
 .config-view-dialog :deep(.el-dialog__header) {
   padding-bottom: 12px;
   margin-right: 0;

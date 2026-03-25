@@ -15,7 +15,7 @@ $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $PROJECT_ROOT = $SCRIPT_DIR
 $BACKEND_DIR = "$PROJECT_ROOT\baiyu-ruoyi\ruoyi-admin-wms"
 $FRONTEND_DIR = "$PROJECT_ROOT\baiyu-web"
-$BACKEND_CONFIG = "$BACKEND_DIR\src\main\resources\application-dev.yml"
+$BACKEND_CONFIG = "$BACKEND_DIR\target\classes\application.yml"
 
 Write-Host "[1/6] Checking project directories..." -ForegroundColor Yellow
 
@@ -119,160 +119,33 @@ if (Test-Path $BACKEND_CONFIG) {
 Write-Host "[OK] Config check completed" -ForegroundColor Green
 Write-Host ""
 
-Write-Host "[4/6] Starting backend service..." -ForegroundColor Yellow
+Write-Host "[4/6] Checking backend JAR file..." -ForegroundColor Yellow
 
-$backendPackageJson = "$BACKEND_DIR\pom.xml"
-$frontendPackageJson = "$FRONTEND_DIR\package.json"
+# Check if JAR file exists
+$jarFile = "$BACKEND_DIR\target\ruoyi-admin-wms.jar"
 
-if (-not (Test-Path $backendPackageJson)) {
-    Write-Host "ERROR: Backend pom.xml not exist" -ForegroundColor Red
+if (-not (Test-Path $jarFile)) {
+    Write-Host "ERROR: Backend JAR file not exist: $jarFile" -ForegroundColor Red
+    Write-Host "Please compile backend first using: mvn clean package -DskipTests" -ForegroundColor Yellow
     exit 1
-}
-
-if (-not (Test-Path $frontendPackageJson)) {
-    Write-Host "ERROR: Frontend package.json not exist" -ForegroundColor Red
-    exit 1
-}
-
-$nodeModulesExists = Test-Path "$FRONTEND_DIR\node_modules"
-if (-not $nodeModulesExists) {
-    Write-Host "Frontend dependencies not installed, installing..." -ForegroundColor Cyan
-    Push-Location $FRONTEND_DIR
-    npm install
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: Frontend dependencies install failed" -ForegroundColor Red
-        Pop-Location
-        exit 1
-    }
-    Pop-Location
-    Write-Host "[OK] Frontend dependencies installed" -ForegroundColor Green
-}
-else {
-    Write-Host "[OK] Frontend dependencies exist" -ForegroundColor Green
-}
-
-Write-Host ""
-
-Write-Host "[4/6] Checking and installing dependency modules..." -ForegroundColor Yellow
-
-# Check if modules need to be installed
-$SYSTEM_JAR = "$PROJECT_ROOT\baiyu-ruoyi\ruoyi-modules\ruoyi-system\target\ruoyi-system-5.2.0.jar"
-$ROOT_POM = "$PROJECT_ROOT\baiyu-ruoyi\pom.xml"
-
-if (-not (Test-Path $SYSTEM_JAR)) {
-    Write-Host "Installing RuoYi parent project and modules..." -ForegroundColor Cyan
-    Push-Location "$PROJECT_ROOT\baiyu-ruoyi"
-    try {
-        # Execute full install to ensure all modules are in local maven repository
-        & mvn clean install -DskipTests -q
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Maven install failed, please check error info above" -ForegroundColor Red
-            Pop-Location
-            exit 1
-        }
-        
-        Write-Host "[OK] All modules installed to local repository" -ForegroundColor Green
-    } catch {
-        Write-Host "ERROR: Maven install exception: $_" -ForegroundColor Red
-        Pop-Location
-        exit 1
-    }
-    Pop-Location
 } else {
-    Write-Host "[OK] Dependency modules already installed" -ForegroundColor Green
+    $jarAge = (Get-Date) - (Get-Item $jarFile).LastWriteTime
+    Write-Host "[OK] Backend JAR file found (age: $([math]::Round($jarAge.TotalMinutes, 1)) minutes)" -ForegroundColor Green
 }
 
 Write-Host ""
 
-Write-Host "[5/6] Preparing backend for startup..." -ForegroundColor Yellow
-
-# Use existing compiled classes if available, otherwise compile on-the-fly
-$backendTargetDir = "$BACKEND_DIR\target"
-$jarFile = "$backendTargetDir\ruoyi-admin-wms.jar"
-$systemJar = "$PROJECT_ROOT\baiyu-ruoyi\ruoyi-modules\ruoyi-system\target\ruoyi-system-5.2.0.jar"
-
-Push-Location $BACKEND_DIR
-try {
-    # Check if dependency modules are installed
-    if (-not (Test-Path $systemJar)) {
-        Write-Host "Installing RuoYi parent project and modules..." -ForegroundColor Cyan
-        Push-Location "$PROJECT_ROOT\baiyu-ruoyi"
-        try {
-            & mvn clean install -DskipTests -q
-            if ($LASTEXITCODE -ne 0) {
-                Write-Host "ERROR: Maven install failed" -ForegroundColor Red
-                Pop-Location
-                exit 1
-            }
-            Write-Host "[OK] All modules installed to local repository" -ForegroundColor Green
-        } catch {
-            Write-Host "ERROR: Maven install exception: $_" -ForegroundColor Red
-            Pop-Location
-            exit 1
-        }
-        Pop-Location
-    } else {
-        Write-Host "[OK] Dependency modules already installed" -ForegroundColor Green
-    }
-    
-    # Check if JAR already exists and is recent (within 1 hour)
-    $forceRecompile = $false
-    if (Test-Path $jarFile) {
-        $jarAge = (Get-Date) - (Get-Item $jarFile).LastWriteTime
-        if ($jarAge.TotalHours -gt 1) {
-            Write-Host "JAR file is old (>1 hour), forcing recompile..." -ForegroundColor Gray
-            $forceRecompile = $true
-        } else {
-            Write-Host "[OK] Using existing JAR file (age: $([math]::Round($jarAge.TotalMinutes, 1)) minutes)" -ForegroundColor Green
-        }
-    } else {
-        Write-Host "No JAR file found, will compile..." -ForegroundColor Gray
-        $forceRecompile = $true
-    }
-    
-    if ($forceRecompile) {
-        # No JAR exists or is old, try to compile
-        Write-Host "Compiling backend code (this may take a while)..." -ForegroundColor Cyan
-        
-        # Clean first to force recompilation
-        if (Test-Path $backendTargetDir) {
-            Write-Host "  -> Cleaning target directory..." -ForegroundColor Gray
-            Remove-Item -Recurse -Force $backendTargetDir -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2  # Wait for file handles to release
-        }
-        
-        # Try compile
-        & mvn clean compile -DskipTests -q
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "WARNING: Compilation had errors, but will attempt to continue..." -ForegroundColor Yellow
-            Write-Host "  If startup fails, please fix the compilation errors first" -ForegroundColor Gray
-        } else {
-            Write-Host "[OK] Backend compilation successful" -ForegroundColor Green
-        }
-    }
-} catch {
-    Write-Host "ERROR: Backend preparation exception: $_" -ForegroundColor Red
-    Pop-Location
-    exit 1
-}
-Pop-Location
-
-Write-Host ""
-
-Write-Host "[6/6] Starting backend service..." -ForegroundColor Yellow
+Write-Host "[5/6] Starting backend service..." -ForegroundColor Yellow
 Write-Host "Backend URL: http://localhost:8180" -ForegroundColor Cyan
 Write-Host "Tip: Backend will start in background, please wait..." -ForegroundColor Gray
 Write-Host ""
 
-# Start backend in background
+# Start backend using JAR file
 Push-Location $BACKEND_DIR
 try {
-    # Start backend process (background)
-    # Use spring-boot:run to run from source (avoid class loading issues with packaged JAR)
-    Write-Host "Starting backend with spring-boot:run..." -ForegroundColor Gray
-    $backendJob = Start-Process mvn -ArgumentList "spring-boot:run", "-Dspring-boot.run.fork=true" -PassThru -NoNewWindow
+    # Start backend with JAR (faster than spring-boot:run)
+    Write-Host "Starting backend with JAR file..." -ForegroundColor Gray
+    $backendJob = Start-Process java -ArgumentList "-jar", "$jarFile" -PassThru -NoNewWindow
     Write-Host "[OK] Backend service started (Process ID: $($backendJob.Id))" -ForegroundColor Green
 } catch {
     Write-Host "ERROR: Backend start failed: $_" -ForegroundColor Red
@@ -332,7 +205,7 @@ if (-not $backendReady) {
 
 Write-Host ""
 
-Write-Host "[7/6] Starting frontend service..." -ForegroundColor Yellow
+Write-Host "[6/6] Starting frontend service..." -ForegroundColor Yellow
 Write-Host "Frontend URL: http://localhost:8899" -ForegroundColor Cyan
 Write-Host "Tip: Frontend will start in background..." -ForegroundColor Gray
 Write-Host ""

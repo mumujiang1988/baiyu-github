@@ -14,53 +14,52 @@ export function listConfig(query) {
 }
 
 /**
- * 查询配置详情
- * @param {string|number} id - 配置 ID
+ * 查询配置详情（支持 moduleCode 和 configId 两种方式）
+ * @param {string|number} id - 配置 ID 或 moduleCode
+ * @param {string} configType - 配置类型（可选，当使用 moduleCode 时需要）
  * @returns {Promise}
  */
-export function getConfig(id) {
-  return request({
-    url: `/erp/config/${id}`,
-    method: 'get'
-  })
+export function getConfig(id, configType) {
+  // ✅ 如果是数字或可以转换为数字的字符串，使用 ID 查询
+  const numericId = typeof id === 'number' ? id : Number(id)
+  if (!isNaN(numericId)) {
+    return request({
+      url: `/erp/config/${numericId}`,
+      method: 'get'
+    })
+  }
+  // 否则，使用 moduleCode + configType 查询
+  else {
+    const params = configType ? { moduleCode: id, configType } : { moduleCode: id }
+    return request({
+      url: '/erp/config/get',
+      method: 'get',
+      params: params
+    })
+  }
 }
 
 /**
- * 新增配置
- * @param {Object} data - 配置数据
- * @returns {Promise}
- */
-export function addConfig(data) {
-  return request({
-    url: '/erp/config',  // ✅ 修正：与后端保持一致
-    method: 'post',
-    data: data
-  })
-}
-
-/**
- * 修改配置
- * @param {Object} data - 配置数据（包含 configId）
- * @returns {Promise}
- */
-export function updateConfig(data) {
-  return request({
-    url: '/erp/config',  // ✅ 修正：与后端保持一致
-    method: 'put',
-    data: data
-  })
-}
-
-/**
- * 保存配置（新增或修改）
+ * 保存配置（低代码通用接口 - 智能判断新增或修改）
  * @param {Object} data - 配置数据
  * @returns {Promise}
  */
 export function saveConfig(data) {
+  // ✅ 根据是否有 configId 判断使用 POST 还是 PUT
   if (data.configId) {
-    return updateConfig(data)
+    // ✅ 修改操作，使用 PUT 方法
+    return request({
+      url: '/erp/config',
+      method: 'put',
+      data: data
+    })
   } else {
-    return addConfig(data)
+    // ✅ 新增操作，使用 POST 方法
+    return request({
+      url: '/erp/config',
+      method: 'post',
+      data: data
+    })
   }
 }
 

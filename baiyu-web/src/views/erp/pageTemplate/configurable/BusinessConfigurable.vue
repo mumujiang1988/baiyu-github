@@ -574,56 +574,31 @@ const BusinessTemplate = computed(() => ({
 // ==================== 动态 API 导入（根据配置）====================
 const apiModuleMap = new Map()
 
-// ==================== 全局预加载 API 模块（Vite 唯一支持写法）====================
-const apiModules = import.meta.glob('@/api/k3/*.js', { eager: true })
-
-// 获取 API 方法的辅助函数
-const getApiMethod = async (methodKey) => {
-  const apiConfig = BusinessTemplate.value?.apiConfig
-  if (!apiConfig || !apiConfig.modulePath) {
-    return null
-  }
-  
-  // 尝试从缓存中获取
-  const cacheKey = `${apiConfig.modulePath}_${methodKey}`
-  if (apiModuleMap.has(cacheKey)) {
-    return apiModuleMap.get(cacheKey)
-  }
-  
+// ==================== 通用引擎 API（低代码方案）====================
+/**
+ * 通用列表查询接口 - 使用 ERP 引擎
+ */
+const getList = async () => {
+  loading.value = true
   try {
-    // 从预加载的模块中获取（配置文件中已使用正确路径）
-    let moduleKey = apiConfig.modulePath
+    // 使用通用引擎查询接口
+    const response = await request({
+      url: '/erp/engine/list',
+      method: 'post',
+      data: {
+        ...queryParams.value,
+        moduleCode: currentConfig.value?.pageConfig?.moduleCode || 'business'
+      }
+    })
     
-    // 确保有 .js 后缀
-    if (!moduleKey.endsWith('.js')) {
-      moduleKey = `${moduleKey}.js`
-    }
-    
-    const apiModule = apiModules[moduleKey]
-    
-    if (!apiModule) {
-      return null
-    }
-    
-    const methodName = apiConfig.methods?.[methodKey]
-    
-    if (methodName && apiModule[methodName]) {
-      const method = apiModule[methodName]
-      apiModuleMap.set(cacheKey, method)
-      return method
-    }
-    
-    return null
+    console.log('📊 查询结果:', response)
+    tableData.value = response.rows || []
+    total.value = response.total || 0
   } catch (error) {
-    return null
-  }
-}
-
-// 预加载所有 API 方法
-const preloadApiMethods = async () => {
-  const methods = ['list', 'get', 'add', 'update', 'delete', 'audit', 'unAudit', 'entry', 'cost']
-  for (const method of methods) {
-    await getApiMethod(method)
+    console.error('❌ 查询失败:', error)
+    ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -826,24 +801,25 @@ const getTagConfig = (value, dictName) => {
   }
 }
 
-// 查询列表 - 使用配置中的 API
+// 查询列表 - 使用通用引擎 API
 const getList = async () => {
   loading.value = true
   try {
-    const apiMethod = await getApiMethod('list')
-    if (!apiMethod) {
-      ElMessage.error('API 未配置')
-      return
-    }
-    // 添加 moduleCode 参数
-    const requestData = {
-      ...queryParams.value,
-      moduleCode: BusinessTemplate.value?.pageConfig?.moduleCode || 'business'
-    }
-    const response = await apiMethod(requestData)
+    // 使用通用引擎查询接口
+    const response = await request({
+      url: '/erp/engine/list',
+      method: 'post',
+      data: {
+        ...queryParams.value,
+        moduleCode: BusinessTemplate.value?.pageConfig?.moduleCode || 'business'
+      }
+    })
+    
+    console.log('📊 查询结果:', response)
     tableData.value = response.rows || []
     total.value = response.total || 0
   } catch (error) {
+    console.error('❌ 查询失败:', error)
     ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
   } finally {
     loading.value = false
