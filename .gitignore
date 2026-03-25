@@ -1,0 +1,109 @@
+# ==============================================
+# 全局通用忽略规则（所有项目共用）
+# ==============================================
+# IDE 缓存与配置文件（通用）
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.DS_Store  # Mac 系统隐藏文件
+Thumbs.db  # Windows 系统缩略图文件
+
+# 日志文件（通用）
+*.log
+logs/
+logs/**/*
+frontend.log
+frontend-error.log
+backend.log
+error.log
+
+# 临时文件（通用）
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# 灵码插件缓存（之前项目中出现的缓存目录）
+.lingma/
+
+
+# ==============================================
+# 后端项目：baiyu-ruoyi（若依框架，Java/Maven）
+# ==============================================
+# Maven 编译目录（核心忽略，体积巨大）
+baiyu-ruoyi/target/
+baiyu-ruoyi/**/target/
+
+# 若依框架默认生成的临时目录
+baiyu-ruoyi/temp/
+baiyu-ruoyi/uploadPath/
+baiyu-ruoyi/webapp/WEB-INF/classes/
+
+# 数据库脚本备份（非核心，无需提交）
+baiyu-ruoyi/db/backup/
+
+# 若依配置文件（包含敏感信息，禁止提交）
+baiyu-ruoyi/src/main/resources/application-druid.yml
+baiyu-ruoyi/src/main/resources/application.yml  # 若包含数据库密码、密钥，建议忽略；若仅通用配置，可保留
+baiyu-ruoyi/src/main/resources/bootstrap.yml
+
+# Java 编译临时文件
+baiyu-ruoyi/src/main/java/**/*.class
+baiyu-ruoyi/src/test/java/**/*.class
+
+# 第三方依赖（若依可能引入的本地jar，无需提交）
+baiyu-ruoyi/lib/
+
+
+# ==============================================
+# 前端项目：baiyu-web（Vue3 + Vite）
+# ==============================================
+# npm 依赖目录（核心忽略，可通过 npm install 恢复）
+baiyu-web/node_modules/
+
+# Vite 构建目录（打包生成的静态文件，无需提交）
+baiyu-web/dist/
+baiyu-web/build/
+
+# Vue3 环境配置文件（包含接口地址、密钥等敏感信息，禁止提交）
+baiyu-web/.env
+baiyu-web/.env.development
+baiyu-web/.env.production
+baiyu-web/.env.test
+
+# npm 依赖锁定文件（可选：保留可保证版本一致，忽略可减少提交体积；企业项目推荐保留）
+# baiyu-web/package-lock.json
+# baiyu-web/yarn.lock
+# baiyu-web/pnpm-lock.yaml
+
+# 前端日志与缓存
+baiyu-web/npm-debug.log*
+baiyu-web/yarn-debug.log*
+baiyu-web/yarn-error.log*
+baiyu-web/.pnpm-debug.log*
+baiyu-web/.eslintcache
+
+# 前端工具生成的临时目录（非核心，无需提交）
+baiyu-web/bin/
+baiyu-web/docs/
+baiyu-web/html/
+baiyu-web/.cache/
+baiyu-web/.temp/
+
+# Vue3 组件样式缓存（开发时生成，无需提交）
+baiyu-web/src/**/*.css.d.ts
+baiyu-web/src/**/*.scss.d.ts
+
+# 子项目冗余配置（避免与主仓库 .gitignore 冲突）
+baiyu-web/.gitignore
+/target

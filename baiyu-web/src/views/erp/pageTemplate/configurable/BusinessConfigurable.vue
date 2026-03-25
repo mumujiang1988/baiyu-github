@@ -1,0 +1,1695 @@
+<template>
+  <div class="app-container">
+    <!-- 搜索区域 -->
+    <el-card shadow="never" class="search-card" v-if="parsedConfig.search?.showSearch">
+      <!-- 页面标题 -->
+      <div class="page-header" v-if="pageTitle">
+        <el-icon :size="20" v-if="parsedConfig.page?.icon"><component :is="parsedConfig.page.icon" /></el-icon>
+        <span class="page-title">{{ pageTitle }}</span>
+      </div>
+      
+      <!-- 第一排：操作按钮 -->
+      <div class="toolbar-row" v-if="leftToolbarActions.length > 0">
+        <el-space wrap>
+          <el-button
+            v-for="action in leftToolbarActions"
+            :key="action.label"
+            :type="action.type"
+            :icon="action.icon"
+            :disabled="getButtonDisabled(action.disabled)"
+            @click="handleAction(action.handler)"
+            v-hasPermi="action.permission ? [action.permission] : []"
+          >
+            {{ action.label }}
+          </el-button>
+        </el-space>
+      </div>
+      
+      <!-- 第二排：查询条件和查询按钮 -->
+      <el-form :model="queryParams" ref="queryRef" :inline="true" label-width="70px" size="default" class="search-form">
+        <!-- 动态渲染查询字段 -->
+        <template v-for="field in parsedConfig.search?.fields" :key="field.field">
+          <el-form-item :label="field.label" :prop="field.field">
+            <!-- 日期范围选择器 -->
+            <el-date-picker
+              v-if="field.component === 'daterange'"
+              v-model="dateRange"
+              :type="field.component"
+              range-separator="至"
+              :start-placeholder="field.props.startPlaceholder"
+              :end-placeholder="field.props.endPlaceholder"
+              :value-format="field.props.valueFormat"
+              :style="field.props.style"
+              @change="handleQuery"
+            />
+            
+            <!-- 普通输入框 -->
+            <el-input
+              v-else-if="field.component === 'input'"
+              v-model="queryParams[field.field]"
+              :placeholder="field.props.placeholder"
+              :clearable="field.props.clearable"
+              :style="field.props.style"
+              @keyup.enter="handleQuery"
+            >
+              <template #prefix v-if="field.props.prefixIcon">
+                <el-icon><component :is="field.props.prefixIcon" /></el-icon>
+              </template>
+            </el-input>
+            
+            <!-- 下拉选择框 -->
+            <el-select
+              v-else-if="field.component === 'select'"
+              v-model="queryParams[field.field]"
+              :placeholder="field.props.placeholder"
+              :clearable="field.props.clearable"
+              :filterable="field.props.filterable"
+              :style="field.props.style"
+            >
+              <el-option
+                v-for="option in getDictOptions(field.dictionary, field.options)"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+        </template>
+        
+        <!-- 查询和重置按钮 -->
+        <el-form-item>
+          <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
+          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <!-- 表格区域 -->
+    <el-card shadow="never" class="table-card">
+      <div class="table-wrapper">
+        <el-table
+          v-loading="loading"
+          :data="tableData"
+          :row-key="parsedConfig.table?.rowKey || 'id'"
+          :border="parsedConfig.table?.border ?? true"
+          :stripe="parsedConfig.table?.stripe ?? true"
+          :show-overflow-tooltip="parsedConfig.table?.showOverflowTooltip ?? true"
+          :resizable="parsedConfig.table?.resizable ?? true"
+          @selection-change="handleSelectionChange"
+          @row-click="handleRowClick"
+        >
+        <!-- 动态渲染列 -->
+        <template v-for="(column, index) in visibleColumns" :key="index">
+          <!-- 选择列 -->
+          <el-table-column
+            v-if="column.type === 'selection'"
+            :type="column.type"
+            :width="column.width"
+            :fixed="column.fixed"
+            :resizable="column.resizable"
+          />
+          
+          <!-- 展开列 - 改为操作列 -->
+          <el-table-column
+            v-else-if="column.type === 'expand'"
+            :width="column.width"
+            :fixed="column.fixed"
+            :label="column.label"
+            align="center"
+          >
+            <template #default="scope">
+              <el-button
+                type="primary"
+                link
+                icon="View"
+                @click.stop="handleViewDetail(scope.row)"
+              >
+                查看
+              </el-button>
+            </template>
+          </el-table-column>
+          
+          <!-- 普通列 -->
+          <el-table-column
+            v-else
+            :prop="column.prop"
+            :label="column.label"
+            :width="column.width"
+            :min-width="column.minWidth"
+            :fixed="column.fixed"
+            :align="column.align"
+            :sortable="column.sortable"
+            :show-overflow-tooltip="column.showOverflowTooltip"
+            :resizable="column.resizable"
+          >
+            <template #default="scope">
+              <!-- 标签渲染 -->
+              <el-tag
+                v-if="column.renderType === 'tag'"
+                :type="getTagConfig(scope.row[column.prop], column.dictionary).type"
+                size="small"
+                disable-transitions
+              >
+                {{ getTagConfig(scope.row[column.prop], column.dictionary).label }}
+              </el-tag>
+              
+              <!-- 链接渲染 -->
+              <el-link
+                v-else-if="column.renderType === 'link'"
+                type="primary"
+                :underline="false"
+              >
+                {{ scope.row[column.prop] }}
+              </el-link>
+              
+              <!-- 货币渲染 -->
+              <span v-else-if="column.renderType === 'currency'">
+                {{ formatCurrency(scope.row[column.prop], column.precision) }}
+              </span>
+              
+              <!-- 日期渲染 -->
+              <span v-else-if="column.renderType === 'date'">
+                {{ formatDate(scope.row[column.prop], column.format) }}
+              </span>
+              
+              <!-- 日期时间渲染 -->
+              <span v-else-if="column.renderType === 'datetime'">
+                {{ formatDateTime(scope.row[column.prop], column.format) }}
+              </span>
+              
+              <!-- 百分比渲染 -->
+              <span v-else-if="column.renderType === 'percent'">
+                {{ formatPercent(scope.row[column.prop], column.precision) }}
+              </span>
+              
+              <!-- 默认文本 -->
+              <span v-else>
+                {{ scope.row[column.prop] ?? '-' }}
+              </span>
+            </template>
+          </el-table-column>
+        </template>
+      </el-table>
+      
+      <!-- 分页 -->
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-show="total > 0"
+          :total="total"
+          v-model:current-page="queryParams.pageNum"
+          v-model:page-size="queryParams.pageSize"
+          @size-change="handlePageSizeChange"
+          @current-change="handlePageChange"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          background
+        />
+      </div>
+      </div>
+    </el-card>
+
+    <!-- 编辑对话框 -->
+    <el-dialog
+      :title="dialogTitle"
+      v-model="dialogVisible"
+      :width="parsedConfig.form?.dialogWidth || '1000px'"
+      append-to-body
+      @close="handleDialogClose"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="formData" :rules="formRules" ref="formRef" :label-width="parsedConfig.form?.labelWidth || '120px'">
+        <el-scrollbar max-height="65vh">
+          <!-- 动态渲染表单分区 -->
+          <el-card
+            v-for="(section, index) in parsedConfig.form?.sections || []"
+            :key="index"
+            shadow="never"
+            class="form-section-card"
+          >
+            <template #header>
+              <div class="card-header">
+                <el-icon v-if="section.icon"><component :is="section.icon" /></el-icon>
+                <span>{{ section.title }}</span>
+              </div>
+            </template>
+            
+            <el-row :gutter="20">
+              <!-- 动态渲染表单字段 -->
+              <el-col
+                v-for="field in section.fields"
+                :key="field.field"
+                :span="field.span || (24 / section.columns)"
+              >
+                <el-form-item :label="field.label" :prop="field.field">
+                  <!-- 输入框 -->
+                  <el-input
+                    v-if="field.component === 'input'"
+                    v-model="formData[field.field]"
+                    v-bind="field.componentProps"
+                    clearable
+                  />
+                  
+                  <!-- 日期选择器 -->
+                  <el-date-picker
+                    v-else-if="['date', 'datetime'].includes(field.component)"
+                    v-model="formData[field.field]"
+                    :type="field.component"
+                    :placeholder="field.componentProps?.placeholder || '选择日期'"
+                    :value-format="field.componentProps?.valueFormat || 'YYYY-MM-DD'"
+                    style="width: 100%"
+                  />
+                  
+                  <!-- 数字输入框 -->
+                  <el-input-number
+                    v-else-if="field.component === 'input-number'"
+                    v-model="formData[field.field]"
+                    v-bind="field.componentProps"
+                    style="width: 100%"
+                  />
+                  
+                  <!-- 下拉选择框 -->
+                  <el-select
+                    v-else-if="field.component === 'select'"
+                    v-model="formData[field.field]"
+                    :placeholder="field.props?.placeholder || field.componentProps?.placeholder || '请选择'"
+                    :clearable="field.props?.clearable ?? field.componentProps?.clearable ?? true"
+                    :filterable="field.props?.filterable ?? field.componentProps?.filterable ?? false"
+                    :remote="field.props?.remote ?? field.componentProps?.remote"
+                    :loading="field.dictionary === 'nation' ? nationSearchLoading : false"
+                    :remote-method="field.dictionary === 'nation' ? searchNations : undefined"
+                    style="width: 100%"
+                  >
+                    <el-option
+                      v-for="option in getDictOptions(field.dictionary, field.options)"
+                      :key="option.value"
+                      :label="option.label"
+                      :value="option.value"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-card>
+          
+          <!-- 页签形式的明细和成本表格 -->
+          <el-card
+            v-if="parsedConfig.form?.formTabs?.enabled"
+            shadow="never"
+            class="form-tabs-card"
+          >
+            <el-tabs v-model="formActiveTab" stretch>
+              <el-tab-pane
+                v-for="tab in parsedConfig.form.formTabs.tabs"
+                :key="tab.name"
+                :label="tab.label"
+                :name="tab.name"
+              >
+                <!-- 明细表格页签 -->
+                <div v-if="tab.name === 'entry' && tab.table" class="tab-pane-content">
+                  <div class="tab-pane-toolbar">
+                    <el-button
+                      v-if="tab.table.addRow"
+                      type="primary"
+                      size="small"
+                      icon="Plus"
+                      @click="handleAddEntryRow"
+                    >
+                      添加明细
+                    </el-button>
+                  </div>
+                  <el-table
+                    :data="entryList"
+                    border
+                    size="small"
+                    max-height="300"
+                    stripe
+                    class="entry-table"
+                  >
+                    <el-table-column
+                      v-for="(col, index) in tab.table.columns"
+                      :key="index"
+                      :prop="col.prop"
+                      :label="col.label"
+                      :width="col.width"
+                      :align="col.align || 'center'"
+                      show-overflow-tooltip
+                    >
+                      <template #default="scope">
+                        <el-input
+                          v-if="!col.type || col.type === 'text'"
+                          v-model="scope.row[col.prop]"
+                          size="small"
+                          clearable
+                          :disabled="!col.editable"
+                        />
+                        <el-input-number
+                          v-else-if="col.type === 'number'"
+                          v-model="scope.row[col.prop]"
+                          size="small"
+                          :min="0"
+                          :precision="2"
+                          :step="0.01"
+                          controls-position="right"
+                          style="width: 100%"
+                          :disabled="!col.editable"
+                        />
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      v-if="tab.table.deleteRow"
+                      label="操作"
+                      width="80"
+                      align="center"
+                      fixed="right"
+                    >
+                      <template #default="scope">
+                        <el-button
+                          type="danger"
+                          size="small"
+                          icon="Delete"
+                          link
+                          @click="handleDeleteEntryRow(scope.$index)"
+                        >
+                          删除
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+                
+                <!-- 成本表单页签 -->
+                <div v-else-if="tab.name === 'cost' && tab.type === 'form'" class="tab-pane-content">
+                  <el-row :gutter="20">
+                    <el-col
+                      v-for="field in tab.fields"
+                      :key="field.field"
+                      :span="field.span || (24 / tab.columns)"
+                    >
+                      <el-form-item :label="field.label" :prop="field.field">
+                        <el-input-number
+                          v-if="field.component === 'input-number'"
+                          v-model="costData[field.field]"
+                          v-bind="field.props"
+                          style="width: 100%"
+                        />
+                        <el-input
+                          v-else
+                          v-model="costData[field.field]"
+                          clearable
+                          style="width: 100%"
+                        />
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </el-card>
+        </el-scrollbar>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
+            确 定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 详情抽屉 -->
+    <el-drawer
+      v-model="drawerVisible"
+      :title="drawerTitle"
+      direction="rtl"
+      size="60%"
+      :before-close="handleDrawerClose"
+      :close-on-click-modal="true"
+      :modal="true"
+    >
+      <div v-if="drawerLoading" class="drawer-loading">
+        <el-icon class="is-loading" :size="40"><Loading /></el-icon>
+        <p>正在加载数据...</p>
+      </div>
+      <div v-else class="drawer-content">
+        <el-tabs v-model="detailActiveTab" stretch>
+          <!-- 动态渲染页签 -->
+          <el-tab-pane
+            v-for="tab in parsedConfig.drawer?.tabs || []"
+            :key="tab.name"
+            :label="tab.label"
+            :name="tab.name"
+          >
+            <!-- 表格类型页签 -->
+            <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
+              <div v-if="!currentDetailRow[tab.dataField] || currentDetailRow[tab.dataField].length === 0" class="tab-empty">
+                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+              </div>
+              <el-table 
+                v-else
+                :data="currentDetailRow[tab.dataField] || []" 
+                size="small" 
+                border 
+                style="width: 100%" 
+                max-height="500"
+                stripe
+              >
+                <el-table-column
+                  v-for="col in tab.table?.columns || []"
+                  :key="col.prop"
+                  :prop="col.prop"
+                  :label="col.label"
+                  :width="col.width"
+                  :show-overflow-tooltip="col.showOverflowTooltip || false"
+                  :align="col.align || 'center'"
+                >
+                  <template #default="{ row }">
+                    <span v-if="col.renderType === 'currency'">{{ formatAmount(row[col.prop]) }}</span>
+                    <span v-else-if="col.renderType === 'number'">{{ row[col.prop] }}</span>
+                    <span v-else>{{ row[col.prop] }}</span>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+            
+            <!-- 描述列表类型页签 -->
+            <div v-else-if="tab.type === 'descriptions'" class="tab-content">
+              <div v-if="!currentDetailRow[tab.dataField] || Object.keys(currentDetailRow[tab.dataField]).length === 0" class="tab-empty">
+                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+              </div>
+              <el-descriptions 
+                v-else 
+                :column="tab.columns || 3" 
+                border 
+                size="small"
+              >
+                <el-descriptions-item
+                  v-for="field in tab.fields || []"
+                  :key="field.prop"
+                  :label="field.label"
+                >
+                  <span v-if="field.renderType === 'currency'">{{ formatAmount(currentDetailRow[tab.dataField][field.prop]) }}</span>
+                  <span v-else-if="field.renderType === 'percent'">{{ currentDetailRow[tab.dataField][field.prop] ? (currentDetailRow[tab.dataField][field.prop] + '%') : '-' }}</span>
+                  <span v-else>{{ currentDetailRow[tab.dataField][field.prop] ?? '-' }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </el-drawer>
+  </div>
+</template>
+
+<script setup name="BusinessConfigurable">
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Loading, View, Document, Money } from '@element-plus/icons-vue'
+import ERPConfigParser from '@/utils/erpConfigParser'
+import dayjs from 'dayjs'
+import request from '@/utils/request'
+
+// ==================== 导入公共工具模块 ====================
+import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/utils/formatters'
+import { isSuccessResponse, getResponseData } from '@/utils/responseHelper'
+
+// ==================== 导入引擎 API====================
+import {
+  executeDynamicQuery,
+  buildQueryConditions,
+  getAvailableQueryTypes
+} from '../../api/engine/query'
+import {
+  executeValidation,
+  batchValidate,
+  getAvailableValidationRules,
+  validateField
+} from '../../api/engine/validation'
+import {
+  getCurrentApprovalStep,
+  executeApproval,
+  checkApprovalPermission,
+  getApprovalHistory,
+  getWorkflowDefinition,
+  transferApproval,
+  withdrawApproval
+} from '../../api/engine/approval'
+import {
+  getPushTargets,
+  executePushDown,
+  previewPushDown,
+  batchPushDown,
+  getPushMappingConfig,
+  validatePushData,
+  cancelPushDown,
+  getPushHistory
+} from '../../api/engine/push'
+
+// ==================== Props 定义（强制在线模式）====================
+const props = defineProps({
+  // 模块编码，用于从数据库加载配置（从路由 query 参数获取）
+  moduleCode: {
+    type: String,
+    required: false,
+    default: ''
+  }
+})
+
+// ==================== 路由参数获取 ====================
+const route = useRoute()
+// 优先从路由 query 参数获取，其次从 props 获取，最后使用默认值
+const getModuleCode = () => {
+  return route.query.moduleCode || props.moduleCode || 'business'
+}
+
+// ==================== 业务模板配置（从 currentConfig 获取）====================
+const BusinessTemplate = computed(() => ({
+  apiConfig: currentConfig.value?.apiConfig || {},
+  dictionaryConfig: currentConfig.value?.dictionaryConfig || {},
+  pageConfig: currentConfig.value?.pageConfig || {}
+}))
+
+// ==================== 动态 API 导入（根据配置）====================
+const apiModuleMap = new Map()
+
+// ==================== 全局预加载 API 模块（Vite 唯一支持写法）====================
+const apiModules = import.meta.glob('@/api/k3/*.js', { eager: true })
+
+// 获取 API 方法的辅助函数
+const getApiMethod = async (methodKey) => {
+  const apiConfig = BusinessTemplate.value?.apiConfig
+  if (!apiConfig || !apiConfig.modulePath) {
+    console.warn('⚠️ apiConfig 或 modulePath 未定义，跳过 API 方法加载:', methodKey)
+    return null
+  }
+  
+  // 尝试从缓存中获取
+  const cacheKey = `${apiConfig.modulePath}_${methodKey}`
+  if (apiModuleMap.has(cacheKey)) {
+    return apiModuleMap.get(cacheKey)
+  }
+  
+  try {
+    // 从预加载的模块中获取（配置文件中已使用正确路径）
+    let moduleKey = apiConfig.modulePath
+    
+    // 确保有 .js 后缀
+    if (!moduleKey.endsWith('.js')) {
+      moduleKey = `${moduleKey}.js`
+    }
+    
+    const apiModule = apiModules[moduleKey]
+    
+    if (!apiModule) {
+      console.error(`未找到 API 模块：${moduleKey}，可用的模块有:`, Object.keys(apiModules))
+      return null
+    }
+    
+    const methodName = apiConfig.methods?.[methodKey]
+    
+    if (methodName && apiModule[methodName]) {
+      const method = apiModule[methodName]
+      apiModuleMap.set(cacheKey, method)
+      return method
+    }
+    
+    console.warn(`API 方法 ${methodName} 未在模块中找到`)
+    return null
+  } catch (error) {
+    console.error(`动态导入 API 模块失败:`, error)
+    return null
+  }
+}
+
+// 预加载所有 API 方法
+const preloadApiMethods = async () => {
+  const methods = ['list', 'get', 'add', 'update', 'delete', 'audit', 'unAudit', 'entry', 'cost']
+  for (const method of methods) {
+    await getApiMethod(method)
+  }
+}
+
+// 配置解析器
+let parser = null
+
+// 当前使用的配置（仅数据库配置）
+const currentConfig = ref(null)
+
+// 从配置中获取 API 方法映射
+const apiMethods = computed(() => currentConfig.value?.apiConfig?.methods || {})
+
+// 从配置中获取业务配置
+const businessConfig = computed(() => currentConfig.value?.businessConfig || {})
+
+// 页面标题
+const pageTitle = computed(() => {
+  const titleTemplate = parsedConfig.page?.title || '{entityName}管理'
+  const entityName = businessConfig.value.entityName || '数据'
+  return titleTemplate.replace(/{entityName}/g, entityName)
+})
+
+// 解析后的配置
+const parsedConfig = reactive({
+  page: {},
+  search: {},
+  table: {},
+  form: {},
+  drawer: {},
+  actions: {}
+})
+
+// 状态数据
+const loading = ref(true)
+const submitLoading = ref(false)
+const tableData = ref([])
+const total = ref(0)
+const queryParams = ref({
+  pageNum: 1,
+  pageSize: 10
+})
+const ids = ref([])
+const single = ref(true)
+const multiple = ref(true)
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const formData = ref({})
+const formRef = ref(null)
+const dateRange = ref([])
+const queryRef = ref(null)
+
+// 抽屉相关状态
+const drawerVisible = ref(false)
+const drawerTitle = ref('订单详情')
+const drawerLoading = ref(false)
+const currentDetailRow = ref({})
+const detailActiveTab = ref('entry')
+
+// 明细表格和成本数据
+const entryList = ref([])
+const costData = ref({})
+
+// 表单页签激活状态
+const formActiveTab = ref('entry')
+
+// 引擎相关配置
+const engineConfig = reactive({
+  query: null,      // 动态查询引擎配置
+  validation: null, // 表单验证引擎配置
+  approval: null,   // 审批流程引擎配置
+  push: null        // 下推引擎配置
+})
+
+// 审批相关状态
+const approvalStep = ref(null)
+const approvalHistory = ref([])
+const workflowDefinition = ref(null)
+
+// 下推相关状态
+const pushTargets = ref([])
+const pushDialogVisible = ref(false)
+const pushTargetModule = ref('')
+
+// 国家搜索相关
+const nationSearchLoading = ref(false)
+const nationOptions = ref([])
+
+// 按钮状态
+const buttonState = reactive({
+  single: true,
+  multiple: true
+})
+
+// 左侧工具栏按钮
+const leftToolbarActions = computed(() => {
+  return parsedConfig.actions?.toolbar?.filter(a => a.position === 'left') || []
+})
+
+// 可见的列
+const visibleColumns = computed(() => {
+  return parsedConfig.table?.columns?.filter(col => col.visible !== false) || []
+})
+
+// 表单验证规则
+const formRules = computed(() => {
+  const rules = {}
+  parsedConfig.form?.sections?.forEach(section => {
+    section.fields.forEach(field => {
+      if (field.rules && field.rules.length > 0) {
+        rules[field.field] = field.rules
+      }
+    })
+  })
+  return rules
+})
+
+// 初始化配置（强制从数据库加载）
+const initConfig = async () => {
+  try {
+    // 从路由或 props 获取 moduleCode
+    const moduleCode = getModuleCode()
+    
+    console.log('📦 接收到的 moduleCode:', moduleCode)
+    console.log('🔍 路由 query 参数:', route.query)
+    console.log('🔍 Props moduleCode:', props.moduleCode)
+    
+    // 从数据库加载配置
+    await loadDatabaseConfig(moduleCode)
+    
+    // 解析配置
+    parsedConfig.page = parser.parsePageConfig()
+    parsedConfig.search = parser.parseSearchForm()
+    parsedConfig.table = parser.parseTableColumns()
+    parsedConfig.form = parser.parseFormConfig()
+    parsedConfig.drawer = parser.parseDrawerConfig()
+    parsedConfig.actions = parser.parseActions()
+    
+    // 加载字典
+    await parser.loadDictionaries()
+    
+    console.log('✅ 数据库配置加载成功:', currentConfig.value.pageConfig?.title)
+  } catch (error) {
+    console.error('❌ 配置加载失败:', error)
+    ElMessage.error(`加载配置失败：${error.message}`)
+    throw error
+  }
+}
+
+/**
+ * 从数据库加载配置（无降级方案）
+ * @param {string} moduleCode - 模块编码
+ */
+const loadDatabaseConfig = async (moduleCode) => {
+  try {
+    console.log('🌐 正在从数据库加载配置:', moduleCode)
+    
+    // 使用 ERPConfigParser 的静态方法加载（带缓存）
+    const configContent = await ERPConfigParser.loadFromDatabase(moduleCode)
+    
+    if (!configContent) {
+      throw new Error(`未找到模块 [${moduleCode}] 的配置`)
+    }
+    
+    // 更新当前配置
+    currentConfig.value = configContent
+    
+    // 创建配置解析器
+    parser = new ERPConfigParser(configContent)
+    
+    console.log('✅ 数据库配置加载成功:', configContent.pageConfig?.title)
+    console.log('📦 配置版本:', configContent.version || 'N/A')
+  } catch (error) {
+    console.error('❌ 加载数据库配置失败:', error)
+    throw new Error(`无法加载配置：${error.message}`)
+  }
+}
+
+// 获取字典选项
+const getDictOptions = (dictName, staticOptions) => {
+  if (staticOptions && Array.isArray(staticOptions)) {
+    return staticOptions
+  }
+  
+  // 如果是国家字典且启用了远程搜索，优先使用搜索结果
+  if (dictName === 'nation') { 
+    if (nationOptions.value.length > 0) {
+      return nationOptions.value
+    }
+    // 未搜索时不显示任何数据，等待用户输入
+    return []
+  }
+  
+  return parser.getDictOptions(dictName) || []
+}
+
+// 获取按钮禁用状态
+const getButtonDisabled = (disabledKey) => {
+  if (!disabledKey) return false
+  return buttonState[disabledKey] || false
+}
+
+// 获取标签配置
+const getTagConfig = (value, dictName) => {
+  const dict = getDictOptions(dictName)
+  const option = dict.find(item => item.value === value)
+  return {
+    label: option?.label || value,
+    type: option?.type || 'info'
+  }
+}
+
+// 查询列表 - 使用配置中的 API
+const getList = async () => {
+  loading.value = true
+  try {
+    const apiMethod = await getApiMethod('list')
+    if (!apiMethod) {
+      ElMessage.error('API 未配置')
+      return
+    }
+    const response = await apiMethod(queryParams.value)
+    tableData.value = response.rows || []
+    total.value = response.total || 0
+  } catch (error) {
+    ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 处理查询
+const handleQuery = () => {
+  if (dateRange.value && dateRange.value.length === 2) {
+    queryParams.value.beginDate = dateRange.value[0]
+    queryParams.value.endDate = dateRange.value[1]
+  } else {
+    queryParams.value.beginDate = undefined
+    queryParams.value.endDate = undefined
+  }
+  queryParams.value.pageNum = 1
+  getList()
+}
+
+// 重置查询
+const resetQuery = () => {
+  queryRef.value?.resetFields()
+  const now = new Date()
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  dateRange.value = [
+    dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
+    dayjs(now).format('YYYY-MM-DD')
+  ]
+  handleQuery()
+}
+
+// 处理分页
+const handlePageSizeChange = (newSize) => {
+  queryParams.value.pageSize = newSize
+  getList()
+}
+
+const handlePageChange = (newPage) => {
+  queryParams.value.pageNum = newPage
+  getList()
+}
+
+// 处理选择变化
+const handleSelectionChange = (selection) => {
+  ids.value = selection.map(item => item.id)
+  single.value = selection.length !== 1
+  multiple.value = !selection.length
+}
+
+// 处理表格行点击
+const handleRowClick = (row) => {
+  // 可以在这里添加行点击逻辑
+}
+
+// 查看详情 - 使用配置中的标题
+const handleViewDetail = async (row) => {
+  drawerVisible.value = true
+  // 使用配置化的抽屉标题
+  const titleTemplate = businessConfig.value.drawerTitle || '{entityName}详情 - {fbillNo}'
+  const entityName = businessConfig.value.entityName || '订单'
+  drawerTitle.value = titleTemplate
+    .replace(/{entityName}/g, entityName)
+    .replace(/{fbillNo}/g, row.fbillNo || '')
+  drawerLoading.value = true
+  currentDetailRow.value = { ...row }
+  
+  try {
+    // 加载明细数据
+    if (!row.entryList || row.entryList.length === 0) {
+      if (row.fbillNo) {
+        const entryMethod = await getApiMethod('entry')
+        if (entryMethod) {
+          const entryResponse = await entryMethod(row.fbillNo)
+          if (entryResponse.code === 200 || entryResponse.code === 0 || entryResponse.errorCode === 0) {
+            currentDetailRow.value.entryList = entryResponse.data && Array.isArray(entryResponse.data) 
+              ? entryResponse.data 
+              : (entryResponse.data || [])
+          }
+        }
+      }
+    } else {
+      currentDetailRow.value.entryList = row.entryList
+    }
+    
+    // 加载成本数据
+    if (!row.costData || Object.keys(row.costData).length === 0) {
+      if (row.fbillNo) {
+        const costMethod = await getApiMethod('cost')
+        if (costMethod) {
+          const costResponse = await costMethod(row.fbillNo)
+          if (costResponse.code === 200 || costResponse.code === 0 || costResponse.errorCode === 0) {
+            currentDetailRow.value.costData = costResponse.data && typeof costResponse.data === 'object' && Object.keys(costResponse.data).length > 0
+              ? costResponse.data
+              : (costResponse.data || null)
+          }
+        }
+      }
+    } else {
+      currentDetailRow.value.costData = row.costData
+    }
+    
+    // 设置默认激活的标签
+    const hasEntryData = currentDetailRow.value.entryList && currentDetailRow.value.entryList.length > 0
+    const hasCostData = currentDetailRow.value.costData && Object.keys(currentDetailRow.value.costData).length > 0
+    detailActiveTab.value = hasEntryData ? 'entry' : (hasCostData ? 'cost' : 'entry')
+    
+  } catch (error) {
+    console.error('加载详情数据失败:', error)
+    ElMessage.error('加载详情数据失败')
+  } finally {
+    drawerLoading.value = false
+  }
+}
+
+// 关闭抽屉
+const handleDrawerClose = (done) => {
+  currentDetailRow.value = {}
+  done()
+}
+
+// 处理操作
+const handleAction = (handlerName) => {
+  const handlerMap = {
+    handleAdd: () => openDialog('add'),
+    handleUpdate: () => openDialog('edit'),
+    handleDelete: confirmDelete,
+    handleAudit: batchAudit,
+    handleUnAudit: batchUnAudit,
+    openColumnSetting: () => ElMessage.info('列设置功能待实现')
+  }
+  
+  if (handlerMap[handlerName]) {
+    handlerMap[handlerName]()
+  }
+}
+
+// 打开对话框 - 使用配置中的标题
+const openDialog = (type) => {
+  // 初始化表单数据为默认值
+  formData.value = {}
+  
+  // 如果是新增模式，应用配置中的默认值
+  if (type === 'add' && parsedConfig.form?.sections) {
+    parsedConfig.form.sections.forEach(section => {
+      section.fields.forEach(field => {
+        if (field.defaultValue !== undefined) {
+          formData.value[field.field] = field.defaultValue
+        }
+      })
+    })
+  }
+  
+  entryList.value = []
+  costData.value = {}
+  
+  if (type === 'edit') {
+    if (ids.value.length !== 1) {
+      ElMessage.warning(businessConfig.value.messages?.selectOne || '请选择一条数据')
+      return
+    }
+    loadFormData(ids.value[0])
+    const titleConfig = businessConfig.value.dialogTitle || { add: '新增数据', edit: '修改数据' }
+    const entityName = businessConfig.value.entityName || '数据'
+    dialogTitle.value = type === 'edit' 
+      ? titleConfig.edit.replace(/{entityName}/g, entityName)
+      : titleConfig.add.replace(/{entityName}/g, entityName)
+  } else {
+    const titleConfig = businessConfig.value.dialogTitle || { add: '新增数据', edit: '修改数据' }
+    const entityName = businessConfig.value.entityName || '数据'
+    dialogTitle.value = titleConfig.add.replace(/{entityName}/g, entityName)
+  }
+  
+  dialogVisible.value = true
+}
+
+// 加载表单数据 - 使用配置中的 API
+const loadFormData = async (id) => {
+  try {
+    const apiMethod = await getApiMethod('get')
+    if (!apiMethod) {
+      ElMessage.error('API 未配置')
+      return
+    }
+    const response = await apiMethod(id)
+    formData.value = response.data || response
+    
+    // 加载明细数据
+    if (formData.value.fbillNo) {
+      const entryMethod = await getApiMethod('entry')
+      if (entryMethod) {
+        const entryResponse = await entryMethod(formData.value.fbillNo)
+        if (entryResponse.code === 200 || entryResponse.code === 0 || entryResponse.errorCode === 0) {
+          entryList.value = entryResponse.data && Array.isArray(entryResponse.data) 
+            ? entryResponse.data 
+            : (entryResponse.data || [])
+        }
+      }
+      
+      // 加载成本数据
+      const costMethod = await getApiMethod('cost')
+      if (costMethod) {
+        const costResponse = await costMethod(formData.value.fbillNo)
+        if (costResponse.code === 200 || costResponse.code === 0 || costResponse.errorCode === 0) {
+          costData.value = costResponse.data && typeof costResponse.data === 'object' && Object.keys(costResponse.data).length > 0
+            ? costResponse.data
+            : {}
+        }
+      }
+    }
+  } catch (error) {
+    ElMessage.error('加载数据失败')
+  }
+}
+
+// 提交表单 - 使用配置中的 API 和消息
+const handleSubmit = async () => {
+  try {
+    await formRef.value.validate()
+    submitLoading.value = true
+    
+    // 合并数据
+    const submitData = { ...formData.value }
+    if (entryList.value && entryList.value.length > 0) {
+      submitData.entryList = entryList.value
+    }
+    if (costData.value && Object.keys(costData.value).length > 0) {
+      submitData.costData = costData.value
+    }
+    
+    const isNew = !submitData.id
+    const apiMethod = await getApiMethod(isNew ? 'add' : 'update')
+    
+    if (!apiMethod) {
+      ElMessage.error('API 未配置')
+      return
+    }
+    
+    await apiMethod(submitData)
+    ElMessage.success(businessConfig.value.messages?.success?.[isNew ? 'add' : 'edit'] || (isNew ? '新增成功' : '修改成功'))
+    
+    dialogVisible.value = false
+    getList()
+  } catch (error) {
+    if (error !== 'validate') {
+      ElMessage.error('保存失败：' + (error.message || '请检查表单填写是否正确'))
+    }
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+// 确认删除 - 使用配置中的 API 和消息
+const confirmDelete = async () => {
+  if (!ids.value || ids.value.length === 0) {
+    ElMessage.warning('请选择要删除的数据')
+    return
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      businessConfig.value.messages?.confirmDelete?.replace(/{count}/g, ids.value.length) || `是否确认删除选中的 ${ids.value.length} 条数据？`,
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    const apiMethod = await getApiMethod('delete')
+    if (!apiMethod) {
+      ElMessage.error('API 未配置')
+      return
+    }
+    
+    await apiMethod(ids.value)
+    ElMessage.success(businessConfig.value.messages?.success?.delete || '删除成功')
+    getList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败：' + (error.message || '未知错误'))
+    }
+  }
+}
+
+// 批量审核 - 使用配置中的 API 和消息
+const batchAudit = async () => {
+  if (!ids.value || ids.value.length === 0) {
+    ElMessage.warning('请选择要审核的数据')
+    return
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      businessConfig.value.messages?.confirmAudit?.replace(/{count}/g, ids.value.length) || `是否确认审核选中的 ${ids.value.length} 条数据？`,
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    const apiMethod = await getApiMethod('audit')
+    if (!apiMethod) {
+      ElMessage.error('API 未配置')
+      return
+    }
+    
+    await apiMethod(ids.value)
+    ElMessage.success(businessConfig.value.messages?.success?.audit || '审核成功')
+    getList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('审核失败：' + (error.message || '未知错误'))
+    }
+  }
+}
+
+// 批量反审核 - 使用配置中的 API 和消息
+const batchUnAudit = async () => {
+  if (!ids.value || ids.value.length === 0) {
+    ElMessage.warning('请选择要反审核的数据')
+    return
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      businessConfig.value.messages?.confirmUnAudit?.replace(/{count}/g, ids.value.length) || `是否确认反审核选中的 ${ids.value.length} 条数据？`,
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    const apiMethod = await getApiMethod('unAudit')
+    if (!apiMethod) {
+      ElMessage.error('API 未配置')
+      return
+    }
+    
+    await apiMethod(ids.value)
+    ElMessage.success(businessConfig.value.messages?.success?.unAudit || '反审核成功')
+    getList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('反审核失败：' + (error.message || '未知错误'))
+    }
+  }
+}
+
+// 关闭对话框
+const handleDialogClose = () => {
+  formRef.value?.resetFields()
+  formData.value = {}
+  entryList.value = []
+  costData.value = {}
+}
+
+// 添加明细行 - 基于配置生成默认值
+const handleAddEntryRow = () => {
+  // 从配置中获取明细表格的列定义
+  const entryTab = parsedConfig.form?.formTabs?.tabs?.find(tab => tab.name === 'entry')
+  const columns = entryTab?.table?.columns || []
+  
+  // 根据列类型生成默认值
+  const newRow = {}
+  columns.forEach(col => {
+    if (col.type === 'number') {
+      newRow[col.prop] = 0
+    } else if (col.type === 'boolean') {
+      newRow[col.prop] = false
+    } else {
+      newRow[col.prop] = ''
+    }
+  })
+  
+  entryList.value.push(newRow)
+}
+
+// 删除明细行
+const handleDeleteEntryRow = (index) => {
+  entryList.value.splice(index, 1)
+}
+
+// 搜索国家（模糊搜索）- 基于配置
+const searchNations = async (keyword) => {
+  if (!keyword || keyword.trim() === '') {
+    nationOptions.value = []
+    return
+  }
+  
+  nationSearchLoading.value = true
+  try {
+    // 从配置中获取国家字典的 API
+    const nationDict = BusinessTemplate.value.dictionaryConfig?.nation
+    if (nationDict && nationDict.api) {
+      // 使用专门的搜索 API（如果存在）或普通 API 带参数
+      const searchUrl = nationDict.api.includes('/search') 
+        ? `${nationDict.api}?keyword=${encodeURIComponent(keyword)}`
+        : `${nationDict.api}/search?keyword=${encodeURIComponent(keyword)}`
+      
+      const response = await request(searchUrl)
+      
+      let data = []
+      if (response.code === 200 || response.errorCode === 0) {
+        data = response.data || response.rows || []
+      } else if (Array.isArray(response)) {
+        data = response
+      }
+      
+      nationOptions.value = data.map(item => ({
+        label: item[nationDict.labelField] || item.label || item.name,
+        value: item[nationDict.valueField] || item.value || item.kingdee
+      }))
+    }
+  } catch (error) {
+    console.error('搜索国家失败:', error)
+    nationOptions.value = []
+  } finally {
+    nationSearchLoading.value = false
+  }
+}
+
+// 初始化
+onMounted(async () => {
+  // 1. 先加载配置
+  await initConfig()
+  
+  // 2. 再预加载 API 方法（配置加载完成后）
+  await preloadApiMethods()
+  
+  // 3. 初始化引擎配置
+  await initEngineConfig()
+  
+  // 设置默认日期区间为当月
+  const now = new Date()
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  dateRange.value = [
+    dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
+    dayjs(now).format('YYYY-MM-DD')
+  ]
+  
+  // 设置查询参数的日期
+  queryParams.value.beginDate = dateRange.value[0]
+  queryParams.value.endDate = dateRange.value[1]
+  
+  getList()
+})
+
+// ==================== 引擎相关方法 ====================
+
+/**
+ * 初始化引擎配置
+ */
+const initEngineConfig = async () => {
+  const moduleCode = BusinessTemplate.value.pageConfig?.moduleCode
+  if (!moduleCode) return
+  
+  try {
+    // 1. 初始化动态查询引擎
+    if (parsedConfig.search) {
+      engineConfig.query = {
+        moduleCode,
+        searchConfig: parsedConfig.search
+      }
+    }
+    
+    // 2. 初始化表单验证引擎
+    if (parsedConfig.form?.validationConfig) {
+      engineConfig.validation = {
+        moduleCode,
+        validationConfig: parsedConfig.form.validationConfig
+      }
+    }
+    
+    // 3. 初始化审批流程引擎
+    if (parsedConfig.actions?.approvalConfig?.enabled) {
+      engineConfig.approval = {
+        moduleCode,
+        workflowConfig: parsedConfig.actions.approvalConfig
+      }
+      // 加载审批流程定义
+      await loadWorkflowDefinition(moduleCode)
+    }
+    
+    // 4. 初始化下推引擎
+    if (parsedConfig.actions?.pushConfig?.enabled) {
+      engineConfig.push = {
+        moduleCode,
+        pushConfig: parsedConfig.actions.pushConfig
+      }
+      // 加载可下推目标
+      await loadPushTargets(moduleCode)
+    }
+    
+    console.log('引擎配置初始化完成:', engineConfig)
+  } catch (error) {
+    console.error('初始化引擎配置失败:', error)
+  }
+}
+
+/**
+ * 加载审批流程定义
+ */
+const loadWorkflowDefinition = async (moduleCode) => {
+  try {
+    const response = await getWorkflowDefinition(moduleCode)
+    if (response.code === 200 || response.code === 0) {
+      workflowDefinition.value = response.data
+      console.log('加载审批流程定义成功:', workflowDefinition.value)
+    }
+  } catch (error) {
+    console.error('加载审批流程定义失败:', error)
+  }
+}
+
+/**
+ * 加载可下推目标
+ */
+const loadPushTargets = async (moduleCode) => {
+  try {
+    const response = await getPushTargets(moduleCode)
+    if (response.code === 200 || response.code === 0) {
+      pushTargets.value = response.data || []
+      console.log('加载可下推目标成功:', pushTargets.value)
+    }
+  } catch (error) {
+    console.error('加载可下推目标失败:', error)
+  }
+}
+
+/**
+ * 执行动态查询
+ */
+const executeEngineQuery = async (queryParams) => {
+  if (!engineConfig.query) {
+    return null
+  }
+  
+  try {
+    const response = await executeDynamicQuery({
+      moduleCode: engineConfig.query.moduleCode,
+      queryParams,
+      searchConfig: engineConfig.query.searchConfig
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      return response.data
+    }
+    return null
+  } catch (error) {
+    console.error('执行动态查询失败:', error)
+    return null
+  }
+}
+
+/**
+ * 执行表单验证
+ */
+const executeEngineValidation = async (formData) => {
+  if (!engineConfig.validation) {
+    return { valid: true, message: '未启用验证' }
+  }
+  
+  try {
+    const response = await executeValidation({
+      moduleCode: engineConfig.validation.moduleCode,
+      formData,
+      validationConfig: engineConfig.validation.validationConfig
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      return response.data
+    }
+    return { valid: false, message: '验证失败' }
+  } catch (error) {
+    console.error('执行表单验证失败:', error)
+    return { valid: false, message: error.message }
+  }
+}
+
+/**
+ * 获取当前审批步骤
+ */
+const getCurrentStep = async (billData) => {
+  if (!engineConfig.approval) {
+    return null
+  }
+  
+  try {
+    const response = await getCurrentApprovalStep({
+      moduleCode: engineConfig.approval.moduleCode,
+      billId: billData.id || billData.fbillNo,
+      billData
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      approvalStep.value = response.data
+      return response.data
+    }
+    return null
+  } catch (error) {
+    console.error('获取当前审批步骤失败:', error)
+    return null
+  }
+}
+
+/**
+ * 执行审批操作
+ */
+const executeEngineApproval = async (billId, action, opinion = '') => {
+  if (!engineConfig.approval) {
+    throw new Error('未启用审批流程')
+  }
+  
+  try {
+    const response = await executeApproval({
+      moduleCode: engineConfig.approval.moduleCode,
+      billId,
+      action,
+      opinion,
+      step: approvalStep.value?.step
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      ElMessage.success('审批成功')
+      // 刷新审批历史和步骤
+      await loadApprovalHistory(billId)
+      return response.data
+    }
+    throw new Error(response.msg || '审批失败')
+  } catch (error) {
+    console.error('执行审批操作失败:', error)
+    throw error
+  }
+}
+
+/**
+ * 加载审批历史
+ */
+const loadApprovalHistory = async (billId) => {
+  if (!engineConfig.approval) return
+  
+  try {
+    const response = await getApprovalHistory({
+      moduleCode: engineConfig.approval.moduleCode,
+      billId
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      approvalHistory.value = response.data || []
+    }
+  } catch (error) {
+    console.error('加载审批历史失败:', error)
+  }
+}
+
+/**
+ * 执行下推操作
+ */
+const executeEnginePushDown = async (sourceId, targetModule, confirmData = {}) => {
+  if (!engineConfig.push) {
+    throw new Error('未启用下推功能')
+  }
+  
+  try {
+    const response = await executePushDown({
+      sourceId,
+      sourceModule: engineConfig.push.moduleCode,
+      targetModule,
+      confirmData
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      ElMessage.success('下推成功')
+      // 加载下推历史
+      await loadPushHistory(sourceId)
+      return response.data
+    }
+    throw new Error(response.msg || '下推失败')
+  } catch (error) {
+    console.error('执行下推操作失败:', error)
+    throw error
+  }
+}
+
+/**
+ * 预览下推数据
+ */
+const previewEnginePushDown = async (sourceId, targetModule) => {
+  if (!engineConfig.push) {
+    return null
+  }
+  
+  try {
+    const response = await previewPushDown({
+      sourceId,
+      sourceModule: engineConfig.push.moduleCode,
+      targetModule
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      return response.data
+    }
+    return null
+  } catch (error) {
+    console.error('预览下推数据失败:', error)
+    return null
+  }
+}
+
+/**
+ * 加载下推历史
+ */
+const loadPushHistory = async (billId) => {
+  if (!engineConfig.push) return
+  
+  try {
+    const response = await getPushHistory({
+      moduleCode: engineConfig.push.moduleCode,
+      billId
+    })
+    
+    if (response.code === 200 || response.code === 0) {
+      // 可以在这里更新 UI
+      console.log('下推历史:', response.data)
+    }
+  } catch (error) {
+    console.error('加载下推历史失败:', error)
+  }
+}
+
+/**
+ * 打开下推对话框
+ */
+const handleOpenPushDialog = async (row) => {
+  if (!engineConfig.push || pushTargets.value.length === 0) {
+    ElMessage.warning('没有可用的下推目标')
+    return
+  }
+  
+  // TODO: 实现下推对话框 UI
+  pushTargetModule.value = pushTargets.value[0]?.targetModule
+  pushDialogVisible.value = true
+}
+
+/**
+ * 执行下推
+ */
+const handlePushDown = async () => {
+  if (!pushTargetModule.value) {
+    ElMessage.warning('请选择下推目标')
+    return
+  }
+  
+  try {
+    await executeEnginePushDown(ids.value[0], pushTargetModule.value)
+    pushDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error(error.message)
+  }
+}
+</script>
+
+<style scoped>
+@import './BusinessConfigurable.styles.css';
+
+/* 抽屉样式 */
+.drawer-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #409EFF;
+}
+
+.drawer-loading p {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.drawer-content {
+  padding: 0;
+}
+
+.drawer-content :deep(.el-tabs__header) {
+  margin: 0 0 20px 0;
+}
+
+.drawer-content :deep(.el-table) {
+  margin-top: 0;
+}
+
+.drawer-content :deep(.el-descriptions) {
+  margin-top: 0;
+}
+
+/* 页签空状态样式 */
+.tab-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 40px 20px;
+}
+
+/* 表单页签样式 */
+.form-tabs-card {
+  margin-top: 16px;
+}
+
+.form-tabs-card :deep(.el-card__body) {
+  padding: 16px;
+}
+
+.form-tabs-card :deep(.el-tabs__header) {
+  margin: 0 0 16px 0;
+}
+
+.tab-pane-content {
+  padding: 8px 0;
+}
+
+.tab-pane-toolbar {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.entry-table {
+  width: 100%;
+}
+
+.cost-form-card :deep(.el-form-item) {
+  margin-bottom: 16px;
+}
+</style>
