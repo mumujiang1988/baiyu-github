@@ -12,29 +12,29 @@
 
 **文件**: `DynamicQueryEngine.java`
 
-#### 删除的内容 (❌)
+#### 删除的内容 ()
 ```java
-// ❌ 删除硬编码的字段白名单（44 行代码）
+//  删除硬编码的字段白名单（44 行代码）
 private static final Set<String> ALLOWED_FIELDS = Set.of(
     "fbillNo", "fOraBaseProperty", "fDocumentStatus", "fBillAmount",
     "fdate", "fCustomerNumber", "fCustomerName", "fCreatorId",
     // ... 需要手动维护，麻烦且容易出错
 );
 
-// ❌ 删除驼峰转下划线的辅助方法（18 行代码）
+//  删除驼峰转下划线的辅助方法（18 行代码）
 private String camelToUnderline(String str) {
     // ... 实现代码
 }
 ```
 
-#### 简化的内容 (✅)
+#### 简化的内容 ()
 ```java
-// ✅ 字段校验简化为只校验非空
+//  字段校验简化为只校验非空
 private boolean isValidField(String field) {
     return StringUtils.isNotEmpty(field);
 }
 
-// ✅ 排序处理简化（删除驼峰转换）
+//  排序处理简化（删除驼峰转换）
 if ("asc".equalsIgnoreCase(orderDirection)) {
     queryWrapper.orderByAsc(true, orderBy);
 } else {
@@ -52,7 +52,7 @@ if ("asc".equalsIgnoreCase(orderDirection)) {
 
 **文件**: `ErpEngineController.java`
 
-**现状评估**: ✅ 已经符合极简版要求
+**现状评估**:  已经符合极简版要求
 
 ```java
 @PostMapping("/query/execute")
@@ -72,9 +72,9 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
 ```
 
 **优点**:
-- ✅ 直接使用数据库字段名构建查询条件
-- ✅ 无字段映射转换逻辑
-- ✅ 返回数据即为数据库原始字段名
+-  直接使用数据库字段名构建查询条件
+-  无字段映射转换逻辑
+-  返回数据即为数据库原始字段名
 
 ### 1.3 ErpPageConfigController 保持不变
 
@@ -93,8 +93,8 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
 ```
 
 **优点**:
-- ✅ 透明传递配置 JSON，不做任何转换
-- ✅ 前端配置中写什么字段名，就返回什么字段名
+-  透明传递配置 JSON，不做任何转换
+-  前端配置中写什么字段名，就返回什么字段名
 
 ---
 
@@ -137,9 +137,9 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
 ```
 
 **关键改进**:
-- ✅ 删除硬编码字段白名单
-- ✅ 删除驼峰转下划线转换层
-- ✅ 依赖 MyBatis-Plus 自动处理字段名
+-  删除硬编码字段白名单
+-  删除驼峰转下划线转换层
+-  依赖 MyBatis-Plus 自动处理字段名
 
 ---
 
@@ -158,7 +158,7 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
   "searchConfig": {
     "fields": [
       {
-        "field": "customerName",      // ❌ 业务字段名
+        "field": "customerName",      //  业务字段名
         "label": "客户名称"
       }
     ]
@@ -166,7 +166,7 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
   "tableConfig": {
     "columns": [
       {
-        "prop": "customerName",       // ❌ 业务字段名
+        "prop": "customerName",       //  业务字段名
         "label": "客户名称"
       }
     ]
@@ -180,7 +180,7 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
   "searchConfig": {
     "fields": [
       {
-        "field": "fcustomername",     // ✅ 数据库字段名
+        "field": "fcustomername",     //  数据库字段名
         "label": "客户名称"
       }
     ]
@@ -188,7 +188,7 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
   "tableConfig": {
     "columns": [
       {
-        "prop": "fcustomername",      // ✅ 数据库字段名
+        "prop": "fcustomername",      //  数据库字段名
         "label": "客户名称"
       }
     ]
@@ -252,7 +252,7 @@ public void testDynamicQuery() {
     List<Map<String, Object>> fields = new ArrayList<>();
     
     Map<String, Object> fieldConfig = new HashMap<>();
-    fieldConfig.put("field", "fcustomername");  // ✅ 使用数据库字段名
+    fieldConfig.put("field", "fcustomername");  //  使用数据库字段名
     fieldConfig.put("searchType", "like");
     fields.add(fieldConfig);
     
@@ -395,14 +395,14 @@ copy D:\backup\DynamicQueryEngine.java.bak \
 
 ### 8.1 优化成果
 
-✅ **已完成**:
+ **已完成**:
 1. 删除 DynamicQueryEngine 的硬编码字段白名单（-44 行）
 2. 删除驼峰转下划线辅助方法（-18 行）
 3. 简化字段校验逻辑（+3 行）
 4. 简化排序处理逻辑（-8 行）
 5. 净减少代码 47 行
 
-✅ **保持现状**（已经符合要求）:
+ **保持现状**（已经符合要求）:
 1. ErpEngineController - 直接使用数据库字段名
 2. ErpPageConfigController - 透明传递配置 JSON
 3. 所有 Service 层接口 - 无字段转换逻辑

@@ -515,6 +515,12 @@ import request from '@/utils/request'
 import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils'
 import { isSuccessResponse, getResponseData } from '@/views/erp/utils'
 
+// ==================== 导入多表格查询构建器 ====================
+import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
+
+// ==================== 导入字典构建器 ====================
+import dictionaryBuilderEngine, { DictionaryBuilder } from '../utils/DictionaryBuilder'
+
 // ==================== 导入引擎 API====================
 import {
   executeDynamicQuery,
@@ -576,30 +582,171 @@ const apiModuleMap = new Map()
 
 // ==================== 通用引擎 API（低代码方案）====================
 /**
- * 通用列表查询接口 - 使用 ERP 引擎
+ * 通用列表查询接口 - 使用 ERP 引擎构建器模式（支持多表格）
  */
 const getList = async () => {
   loading.value = true
   try {
-    // 使用通用引擎查询接口
+    // 构建主表格的 queryConfig 配置
+    const mainQueryConfig = buildMainQueryConfig()
+    
+    // 获取主表表名
+    const tableName = getTableNameFromConfig()
+    
+    console.log('🔍 主表格查询 - 表名:', tableName)
+    console.log('🔍 主表格查询 - queryConfig:', mainQueryConfig)
+    
+    // 使用通用引擎查询接口（构建器模式）
     const response = await request({
-      url: '/erp/engine/list',
+      url: '/erp/engine/query/execute',
       method: 'post',
       data: {
-        ...queryParams.value,
-        moduleCode: currentConfig.value?.pageConfig?.moduleCode || 'business'
+        moduleCode: currentConfig.value?.pageConfig?.moduleCode || 'business',
+        tableName: tableName,
+        queryConfig: mainQueryConfig,
+        pageNum: queryParams.value.pageNum,
+        pageSize: queryParams.value.pageSize
       }
     })
     
-    console.log('📊 查询结果:', response)
+    console.log(' 主表格查询结果:', response)
     tableData.value = response.rows || []
     total.value = response.total || 0
+    
+    // 🆕 并行查询所有子表格数据
+    await loadSubTablesData()
+    
   } catch (error) {
-    console.error('❌ 查询失败:', error)
+    console.error(' 主表格查询失败:', error)
     ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 构建主表格的 queryConfig 配置（构建器模式）
+ */
+const buildMainQueryConfig = () => {
+  const conditions = []
+  
+  // 从 searchConfig 构建查询条件
+  const searchFields = parsedConfig.search?.fields || []
+  
+  searchFields.forEach(field => {
+    const value = queryParams.value[field.field]
+    const operator = field.queryOperator || 'eq'
+    
+    // 跳过空值
+    if (value === undefined || value === null || value === '') {
+      return
+    }
+    
+    // 日期范围特殊处理
+    if (field.component === 'daterange' && Array.isArray(dateRange.value) && dateRange.value.length === 2) {
+      conditions.push({
+        field: field.field,
+        operator: 'between',
+        value: dateRange.value
+      })
+    } else if (Array.isArray(value)) {
+      // IN 条件
+      conditions.push({
+        field: field.field,
+        operator: 'in',
+        value: value
+      })
+    } else {
+      // 单个值条件
+      conditions.push({
+        field: field.field,
+        operator: operator,
+        value: value
+      })
+    }
+  })
+  
+  // 构建排序配置
+  const orderBy = parsedConfig.table?.orderBy || [
+    { field: 'FCreateDate', direction: 'DESC' }
+  ]
+  
+  return {
+    conditions: conditions,
+    orderBy: orderBy
+  }
+}
+
+/**
+ * 🆕 加载子表格数据（明细表和成本表）
+ */
+const loadSubTablesData = async () => {
+  try {
+    // 检查是否有子表格配置
+    const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
+    
+    if (subTableConfigs.length === 0) {
+      console.log('ℹ️ 没有配置子表格，跳过查询')
+      return
+    }
+    
+    // 准备上下文数据（用于替换模板变量）
+    const contextData = {
+      billNo: 'PENDING' // 主表格加载后才会知道具体的 billNo，这里先不查询
+    }
+    
+    // 暂时不查询子表格，等待展开行或详情页时再查询
+    console.log(' 子表格配置已解析，等待需要时再查询')
+  } catch (error) {
+    console.warn('⚠️ 加载子表格配置失败:', error.message)
+  }
+}
+
+/**
+ * 🆕 查询指定单据的子表格数据（用于展开行或详情页）
+ * @param {String} billNo - 单据编号
+ */
+const loadSubTablesByBillNo = async (billNo) => {
+  try {
+    const moduleCode = currentConfig.value?.pageConfig?.moduleCode || 'saleorder'
+    
+    // 使用多表格查询构建器
+    const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
+    
+    if (subTableConfigs.length === 0) {
+      return
+    }
+    
+    // 并行查询所有子表格
+    const results = await multiTableQueryBuilder.queryAllSubTables(
+      moduleCode,
+      subTableConfigs,
+      { billNo } // 上下文数据，用于替换 ${billNo}
+    )
+    
+    console.log(' 子表格查询完成:', results)
+    
+    // 存储到对应的数据变量中
+    if (results.entry) {
+      entryList.value = results.entry.data
+      console.log(` 明细表数据：${results.entry.data.length} 条`)
+    }
+    
+    if (results.cost) {
+      costData.value = results.cost.data[0] || {}
+      console.log(' 成本表数据:', results.cost.data[0])
+    }
+  } catch (error) {
+    console.error(' 查询子表格失败:', error)
+  }
+}
+
+/**
+ * 从配置获取表名
+ */
+const getTableNameFromConfig = () => {
+  // 从配置中获取表名，或使用默认值
+  return currentConfig.value?.pageConfig?.tableName || 't_sale_order'
 }
 
 // 配置解析器
@@ -767,7 +914,7 @@ const loadDatabaseConfig = async (moduleCode) => {
   }
 }
 
-// 获取字典选项
+// 获取字典选项（使用构建器模式）
 const getDictOptions = (dictName, staticOptions) => {
   if (staticOptions && Array.isArray(staticOptions)) {
     return staticOptions
@@ -782,7 +929,14 @@ const getDictOptions = (dictName, staticOptions) => {
     return []
   }
   
-  return parser.getDictOptions(dictName) || []
+  // 使用字典构建器引擎获取
+  const data = dictionaryBuilderEngine.get(dictName)
+  if (data && data.length > 0) {
+    return data
+  }
+  
+  // 兼容旧版：从 parser 获取
+  return parser?.getDictOptions(dictName) || []
 }
 
 // 获取按钮禁用状态
@@ -815,11 +969,11 @@ const getList = async () => {
       }
     })
     
-    console.log('📊 查询结果:', response)
+    console.log(' 查询结果:', response)
     tableData.value = response.rows || []
     total.value = response.total || 0
   } catch (error) {
-    console.error('❌ 查询失败:', error)
+    console.error(' 查询失败:', error)
     ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
   } finally {
     loading.value = false
@@ -894,45 +1048,16 @@ const handleViewDetail = async (row) => {
   currentDetailRow.value = { ...row }
   
   try {
-    // 加载明细数据（使用配置的字段名）
-    if (!row.entryList || row.entryList.length === 0) {
-      const billNoValue = row[billNoField] || row.FBillNo
-      if (billNoValue) {
-        const entryMethod = await getApiMethod('entry')
-        if (entryMethod) {
-          const entryResponse = await entryMethod(billNoValue)
-          if (entryResponse.code === 200 || entryResponse.code === 0 || entryResponse.errorCode === 0) {
-            currentDetailRow.value.entryList = entryResponse.data && Array.isArray(entryResponse.data) 
-              ? entryResponse.data 
-              : (entryResponse.data || [])
-          }
-        }
-      }
-    } else {
-      currentDetailRow.value.entryList = row.entryList
-    }
-    
-    // 加载成本数据（使用配置的字段名）
-    if (!row.costData || Object.keys(row.costData).length === 0) {
-      const billNoValue = row[billNoField] || row.FBillNo
-      if (billNoValue) {
-        const costMethod = await getApiMethod('cost')
-        if (costMethod) {
-          const costResponse = await costMethod(billNoValue)
-          if (costResponse.code === 200 || costResponse.code === 0 || costResponse.errorCode === 0) {
-            currentDetailRow.value.costData = costResponse.data && typeof costResponse.data === 'object' && Object.keys(costResponse.data).length > 0
-              ? costResponse.data
-              : (costResponse.data || null)
-          }
-        }
-      }
-    } else {
-      currentDetailRow.value.costData = row.costData
+    // 🆕 使用新的多表格查询方法
+    const billNoValue = row[billNoField] || row.FBillNo
+    if (billNoValue) {
+      // 查询子表格数据（明细表和成本表）
+      await loadSubTablesByBillNo(billNoValue)
     }
     
     // 设置默认激活的标签
-    const hasEntryData = currentDetailRow.value.entryList && currentDetailRow.value.entryList.length > 0
-    const hasCostData = currentDetailRow.value.costData && Object.keys(currentDetailRow.value.costData).length > 0
+    const hasEntryData = entryList.value && entryList.value.length > 0
+    const hasCostData = costData.value && Object.keys(costData.value).length > 0
     detailActiveTab.value = hasEntryData ? 'entry' : (hasCostData ? 'cost' : 'entry')
     
   } catch (error) {
@@ -1234,7 +1359,7 @@ const searchNations = async (keyword) => {
       // 使用专门的搜索 API（如果存在）或普通 API 带参数
       const searchUrl = nationDict.api.includes('/search') 
         ? `${nationDict.api}?keyword=${encodeURIComponent(keyword)}`
-        : `${nationDict.api}/search?keyword=${encodeURIComponent(keyword)}`
+        : `${nationDict.api.replace('{moduleCode}', getModuleCode())}&keyword=${encodeURIComponent(keyword)}`
       
       const response = await request(searchUrl)
       
@@ -1251,9 +1376,33 @@ const searchNations = async (keyword) => {
       }))
     }
   } catch (error) {
+    console.warn('🔍 搜索国家失败:', error.message)
     nationOptions.value = []
   } finally {
     nationSearchLoading.value = false
+  }
+}
+
+/**
+ * 预加载字典数据（使用构建器模式）
+ */
+const preloadDictionaries = async () => {
+  try {
+    const dictConfig = BusinessTemplate.value.dictionaryConfig
+    if (!dictConfig || !dictConfig.builder?.enabled) {
+      console.log('⚠️ 字典构建器未启用，跳过预加载')
+      return
+    }
+
+    // 从配置构建字典
+    dictionaryBuilderEngine.buildFromConfig(dictConfig.dictionaries, getModuleCode())
+
+    // 预加载所有动态字典
+    await dictionaryBuilderEngine.preloadAll(getModuleCode())
+
+    console.log('✅ 字典构建器预加载完成')
+  } catch (error) {
+    console.warn('❌ 预加载字典失败:', error.message)
   }
 }
 
@@ -1265,7 +1414,10 @@ onMounted(async () => {
   // 2. 再预加载 API 方法（配置加载完成后）
   await preloadApiMethods()
   
-  // 3. 初始化引擎配置
+  // 3. 预加载字典数据（国家、销售人员等）
+  await preloadDictionaries()
+  
+  // 4. 初始化引擎配置
   await initEngineConfig()
   
   // 设置默认日期区间为当月

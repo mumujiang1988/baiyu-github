@@ -62,13 +62,13 @@
 
 ### 适用场景
 
-✅ **适合配置化的场景**：
+ **适合配置化的场景**：
 - CRUD 业务页面（销售订单、采购订单等）
 - 单据管理页面（入库单、出库单等）
 - 报表查询页面（库存明细、销售统计等）
 - 基础资料维护（客户、供应商、物料等）
 
-❌ **不适合配置化的场景**：
+ **不适合配置化的场景**：
 - 复杂业务逻辑（需要大量自定义代码）
 - 特殊 UI 需求（高度定制化界面）
 - 性能敏感场景（需要极致优化）
@@ -280,7 +280,7 @@ DELIMITER ;
 
 ---
 
-## 🔧 后端实现
+##  后端实现
 
 ### 目录结构
 
@@ -394,11 +394,11 @@ public class ErpPageConfigController extends BaseController {
 ```
 
 **核心功能**：
-- ✅ 配置列表查询（分页）
-- ✅ 配置详情获取
-- ✅ 配置新增/修改/删除
-- ✅ 页面配置读取（业务页面调用）
-- ✅ 权限控制（@SaCheckPermission）
+-  配置列表查询（分页）
+-  配置详情获取
+-  配置新增/修改/删除
+-  页面配置读取（业务页面调用）
+-  权限控制（@SaCheckPermission）
 
 #### 2. ErpPageConfigServiceImpl - 配置服务实现
 
@@ -495,11 +495,11 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 ```
 
 **核心特性**：
-- ✅ Redis 缓存支持（TTL: 1 小时）
-- ✅ 版本自动控制（每次更新 +1）
-- ✅ 历史记录自动记录
-- ✅ 缓存自动清除
-- ✅ 事务控制（@Transactional）
+-  Redis 缓存支持（TTL: 1 小时）
+-  版本自动控制（每次更新 +1）
+-  历史记录自动记录
+-  缓存自动清除
+-  事务控制（@Transactional）
 
 #### 3. DynamicQueryEngine - 动态查询引擎
 
@@ -543,7 +543,7 @@ public class DynamicQueryEngine {
                     continue;
                 }
                 
-                // ✅ 字段白名单校验，防止 SQL 注入
+                //  字段白名单校验，防止 SQL 注入
                 if (!isValidField(field)) {
                     log.warn("非法字段访问尝试：{}", field);
                     continue;
@@ -599,10 +599,10 @@ public class DynamicQueryEngine {
 ```
 
 **核心特性**：
-- ✅ 字段白名单（防 SQL 注入）
-- ✅ 支持多种查询类型（like、in、between 等）
-- ✅ 空值过滤
-- ✅ 异常处理
+-  字段白名单（防 SQL 注入）
+-  支持多种查询类型（like、in、between 等）
+-  空值过滤
+-  异常处理
 
 ---
 
@@ -784,11 +784,11 @@ onMounted(() => {
 ```
 
 **核心功能**：
-- ✅ 从数据库加载配置
-- ✅ 动态渲染搜索表单
-- ✅ 动态渲染表格列
-- ✅ 分页支持
-- ✅ 多种数据渲染类型
+-  从数据库加载配置
+-  动态渲染搜索表单
+-  动态渲染表格列
+-  分页支持
+-  多种数据渲染类型
 
 #### 2. ERPConfigParser - 配置解析器
 
@@ -847,9 +847,9 @@ export default ERPConfigParser
 ```
 
 **作用**：
-- ✅ 解析 JSON 配置
-- ✅ 提供统一的配置访问接口
-- ✅ 权限标识符自动生成
+-  解析 JSON 配置
+-  提供统一的配置访问接口
+-  权限标识符自动生成
 
 ---
 
@@ -957,20 +957,20 @@ npm run dev
 
 ### 1. 配置管理规范
 
-✅ **推荐做法**：
+ **推荐做法**：
 - 使用版本控制（每次修改填写变更原因）
 - 定期查看历史版本
 - 重要修改前先备份配置
 - 使用公共配置（`is_public=1`）共享配置
 
-❌ **不推荐做法**：
+ **不推荐做法**：
 - 直接修改数据库（使用配置管理后台）
 - 不填写变更原因
 - 跳过测试直接上线
 
 ### 2. 性能优化
 
-✅ **Redis 缓存**：
+ **Redis 缓存**：
 ```java
 // 配置缓存 TTL: 1 小时
 CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, content, 3600);
@@ -979,7 +979,7 @@ CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, content, 3600);
 CacheUtils.evict(CacheNames.ERP_CONFIG, config.getModuleCode());
 ```
 
-✅ **数据库索引**：
+ **数据库索引**：
 ```sql
 -- 模块编码 + 配置类型唯一索引
 UNIQUE KEY `uk_module_type` (`module_code`, `config_type`)
@@ -991,7 +991,7 @@ KEY `idx_module_version` (`module_code`, `version`)
 
 ### 3. 安全加固
 
-✅ **字段白名单**：
+ **字段白名单**：
 ```java
 private static final Set<String> ALLOWED_FIELDS = Set.of(
     "fbillNo", "fDocumentStatus", "fBillAmount", ...
@@ -1003,7 +1003,7 @@ if (!isValidField(field)) {
 }
 ```
 
-✅ **权限控制**：
+ **权限控制**：
 ```java
 @SaCheckPermission("erp:config:list")
 @SaCheckPermission("erp:config:add")
@@ -1011,7 +1011,7 @@ if (!isValidField(field)) {
 @SaCheckPermission("erp:config:remove")
 ```
 
-✅ **事务控制**：
+ **事务控制**：
 ```java
 @Transactional(rollbackFor = Exception.class)
 public int updateByBo(ErpPageConfigBo bo) {
@@ -1021,14 +1021,14 @@ public int updateByBo(ErpPageConfigBo bo) {
 
 ### 4. 配置调试技巧
 
-✅ **查看缓存的配置**：
+ **查看缓存的配置**：
 ```javascript
 // 浏览器控制台
 const config = await getPageConfig('saleOrder')
 console.log(JSON.parse(config.data))
 ```
 
-✅ **查看 SQL 执行日志**：
+ **查看 SQL 执行日志**：
 ```properties
 # application.yml
 mybatis-plus:
@@ -1036,7 +1036,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 ```
 
-✅ **清除缓存**：
+ **清除缓存**：
 ```java
 // 手动清除缓存
 CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);

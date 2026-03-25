@@ -26,45 +26,7 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    /**
-     * 模块编码与表名映射关系
-     * 根据实际业务需要扩展
-     */
-    private static final Map<String, String> MODULE_TABLE_MAPPING = new HashMap<>();
-    
-    static {
-        // 销售订单
-        MODULE_TABLE_MAPPING.put("saleOrder", "t_sale_order");
-        MODULE_TABLE_MAPPING.put("saleOrderEntry", "t_sale_order_entry");
-        
-        // 采购订单
-        MODULE_TABLE_MAPPING.put("purchaseOrder", "t_purchase_order");
-        MODULE_TABLE_MAPPING.put("purchaseOrderEntry", "t_purchase_order_entry");
-        
-        // 发货通知单
-        MODULE_TABLE_MAPPING.put("deliveryOrder", "t_delivery_order");
-        MODULE_TABLE_MAPPING.put("deliveryOrderEntry", "t_delivery_order_entry");
-        
-        // 出库单
-        MODULE_TABLE_MAPPING.put("outboundOrder", "t_outbound_order");
-        MODULE_TABLE_MAPPING.put("outboundOrderEntry", "t_outbound_order_entry");
-        
-        // 入库单
-        MODULE_TABLE_MAPPING.put("inboundOrder", "t_inbound_order");
-        MODULE_TABLE_MAPPING.put("inboundOrderEntry", "t_inbound_order_entry");
-        
-        // 库存管理
-        MODULE_TABLE_MAPPING.put("inventory", "t_inventory");
-        
-        // 客户管理
-        MODULE_TABLE_MAPPING.put("customer", "t_customer");
-        
-        // 供应商管理
-        MODULE_TABLE_MAPPING.put("supplier", "t_supplier");
-        
-        // 物料管理
-        MODULE_TABLE_MAPPING.put("material", "t_material");
-    }
+
 
     @Override
     public Page<Map<String, Object>> selectPageByModule(
@@ -72,9 +34,30 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
             PageQuery pageQuery,
             QueryWrapper<Object> queryWrapper) {
         
+        throw new ServiceException("必须传入 tableName 参数，不能仅使用 moduleCode");
+    }
+    
+    /**
+     * 支持动态表名的分页查询（唯一入口）
+     * @param moduleCode 模块编码
+     * @param tableName 表名（必填，来自 JSON 配置）
+     * @param pageQuery 分页参数
+     * @param queryWrapper 查询条件
+     * @return 分页结果
+     */
+    public Page<Map<String, Object>> selectPageByModuleWithTableName(
+            String moduleCode,
+            String tableName,
+            PageQuery pageQuery,
+            QueryWrapper<Object> queryWrapper) {
+        
         try {
-            // 获取表名
-            String tableName = getTableNameByModuleCode(moduleCode);
+            //  tableName 为必填参数，来自前端 JSON 配置
+            if (tableName == null || tableName.trim().isEmpty()) {
+                throw new ServiceException("tableName 参数不能为空，请在 JSON 配置的 pageConfig.tableName 中配置表名");
+            }
+            
+            log.info(" 使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
             
             // 构建 SQL
             String sql = buildSelectSql(tableName, queryWrapper);
@@ -155,13 +138,7 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
 
     @Override
     public String getTableNameByModuleCode(String moduleCode) {
-        String tableName = MODULE_TABLE_MAPPING.get(moduleCode);
-        
-        if (tableName == null || tableName.isEmpty()) {
-            throw new ServiceException("未找到模块 [" + moduleCode + "] 对应的表名配置");
-        }
-        
-        return tableName;
+        throw new ServiceException("已废弃：必须使用 tableName 参数，不能仅使用 moduleCode 获取表名");
     }
 
     /**

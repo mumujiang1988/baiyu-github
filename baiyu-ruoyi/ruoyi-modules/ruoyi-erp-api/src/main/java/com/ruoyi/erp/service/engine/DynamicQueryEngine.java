@@ -19,7 +19,7 @@ import java.util.Set;
 @Component
 public class DynamicQueryEngine {
 
-    // ✅ 删除硬编码的字段白名单，直接使用数据库字段名
+    //  删除硬编码的字段白名单，直接使用数据库字段名
 
     /**
      * 根据配置构建查询条件
@@ -58,7 +58,7 @@ public class DynamicQueryEngine {
                     continue;
                 }
                 
-                // ✅ 简单校验字段非空即可（配置中已使用数据库字段名）
+                //  简单校验字段非空即可（配置中已使用数据库字段名）
 
                 Object value = queryParams.get(field);
                 if (value == null || StringUtils.isEmpty(value.toString())) {
@@ -173,7 +173,7 @@ public class DynamicQueryEngine {
 
     /**
      * 校验字段是否合法
-     * ✅ 极简版：只校验非空
+     *  极简版：只校验非空
      */
     private boolean isValidField(String field) {
         return StringUtils.isNotEmpty(field);
@@ -197,7 +197,7 @@ public class DynamicQueryEngine {
         String orderDirection = (String) sortConfig.get("orderDirection");
 
         if (StringUtils.isNotEmpty(orderBy)) {
-            // ✅ 排序字段只需校验非空（配置中已使用数据库字段名）
+            //  排序字段只需校验非空（配置中已使用数据库字段名）
             // MyBatis-Plus 会自动处理字段名下划线转换
             if ("asc".equalsIgnoreCase(orderDirection)) {
                 queryWrapper.orderByAsc(true, orderBy);

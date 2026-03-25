@@ -476,7 +476,7 @@ const queryParams = reactive({
 })
 
 // ==================== 已移除的验证规则 ====================
-// ✅ 不再使用表单验证（已移除 el-form 组件）
+//  不再使用表单验证（已移除 el-form 组件）
 // const editFormRules = { ... }
 
 // ==================== 方法定义 ====================
@@ -595,7 +595,7 @@ function cancelEditMode() {
     type: 'warning'
   }).then(() => {
     isEditMode.value = false
-    // ✅ 不再需要清除验证（已移除 el-form）
+    //  不再需要清除验证（已移除 el-form）
   })
 }
 
@@ -612,16 +612,16 @@ function loadEditData(configId) {
       const data = res.data || res
       console.log('📋 解析后的数据:', data)
       
-      // ✅ 自动格式化 JSON 内容
+      //  自动格式化 JSON 内容
       let configContent = data.configContent || ''
       console.log('📝 原始配置内容:', configContent)
       
       try {
         const parsed = JSON.parse(configContent)
         configContent = JSON.stringify(parsed, null, 2)
-        console.log('✅ JSON 格式化成功')
+        console.log(' JSON 格式化成功')
       } catch (e) {
-        console.warn('❌ JSON 解析失败，保持原始格式:', e.message)
+        console.warn(' JSON 解析失败，保持原始格式:', e.message)
       }
       
       Object.assign(editFormData, {
@@ -632,13 +632,13 @@ function loadEditData(configId) {
         configContent: configContent,
         isPublic: data.isPublic,
         remark: data.remark,
-        version: data.version || 1  // ✅ 加载版本号
+        version: data.version || 1  //  加载版本号
       })
       
-      console.log('✅ 编辑表单数据已更新:', editFormData)
+      console.log(' 编辑表单数据已更新:', editFormData)
     })
     .catch(error => {
-      console.error('❌ 加载配置数据失败:', error)
+      console.error(' 加载配置数据失败:', error)
       ElMessage.error('加载配置数据失败：' + (error.message || '未知错误'))
     })
 }
@@ -671,7 +671,7 @@ function resetEditForm() {
  * 提交编辑表单
  */
 function handleEditSubmit() {
-  // ✅ 不再需要表单验证（已移除 el-form）
+  //  不再需要表单验证（已移除 el-form）
   // 直接执行保存逻辑
   submitLoading.value = true
 
@@ -684,7 +684,7 @@ function handleEditSubmit() {
     isPublic: editFormData.isPublic,
     remark: editFormData.remark,
     changeReason: editFormData.changeReason,
-    version: editFormData.version || 1  // ✅ 添加默认版本号，防止后端空指针
+    version: editFormData.version || 1  //  添加默认版本号，防止后端空指针
   }
 
   saveConfig(data)

@@ -575,7 +575,7 @@ public abstract class GenericServiceImpl<M extends BaseMapper<T>, T>
 
 ---
 
-## 🔧 配置化查询接口
+##  配置化查询接口
 
 ### 查询引擎设计
 
@@ -1468,10 +1468,10 @@ public class PushDownEngine {
 - [ ] 创建通用实体基类
 
 **交付物**:
-- ✅ `GenericController` - 通用控制器
-- ✅ `GenericService` - 通用服务接口
-- ✅ `GenericServiceImpl` - 通用服务实现
-- ✅ `BaseConfigEntity` - 通用实体基类
+-  `GenericController` - 通用控制器
+-  `GenericService` - 通用服务接口
+-  `GenericServiceImpl` - 通用服务实现
+-  `BaseConfigEntity` - 通用实体基类
 
 ---
 
@@ -1487,11 +1487,11 @@ public class PushDownEngine {
 - [ ] 开发下推引擎
 
 **交付物**:
-- ✅ `DynamicQueryEngine` - 动态查询引擎
-- ✅ `FormValidationEngine` - 表单验证引擎
-- ✅ `CalculationEngine` - 计算引擎
-- ✅ `ApprovalWorkflowEngine` - 审批引擎
-- ✅ `PushDownEngine` - 下推引擎
+-  `DynamicQueryEngine` - 动态查询引擎
+-  `FormValidationEngine` - 表单验证引擎
+-  `CalculationEngine` - 计算引擎
+-  `ApprovalWorkflowEngine` - 审批引擎
+-  `PushDownEngine` - 下推引擎
 
 ---
 
@@ -1506,9 +1506,9 @@ public class PushDownEngine {
 - [ ] 实现配置版本管理
 
 **交付物**:
-- ✅ `ErpPageConfig` - 配置实体
-- ✅ `ErpPageConfigService` - 配置服务
-- ✅ 配置缓存机制
+-  `ErpPageConfig` - 配置实体
+-  `ErpPageConfigService` - 配置服务
+-  配置缓存机制
 
 ---
 
@@ -1523,14 +1523,14 @@ public class PushDownEngine {
 - [ ] 编写使用文档
 
 **交付物**:
-- ✅ 配置化的销售订单模块
-- ✅ 配置化的采购订单模块
-- ✅ 配置管理界面
-- ✅ 完整使用文档
+-  配置化的销售订单模块
+-  配置化的采购订单模块
+-  配置管理界面
+-  完整使用文档
 
 ---
 
-## 📊 复用度对比
+##  复用度对比
 
 | 组件类型 | 传统开发 | 配置化开发 | 复用度提升 |
 |---------|---------|-----------|----------|
@@ -1547,11 +1547,11 @@ public class PushDownEngine {
 
 ### 核心优势
 
-✅ **高复用** - 通用基类提供 80% 标准功能  
-✅ **少冗余** - 避免重复代码，DRY 原则  
-✅ **易扩展** - 开闭原则，新功能无需改旧代码  
-✅ **配置化** - 业务逻辑可通过配置调整  
-✅ **标准化** - 统一的接口规范和数据结构  
+ **高复用** - 通用基类提供 80% 标准功能  
+ **少冗余** - 避免重复代码，DRY 原则  
+ **易扩展** - 开闭原则，新功能无需改旧代码  
+ **配置化** - 业务逻辑可通过配置调整  
+ **标准化** - 统一的接口规范和数据结构  
 
 ### 关键特性
 

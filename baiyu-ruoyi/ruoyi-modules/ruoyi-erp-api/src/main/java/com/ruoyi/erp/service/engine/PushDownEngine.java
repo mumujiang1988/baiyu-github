@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * 下推引擎(安全加固版)
@@ -19,6 +20,12 @@ import java.util.*;
 @Slf4j
 @Component
 public class PushDownEngine {
+    
+    /**
+     * ✅ 正则表达式编译为静态常量,避免重复编译
+     */
+    private static final Pattern VARIABLE_PATTERN = 
+        Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b");
 
     /**
      * 执行下推操作
@@ -191,16 +198,15 @@ public class PushDownEngine {
     }
 
     /**
-     * 简单公式解析(安全实现)
+     * 简单公式解析(性能优化版)
      * 支持基本的算术运算
      */
     private Object evaluateSimpleFormula(String formula, Map<String, Object> context) {
         // 替换变量为实际值
         String expression = formula;
         
-        // 查找所有变量(字母开头的标识符)
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b");
-        java.util.regex.Matcher matcher = pattern.matcher(formula);
+        // ✅ 使用静态Pattern,避免重复编译
+        java.util.regex.Matcher matcher = VARIABLE_PATTERN.matcher(formula);
         
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
@@ -290,9 +296,18 @@ public class PushDownEngine {
         private double parseTerm() {
             double x = parseFactor();
             for (;;) {
-                if (eat('*')) x *= parseFactor();
-                else if (eat('/')) x /= parseFactor();
-                else return x;
+                if (eat('*')) {
+                    x *= parseFactor();
+                } else if (eat('/')) {
+                    double divisor = parseFactor();
+                    // ✅ 检查除数是否为0
+                    if (Math.abs(divisor) < 1e-10) { // 浮点数精度问题,使用极小值判断
+                        throw new ArithmeticException("除数不能为零");
+                    }
+                    x /= divisor;
+                } else {
+                    return x;
+                }
             }
         }
 

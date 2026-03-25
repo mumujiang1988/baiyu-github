@@ -7,19 +7,19 @@
 
 ---
 
-## 📊 总体完成情况
+##  总体完成情况
 
 ### 当前状态概览
 
 | 模块 | 已完成 | 待实现 | 完成率 | 状态 |
 |------|--------|--------|--------|------|
-| **动态查询引擎** | ✅ 核心功能 | ⚠️ Service 集成 | 90% | 🟡 部分完成 |
-| **表单验证引擎** | ✅ 全部功能 | ❌ 无 | 100% | ✅ 已完成 |
-| **审批流程引擎** | ✅ 基础功能 | ⚠️ 高级功能 | 60% | 🟡 部分完成 |
-| **下推引擎** | ✅ 基础功能 | ⚠️ 高级功能 | 65% | 🟡 部分完成 |
-| **Controller 层** | ✅ 接口定义 | ⚠️ 业务实现 | 70% | 🟡 部分完成 |
-| **Service 层** | ✅ 基础 CRUD | ⚠️ 引擎集成 | 75% | 🟡 部分完成 |
-| **前端集成** | ✅ API 定义 | ⚠️ 页面调用 | 80% | 🟡 部分完成 |
+| **动态查询引擎** |  核心功能 |  Service 集成 | 90% | 🟡 部分完成 |
+| **表单验证引擎** |  全部功能 |  无 | 100% |  已完成 |
+| **审批流程引擎** |  基础功能 |  高级功能 | 60% | 🟡 部分完成 |
+| **下推引擎** |  基础功能 |  高级功能 | 65% | 🟡 部分完成 |
+| **Controller 层** |  接口定义 |  业务实现 | 70% | 🟡 部分完成 |
+| **Service 层** |  基础 CRUD |  引擎集成 | 75% | 🟡 部分完成 |
+| **前端集成** |  API 定义 |  页面调用 | 80% | 🟡 部分完成 |
 | **总体完成率** | - | - | **75%** | 🟡 进行中 |
 
 ---
@@ -29,10 +29,10 @@
 ### 一、动态查询引擎 - Service 集成 (P0)
 
 #### 现状分析
-- ✅ `DynamicQueryEngine.buildQueryConditions()` 已实现
-- ✅ 字段白名单校验机制已完成
-- ✅ 支持 11 种查询类型 (like, between, in, etc.)
-- ❌ **ErpEngineController.executeDynamicQuery()** 中缺少实际查询执行逻辑
+-  `DynamicQueryEngine.buildQueryConditions()` 已实现
+-  字段白名单校验机制已完成
+-  支持 11 种查询类型 (like, between, in, etc.)
+-  **ErpEngineController.executeDynamicQuery()** 中缺少实际查询执行逻辑
 
 #### 待实现内容
 
@@ -48,12 +48,12 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
         Map<String, Object> queryParams = (Map<String, Object>) params.get("queryParams");
         Map<String, Object> searchConfig = (Map<String, Object>) params.get("searchConfig");
         
-        // ✅ 已实现：构建 QueryWrapper
+        //  已实现：构建 QueryWrapper
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
             new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         queryWrapper = queryEngine.buildQueryConditions(queryWrapper, searchConfig, queryParams);
         
-        // ❌ 待实现：根据 moduleCode 调用对应的 Service 执行查询
+        //  待实现：根据 moduleCode 调用对应的 Service 执行查询
         // TODO: 这里需要根据 moduleCode 调用对应的 Service 执行实际查询
         // 暂时返回配置信息，实际项目中需要注入对应的 BaseMapper 来执行查询
         
@@ -104,10 +104,10 @@ return R.ok(result);
 ### 二、审批流程引擎 - 高级功能 (P0)
 
 #### 现状分析
-- ✅ `ApprovalWorkflowEngine.getCurrentStep()` 已实现
-- ✅ 条件表达式解析已完成 (支持比较运算、逻辑运算)
-- ✅ 权限检查基础逻辑已实现
-- ❌ **多个高级功能未实现**
+-  `ApprovalWorkflowEngine.getCurrentStep()` 已实现
+-  条件表达式解析已完成 (支持比较运算、逻辑运算)
+-  权限检查基础逻辑已实现
+-  **多个高级功能未实现**
 
 #### 待实现内容
 
@@ -121,13 +121,13 @@ public R<?> executeApproval(@RequestBody Map<String, Object> params) {
     try {
         String moduleCode = (String) params.get("moduleCode");
         
-        // ✅ 已实现：从数据库获取 workflow 配置
+        //  已实现：从数据库获取 workflow 配置
         ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
         if (flowConfig == null) {
             return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
         }
         
-        // ❌ 待实现：完整的审批执行逻辑
+        //  待实现：完整的审批执行逻辑
         // TODO: 暂不实现完整的审批执行逻辑
         // approvalEngine 目前没有 executeApproval 方法，需要后续开发
         
@@ -203,10 +203,10 @@ public R<?> checkApprovalPermission(@RequestBody Map<String, Object> params) {
     try {
         String moduleCode = (String) params.get("moduleCode");
         
-        // ✅ 已实现：从数据库获取 workflow 配置
+        //  已实现：从数据库获取 workflow 配置
         ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
         
-        // ❌ 待实现：完整的权限检查逻辑
+        //  待实现：完整的权限检查逻辑
         // TODO: 暂不实现完整的权限检查逻辑
         // approvalEngine 目前没有 checkPermission 方法，需要后续开发
         
@@ -243,10 +243,10 @@ public R<?> getApprovalHistory(@RequestParam Map<String, String> params) {
     try {
         String moduleCode = params.get("moduleCode");
         
-        // ✅ 已实现：从数据库获取 workflow 配置
+        //  已实现：从数据库获取 workflow 配置
         ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
         
-        // ❌ 待实现：获取审批历史记录
+        //  待实现：获取审批历史记录
         // TODO: approvalEngine 目前没有 getApprovalHistory 方法，需要后续开发
         
         return R.ok(new ArrayList<>());
@@ -280,10 +280,10 @@ public R<?> transferApproval(@RequestBody Map<String, Object> params) {
     try {
         String moduleCode = (String) params.get("moduleCode");
         
-        // ✅ 已实现：从数据库获取 workflow 配置
+        //  已实现：从数据库获取 workflow 配置
         ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
         
-        // ❌ 待实现：转审功能
+        //  待实现：转审功能
         // TODO: approvalEngine 目前没有 transferApproval 方法，需要后续开发
         
         return R.ok(result);
@@ -319,10 +319,10 @@ public R<?> withdrawApproval(@RequestBody Map<String, Object> params) {
     try {
         String moduleCode = (String) params.get("moduleCode");
         
-        // ✅ 已实现：从数据库获取 workflow 配置
+        //  已实现：从数据库获取 workflow 配置
         ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
         
-        // ❌ 待实现：撤回审批功能
+        //  待实现：撤回审批功能
         // TODO: approvalEngine 目前没有 withdrawApproval 方法，需要后续开发
         
         return R.ok(result);
@@ -351,10 +351,10 @@ public R<?> withdrawApproval(@RequestBody Map<String, Object> params) {
 ### 三、下推引擎 - 高级功能 (P0)
 
 #### 现状分析
-- ✅ `PushDownEngine.execute()` 已实现
-- ✅ 字段映射、默认值、数据转换已完成
-- ✅ 安全的公式计算器已实现
-- ❌ **多个高级功能未实现**
+-  `PushDownEngine.execute()` 已实现
+-  字段映射、默认值、数据转换已完成
+-  安全的公式计算器已实现
+-  **多个高级功能未实现**
 
 #### 待实现内容
 
@@ -369,10 +369,10 @@ public R<?> previewPushDown(@RequestBody Map<String, Object> params) {
         String sourceModule = (String) params.get("sourceModule");
         String targetModule = (String) params.get("targetModule");
         
-        // ✅ 已实现：从数据库获取下推关系配置
+        //  已实现：从数据库获取下推关系配置
         ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
         
-        // ❌ 待实现：预览功能
+        //  待实现：预览功能
         // TODO: pushEngine 目前没有 preview 方法，需要后续开发
         
         return R.ok(result);
@@ -408,10 +408,10 @@ public R<?> batchPushDown(@RequestBody Map<String, Object> params) {
         String sourceModule = (String) params.get("sourceModule");
         String targetModule = (String) params.get("targetModule");
         
-        // ✅ 已实现：从数据库获取下推关系配置
+        //  已实现：从数据库获取下推关系配置
         ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
         
-        // ❌ 待实现：批量下推功能
+        //  待实现：批量下推功能
         // TODO: pushEngine 目前没有 batchExecute 方法，需要后续开发
         
         return R.ok(result);
@@ -448,10 +448,10 @@ public R<?> validatePushData(@RequestBody Map<String, Object> params) {
         String sourceModule = (String) params.get("sourceModule");
         String targetModule = (String) params.get("targetModule");
         
-        // ✅ 已实现：从数据库获取下推关系配置
+        //  已实现：从数据库获取下推关系配置
         ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
         
-        // ❌ 待实现：验证功能
+        //  待实现：验证功能
         // TODO: pushEngine 目前没有 validate 方法，需要后续开发
         
         return R.ok(result);
@@ -486,7 +486,7 @@ public R<?> cancelPushDown(@RequestBody Map<String, Object> params) {
     try {
         String targetModule = (String) params.get("targetModule");
         
-        // ❌ 待实现：取消下推功能
+        //  待实现：取消下推功能
         // TODO: pushEngine 目前没有 cancel 方法，需要后续开发
         
         return R.ok(result);
@@ -522,7 +522,7 @@ public R<?> getPushHistory(@RequestParam Map<String, String> params) {
     try {
         String moduleCode = params.get("moduleCode");
         
-        // ❌ 待实现：获取下推历史
+        //  待实现：获取下推历史
         // TODO: pushEngine 目前没有 getHistory 方法，需要后续开发
         
         return R.ok(new ArrayList<>());
@@ -551,8 +551,8 @@ public R<?> getPushHistory(@RequestParam Map<String, String> params) {
 ### 四、Service 层 - 通用查询服务 (P1)
 
 #### 现状分析
-- ❌ 缺少通用的 SuperDataPermissionService
-- ❌ 无法根据 moduleCode 动态查询不同表
+-  缺少通用的 SuperDataPermissionService
+-  无法根据 moduleCode 动态查询不同表
 
 #### 待实现内容
 
@@ -596,9 +596,9 @@ public interface ISuperDataPermissionService {
 ### 五、前端集成 - 页面调用 (P1)
 
 #### 现状分析
-- ✅ API 接口已定义 (`baiyu-web/src/api/erp/engine/`)
-- ✅ BusinessConfigurable.vue 组件已创建
-- ❌ 页面未实际调用引擎 API
+-  API 接口已定义 (`baiyu-web/src/api/erp/engine/`)
+-  BusinessConfigurable.vue 组件已创建
+-  页面未实际调用引擎 API
 
 #### 待实现内容
 
@@ -734,10 +734,10 @@ public interface ISuperDataPermissionService {
 **目标**: 完成所有 P0 高优先级任务
 
 **任务**:
-1. ✅ 实现动态查询 Service 集成 (任务 1.1)
-2. ✅ 实现审批执行逻辑 (任务 2.1)
-3. ✅ 实现权限检查 (任务 2.2)
-4. ✅ 实现审批历史查询 (任务 2.3)
+1.  实现动态查询 Service 集成 (任务 1.1)
+2.  实现审批执行逻辑 (任务 2.1)
+3.  实现权限检查 (任务 2.2)
+4.  实现审批历史查询 (任务 2.3)
 
 **交付物**:
 - 可运行的查询功能
@@ -751,10 +751,10 @@ public interface ISuperDataPermissionService {
 **目标**: 完成审批和下推的高级功能
 
 **任务**:
-1. ✅ 实现转审功能 (任务 2.4)
-2. ✅ 实现撤回审批 (任务 2.5)
-3. ✅ 实现下推预览 (任务 3.1)
-4. ✅ 实现批量下推 (任务 3.2)
+1.  实现转审功能 (任务 2.4)
+2.  实现撤回审批 (任务 2.5)
+3.  实现下推预览 (任务 3.1)
+4.  实现批量下推 (任务 3.2)
 
 **交付物**:
 - 完整的审批工作流
@@ -767,9 +767,9 @@ public interface ISuperDataPermissionService {
 **目标**: 完成前端页面与引擎的集成
 
 **任务**:
-1. ✅ 集成查询引擎 (任务 5.1)
-2. ✅ 集成审批引擎 (任务 5.2)
-3. ✅ 集成下推引擎 (任务 5.3)
+1.  集成查询引擎 (任务 5.1)
+2.  集成审批引擎 (任务 5.2)
+3.  集成下推引擎 (任务 5.3)
 
 **交付物**:
 - 可操作的配置化页面
@@ -782,10 +782,10 @@ public interface ISuperDataPermissionService {
 **目标**: 性能优化和安全加固
 
 **任务**:
-1. ✅ Redis 缓存 (任务 6.1)
-2. ✅ 数据权限集成 (任务 7.1)
-3. ✅ 操作日志 (任务 7.2)
-4. ✅ 性能监控 (任务 8.2)
+1.  Redis 缓存 (任务 6.1)
+2.  数据权限集成 (任务 7.1)
+3.  操作日志 (任务 7.2)
+4.  性能监控 (任务 8.2)
 
 **交付物**:
 - 性能测试报告
@@ -793,7 +793,7 @@ public interface ISuperDataPermissionService {
 
 ---
 
-## 📊 风险评估
+##  风险评估
 
 ### 技术风险
 

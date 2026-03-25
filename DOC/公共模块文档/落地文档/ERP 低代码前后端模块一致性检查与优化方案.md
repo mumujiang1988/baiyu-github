@@ -39,7 +39,7 @@ ErpPageConfigController (配置管理 Controller)
 
 ### 1.2 核心接口调用链路分析
 
-#### ✅ **接口 1: 获取页面配置**
+####  **接口 1: 获取页面配置**
 
 **前端调用**:
 ```javascript
@@ -60,18 +60,18 @@ public R<String> getPageConfig(@PathVariable String moduleCode) {
     if (config == null) {
         return R.fail("未找到配置");
     }
-    return R.ok("操作成功", config);  // ✅ data 字段返回配置内容
+    return R.ok("操作成功", config);  //  data 字段返回配置内容
 }
 ```
 
-**一致性评估**: ✅ **完全一致**
-- ✅ URL 路径匹配：`/erp/config/get/{moduleCode}`
-- ✅ HTTP 方法匹配：GET
-- ✅ 参数传递：path variable `moduleCode`
-- ✅ 响应格式：`R.ok("操作成功", config)`，data 字段包含配置 JSON 字符串
-- ✅ 前端处理：ERPConfigParser 正确解析 response.data 并 JSON.parse()
+**一致性评估**:  **完全一致**
+-  URL 路径匹配：`/erp/config/get/{moduleCode}`
+-  HTTP 方法匹配：GET
+-  参数传递：path variable `moduleCode`
+-  响应格式：`R.ok("操作成功", config)`，data 字段包含配置 JSON 字符串
+-  前端处理：ERPConfigParser 正确解析 response.data 并 JSON.parse()
 
-#### ⚠️ **接口 2: 动态查询引擎**
+####  **接口 2: 动态查询引擎**
 
 **前端期望**:
 ```javascript
@@ -105,14 +105,14 @@ const apiMethod = await getApiMethod('list')
 }
 ```
 
-**一致性风险**: ⚠️ **需要确认**
-- ⚠️ 后端是否存在 `/erp/engine/query/*` 相关 Controller？
-- ⚠️ 前端 engine API 与实际业务 API 的边界不清晰
-- ⚠️ `getApiMethod()` 依赖配置文件中的 `modulePath`，但配置文件中未见该字段
+**一致性风险**:  **需要确认**
+-  后端是否存在 `/erp/engine/query/*` 相关 Controller？
+-  前端 engine API 与实际业务 API 的边界不清晰
+-  `getApiMethod()` 依赖配置文件中的 `modulePath`，但配置文件中未见该字段
 
 ### 1.3 前端低代码调用通用低代码接口验证
 
-#### ✅ **验证通过：配置加载流程**
+####  **验证通过：配置加载流程**
 
 1. **组件初始化** (BusinessConfigurable.vue Line 748-777)
 ```javascript
@@ -146,14 +146,14 @@ const loadDatabaseConfig = async (moduleCode) => {
 ```javascript
 static async loadFromDatabase(moduleCode) {
   const response = await request({
-    url: `/erp/config/get/${moduleCode}`,  // ✅ 调用后端通用接口
+    url: `/erp/config/get/${moduleCode}`,  //  调用后端通用接口
     method: 'get'
   })
   
   if (response.code === 200 || response.code === 0) {
     let configContent;
     if (typeof response.data === 'string') {
-      configContent = JSON.parse(response.data);  // ✅ 解析 JSON
+      configContent = JSON.parse(response.data);  //  解析 JSON
     } else {
       configContent = response.data;
     }
@@ -162,11 +162,11 @@ static async loadFromDatabase(moduleCode) {
 }
 ```
 
-**结论**: ✅ **前端低代码正常调用通用低代码接口**
-- ✅ 统一的配置加载入口：`ERPConfigParser.loadFromDatabase()`
-- ✅ 统一的后端接口：`/erp/config/get/{moduleCode}`
-- ✅ 完善的错误处理和缓存机制
-- ✅ 支持多种响应格式（字符串/对象）
+**结论**:  **前端低代码正常调用通用低代码接口**
+-  统一的配置加载入口：`ERPConfigParser.loadFromDatabase()`
+-  统一的后端接口：`/erp/config/get/{moduleCode}`
+-  完善的错误处理和缓存机制
+-  支持多种响应格式（字符串/对象）
 
 ---
 
@@ -184,12 +184,12 @@ static async loadFromDatabase(moduleCode) {
   "searchConfig": {
     "fields": [
       {
-        "field": "customerName",      // ❌ 业务字段名，非数据库字段
+        "field": "customerName",      //  业务字段名，非数据库字段
         "label": "客户名称",
         "component": "input"
       },
       {
-        "field": "fbillNo",           // ✅ 这是数据库字段
+        "field": "fbillNo",           //  这是数据库字段
         "label": "单据编号",
         "component": "input"
       }
@@ -200,19 +200,19 @@ static async loadFromDatabase(moduleCode) {
 
 **问题 2: 不必要的映射逻辑**
 
-- ❌ 前端需要 `getDictOptions()` 进行字典映射
-- ❌ 后端 `DynamicQueryEngine` 使用硬编码的字段白名单
-- ❌ 存在字段名转换的潜在需求（databaseField ↔ businessField）
+-  前端需要 `getDictOptions()` 进行字典映射
+-  后端 `DynamicQueryEngine` 使用硬编码的字段白名单
+-  存在字段名转换的潜在需求（databaseField ↔ businessField）
 
 ### 2.2 优化目标
 
 **核心原则**: 
-1. ✅ **配置 JSON 中所有字段均使用数据库实际字段名**
-2. ✅ **删除所有字段映射服务、VO、Mapper**
-3. ✅ **删除所有中间转换逻辑**
-4. ✅ **前端传入 = 数据库字段名**
-5. ✅ **后端返回 = 数据库字段名**
-6. ✅ **零映射、零转换、零开销**
+1.  **配置 JSON 中所有字段均使用数据库实际字段名**
+2.  **删除所有字段映射服务、VO、Mapper**
+3.  **删除所有中间转换逻辑**
+4.  **前端传入 = 数据库字段名**
+5.  **后端返回 = 数据库字段名**
+6.  **零映射、零转换、零开销**
 
 ### 2.3 优化方案：极简主义
 
@@ -229,13 +229,13 @@ static async loadFromDatabase(moduleCode) {
 
 #### 配置示例对比
 
-**优化前** (❌ 错误示范):
+**优化前** ( 错误示范):
 ```json
 {
   "searchConfig": {
     "fields": [
       {
-        "field": "customerName",      // ❌ 业务字段名
+        "field": "customerName",      //  业务字段名
         "label": "客户名称"
       }
     ]
@@ -243,7 +243,7 @@ static async loadFromDatabase(moduleCode) {
   "tableConfig": {
     "columns": [
       {
-        "prop": "customerName",       // ❌ 业务字段名
+        "prop": "customerName",       //  业务字段名
         "label": "客户名称"
       }
     ]
@@ -251,13 +251,13 @@ static async loadFromDatabase(moduleCode) {
 }
 ```
 
-**优化后** (✅ 正确示范):
+**优化后** ( 正确示范):
 ```json
 {
   "searchConfig": {
     "fields": [
       {
-        "field": "fcustomername",     // ✅ 数据库字段名
+        "field": "fcustomername",     //  数据库字段名
         "label": "客户名称"
       }
     ]
@@ -265,7 +265,7 @@ static async loadFromDatabase(moduleCode) {
   "tableConfig": {
     "columns": [
       {
-        "prop": "fcustomername",      // ✅ 数据库字段名
+        "prop": "fcustomername",      //  数据库字段名
         "label": "客户名称"
       }
     ]
@@ -314,12 +314,12 @@ static async loadFromDatabase(moduleCode) {
      "searchConfig": {
        "fields": [
          {
-           "field": "fbillno",          // ✅ 改为数据库字段
+           "field": "fbillno",          //  改为数据库字段
            "label": "单据编号",
            "component": "input"
          },
          {
-           "field": "fcustomername",    // ✅ 改为数据库字段
+           "field": "fcustomername",    //  改为数据库字段
            "label": "客户名称",
            "component": "input"
          }
@@ -328,12 +328,12 @@ static async loadFromDatabase(moduleCode) {
      "tableConfig": {
        "columns": [
          {
-           "prop": "fbillno",           // ✅ 改为数据库字段
+           "prop": "fbillno",           //  改为数据库字段
            "label": "单据编号",
            "width": 150
          },
          {
-           "prop": "fcustomername",     // ✅ 改为数据库字段
+           "prop": "fcustomername",     //  改为数据库字段
            "label": "客户名称",
            "minWidth": 200
          }
@@ -354,12 +354,12 @@ static async loadFromDatabase(moduleCode) {
 
 6. **DynamicQueryEngine 简化** - 不需要字段白名单映射
    ```java
-   // ❌ 删除硬编码的字段白名单
+   //  删除硬编码的字段白名单
    private static final Set<String> ALLOWED_FIELDS = Set.of(
        "fbillNo", "fOraBaseProperty", ...  // 删除这个静态白名单
    );
    
-   // ✅ 直接校验字段是否为空即可
+   //  直接校验字段是否为空即可
    private boolean isValidField(String field) {
        return StringUtils.isNotEmpty(field);  // 简单校验非空
    }
@@ -384,7 +384,7 @@ static async loadFromDatabase(moduleCode) {
 
 8. **BusinessConfigurable.vue 保持不变** - 已经支持直接使用数据库字段名
    ```javascript
-   // ✅ 现有的 handleQuery 已经是正确的
+   //  现有的 handleQuery 已经是正确的
    const handleQuery = async () => {
      const params = {
        pageNum: queryParams.value.pageNum,
@@ -397,7 +397,7 @@ static async loadFromDatabase(moduleCode) {
 
 9. **ERPConfigParser.js 保持不变** - 已经正确解析配置
    ```javascript
-   // ✅ parseSearchForm 已经是正确的
+   //  parseSearchForm 已经是正确的
    parseSearchForm() {
      return {
        fields: searchConfig.fields.map(field => ({
@@ -444,10 +444,10 @@ static async loadFromDatabase(moduleCode) {
 
 #### 核心优势
 
-1. ✅ **零新增代码** - 不创建任何 Service、VO、Mapper
-2. ✅ **零性能开销** - 无字段映射转换
-3. ✅ **零维护成本** - 配置即数据库
-4. ✅ **开发友好** - 新人可直接查看数据库字段
+1.  **零新增代码** - 不创建任何 Service、VO、Mapper
+2.  **零性能开销** - 无字段映射转换
+3.  **零维护成本** - 配置即数据库
+4.  **开发友好** - 新人可直接查看数据库字段
 
 #### 方案 B: 双字段名映射（备选）
 
@@ -559,12 +559,12 @@ const buildQueryParams = () => {
      "searchConfig": {
        "fields": [
          {
-           "field": "fbillno",          // ✅ 改为数据库字段
+           "field": "fbillno",          //  改为数据库字段
            "label": "单据编号",
            "component": "input"
          },
          {
-           "field": "fcustomername",    // ✅ 改为数据库字段
+           "field": "fcustomername",    //  改为数据库字段
            "label": "客户名称",
            "component": "input"
          }
@@ -573,12 +573,12 @@ const buildQueryParams = () => {
      "tableConfig": {
        "columns": [
          {
-           "prop": "fbillno",           // ✅ 改为数据库字段
+           "prop": "fbillno",           //  改为数据库字段
            "label": "单据编号",
            "width": 150
          },
          {
-           "prop": "fcustomername",     // ✅ 改为数据库字段
+           "prop": "fcustomername",     //  改为数据库字段
            "label": "客户名称",
            "minWidth": 200
          }
@@ -610,7 +610,7 @@ const buildQueryParams = () => {
 
 7. **BusinessConfigurable 调整查询逻辑**
    ```javascript
-   // ✅ 无需修改，现有逻辑已支持数据库字段名
+   //  无需修改，现有逻辑已支持数据库字段名
    const handleQuery = async () => {
      const params = {
        pageNum: queryParams.value.pageNum,
@@ -657,9 +657,9 @@ const buildQueryParams = () => {
 
 ### 3.1 关键成功因素
 
-1. ✅ **配置与代码分离**: 配置 JSON 独立于代码，修改无需重新编译
-2. ✅ **向后兼容**: 前端解析器保持向下兼容
-3. ✅ **渐进式迁移**: 可以逐个模块迁移，不影响整体
+1.  **配置与代码分离**: 配置 JSON 独立于代码，修改无需重新编译
+2.  **向后兼容**: 前端解析器保持向下兼容
+3.  **渐进式迁移**: 可以逐个模块迁移，不影响整体
 
 ### 3.2 潜在风险及应对
 
@@ -687,17 +687,17 @@ const buildQueryParams = () => {
 
 ### 4.1 检查结论
 
-#### ✅ **检查项 1: 低代码前后端模块一致性**
+####  **检查项 1: 低代码前后端模块一致性**
 
 - **评分**: ⭐⭐⭐⭐⭐ (5/5)
 - **结论**: 前端低代码模块正常调用通用低代码接口
 - **证据**:
-  - ✅ `ERPConfigParser.loadFromDatabase()` → `/erp/config/get/{moduleCode}`
-  - ✅ `ErpPageConfigController.getPageConfig()` 正确响应
-  - ✅ 完整的配置加载、解析、渲染链路
-  - ✅ 支持缓存、错误处理、多种响应格式
+  -  `ERPConfigParser.loadFromDatabase()` → `/erp/config/get/{moduleCode}`
+  -  `ErpPageConfigController.getPageConfig()` 正确响应
+  -  完整的配置加载、解析、渲染链路
+  -  支持缓存、错误处理、多种响应格式
 
-#### ⚠️ **检查项 2: 字段名使用规范** - 需要优化
+####  **检查项 2: 字段名使用规范** - 需要优化
 
 - **现状**: 配置 JSON 中混用数据库字段名和业务字段名
 - **问题**: 增加理解成本和维护复杂度
@@ -717,10 +717,10 @@ graph LR
 
 ### 4.3 核心价值
 
-1. ✅ **零新增代码**: 不创建任何 Service、VO、Mapper
-2. ✅ **零性能开销**: 无字段映射转换
-3. ✅ **零维护成本**: 配置即数据库
-4. ✅ **开发友好**: 新人可直接查看数据库字段
+1.  **零新增代码**: 不创建任何 Service、VO、Mapper
+2.  **零性能开销**: 无字段映射转换
+3.  **零维护成本**: 配置即数据库
+4.  **开发友好**: 新人可直接查看数据库字段
 
 ---
 

@@ -20,7 +20,7 @@ export function listConfig(query) {
  * @returns {Promise}
  */
 export function getConfig(id, configType) {
-  // ✅ 如果是数字或可以转换为数字的字符串，使用 ID 查询
+  //  如果是数字或可以转换为数字的字符串，使用 ID 查询
   const numericId = typeof id === 'number' ? id : Number(id)
   if (!isNaN(numericId)) {
     return request({
@@ -45,16 +45,16 @@ export function getConfig(id, configType) {
  * @returns {Promise}
  */
 export function saveConfig(data) {
-  // ✅ 根据是否有 configId 判断使用 POST 还是 PUT
+  //  根据是否有 configId 判断使用 POST 还是 PUT
   if (data.configId) {
-    // ✅ 修改操作，使用 PUT 方法
+    //  修改操作，使用 PUT 方法
     return request({
       url: '/erp/config',
       method: 'put',
       data: data
     })
   } else {
-    // ✅ 新增操作，使用 POST 方法
+    //  新增操作，使用 POST 方法
     return request({
       url: '/erp/config',
       method: 'post',
@@ -82,8 +82,8 @@ export function delConfig(id) {
  */
 export function batchDelConfig(ids) {
   return request({
-    url: '/erp/config/batchDelete',
-    method: 'post',
+    url: '/erp/config/batch',        //  修改为 /batch，与后端一致
+    method: 'delete',                //  修改为 DELETE，与后端一致
     data: ids
   })
 }

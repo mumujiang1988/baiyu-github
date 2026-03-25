@@ -74,7 +74,7 @@
 baiyu-web/src/
 │
 ├── views/erp/pageTemplate/            # ERP 配置化页面模板
-│   ├── configurable/                  # 🔧 配置化页面核心目录
+│   ├── configurable/                  #  配置化页面核心目录
 │   │   ├── BusinessConfigurable.vue   # ✨ 主组件（1739 行）
 │   │   ├── BusinessConfigurable.styles.css  # 样式文件
 │   │   └── components/                # 子组件
@@ -92,7 +92,7 @@ baiyu-web/src/
 │   └── 表结构/                        # 数据库表结构参考
 │       ├── bd_customer.sql
 │       ├── bymaterial_dictionary.sql
-│       └── ...\r\n│\r\n├── api/erp/engine/                    # 🚀 引擎 API 调用层\r\n│   ├── index.js                       # 统一导出文件\r\n│   ├── query.js                       # 动态查询 API\r\n│   ├── validation.js                  # 表单验证 API\r\n│   ├── approval.js                    # 审批流程 API\r\n│   └── push.js                        # 下推引擎 API\r\n│\r\n├── constants/                         # 📋 常量定义（新增）\r\n│   └── configTypes.js                 # 配置类型常量\r\n│\r\n├── components/                        # 全局公共组件\r\n│   ├── IconSelect/                    # 图标选择器\r\n│   ├── Pagination/                    # 分页组件\r\n│   └── ...\r\n│\r\n└── utils/                             # 工具类\r\n    ├── dict.js                        # 字典工具\r\n    ├── permission.js                  # 权限工具\r\n    ├── formatters.js                  # 📊 格式化工具（新增）\r\n    ├── responseHelper.js              # 📡 响应处理工具（新增）\r\n    └── ...\r\n```\r\n\r\n### 核心文件说明\r\n\r\n#### 0️⃣ 公共工具模块（新增 2026-03-23）\r\n\r\n**formatters.js** - 统一格式化函数\r\n\r\n```javascript\r\nimport { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/utils/formatters'\r\n\r\n// 使用示例\r\nconst price = formatCurrency(12345.67)    // '12,345.67'\r\nconst date = formatDate('2026-03-23')     // '2026-03-23'\r\nconst percent = formatPercent(85.5)       // '85.50%'\r\n```\r\n\r\n**configTypes.js** - 配置类型常量\r\n\r\n```javascript\r\nimport { getConfigTypeLabel, getConfigTypeTag, getConfigTypeOptions } from '@/constants/configTypes'\r\n\r\n// 获取配置类型标签\r\nconst label = getConfigTypeLabel('PAGE')  // '页面配置'\r\nconst tag = getConfigTypeTag('PAGE')      // 'success'\r\n\r\n// 获取下拉选项\r\nconst options = getConfigTypeOptions()\r\n// [{ label: '页面配置', value: 'PAGE' }, ...]\r\n```\r\n\r\n**responseHelper.js** - API 响应处理\r\n\r\n```javascript\r\nimport { isSuccessResponse, getResponseData } from '@/utils/responseHelper'\r\n\r\n// 统一响应判断\r\nif (isSuccessResponse(response)) {\r\n  const data = getResponseData(response)\r\n  // 处理数据\r\n}\r\n```\r\n\r\n#### 1️⃣ BusinessConfigurable.vue (核心中的核心)
+│       └── ...\r\n│\r\n├── api/erp/engine/                    # 🚀 引擎 API 调用层\r\n│   ├── index.js                       # 统一导出文件\r\n│   ├── query.js                       # 动态查询 API\r\n│   ├── validation.js                  # 表单验证 API\r\n│   ├── approval.js                    # 审批流程 API\r\n│   └── push.js                        # 下推引擎 API\r\n│\r\n├── constants/                         # 📋 常量定义（新增）\r\n│   └── configTypes.js                 # 配置类型常量\r\n│\r\n├── components/                        # 全局公共组件\r\n│   ├── IconSelect/                    # 图标选择器\r\n│   ├── Pagination/                    # 分页组件\r\n│   └── ...\r\n│\r\n└── utils/                             # 工具类\r\n    ├── dict.js                        # 字典工具\r\n    ├── permission.js                  # 权限工具\r\n    ├── formatters.js                  #  格式化工具（新增）\r\n    ├── responseHelper.js              # 📡 响应处理工具（新增）\r\n    └── ...\r\n```\r\n\r\n### 核心文件说明\r\n\r\n#### 0️⃣ 公共工具模块（新增 2026-03-23）\r\n\r\n**formatters.js** - 统一格式化函数\r\n\r\n```javascript\r\nimport { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/utils/formatters'\r\n\r\n// 使用示例\r\nconst price = formatCurrency(12345.67)    // '12,345.67'\r\nconst date = formatDate('2026-03-23')     // '2026-03-23'\r\nconst percent = formatPercent(85.5)       // '85.50%'\r\n```\r\n\r\n**configTypes.js** - 配置类型常量\r\n\r\n```javascript\r\nimport { getConfigTypeLabel, getConfigTypeTag, getConfigTypeOptions } from '@/constants/configTypes'\r\n\r\n// 获取配置类型标签\r\nconst label = getConfigTypeLabel('PAGE')  // '页面配置'\r\nconst tag = getConfigTypeTag('PAGE')      // 'success'\r\n\r\n// 获取下拉选项\r\nconst options = getConfigTypeOptions()\r\n// [{ label: '页面配置', value: 'PAGE' }, ...]\r\n```\r\n\r\n**responseHelper.js** - API 响应处理\r\n\r\n```javascript\r\nimport { isSuccessResponse, getResponseData } from '@/utils/responseHelper'\r\n\r\n// 统一响应判断\r\nif (isSuccessResponse(response)) {\r\n  const data = getResponseData(response)\r\n  // 处理数据\r\n}\r\n```\r\n\r\n#### 1️⃣ BusinessConfigurable.vue (核心中的核心)
 
 **位置**: `views/erp/pageTemplate/configurable/BusinessConfigurable.vue`
 
@@ -650,7 +650,7 @@ export * from './query'
 export * from './validation'
 export * from './approval'
 export * from './push'
-export * from './print'  // ✅ 新增
+export * from './print'  //  新增
 ```
 
 #### 步骤 3: 在组件中使用
@@ -817,11 +817,11 @@ import { generateBarcode } from '@/utils/barcode'
 
 ---
 
-## 📊 最佳实践
+##  最佳实践
 
 ### 1. 组件性能优化
 
-✅ **使用 v-memo 缓存静态内容**:
+ **使用 v-memo 缓存静态内容**:
 
 ```vue
 <template>
@@ -831,7 +831,7 @@ import { generateBarcode } from '@/utils/barcode'
 </template>
 ```
 
-✅ **虚拟滚动优化大表格**:
+ **虚拟滚动优化大表格**:
 
 ```vue
 <template>
@@ -844,7 +844,7 @@ import { generateBarcode } from '@/utils/barcode'
 </template>
 ```
 
-✅ **防抖搜索**:
+ **防抖搜索**:
 
 ```javascript
 import { debounce } from 'lodash-es'
@@ -856,7 +856,7 @@ const handleQuery = debounce(async () => {
 
 ### 2. 状态管理规范
 
-✅ **使用 Pinia 管理全局状态**:
+ **使用 Pinia 管理全局状态**:
 
 ```javascript
 // store/modules/erpConfig.js
@@ -881,7 +881,7 @@ export const useErpConfigStore = defineStore('erpConfig', {
 
 ### 3. 错误处理
 
-✅ **统一的错误处理**:
+ **统一的错误处理**:
 
 ```javascript
 // utils/errorHandler.js
@@ -910,7 +910,7 @@ export function handleApiError(error) {
 
 ### 4. 代码规范
 
-✅ **ESLint 配置**:
+ **ESLint 配置**:
 
 ```javascript
 // .eslintrc.cjs
@@ -926,7 +926,7 @@ module.exports = {
 }
 ```
 
-✅ **Prettier 配置**:
+ **Prettier 配置**:
 
 ```javascript
 // .prettierrc
@@ -944,21 +944,21 @@ module.exports = {
 
 ### 核心优势
 
-✅ **高复用** - BusinessConfigurable 组件支持所有 CRUD 场景  
-✅ **少冗余** - 配置驱动，避免重复代码  
-✅ **易扩展** - 插槽机制、组件组合  
-✅ **配置化** - 业务页面可通过 JSON 配置生成  
-✅ **标准化** - 统一的组件规范和数据结构  
+ **高复用** - BusinessConfigurable 组件支持所有 CRUD 场景  
+ **少冗余** - 配置驱动，避免重复代码  
+ **易扩展** - 插槽机制、组件组合  
+ **配置化** - 业务页面可通过 JSON 配置生成  
+ **标准化** - 统一的组件规范和数据结构  
 
 ### 适用场景
 
-✅ **适合配置化的场景**:
+ **适合配置化的场景**:
 - CRUD 业务页面（销售订单、采购订单等）
 - 单据管理页面（入库单、出库单等）
 - 报表查询页面（库存明细、销售统计等）
 - 基础资料维护（客户、供应商、物料等）
 
-❌ **不适合配置化的场景**:
+ **不适合配置化的场景**:
 - 复杂业务逻辑（需要大量自定义代码）
 - 特殊 UI 需求（高度定制化界面）
 - 性能敏感场景（需要极致优化）
@@ -978,4 +978,4 @@ module.exports = {
 **创建时间**: 2026-03-23  
 **作者**: ERP 研发团队  
 **最后更新**: 2026-03-23  
-**审核状态**: 已审核 ✅
+**审核状态**: 已审核 

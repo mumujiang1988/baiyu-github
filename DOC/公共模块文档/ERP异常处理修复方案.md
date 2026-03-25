@@ -6,7 +6,7 @@
 
 ---
 
-## 📊 一、异常处理现状分析
+##  一、异常处理现状分析
 
 ### 1.1 当前异常处理问题
 
@@ -44,7 +44,7 @@
 
 **问题场景**:
 ```java
-// ❌ 当前实现
+//  当前实现
 @GetMapping("/config/{moduleCode}")
 public R<?> getConfig(@PathVariable String moduleCode) {
     ErpPageConfig config = erpPageConfigService.getByModuleCode(moduleCode);
@@ -62,7 +62,7 @@ public R<?> getConfig(@PathVariable String moduleCode) {
 
 **问题场景**:
 ```java
-// ❌ 当前实现
+//  当前实现
 private JSONObject parseConfig(String configContent) {
     // 未捕获JSON解析异常
     return JSON.parseObject(configContent);
@@ -80,7 +80,7 @@ private JSONObject parseConfig(String configContent) {
 
 **问题场景**:
 ```java
-// ❌ 当前实现
+//  当前实现
 @GetMapping("/data/{moduleCode}")
 public R<Page<Map<String, Object>>> queryData(
         @PathVariable String moduleCode,
@@ -103,7 +103,7 @@ public R<Page<Map<String, Object>>> queryData(
 
 **问题场景**:
 ```java
-// ❌ 当前实现
+//  当前实现
 @PostMapping
 public R<?> add(@RequestBody Map<String, Object> data) {
     // 未处理数据验证异常
@@ -125,7 +125,7 @@ public R<?> add(@RequestBody Map<String, Object> data) {
 
 **问题场景**:
 ```java
-// ❌ 当前实现
+//  当前实现
 private void checkPermission(String moduleCode, String operation) {
     String permission = "erp:" + moduleCode + ":" + operation;
     // 未捕获权限异常,直接抛出
@@ -144,7 +144,7 @@ private void checkPermission(String moduleCode, String operation) {
 
 **问题场景**:
 ```java
-// ❌ 当前实现
+//  当前实现
 private Object evaluateFormula(String formula, Map<String, Object> context) {
     // 未处理表达式语法错误
     // 未处理除零异常
@@ -160,7 +160,7 @@ private Object evaluateFormula(String formula, Map<String, Object> context) {
 
 ---
 
-## 🔧 三、异常处理修复方案
+##  三、异常处理修复方案
 
 ### 3.1 自定义异常体系
 
@@ -795,11 +795,11 @@ public class ExceptionPrinciples {
      * 原则1: 早失败,早返回
      */
     public void principle1(String param) {
-        // ❌ 错误: 延迟检查
+        //  错误: 延迟检查
         // doSomething();
         // if (param == null) throw exception;
         
-        // ✅ 正确: 早检查
+        //  正确: 早检查
         if (param == null) {
             throw new IllegalArgumentException("参数不能为空");
         }
@@ -810,10 +810,10 @@ public class ExceptionPrinciples {
      * 原则2: 使用具体异常类型
      */
     public void principle2(String moduleCode) {
-        // ❌ 错误: 使用通用异常
+        //  错误: 使用通用异常
         // throw new RuntimeException("配置不存在");
         
-        // ✅ 正确: 使用具体异常
+        //  正确: 使用具体异常
         throw new ConfigNotFoundException(moduleCode);
     }
     
@@ -821,10 +821,10 @@ public class ExceptionPrinciples {
      * 原则3: 提供有意义的错误信息
      */
     public void principle3(String moduleCode, String fieldName) {
-        // ❌ 错误: 无意义信息
+        //  错误: 无意义信息
         // throw new RuntimeException("error");
         
-        // ✅ 正确: 有意义信息
+        //  正确: 有意义信息
         throw new DataValidationException(
             moduleCode, 
             fieldName, 
@@ -840,10 +840,10 @@ public class ExceptionPrinciples {
         try {
             // 业务逻辑
         } catch (Exception e) {
-            // ❌ 错误: 不记录上下文
+            //  错误: 不记录上下文
             // log.error("操作失败", e);
             
-            // ✅ 正确: 记录上下文
+            //  正确: 记录上下文
             log.error("操作失败 - 模块: {}, 数据: {}", moduleCode, data, e);
             throw new ErpConfigException(moduleCode, "操作失败");
         }
@@ -856,10 +856,10 @@ public class ExceptionPrinciples {
         try {
             // 业务逻辑
         } catch (Exception e) {
-            // ❌ 错误: 吞掉异常
+            //  错误: 吞掉异常
             // e.printStackTrace();
             
-            // ✅ 正确: 记录并抛出
+            //  正确: 记录并抛出
             log.error("操作失败", e);
             throw new ErpConfigException("操作失败", e);
         }
@@ -937,7 +937,7 @@ public class FallbackHandler {
 
 ---
 
-## 📊 五、修复效果评估
+##  五、修复效果评估
 
 ### 5.1 异常处理覆盖率提升
 
@@ -1001,16 +1001,16 @@ public class FallbackHandler {
 ### 6.2 验收标准
 
 #### 功能验收:
-- ✅ 所有异常都有明确的错误码和提示信息
-- ✅ 异常信息对用户友好
-- ✅ 异常日志完整记录上下文信息
-- ✅ 异常不会导致系统崩溃
+-  所有异常都有明确的错误码和提示信息
+-  异常信息对用户友好
+-  异常日志完整记录上下文信息
+-  异常不会导致系统崩溃
 
 #### 质量验收:
-- ✅ 异常处理覆盖率 ≥ 95%
-- ✅ 错误信息明确度 ≥ 90%
-- ✅ 用户友好度 ≥ 80%
-- ✅ 日志完整度 ≥ 95%
+-  异常处理覆盖率 ≥ 95%
+-  错误信息明确度 ≥ 90%
+-  用户友好度 ≥ 80%
+-  日志完整度 ≥ 95%
 
 ---
 

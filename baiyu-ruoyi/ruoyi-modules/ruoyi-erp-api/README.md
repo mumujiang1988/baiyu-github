@@ -139,10 +139,10 @@ mybatis-plus:
 
 ## 待办事项
 
-1. ⚠️ SuperDataPermissionServiceImpl 需补充 getRelatedData() 方法
-2. ⚠️ ErpEngineController 需补充字典数据接口
-3. ⚠️ ErpEngineController 需补充 custom/entry 接口
-4. ⚠️ ErpEngineController 需补充 custom/cost 接口
+1.  SuperDataPermissionServiceImpl 需补充 getRelatedData() 方法
+2.  ErpEngineController 需补充字典数据接口
+3.  ErpEngineController 需补充 custom/entry 接口
+4.  ErpEngineController 需补充 custom/cost 接口
 
 ## 作者
 

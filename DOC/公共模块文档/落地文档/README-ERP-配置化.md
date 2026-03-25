@@ -89,7 +89,7 @@ mysql -u root -p test < src/router/erp-menu.sql
 
 ---
 
-## 🔧 引擎 API 使用
+##  引擎 API 使用
 
 ### 1. 动态查询引擎
 

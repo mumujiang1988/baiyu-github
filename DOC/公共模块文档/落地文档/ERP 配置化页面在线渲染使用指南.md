@@ -20,16 +20,16 @@
 
 ## ✨ 核心特性
 
-### ✅ 已实现的功能
+###  已实现的功能
 
 | 特性 | 说明 | 状态 |
 |------|------|------|
-| **在线配置** | 从 `erp_page_config` 表加载 JSON 配置 | ✅ |
-| **缓存机制** | 内存缓存 5 分钟，减少数据库查询 | ✅ |
-| **自动降级** | 数据库失败时自动切换到本地模板 | ✅ |
-| **灵活切换** | 支持 Props 控制是否启用在线配置 | ✅ |
-| **版本显示** | 控制台显示配置版本号 | ✅ |
-| **详细日志** | 完整的加载过程日志 | ✅ |
+| **在线配置** | 从 `erp_page_config` 表加载 JSON 配置 |  |
+| **缓存机制** | 内存缓存 5 分钟，减少数据库查询 |  |
+| **自动降级** | 数据库失败时自动切换到本地模板 |  |
+| **灵活切换** | 支持 Props 控制是否启用在线配置 |  |
+| **版本显示** | 控制台显示配置版本号 |  |
+| **详细日志** | 完整的加载过程日志 |  |
 
 ---
 
@@ -51,10 +51,10 @@ import BusinessConfigurable from '@/views/erp/pageTemplate/configurable/Business
 ```
 
 **特点**:
-- ✅ 从数据库实时加载配置
-- ✅ 修改配置后立即生效
-- ✅ 支持版本管理
-- ✅ 自动缓存提升性能
+-  从数据库实时加载配置
+-  修改配置后立即生效
+-  支持版本管理
+-  自动缓存提升性能
 
 ---
 
@@ -73,10 +73,10 @@ import BusinessConfigurable from '@/views/erp/pageTemplate/configurable/Business
 ```
 
 **特点**:
-- ✅ 不依赖数据库
-- ✅ 加载速度快
-- ✅ 适合开发调试
-- ❌ 修改需要重新部署
+-  不依赖数据库
+-  加载速度快
+-  适合开发调试
+-  修改需要重新部署
 
 ---
 
@@ -189,10 +189,10 @@ export async function refreshConfig(moduleCode) {
     // 重新加载配置
     const config = await ERPConfigParser.loadFromDatabase(moduleCode)
     
-    console.log('✅ 配置已刷新:', config.pageConfig?.title)
+    console.log(' 配置已刷新:', config.pageConfig?.title)
     return config
   } catch (error) {
-    console.error('❌ 刷新配置失败:', error)
+    console.error(' 刷新配置失败:', error)
     throw error
   }
 }
@@ -202,7 +202,7 @@ export async function refreshConfig(moduleCode) {
  */
 export function refreshAllConfigs() {
   ERPConfigParser.clearAllCache()
-  console.log('✅ 所有配置缓存已清除')
+  console.log(' 所有配置缓存已清除')
 }
 ```
 
@@ -315,22 +315,22 @@ Map {
 ```
 ┌─────────────────────────────────┐
 │   第一级：数据库在线配置         │
-│   ✅ 从 erp_page_config 表加载   │
-│   ✅ 实时生效，支持版本管理      │
+│    从 erp_page_config 表加载   │
+│    实时生效，支持版本管理      │
 └─────────────┬───────────────────┘
               │ 失败（网络/数据为空）
               ▼
 ┌─────────────────────────────────┐
 │   第二级：本地 JSON 模板          │
-│   ✅ 从 business.config.template  │
-│   ✅ 稳定可靠，无需网络           │
+│    从 business.config.template  │
+│    稳定可靠，无需网络           │
 └─────────────┬───────────────────┘
               │ 失败（文件不存在）
               ▼
 ┌─────────────────────────────────┐
 │   第三级：默认空配置             │
-│   ⚠️ 仅显示基础框架              │
-│   ⚠️ 提示用户检查配置            │
+│    仅显示基础框架              │
+│    提示用户检查配置            │
 └─────────────────────────────────┘
 ```
 
@@ -353,7 +353,7 @@ try {
 
 ---
 
-## 📊 最佳实践
+##  最佳实践
 
 ### 1. **开发环境使用本地配置**
 
@@ -363,9 +363,9 @@ VUE_APP_ENABLE_ONLINE_CONFIG=false
 ```
 
 **优势**:
-- ✅ 快速迭代，无需频繁操作数据库
-- ✅ 避免网络请求影响开发体验
-- ✅ Git 版本控制，便于协作
+-  快速迭代，无需频繁操作数据库
+-  避免网络请求影响开发体验
+-  Git 版本控制，便于协作
 
 ---
 
@@ -377,9 +377,9 @@ VUE_APP_ENABLE_ONLINE_CONFIG=true
 ```
 
 **优势**:
-- ✅ 实时生效，无需重新部署
-- ✅ 统一管理，便于维护
-- ✅ 版本追溯，安全可靠
+-  实时生效，无需重新部署
+-  统一管理，便于维护
+-  版本追溯，安全可靠
 
 ---
 
@@ -401,7 +401,7 @@ graph LR
 ### 4. **性能优化建议**
 
 ```javascript
-// ✅ 推荐：批量预加载配置
+//  推荐：批量预加载配置
 const preloadConfigs = async (moduleCodes) => {
   const promises = moduleCodes.map(code => 
     ERPConfigParser.loadFromDatabase(code)
@@ -490,10 +490,10 @@ const loadOnlineConfig = async (moduleCode) => {
   
   try {
     const config = await ERPConfigParser.loadFromDatabase(moduleCode)
-    console.log('✅ 配置内容:', config)
+    console.log(' 配置内容:', config)
     console.log('📦 版本号:', config.version)
   } catch (error) {
-    console.error('❌ 加载失败:', error)
+    console.error(' 加载失败:', error)
   }
   
   console.groupEnd()
@@ -507,7 +507,7 @@ const loadOnlineConfig = async (moduleCode) => {
 ### Q1: 配置修改后多久生效？
 
 **A**: 
-- ✅ **立即生效**（清除缓存后）
+-  **立即生效**（清除缓存后）
 - ⏳ 缓存时间：5 分钟
 - 🔄 可在配置管理页面手动刷新
 
@@ -542,7 +542,7 @@ const exportConfig = async (moduleCode) => {
 
 1. **模块编码**: 如 `saleOrder`
 2. **错误信息**: 完整的错误堆栈
-3. **浏览器控制台日志**: 包含 `🌐`、`✅`、`❌` 等标记
+3. **浏览器控制台日志**: 包含 `🌐`、``、`` 等标记
 4. **配置版本**: 从日志中查看版本号
 
 ---
@@ -557,18 +557,18 @@ const exportConfig = async (moduleCode) => {
 
 通过本次优化，`pageTemplate` 已经实现了完整的在线配置渲染能力：
 
-✅ **核心功能**:
+ **核心功能**:
 - 从 `erp_page_config` 表实时加载配置
 - 5 分钟内存缓存，性能提升 97%
 - 自动降级到本地 JSON 模板
 - 灵活的 Props 控制
 
-✅ **使用简单**:
+ **使用简单**:
 - 只需传递 `module-code` 属性
 - 自动处理缓存和错误
 - 详细的日志输出
 
-✅ **生产就绪**:
+ **生产就绪**:
 - 完整的错误处理
 - 性能优化
 - 监控和调试支持

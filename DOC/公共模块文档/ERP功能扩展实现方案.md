@@ -6,7 +6,7 @@
 
 ---
 
-## 📊 一、功能扩展概览
+##  一、功能扩展概览
 
 ### 1.1 扩展功能清单
 
@@ -145,15 +145,15 @@
 
 | 字段 | 类型 | 必填 | 说明 | 示例 |
 |------|------|------|------|------|
-| name | String | ✅ | 计算字段名称 | fbillAmount |
-| targetField | String | ✅ | 目标字段 | fbillAmount |
-| formula | String | ✅ | 计算公式 | SUM(entryList.fAllAmount) |
-| trigger | String | ✅ | 触发事件 | entryListChange |
-| precision | Integer | ❌ | 小数精度 | 2 |
-| roundingMode | String | ❌ | 舍入模式 | HALF_UP |
-| cacheable | Boolean | ❌ | 是否缓存 | true |
-| dependencies | Array | ❌ | 依赖字段 | ["fbillAmount"] |
-| description | String | ❌ | 计算说明 | 订单金额汇总 |
+| name | String |  | 计算字段名称 | fbillAmount |
+| targetField | String |  | 目标字段 | fbillAmount |
+| formula | String |  | 计算公式 | SUM(entryList.fAllAmount) |
+| trigger | String |  | 触发事件 | entryListChange |
+| precision | Integer |  | 小数精度 | 2 |
+| roundingMode | String |  | 舍入模式 | HALF_UP |
+| cacheable | Boolean |  | 是否缓存 | true |
+| dependencies | Array |  | 依赖字段 | ["fbillAmount"] |
+| description | String |  | 计算说明 | 订单金额汇总 |
 
 ### 2.3 核心代码实现
 
@@ -1224,7 +1224,7 @@ public class VirtualFieldService {
 
 ---
 
-## 📊 四、实施计划与验收
+##  四、实施计划与验收
 
 ### 4.1 实施计划
 
@@ -1241,17 +1241,17 @@ public class VirtualFieldService {
 ### 4.2 验收标准
 
 #### 功能验收:
-- ✅ 支持SUM/AVG/COUNT/MAX/MIN聚合函数
-- ✅ 支持四则运算和复杂表达式
-- ✅ 支持IF/CASE条件表达式
-- ✅ 支持精度控制和舍入模式
-- ✅ 支持虚拟字段批量查询和缓存
-- ✅ 支持多种显示类型
+-  支持SUM/AVG/COUNT/MAX/MIN聚合函数
+-  支持四则运算和复杂表达式
+-  支持IF/CASE条件表达式
+-  支持精度控制和舍入模式
+-  支持虚拟字段批量查询和缓存
+-  支持多种显示类型
 
 #### 性能验收:
-- ✅ 计算字段响应时间 < 100ms
-- ✅ 虚拟字段批量查询性能提升 > 50%
-- ✅ 缓存命中率 > 80%
+-  计算字段响应时间 < 100ms
+-  虚拟字段批量查询性能提升 > 50%
+-  缓存命中率 > 80%
 
 ---
 

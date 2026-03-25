@@ -38,7 +38,7 @@ $testResults.Total++
 
 $newApiPath = "src\views\erp\api"
 if (Test-Path $newApiPath) {
-    Write-Host "  ✅ PASS: 新 API 目录存在 - $newApiPath" -ForegroundColor $successColor
+    Write-Host "   PASS: 新 API 目录存在 - $newApiPath" -ForegroundColor $successColor
     $testResults.Passed++
     
     # 显示目录结构
@@ -47,7 +47,7 @@ if (Test-Path $newApiPath) {
         Get-ChildItem -Path $newApiPath -Recurse -File | Select-Object FullName | Format-Table -AutoSize
     }
 } else {
-    Write-Host "  ❌ FAIL: 新 API 目录不存在 - $newApiPath" -ForegroundColor $errorColor
+    Write-Host "   FAIL: 新 API 目录不存在 - $newApiPath" -ForegroundColor $errorColor
     $testResults.Failed++
 }
 
@@ -61,11 +61,11 @@ $testResults.Total++
 
 $oldApiPath = "src\api\erp"
 if (Test-Path $oldApiPath) {
-    Write-Host "  ⚠️  WARNING: 旧 API 目录仍然存在 - $oldApiPath" -ForegroundColor $warningColor
+    Write-Host "    WARNING: 旧 API 目录仍然存在 - $oldApiPath" -ForegroundColor $warningColor
     Write-Host "     建议：确认所有引用都已更新后，可以删除此目录" -ForegroundColor $warningColor
     $testResults.Warning++
 } else {
-    Write-Host "  ✅ PASS: 旧 API 目录已删除" -ForegroundColor $successColor
+    Write-Host "   PASS: 旧 API 目录已删除" -ForegroundColor $successColor
     $testResults.Passed++
 }
 
@@ -90,7 +90,7 @@ foreach ($vueFile in $vueFiles) {
         
         # 检查是否存在旧的引用
         if ($content -match "from ['`]@/api/erp/") {
-            Write-Host "  ❌ FAIL: $vueFile 仍然使用旧的引用路径" -ForegroundColor $errorColor
+            Write-Host "   FAIL: $vueFile 仍然使用旧的引用路径" -ForegroundColor $errorColor
             $incorrectImports++
             
             if ($Verbose) {
@@ -100,10 +100,10 @@ foreach ($vueFile in $vueFiles) {
                 }
             }
         } else {
-            Write-Host "  ✅ PASS: $vueFile 引用路径正确" -ForegroundColor $successColor
+            Write-Host "   PASS: $vueFile 引用路径正确" -ForegroundColor $successColor
         }
     } else {
-        Write-Host "  ⚠️  WARNING: 文件不存在 - $vueFile" -ForegroundColor $warningColor
+        Write-Host "    WARNING: 文件不存在 - $vueFile" -ForegroundColor $warningColor
     }
 }
 
@@ -133,9 +133,9 @@ $requiredApiFiles = @(
 $missingFiles = 0
 foreach ($file in $requiredApiFiles) {
     if (Test-Path $file) {
-        Write-Host "  ✅ PASS: $file" -ForegroundColor $successColor
+        Write-Host "   PASS: $file" -ForegroundColor $successColor
     } else {
-        Write-Host "  ❌ FAIL: $file 不存在" -ForegroundColor $errorColor
+        Write-Host "   FAIL: $file 不存在" -ForegroundColor $errorColor
         $missingFiles++
     }
 }
@@ -156,10 +156,10 @@ $testResults.Total++
 
 $readmePath = "src\views\erp\api\README.md"
 if (Test-Path $readmePath) {
-    Write-Host "  ✅ PASS: README 文档存在 - $readmePath" -ForegroundColor $successColor
+    Write-Host "   PASS: README 文档存在 - $readmePath" -ForegroundColor $successColor
     $testResults.Passed++
 } else {
-    Write-Host "  ❌ FAIL: README 文档不存在 - $readmePath" -ForegroundColor $errorColor
+    Write-Host "   FAIL: README 文档不存在 - $readmePath" -ForegroundColor $errorColor
     $testResults.Failed++
 }
 
@@ -183,20 +183,20 @@ if ($FixAll) {
         if ($content -match "@/api/erp/engine/query") {
             $content = $content -replace "@/api/erp/engine/query", "../../api/engine/query"
             Set-Content -Path $file.FullName -Value $content -NoNewline
-            Write-Host "  ✅ 已修复：$($file.Name)" -ForegroundColor $successColor
+            Write-Host "   已修复：$($file.Name)" -ForegroundColor $successColor
             $fixedCount++
         }
         
         if ($content -match "@/api/erp/config") {
             $content = $content -replace "@/api/erp/config", "../api/config"
             Set-Content -Path $file.FullName -Value $content -NoNewline
-            Write-Host "  ✅ 已修复：$($file.Name)" -ForegroundColor $successColor
+            Write-Host "   已修复：$($file.Name)" -ForegroundColor $successColor
             $fixedCount++
         }
     }
     
     if ($fixedCount -gt 0) {
-        Write-Host "  ✅ 共修复 $fixedCount 处错误引用" -ForegroundColor $successColor
+        Write-Host "   共修复 $fixedCount 处错误引用" -ForegroundColor $successColor
     } else {
         Write-Host "  ℹ️  无需修复" -ForegroundColor $infoColor
     }
@@ -227,12 +227,12 @@ if ($testResults.Failed -eq 0 -and $testResults.Warning -eq 0) {
     Write-Host "  2. 确认无编译错误" -ForegroundColor White
     Write-Host "  3. 考虑删除旧的 api/erp 目录" -ForegroundColor White
 } elseif ($testResults.Failed -eq 0) {
-    Write-Host "⚠️  测试基本通过，但存在警告" -ForegroundColor $warningColor
+    Write-Host "  测试基本通过，但存在警告" -ForegroundColor $warningColor
     Write-Host ""
     Write-Host "建议：" -ForegroundColor $infoColor
     Write-Host "  - 确认旧的 api/erp 目录是否可以删除" -ForegroundColor White
 } else {
-    Write-Host "❌ 存在失败的测试，请检查上述错误" -ForegroundColor $errorColor
+    Write-Host " 存在失败的测试，请检查上述错误" -ForegroundColor $errorColor
     Write-Host ""
     Write-Host "建议：" -ForegroundColor $infoColor
     Write-Host "  - 使用 -FixAll 参数尝试自动修复" -ForegroundColor White

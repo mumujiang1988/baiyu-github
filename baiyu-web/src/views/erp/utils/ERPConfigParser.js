@@ -35,24 +35,24 @@ class ERPConfigParser {
       })
       
       // 🔍 添加详细调试信息
-      console.log('📥 后端返回的完整响应:', response)
-      console.log('📥 response.code:', response.code)
-      console.log('📥 response.data 类型:', typeof response.data, '值:', response.data)
-      console.log('📥 response.msg:', typeof response.msg, '长度:', response.msg?.length)
+      console.log(' 后端返回的完整响应:', response)
+      console.log(' response.code:', response.code)
+      console.log(' response.data 类型:', typeof response.data, '值:', response.data)
+      console.log(' response.msg:', typeof response.msg, '长度:', response.msg?.length)
       
       if (response.code === 200 || response.code === 0) {
-        // ✅ 修复：后端返回的 data 字段可能是字符串或对象
+        //  修复：后端返回的 data 字段可能是字符串或对象
         let configContent;
         
         // 🔍 检查 response.data 是否存在，如果不存在尝试从 msg 字段获取（兼容处理）
         let rawData = response.data;
         if (!rawData && response.msg) {
-          console.warn('⚠️ response.data 为空，尝试从 msg 字段读取配置...')
+          console.warn(' response.data 为空，尝试从 msg 字段读取配置...')
           rawData = response.msg;
         }
         
         if (!rawData) {
-          console.error('❌ response.data 和 response.msg 都为空！', response)
+          console.error(' response.data 和 response.msg 都为空！', response)
           throw new Error('配置内容为空')
         }
         
@@ -61,9 +61,9 @@ class ERPConfigParser {
           // 如果是字符串，尝试解析 JSON
           try {
             configContent = JSON.parse(rawData);
-            console.log('✅ JSON 解析成功')
+            console.log(' JSON 解析成功')
           } catch (parseError) {
-            console.error('❌ JSON 解析失败:', parseError, '原始数据:', rawData);
+            console.error(' JSON 解析失败:', parseError, '原始数据:', rawData);
             throw new Error('配置内容格式错误');
           }
         } else if (rawData && typeof rawData === 'object') {
@@ -71,7 +71,7 @@ class ERPConfigParser {
           // 如果已经是对象，直接使用
           configContent = rawData;
         } else {
-          console.error('❌ rawData 类型异常:', typeof rawData, '值:', rawData)
+          console.error(' rawData 类型异常:', typeof rawData, '值:', rawData)
           throw new Error('配置内容为空或格式不正确');
         }
         
@@ -81,16 +81,16 @@ class ERPConfigParser {
           timestamp: Date.now()
         });
         
-        console.log('✅ 数据库配置加载成功:', configContent.pageConfig?.title);
+        console.log(' 数据库配置加载成功:', configContent.pageConfig?.title);
         console.log('📦 配置版本:', response.version || configContent.version || 'N/A');
         
         return configContent;
       } else {
-        console.error('❌ 后端返回错误码:', response.code, '错误信息:', response.msg)
+        console.error(' 后端返回错误码:', response.code, '错误信息:', response.msg)
         throw new Error(response.msg || '配置加载失败');
       }
     } catch (error) {
-      console.error('❌ 加载数据库配置失败:', error);
+      console.error(' 加载数据库配置失败:', error);
       throw error;
     }
   }
@@ -102,7 +102,7 @@ class ERPConfigParser {
   static clearCache(moduleCode) {
     const cacheKey = `erp_config_${moduleCode}`
     configCache.delete(cacheKey)
-    console.log('🗑️ 已清除配置缓存:', moduleCode)
+    console.log(' 已清除配置缓存:', moduleCode)
   }
   
   /**
@@ -110,7 +110,7 @@ class ERPConfigParser {
    */
   static clearAllCache() {
     configCache.clear()
-    console.log('🗑️ 已清除所有配置缓存')
+    console.log(' 已清除所有配置缓存')
   }
   constructor(config) {
     this.config = config
@@ -124,11 +124,32 @@ class ERPConfigParser {
     const { pageConfig } = this.config
     return {
       title: pageConfig.title,
+      moduleCode: pageConfig.moduleCode,  // 新增：模块编码
       permissionPrefix: pageConfig.permissionPrefix,
       apiPrefix: pageConfig.apiPrefix,
       primaryKey: pageConfig.primaryKey || 'id',
-      billNoField: pageConfig.billNoField || 'fbillNo',
-      layout: pageConfig.layout || 'standard'
+      billNoField: pageConfig.billNoField || 'FBillNo',
+      layout: pageConfig.layout || 'standard',
+      tableName: pageConfig.tableName || null
+    }
+  }
+
+  /**
+   * 解析查询构建器配置（新增）
+   */
+  parseQueryConfig() {
+    const { queryConfig } = this.config
+    if (!queryConfig || !queryConfig.enabled) {
+      return null
+    }
+
+    return {
+      enabled: true,
+      defaultConditions: queryConfig.defaultConditions || [],
+      defaultOrderBy: queryConfig.defaultOrderBy || [],
+      select: queryConfig.select || null,
+      groupBy: queryConfig.groupBy || null,
+      having: queryConfig.having || null
     }
   }
 
@@ -145,7 +166,8 @@ class ERPConfigParser {
       fields: searchConfig.fields.map(field => ({
         ...field,
         componentType: this.getComponentType(field.component),
-        eventHandlers: this.parseEventHandlers(field)
+        eventHandlers: this.parseEventHandlers(field),
+        queryOperator: field.queryOperator || 'eq' //  新增：查询运算符配置
       }))
     }
   }
@@ -170,7 +192,8 @@ class ERPConfigParser {
         visible: col.visible !== false,
         formatter: this.getFormatter(col)
       })),
-      expandRow: tableConfig.expandRow || null
+      expandRow: tableConfig.expandRow || null,
+      orderBy: tableConfig.orderBy || [] //  新增：默认排序配置
     }
   }
 
@@ -236,41 +259,92 @@ class ERPConfigParser {
   }
 
   /**
-   * 加载字典数据
+   * 解析子表格查询配置（新增）
+   */
+  parseSubTableQueryConfig() {
+    const { subTableQueryConfigs } = this.config
+    if (!subTableQueryConfigs) return {}
+    
+    const result = {}
+    for (const [key, config] of Object.entries(subTableQueryConfigs)) {
+      result[key] = {
+        enabled: config.enabled !== false,
+        tableName: config.tableName,
+        defaultConditions: config.defaultConditions || [],
+        defaultOrderBy: config.defaultOrderBy || []
+      }
+    }
+    return result
+  }
+
+  /**
+   * 加载字典数据（仅支持新格式）
    */
   async loadDictionaries(moduleCode) {
     const { dictionaryConfig } = this.config
     if (!dictionaryConfig) return
 
-    for (const [key, value] of Object.entries(dictionaryConfig)) {
-      if (Array.isArray(value)) {
+    // ⭐ 强制使用新构建器模式
+    if (!dictionaryConfig.builder?.enabled) {
+      console.warn('⚠️ 未启用字典构建器，请设置 dictionaryConfig.builder.enabled = true')
+      return
+    }
+
+    // ⭐ 强制使用 dictionaries 结构
+    const dictMap = dictionaryConfig.dictionaries
+    if (!dictMap) {
+      console.error('❌ 字典配置格式错误：缺少 dictionaryConfig.dictionaries')
+      return
+    }
+
+    for (const [key, config] of Object.entries(dictMap)) {
+      // 新格式：必须包含 type 字段
+      if (!config.type) {
+        console.error(`❌ 字典 "${key}" 配置错误：缺少 type 字段（static/dynamic/remote）`)
+        continue
+      }
+
+      if (config.type === 'static') {
         // 静态字典
-        this.dictionaries.set(key, value)
-      } else if (typeof value === 'object' && value.api) {
-        // 动态字典（排除客户搜索）
-        if (key !== 'customers') {
-          try {
-            const api = value.api.replace(/{moduleCode}/g, moduleCode)
-            const response = await fetch(api).then(r => r.json())
-            
-            let data = []
-            if (response.code === 200 || response.errorCode === 0) {
-              data = response.data || response.rows || []
-            } else if (Array.isArray(response)) {
-              data = response
-            }
-            
-            const mappedData = data.map(item => ({
-              label: item[value.labelField] || item.label || item.name,
-              value: item[value.valueField] || item.value || item.kingdee,
-              ...item
-            }))
-            this.dictionaries.set(key, mappedData)
-          } catch (error) {
-            console.warn(`字典 "${key}" 加载失败：`, error.message)
-            this.dictionaries.set(key, [])
-          }
+        if (!config.data || !Array.isArray(config.data)) {
+          console.error(`❌ 静态字典 "${key}" 配置错误：缺少 data 数组`)
+          continue
         }
+        this.dictionaries.set(key, config.data)
+      } else if (config.type === 'dynamic') {
+        // 动态字典
+        if (!config.config?.api) {
+          console.error(`❌ 动态字典 "${key}" 配置错误：缺少 config.api`)
+          continue
+        }
+        try {
+          const api = config.config.api.replace(/{moduleCode}/g, moduleCode)
+          const response = await fetch(api).then(r => r.json())
+          
+          let data = []
+          if (response.code === 200 || response.errorCode === 0) {
+            data = response.data || response.rows || []
+          } else if (Array.isArray(response)) {
+            data = response
+          }
+          
+          const labelField = config.config.labelField || 'label'
+          const valueField = config.config.valueField || 'value'
+          const mappedData = data.map(item => ({
+            label: item[labelField],
+            value: item[valueField],
+            ...item
+          }))
+          this.dictionaries.set(key, mappedData)
+        } catch (error) {
+          console.error(`❌ 动态字典 "${key}" 加载失败：`, error.message)
+          this.dictionaries.set(key, [])
+        }
+      } else if (config.type === 'remote') {
+        // 远程搜索字典（不预加载，由搜索触发）
+        console.log(`ℹ️ 远程搜索字典 "${key}" 已注册，等待搜索时加载`)
+      } else {
+        console.error(`❌ 字典 "${key}" 类型错误：type 必须是 static/dynamic/remote 之一`)
       }
     }
   }

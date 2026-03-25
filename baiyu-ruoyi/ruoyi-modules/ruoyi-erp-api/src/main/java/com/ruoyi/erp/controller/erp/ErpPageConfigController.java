@@ -254,7 +254,7 @@ public class ErpPageConfigController extends BaseController {
         log.info("[ErpPageConfigController] 返回成功，moduleCode: {}, configLength: {}", 
             moduleCode, config.length());
         
-        // ✅ 明确设置 data 字段为配置内容，msg 为提示信息
+        //  明确设置 data 字段为配置内容，msg 为提示信息
         return R.ok("操作成功", config);
     }
 }

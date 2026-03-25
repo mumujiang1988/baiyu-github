@@ -9,25 +9,25 @@
 ## 🎯 核心思想
 
 ### 1. **配置驱动开发**
-- ✅ 零代码修改字段配置
-- ✅ 零代码调整页面布局
-- ✅ 零代码变更验证规则
-- ✅ 零代码管理字典数据
+-  零代码修改字段配置
+-  零代码调整页面布局
+-  零代码变更验证规则
+-  零代码管理字典数据
 
 ### 2. **高度可复用**
-- ✅ 通用表格组件
-- ✅ 通用表单组件
-- ✅ 通用字典接口
-- ✅ 通用解析引擎
+-  通用表格组件
+-  通用表单组件
+-  通用字典接口
+-  通用解析引擎
 
 ### 3. **统一管理**
-- ✅ 所有配置集中管理
-- ✅ 所有字典统一服务
-- ✅ 所有组件标准化
+-  所有配置集中管理
+-  所有字典统一服务
+-  所有组件标准化
 
 ---
 
-## 📊 架构总览
+##  架构总览
 
 ```mermaid
 graph TB
@@ -106,12 +106,12 @@ const visibleColumns = computed(() => {
 
 **安全访问模式**:
 ```javascript
-// ✅ 使用可选链和默认值
+//  使用可选链和默认值
 const leftToolbarActions = computed(() => {
   return parsedConfig.value.actions?.toolbar?.filter(a => a.position === 'left') || []
 })
 
-// ❌ 避免直接访问可能为 undefined 的属性
+//  避免直接访问可能为 undefined 的属性
 const wrong = computed(() => {
   return parsedConfig.value.actions.toolbar.filter(...) // 可能报错
 })
@@ -213,12 +213,12 @@ const wrong = computed(() => {
 
 | 配置块 | 用途 | 必填 | 说明 |
 |-------|------|------|------|
-| `pageConfig` | 页面基本配置 | ✅ | 标题、API 路径等 |
-| `search` | 查询区域配置 | ❌ | 查询字段、布局等 |
-| `table` | 表格配置 | ✅ | 列定义、分页、排序等 |
-| `form` | 表单配置 | ✅ | 字段、验证规则、分组等 |
-| `actions` | 操作按钮配置 | ✅ | 工具栏、行操作等 |
-| `dictionaryConfig` | 字典配置 | ❌ | 动态字典定义 |
+| `pageConfig` | 页面基本配置 |  | 标题、API 路径等 |
+| `search` | 查询区域配置 |  | 查询字段、布局等 |
+| `table` | 表格配置 |  | 列定义、分页、排序等 |
+| `form` | 表单配置 |  | 字段、验证规则、分组等 |
+| `actions` | 操作按钮配置 |  | 工具栏、行操作等 |
+| `dictionaryConfig` | 字典配置 |  | 动态字典定义 |
 
 ---
 
@@ -289,11 +289,11 @@ class ERPConfigParser {
 **功能**: 根据配置动态渲染表格
 
 **关键特性**:
-- ✅ 动态列渲染
-- ✅ 支持固定列、排序、筛选
-- ✅ 支持 Tag、Dict、Virtual 等多种渲染类型
-- ✅ 支持展开行详情
-- ✅ 支持多选
+-  动态列渲染
+-  支持固定列、排序、筛选
+-  支持 Tag、Dict、Virtual 等多种渲染类型
+-  支持展开行详情
+-  支持多选
 
 **使用示例**:
 ```jsx
@@ -313,11 +313,11 @@ class ERPConfigParser {
 **功能**: 根据配置动态渲染表单
 
 **关键特性**:
-- ✅ 动态字段渲染
-- ✅ 支持 Input、Select、Radio、DatePicker 等组件
-- ✅ 自动字典映射
-- ✅ 验证规则自动生成
-- ✅ 分组布局
+-  动态字段渲染
+-  支持 Input、Select、Radio、DatePicker 等组件
+-  自动字典映射
+-  验证规则自动生成
+-  分组布局
 
 **使用示例**:
 ```jsx
@@ -335,10 +335,10 @@ class ERPConfigParser {
 **功能**: 表格扩展行详情展示
 
 **关键特性**:
-- ✅ 支持多页签
-- ✅ 支持嵌套表格
-- ✅ 支持自定义内容
-- ✅ 懒加载数据
+-  支持多页签
+-  支持嵌套表格
+-  支持自定义内容
+-  懒加载数据
 
 ---
 
@@ -448,9 +448,9 @@ public class DictionaryTableServiceimpl implements DictionaryTableService {
 ```
 
 **优势**:
-- ✅ 直接复用 bymaterial_dictionary 表的 100+ 条数据
-- ✅ 无需执行 SQL 初始化脚本
-- ✅ 即开即用
+-  直接复用 bymaterial_dictionary 表的 100+ 条数据
+-  无需执行 SQL 初始化脚本
+-  即开即用
 
 ---
 
@@ -802,14 +802,14 @@ http://localhost/k3/new-module/configurable
 
 ### 1. **配置优化建议**
 
-✅ **推荐**:
+ **推荐**:
 - 将常用字段放在前面
 - 使用 `fixed` 固定重要列
 - 合理使用 `width` 避免内容截断
 - 为枚举字段配置字典映射
 - 使用 `tag` 类型显示状态
 
-❌ **避免**:
+ **避免**:
 - 过多的搜索字段 (建议 ≤ 5 个)
 - 过宽的表单布局 (建议分栏)
 - 缺少验证规则的必填字段
@@ -821,15 +821,15 @@ http://localhost/k3/new-module/configurable
 
 #### 前端优化
 ```javascript
-// ✅ 使用计算属性缓存
+//  使用计算属性缓存
 const visibleColumns = computed(() => {
   return parsedConfig.value.table?.columns?.filter(col => col.visible !== false) || []
 })
 
-// ✅ 字典数据缓存
+//  字典数据缓存
 const dictionaries = ref(new Map())
 
-// ✅ 懒加载详情数据
+//  懒加载详情数据
 const loadDetail = async (row) => {
   if (row.detailLoaded) return
   // 加载详情
@@ -838,13 +838,13 @@ const loadDetail = async (row) => {
 
 #### 后端优化
 ```java
-// ✅ 使用缓存
+//  使用缓存
 @Cacheable(value = "dict::type", key = "#dictType")
 public List<DictionaryTable> selectByDictType(String dictType) {
     // ...
 }
 
-// ✅ 分页查询
+//  分页查询
 PageHelper.startPage(pageQuery.getPageNum(), pageQuery.getPageSize());
 ```
 
@@ -853,22 +853,22 @@ PageHelper.startPage(pageQuery.getPageNum(), pageQuery.getPageSize());
 ### 3. **安全访问模式**
 
 ```javascript
-// ✅ 使用可选链
+//  使用可选链
 parsedConfig.value.table?.columns?.filter(...) || []
 
-// ✅ 使用默认值
+//  使用默认值
 parsedConfig.value.form?.labelWidth || '120px'
 
-// ✅ 条件渲染
+//  条件渲染
 <el-card v-if="parsedConfig.form?.sections">
 
-// ❌ 避免直接访问
+//  避免直接访问
 parsedConfig.value.table.columns // 可能报错
 ```
 
 ---
 
-## 🔧 常见问题
+##  常见问题
 
 ### Q1: 如何添加新的字典类型？
 
@@ -965,23 +965,23 @@ const paginatedData = computed(() => {
 
 ### 核心优势
 
-✅ **配置驱动** - 零代码修改字段、布局、验证规则  
-✅ **高度复用** - 通用组件、通用接口、通用解析引擎  
-✅ **统一管理** - 所有字典统一服务、所有配置集中管理  
-✅ **即开即用** - 复用现有 100+ 条字典数据  
+ **配置驱动** - 零代码修改字段、布局、验证规则  
+ **高度复用** - 通用组件、通用接口、通用解析引擎  
+ **统一管理** - 所有字典统一服务、所有配置集中管理  
+ **即开即用** - 复用现有 100+ 条字典数据  
 
 ### 适用范围
 
-✅ ERP 管理类页面 (销售订单、采购订单、库存管理等)  
-✅ 查询列表页面  
-✅ 表单录入页面  
-✅ 数据报表页面  
+ ERP 管理类页面 (销售订单、采购订单、库存管理等)  
+ 查询列表页面  
+ 表单录入页面  
+ 数据报表页面  
 
 ### 不适用场景
 
-❌ 复杂业务流程页面  
-❌ 特殊交互需求页面  
-❌ 高度定制化 UI 页面  
+ 复杂业务流程页面  
+ 特殊交互需求页面  
+ 高度定制化 UI 页面  
 
 ---
 

@@ -147,7 +147,7 @@
 
 ---
 
-## 🔧 核心引擎
+##  核心引擎
 
 ### 四大核心引擎架构
 
@@ -211,7 +211,7 @@ public class DynamicQueryEngine {
                     continue;
                 }
                 
-                // ✅ 字段白名单校验，防止 SQL 注入
+                //  字段白名单校验，防止 SQL 注入
                 if (!isValidField(field)) {
                     log.warn("非法字段访问尝试：{}", field);
                     continue;
@@ -1085,24 +1085,24 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
 ---
 
-## 📊 最佳实践
+##  最佳实践
 
 ### 1. 配置管理规范
 
-✅ **推荐做法**:
+ **推荐做法**:
 - 使用版本控制（每次修改填写变更原因）
 - 定期查看历史版本
 - 重要修改前先备份配置
 - 使用公共配置（`is_public=1`）共享配置
 
-❌ **不推荐做法**:
+ **不推荐做法**:
 - 直接修改数据库（使用配置管理后台）
 - 不填写变更原因
 - 跳过测试直接上线
 
 ### 2. 性能优化
 
-✅ **Redis 缓存**:
+ **Redis 缓存**:
 ```java
 // 配置缓存 TTL: 1 小时
 CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, content, 3600);
@@ -1111,7 +1111,7 @@ CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, content, 3600);
 CacheUtils.evict(CacheNames.ERP_CONFIG, config.getModuleCode());
 ```
 
-✅ **数据库索引**:
+ **数据库索引**:
 ```sql
 -- 模块编码 + 配置类型唯一索引
 UNIQUE KEY `uk_module_type` (`module_code`, `config_type`)
@@ -1123,7 +1123,7 @@ KEY `idx_module_version` (`module_code`, `version`)
 
 ### 3. 安全加固
 
-✅ **字段白名单**:
+ **字段白名单**:
 ```java
 private static final Set<String> ALLOWED_FIELDS = Set.of(
     "fbillNo", "fDocumentStatus", "fBillAmount", ...
@@ -1135,7 +1135,7 @@ if (!isValidField(field)) {
 }
 ```
 
-✅ **权限控制**:
+ **权限控制**:
 ```java
 @SaCheckPermission("erp:config:list")
 @SaCheckPermission("erp:config:add")
@@ -1143,7 +1143,7 @@ if (!isValidField(field)) {
 @SaCheckPermission("erp:config:remove")
 ```
 
-✅ **事务控制**:
+ **事务控制**:
 ```java
 @Transactional(rollbackFor = Exception.class)
 public int updateByBo(ErpPageConfigBo bo) {
@@ -1153,7 +1153,7 @@ public int updateByBo(ErpPageConfigBo bo) {
 
 ### 4. 代码质量
 
-✅ **代码审查清单**:
+ **代码审查清单**:
 - [ ] 所有接口都有权限控制
 - [ ] 所有写操作都有事务控制
 - [ ] 所有 SQL 都有防注入措施
@@ -1176,10 +1176,10 @@ public int updateByBo(ErpPageConfigBo bo) {
 - [ ] 创建通用实体基类
 
 **交付物**:
-- ✅ `GenericController` - 通用控制器
-- ✅ `GenericService` - 通用服务接口
-- ✅ `GenericServiceImpl` - 通用服务实现
-- ✅ `BaseConfigEntity` - 通用实体基类
+-  `GenericController` - 通用控制器
+-  `GenericService` - 通用服务接口
+-  `GenericServiceImpl` - 通用服务实现
+-  `BaseConfigEntity` - 通用实体基类
 
 ### 阶段二：引擎开发（2 周）
 
@@ -1193,11 +1193,11 @@ public int updateByBo(ErpPageConfigBo bo) {
 - [ ] 开发下推引擎
 
 **交付物**:
-- ✅ `DynamicQueryEngine` - 动态查询引擎
-- ✅ `FormValidationEngine` - 表单验证引擎
-- ✅ `CalculationEngine` - 计算引擎
-- ✅ `ApprovalWorkflowEngine` - 审批引擎
-- ✅ `PushDownEngine` - 下推引擎
+-  `DynamicQueryEngine` - 动态查询引擎
+-  `FormValidationEngine` - 表单验证引擎
+-  `CalculationEngine` - 计算引擎
+-  `ApprovalWorkflowEngine` - 审批引擎
+-  `PushDownEngine` - 下推引擎
 
 ### 阶段三：配置管理（1 周）
 
@@ -1210,9 +1210,9 @@ public int updateByBo(ErpPageConfigBo bo) {
 - [ ] 实现配置版本管理
 
 **交付物**:
-- ✅ `ErpPageConfig` - 配置实体
-- ✅ `ErpPageConfigService` - 配置服务
-- ✅ 配置缓存机制
+-  `ErpPageConfig` - 配置实体
+-  `ErpPageConfigService` - 配置服务
+-  配置缓存机制
 
 ### 阶段四：业务集成（2 周）
 
@@ -1225,10 +1225,10 @@ public int updateByBo(ErpPageConfigBo bo) {
 - [ ] 编写使用文档
 
 **交付物**:
-- ✅ 配置化的销售订单模块
-- ✅ 配置化的采购订单模块
-- ✅ 配置管理界面
-- ✅ 完整使用文档
+-  配置化的销售订单模块
+-  配置化的采购订单模块
+-  配置管理界面
+-  完整使用文档
 
 ---
 
@@ -1236,11 +1236,11 @@ public int updateByBo(ErpPageConfigBo bo) {
 
 ### 核心优势
 
-✅ **高复用** - 通用基类提供 80% 标准功能  
-✅ **少冗余** - 避免重复代码，DRY 原则  
-✅ **易扩展** - 开闭原则，新功能无需改旧代码  
-✅ **配置化** - 业务逻辑可通过配置调整  
-✅ **标准化** - 统一的接口规范和数据结构  
+ **高复用** - 通用基类提供 80% 标准功能  
+ **少冗余** - 避免重复代码，DRY 原则  
+ **易扩展** - 开闭原则，新功能无需改旧代码  
+ **配置化** - 业务逻辑可通过配置调整  
+ **标准化** - 统一的接口规范和数据结构  
 
 ### 关键特性
 
@@ -1252,13 +1252,13 @@ public int updateByBo(ErpPageConfigBo bo) {
 
 ### 适用场景
 
-✅ **适合配置化的场景**:
+ **适合配置化的场景**:
 - CRUD 业务页面（销售订单、采购订单等）
 - 单据管理页面（入库单、出库单等）
 - 报表查询页面（库存明细、销售统计等）
 - 基础资料维护（客户、供应商、物料等）
 
-❌ **不适合配置化的场景**:
+ **不适合配置化的场景**:
 - 复杂业务逻辑（需要大量自定义代码）
 - 特殊 UI 需求（高度定制化界面）
 - 性能敏感场景（需要极致优化）
@@ -1279,4 +1279,4 @@ public int updateByBo(ErpPageConfigBo bo) {
 **创建时间**: 2026-03-23  
 **作者**: ERP 研发团队  
 **最后更新**: 2026-03-23  
-**审核状态**: 已审核 ✅
+**审核状态**: 已审核 

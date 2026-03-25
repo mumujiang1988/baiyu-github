@@ -34,24 +34,24 @@ class ERPConfigParser {
       })
       
       // 🔍 添加详细调试信息
-      console.log('📥 后端返回的完整响应:', response)
-      console.log('📥 response.code:', response.code)
-      console.log('📥 response.data 类型:', typeof response.data, '值:', response.data)
-      console.log('📥 response.msg:', typeof response.msg, '长度:', response.msg?.length)
+      console.log(' 后端返回的完整响应:', response)
+      console.log(' response.code:', response.code)
+      console.log(' response.data 类型:', typeof response.data, '值:', response.data)
+      console.log(' response.msg:', typeof response.msg, '长度:', response.msg?.length)
       
       if (response.code === 200 || response.code === 0) {
-        // ✅ 修复：后端返回的 data 字段可能是字符串或对象
+        //  修复：后端返回的 data 字段可能是字符串或对象
         let configContent;
         
         // 🔍 检查 response.data 是否存在，如果不存在尝试从 msg 字段获取（兼容处理）
         let rawData = response.data;
         if (!rawData && response.msg) {
-          console.warn('⚠️ response.data 为空，尝试从 msg 字段读取配置...')
+          console.warn(' response.data 为空，尝试从 msg 字段读取配置...')
           rawData = response.msg;
         }
         
         if (!rawData) {
-          console.error('❌ response.data 和 response.msg 都为空！', response)
+          console.error(' response.data 和 response.msg 都为空！', response)
           throw new Error('配置内容为空')
         }
         
@@ -60,9 +60,9 @@ class ERPConfigParser {
           // 如果是字符串，尝试解析 JSON
           try {
             configContent = JSON.parse(rawData);
-            console.log('✅ JSON 解析成功')
+            console.log(' JSON 解析成功')
           } catch (parseError) {
-            console.error('❌ JSON 解析失败:', parseError, '原始数据:', rawData);
+            console.error(' JSON 解析失败:', parseError, '原始数据:', rawData);
             throw new Error('配置内容格式错误');
           }
         } else if (rawData && typeof rawData === 'object') {
@@ -70,7 +70,7 @@ class ERPConfigParser {
           // 如果已经是对象，直接使用
           configContent = rawData;
         } else {
-          console.error('❌ rawData 类型异常:', typeof rawData, '值:', rawData)
+          console.error(' rawData 类型异常:', typeof rawData, '值:', rawData)
           throw new Error('配置内容为空或格式不正确');
         }
         
@@ -80,16 +80,16 @@ class ERPConfigParser {
           timestamp: Date.now()
         });
         
-        console.log('✅ 数据库配置加载成功:', configContent.pageConfig?.title);
+        console.log(' 数据库配置加载成功:', configContent.pageConfig?.title);
         console.log('📦 配置版本:', response.version || configContent.version || 'N/A');
         
         return configContent;
       } else {
-        console.error('❌ 后端返回错误码:', response.code, '错误信息:', response.msg)
+        console.error(' 后端返回错误码:', response.code, '错误信息:', response.msg)
         throw new Error(response.msg || '配置加载失败');
       }
     } catch (error) {
-      console.error('❌ 加载数据库配置失败:', error);
+      console.error(' 加载数据库配置失败:', error);
       throw error;
     }
   }
@@ -101,7 +101,7 @@ class ERPConfigParser {
   static clearCache(moduleCode) {
     const cacheKey = `erp_config_${moduleCode}`
     configCache.delete(cacheKey)
-    console.log('🗑️ 已清除配置缓存:', moduleCode)
+    console.log(' 已清除配置缓存:', moduleCode)
   }
   
   /**
@@ -109,7 +109,7 @@ class ERPConfigParser {
    */
   static clearAllCache() {
     configCache.clear()
-    console.log('🗑️ 已清除所有配置缓存')
+    console.log(' 已清除所有配置缓存')
   }
   
   constructor(config) {
@@ -169,7 +169,7 @@ class ERPConfigParser {
       }
     })
     
-    console.log('✅ parseTableColumns - 解析后的 columns:', parsedColumns.map(c => c.prop))
+    console.log(' parseTableColumns - 解析后的 columns:', parsedColumns.map(c => c.prop))
 
     return {
       rowKey: tableConfig.rowKey || 'id',
@@ -252,10 +252,10 @@ class ERPConfigParser {
     const { dictionaryConfig } = this.config
     if (!dictionaryConfig) return
 
-    // 🔧 从 pageConfig 动态获取 moduleCode，用于替换 API 中的占位符
+    //  从 pageConfig 动态获取 moduleCode，用于替换 API 中的占位符
     const moduleCode = this.config.pageConfig?.moduleCode
     if (!moduleCode) {
-      console.warn('⚠️ 未找到 moduleCode，跳过字典数据加载')
+      console.warn(' 未找到 moduleCode，跳过字典数据加载')
       return
     }
 
@@ -267,7 +267,7 @@ class ERPConfigParser {
         // 动态字典（排除客户搜索，客户搜索使用实时搜索）
         if (key !== 'customers') {
           try {
-            // 🔧 替换 API URL 中的 {moduleCode} 占位符
+            //  替换 API URL 中的 {moduleCode} 占位符
             const api = value.api.replace(/{moduleCode}/g, moduleCode)
             const response = await request(api)
             
@@ -290,8 +290,8 @@ class ERPConfigParser {
             }))
             this.dictionaries.set(key, mappedData)
           } catch (error) {
-            // 🔧 字典加载失败时不报错，只输出警告
-            console.warn(`⚠️ 字典 "${key}" 加载失败，已跳过：`, error.message)
+            //  字典加载失败时不报错，只输出警告
+            console.warn(` 字典 "${key}" 加载失败，已跳过：`, error.message)
             this.dictionaries.set(key, [])
           }
         }

@@ -151,7 +151,7 @@
 
 ---
 
-## 🔧 核心组件
+##  核心组件
 
 ### 四大核心组件架构
 
@@ -1655,24 +1655,24 @@ onMounted(() => {
 
 ---
 
-## 📊 最佳实践
+##  最佳实践
 
 ### 1. 组件设计规范
 
-✅ **推荐做法**:
+ **推荐做法**:
 - 使用 Composition API (Script Setup)
 - Props 和 Emits 明确定义类型
 - 使用 defineExpose 暴露必要方法
 - 组件职责单一，功能专注
 
-❌ **不推荐做法**:
+ **不推荐做法**:
 - Options API 与 Composition API 混用
 - Props 类型定义不明确
 - 组件过于庞大，职责不清晰
 
 ### 2. 性能优化
 
-✅ **懒加载组件**:
+ **懒加载组件**:
 ```javascript
 // 使用 Vite 的动态导入
 const DynamicSearch = defineAsyncComponent(() =>
@@ -1680,7 +1680,7 @@ const DynamicSearch = defineAsyncComponent(() =>
 )
 ```
 
-✅ **虚拟滚动**:
+ **虚拟滚动**:
 ```vue
 <!-- 大数据量表格使用虚拟滚动 -->
 <el-table
@@ -1691,7 +1691,7 @@ const DynamicSearch = defineAsyncComponent(() =>
 >
 ```
 
-✅ **防抖节流**:
+ **防抖节流**:
 ```javascript
 import { debounce } from 'lodash-es'
 
@@ -1703,7 +1703,7 @@ const handleSearch = debounce((value) => {
 
 ### 3. 类型安全
 
-✅ **使用 JSDoc 类型注解**:
+ **使用 JSDoc 类型注解**:
 ```javascript
 /**
  * @typedef {Object} SearchField
@@ -1726,7 +1726,7 @@ const props = defineProps({
 
 ### 4. 错误处理
 
-✅ **全局错误边界**:
+ **全局错误边界**:
 ```javascript
 // App.vue
 import { onErrorCaptured } from 'vue'
@@ -1739,7 +1739,7 @@ onErrorCaptured((error, instance, info) => {
 })
 ```
 
-✅ **API 错误统一处理**:
+ **API 错误统一处理**:
 ```javascript
 // api/errorHandler.js
 export function handleApiError(error) {
@@ -1770,7 +1770,7 @@ export function handleApiError(error) {
 
 ### 5. 代码质量
 
-✅ **ESLint 配置**:
+ **ESLint 配置**:
 ```javascript
 // .eslintrc.cjs
 module.exports = {
@@ -1787,7 +1787,7 @@ module.exports = {
 }
 ```
 
-✅ **Prettier 配置**:
+ **Prettier 配置**:
 ```javascript
 // .prettierrc
 {
@@ -1814,9 +1814,9 @@ module.exports = {
 - [ ] 开发 ConfigurablePage 组件
 
 **交付物**:
-- ✅ 4 个核心通用组件
-- ✅ 组件使用文档
-- ✅ 组件单元测试
+-  4 个核心通用组件
+-  组件使用文档
+-  组件单元测试
 
 ### 阶段二：解析器开发（1 周）
 
@@ -1829,9 +1829,9 @@ module.exports = {
 - [ ] 实现配置验证
 
 **交付物**:
-- ✅ 配置解析器
-- ✅ 配置验证机制
-- ✅ 配置合并工具
+-  配置解析器
+-  配置验证机制
+-  配置合并工具
 
 ### 阶段三：API 集成（3 天）
 
@@ -1844,9 +1844,9 @@ module.exports = {
 - [ ] 实现错误处理
 
 **交付物**:
-- ✅ 完整的 API 接口
-- ✅ 统一的错误处理
-- ✅ 请求拦截器
+-  完整的 API 接口
+-  统一的错误处理
+-  请求拦截器
 
 ### 阶段四：业务集成（1 周）
 
@@ -1859,9 +1859,9 @@ module.exports = {
 - [ ] 编写使用文档
 
 **交付物**:
-- ✅ 配置化的业务页面
-- ✅ 配置管理界面
-- ✅ 完整使用文档
+-  配置化的业务页面
+-  配置管理界面
+-  完整使用文档
 
 ---
 
@@ -1869,11 +1869,11 @@ module.exports = {
 
 ### 核心优势
 
-✅ **高复用** - 通用组件提供 90% 标准功能  
-✅ **少冗余** - 避免重复代码，DRY 原则  
-✅ **易扩展** - 开闭原则，新功能无需改旧代码  
-✅ **配置化** - 页面行为可通过 JSON 配置调整  
-✅ **标准化** - 统一的组件规范和接口标准  
+ **高复用** - 通用组件提供 90% 标准功能  
+ **少冗余** - 避免重复代码，DRY 原则  
+ **易扩展** - 开闭原则，新功能无需改旧代码  
+ **配置化** - 页面行为可通过 JSON 配置调整  
+ **标准化** - 统一的组件规范和接口标准  
 
 ### 关键特性
 
@@ -1885,13 +1885,13 @@ module.exports = {
 
 ### 适用场景
 
-✅ **适合配置化的场景**:
+ **适合配置化的场景**:
 - CRUD 业务页面（销售订单、采购订单等）
 - 单据管理页面（入库单、出库单等）
 - 报表查询页面（库存明细、销售统计等）
 - 基础资料维护（客户、供应商、物料等）
 
-❌ **不适合配置化的场景**:
+ **不适合配置化的场景**:
 - 复杂业务逻辑（需要大量自定义代码）
 - 特殊 UI 需求（高度定制化界面）
 - 性能敏感场景（需要极致优化）
@@ -1911,4 +1911,4 @@ module.exports = {
 **创建时间**: 2026-03-23  
 **作者**: ERP 研发团队  
 **最后更新**: 2026-03-23  
-**审核状态**: 已审核 ✅
+**审核状态**: 已审核 

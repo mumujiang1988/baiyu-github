@@ -24,11 +24,11 @@
 
 ### **核心目标**
 
-✅ **模块化** - 创建独立的 ruoyi-erp-api Maven 模块  
-✅ **无依赖** - 最小化外部依赖，仅依赖框架核心  
-✅ **高内聚** - ERP 配置化功能完整集中在一个模块  
-✅ **低耦合** - 与 ruoyi-system 解耦，独立演进  
-✅ **可复用** - 其他项目可直接引用该模块  
+ **模块化** - 创建独立的 ruoyi-erp-api Maven 模块  
+ **无依赖** - 最小化外部依赖，仅依赖框架核心  
+ **高内聚** - ERP 配置化功能完整集中在一个模块  
+ **低耦合** - 与 ruoyi-system 解耦，独立演进  
+ **可复用** - 其他项目可直接引用该模块  
 
 ### **成功标准**
 
@@ -41,7 +41,7 @@
 
 ---
 
-## 📊 现状分析
+##  现状分析
 
 ### **当前架构**
 
@@ -75,12 +75,12 @@ ruoyi-modules/ruoyi-system (系统模块)
 ### **问题识别**
 
 🔴 **严重问题**
-- ❌ 缺少 3 个关键 API 接口（字典、明细、成本）
-- ⚠️ PushDownEngine 被注释但未说明原因
+-  缺少 3 个关键 API 接口（字典、明细、成本）
+-  PushDownEngine 被注释但未说明原因
 
 🟡 **中等问题**
 - 📝 文档与实际代码存在差异
-- 🔧 SuperDataPermissionService 可能依赖 system 模块的表
+-  SuperDataPermissionService 可能依赖 system 模块的表
 
 🟢 **轻微问题**
 - 📦 包命名不够清晰（system 包含 ERP 功能）
@@ -92,11 +92,11 @@ ruoyi-modules/ruoyi-system (系统模块)
 ### **方案选择：完全独立模块（方案 A）**
 
 **理由：**
-1. ✅ 符合微服务架构设计理念
-2. ✅ 便于后续功能扩展和版本管理
-3. ✅ 可以独立发布和部署
-4. ✅ 降低系统模块复杂度
-5. ✅ 提高代码复用性
+1.  符合微服务架构设计理念
+2.  便于后续功能扩展和版本管理
+3.  可以独立发布和部署
+4.  降低系统模块复杂度
+5.  提高代码复用性
 
 ### **模块定位**
 
@@ -126,7 +126,7 @@ ruoyi-admin-wms → ruoyi-erp-api (独立 ERP 模块)
 
 ---
 
-## 🔧 实施步骤
+##  实施步骤
 
 ### **Phase 1: 准备工作（0.5 小时）**
 
@@ -258,10 +258,10 @@ New-Item -ItemType Directory -Force -Path "$MODULE_DIR\src\main\resources\mapper
 **目标目录**: `ruoyi-modules/ruoyi-erp-api/src/main/java/com/ruoyi/erp/controller/erp/`
 
 **需要迁移的文件：**
-1. ✅ `ErpEngineController.java` (1244 行) - **核心**
-2. ✅ `ErpPageConfigController.java` (256 行)
-3. ✅ `ErpApprovalFlowController.java` (132 行)
-4. ✅ `ErpPushRelationController.java` (132 行)
+1.  `ErpEngineController.java` (1244 行) - **核心**
+2.  `ErpPageConfigController.java` (256 行)
+3.  `ErpApprovalFlowController.java` (132 行)
+4.  `ErpPushRelationController.java` (132 行)
 
 **修改内容：**
 ```java
@@ -282,10 +282,10 @@ import com.ruoyi.erp.service.ErpApprovalFlowService;
 **目标目录**: `ruoyi-modules/ruoyi-erp-api/src/main/java/com/ruoyi/erp/service/engine/`
 
 **需要迁移的文件：**
-1. ✅ `DynamicQueryEngine.java` (255 行)
-2. ✅ `FormValidationEngine.java` (230 行)
-3. ✅ `ApprovalWorkflowEngine.java` (458 行)
-4. ✅ `PushDownEngine.java` (378 行) - 标注为"暂未使用"
+1.  `DynamicQueryEngine.java` (255 行)
+2.  `FormValidationEngine.java` (230 行)
+3.  `ApprovalWorkflowEngine.java` (458 行)
+4.  `PushDownEngine.java` (378 行) - 标注为"暂未使用"
 
 **修改内容：**
 ```java
@@ -302,16 +302,16 @@ package com.ruoyi.erp.service.engine;
 **目标目录**: `ruoyi-modules/ruoyi-erp-api/src/main/java/com/ruoyi/erp/service/`
 
 **接口文件：**
-1. ✅ `ErpApprovalFlowService.java`
-2. ✅ `ErpPageConfigService.java`
-3. ✅ `ErpPushRelationService.java`
-4. ✅ `ISuperDataPermissionService.java`
+1.  `ErpApprovalFlowService.java`
+2.  `ErpPageConfigService.java`
+3.  `ErpPushRelationService.java`
+4.  `ISuperDataPermissionService.java`
 
 **实现文件：**
-1. ✅ `ErpApprovalFlowServiceImpl.java`
-2. ✅ `ErpPageConfigServiceImpl.java`
-3. ✅ `ErpPushRelationServiceImpl.java`
-4. ✅ `SuperDataPermissionServiceImpl.java`
+1.  `ErpApprovalFlowServiceImpl.java`
+2.  `ErpPageConfigServiceImpl.java`
+3.  `ErpPushRelationServiceImpl.java`
+4.  `SuperDataPermissionServiceImpl.java`
 
 **修改内容：**
 ```java
@@ -330,11 +330,11 @@ import com.ruoyi.erp.domain.entity.ErpPageConfig;
 **目标目录**: `ruoyi-modules/ruoyi-erp-api/src/main/java/com/ruoyi/erp/mapper/`
 
 **需要迁移的文件：**
-1. ✅ `ErpPageConfigMapper.java`
-2. ✅ `ErpPageConfigHistoryMapper.java`
-3. ✅ `ErpPushRelationMapper.java`
-4. ✅ `ErpApprovalFlowMapper.java`
-5. ✅ `ErpApprovalHistoryMapper.java`
+1.  `ErpPageConfigMapper.java`
+2.  `ErpPageConfigHistoryMapper.java`
+3.  `ErpPushRelationMapper.java`
+4.  `ErpApprovalFlowMapper.java`
+5.  `ErpApprovalHistoryMapper.java`
 
 **修改内容：**
 ```java
@@ -395,7 +395,7 @@ import com.ruoyi.erp.domain.entity.ErpPageConfig;
 ```java
 /**
  * 获取字典数据
- * ✅ 新增接口 - 解决前端字典数据加载问题
+ *  新增接口 - 解决前端字典数据加载问题
  */
 @GetMapping("/dictionary/{dictType}")
 public R<?> getDictionary(@PathVariable String dictType,
@@ -431,7 +431,7 @@ private List<Map<String, Object>> queryDictionaryData(String dictType, String mo
 ```java
 /**
  * 获取订单明细数据
- * ✅ 新增接口 - 解决前端展开行/抽屉明细显示问题
+ *  新增接口 - 解决前端展开行/抽屉明细显示问题
  */
 @GetMapping("/custom/entry")
 public R<?> getEntryData(@RequestParam String moduleCode,
@@ -452,7 +452,7 @@ public R<?> getEntryData(@RequestParam String moduleCode,
 
 /**
  * 获取成本数据
- * ✅ 新增接口 - 解决前端成本暂估数据显示问题
+ *  新增接口 - 解决前端成本暂估数据显示问题
  */
 @GetMapping("/custom/cost")
 public R<?> getCostData(@RequestParam String moduleCode,

@@ -10,19 +10,19 @@
 
 ### 1.1 优化原则
 
-✅ **三零政策**:
+ **三零政策**:
 1. **零新增代码** - 不创建任何 Service、VO、Mapper
 2. **零性能开销** - 无字段映射转换
 3. **零维护成本** - 配置即数据库
 
-✅ **三个直接**:
+ **三个直接**:
 1. 配置 JSON 中的字段 = **数据库字段名**
 2. 前端传入参数 = **数据库字段名**
 3. 后端返回数据 = **数据库字段名**
 
 ### 1.2 对比表
 
-| 维度 | ❌ 错误做法 | ✅ 正确做法 |
+| 维度 |  错误做法 |  正确做法 |
 |------|----------|----------|
 | 配置字段 | `customerName` (业务字段) | `fcustomername` (数据库字段) |
 | 查询参数 | `{customerName: "xxx"}` | `{fcustomername: "xxx"}` |
@@ -35,17 +35,17 @@
 
 ### 2.1 配置 JSON 混用字段名
 
-**错误示例** (❌):
+**错误示例** ():
 ```json
 {
   "searchConfig": {
     "fields": [
       {
-        "field": "customerName",      // ❌ 业务字段名
+        "field": "customerName",      //  业务字段名
         "label": "客户名称"
       },
       {
-        "field": "fbillNo",           // ✅ 数据库字段
+        "field": "fbillNo",           //  数据库字段
         "label": "单据编号"
       }
     ]
@@ -55,9 +55,9 @@
 
 ### 2.2 不必要的复杂性
 
-- ❌ 前端需要 `getDictOptions()` 进行字典映射
-- ❌ 后端 `DynamicQueryEngine` 使用硬编码的字段白名单
-- ❌ 存在字段名转换的潜在需求（databaseField ↔ businessField）
+-  前端需要 `getDictOptions()` 进行字典映射
+-  后端 `DynamicQueryEngine` 使用硬编码的字段白名单
+-  存在字段名转换的潜在需求（databaseField ↔ businessField）
 
 ---
 
@@ -101,14 +101,14 @@ FROM erp_page_config;
 
 ### 3.2 修改配置 JSON (1-2 天)
 
-#### 修改前 (❌)
+#### 修改前 ()
 
 ```json
 {
   "searchConfig": {
     "fields": [
       {
-        "field": "customerName",      // ❌ 业务字段名
+        "field": "customerName",      //  业务字段名
         "label": "客户名称",
         "component": "input"
       }
@@ -117,7 +117,7 @@ FROM erp_page_config;
   "tableConfig": {
     "columns": [
       {
-        "prop": "customerName",       // ❌ 业务字段名
+        "prop": "customerName",       //  业务字段名
         "label": "客户名称"
       }
     ]
@@ -125,14 +125,14 @@ FROM erp_page_config;
 }
 ```
 
-#### 修改后 (✅)
+#### 修改后 ()
 
 ```json
 {
   "searchConfig": {
     "fields": [
       {
-        "field": "fcustomername",     // ✅ 数据库字段名
+        "field": "fcustomername",     //  数据库字段名
         "label": "客户名称",
         "component": "input"
       }
@@ -141,7 +141,7 @@ FROM erp_page_config;
   "tableConfig": {
     "columns": [
       {
-        "prop": "fcustomername",      // ✅ 数据库字段名
+        "prop": "fcustomername",      //  数据库字段名
         "label": "客户名称"
       }
     ]
@@ -156,14 +156,14 @@ FROM erp_page_config;
 **删除硬编码的字段白名单**:
 
 ```java
-// ❌ 删除这段代码
+//  删除这段代码
 private static final Set<String> ALLOWED_FIELDS = Set.of(
     "fbillNo", "fOraBaseProperty", "fDocumentStatus", "fBillAmount",
     "fdate", "fCustomerNumber", "fCustomerName", "fCreatorId",
     // ... 这个白名单需要手动维护，麻烦且容易出错
 );
 
-// ✅ 简化为简单校验
+//  简化为简单校验
 private boolean isValidField(String field) {
     return StringUtils.isNotEmpty(field);  // 只校验非空
 }
@@ -172,7 +172,7 @@ private boolean isValidField(String field) {
 #### ErpEngineController 保持不变
 
 ```java
-// ✅ 现有的 executeDynamicQuery 已经是正确的
+//  现有的 executeDynamicQuery 已经是正确的
 @PostMapping("/query/execute")
 public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
     String moduleCode = (String) params.get("moduleCode");
@@ -195,7 +195,7 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
 #### BusinessConfigurable.vue
 
 ```javascript
-// ✅ 现有的 handleQuery 已经是正确的
+//  现有的 handleQuery 已经是正确的
 const handleQuery = async () => {
   const params = {
     pageNum: queryParams.value.pageNum,
@@ -214,7 +214,7 @@ const handleQuery = async () => {
 #### ERPConfigParser.js
 
 ```javascript
-// ✅ parseSearchForm 已经是正确的
+//  parseSearchForm 已经是正确的
 parseSearchForm() {
   return {
     fields: searchConfig.fields.map(field => ({
@@ -302,10 +302,10 @@ console.log('表格数据:', tableData.rows[0]);
 
 ### 5.2 核心价值
 
-1. ✅ **零新增代码** - 不创建任何 Service、VO、Mapper
-2. ✅ **零性能开销** - 无字段映射转换
-3. ✅ **零维护成本** - 配置即数据库
-4. ✅ **开发友好** - 新人可直接查看数据库字段
+1.  **零新增代码** - 不创建任何 Service、VO、Mapper
+2.  **零性能开销** - 无字段映射转换
+3.  **零维护成本** - 配置即数据库
+4.  **开发友好** - 新人可直接查看数据库字段
 
 ---
 

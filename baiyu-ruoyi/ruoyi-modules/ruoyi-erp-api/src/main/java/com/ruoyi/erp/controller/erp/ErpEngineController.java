@@ -9,6 +9,7 @@ import com.ruoyi.erp.service.engine.FormValidationEngine;
 import com.ruoyi.erp.service.engine.ApprovalWorkflowEngine;
 import com.ruoyi.erp.service.engine.ComputedFieldEngine;
 import com.ruoyi.erp.service.engine.VirtualFieldService;
+import com.ruoyi.erp.service.engine.DictionaryBuilderEngine;
 import com.ruoyi.erp.service.ErpApprovalFlowService;
 import com.ruoyi.erp.service.ErpPushRelationService;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
@@ -51,6 +52,7 @@ public class ErpEngineController {
     private final ComputedFieldEngine computedFieldEngine;
     private final VirtualFieldService virtualFieldService;
     private final ErpPageConfigService erpPageConfigService;
+    private final DictionaryBuilderEngine dictionaryBuilderEngine;
     
     // 新增工具类
     private final ErpPermissionChecker permissionChecker;
@@ -85,17 +87,31 @@ public class ErpEngineController {
     // ==================== 动态查询引擎接口 ====================
 
     /**
-     * 执行动态查询
+     * 执行动态查询（构建器模式）
+     * ⭐⭐⭐ 强制使用 queryConfig.builder 模式 ⭐⭐⭐
      */
     @PostMapping("/query/execute")
     public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
             
-            // ✅ 动态检查权限
+            //  动态检查权限
             checkModulePermission(moduleCode, "query");
-            Map<String, Object> queryParams = (Map<String, Object>) params.get("queryParams");
-            Map<String, Object> searchConfig = (Map<String, Object>) params.get("searchConfig");
+            
+            //  tableName 为必填参数，来自前端 JSON 配置的 pageConfig.tableName
+            String tableName = (String) params.get("tableName");
+            if (tableName == null || tableName.trim().isEmpty()) {
+                log.error(" 缺少必需的 tableName 参数，moduleCode: {}", moduleCode);
+                return R.fail("缺少必需的 tableName 参数，请在 JSON 配置的 pageConfig.tableName 中配置表名");
+            }
+            log.info(" 使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
+            
+            //  获取 queryConfig（构建器模式）
+            Map<String, Object> queryConfig = (Map<String, Object>) params.get("queryConfig");
+            if (queryConfig == null || queryConfig.isEmpty()) {
+                log.error(" 缺少必需的 queryConfig 参数，moduleCode: {}", moduleCode);
+                return R.fail("缺少必需的 queryConfig 参数，请使用构建器模式配置查询条件");
+            }
             
             // 获取分页参数
             Integer pageNum = (Integer) params.getOrDefault("pageNum", 1);
@@ -104,19 +120,21 @@ public class ErpEngineController {
             pageQuery.setPageNum(pageNum);
             pageQuery.setPageSize(pageSize);
             
-            // 使用 DynamicQueryEngine 的 buildQueryConditions 方法构建查询条件
+            // ⭐⭐⭐ 使用构建器模式构建查询条件 ⭐⭐⭐
             com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-            queryWrapper = queryEngine.buildQueryConditions(queryWrapper, searchConfig, queryParams);
+            queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
             
-            // ✅ 调用通用 Service 执行实际查询
-            Page<Map<String, Object>> page = dataPermissionService.selectPageByModule(
-                moduleCode, 
-                pageQuery, 
-                queryWrapper
-            );
+            //  调用通用 Service 执行实际查询
+            Page<Map<String, Object>> page = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) dataPermissionService)
+                .selectPageByModuleWithTableName(
+                    moduleCode, 
+                    tableName,
+                    pageQuery, 
+                    queryWrapper
+                );
             
-            // ✅ 处理数据 (计算字段 + 虚拟字段)
+            //  处理数据 (计算字段 + 虚拟字段)
             List<Map<String, Object>> processedRecords = processData(page.getRecords(), moduleCode);
             page.setRecords(processedRecords);
             
@@ -136,36 +154,31 @@ public class ErpEngineController {
     }
 
     /**
-     * 构建查询条件
+     * ⭐ 获取构建器模式支持的运算符
      */
-    @PostMapping("/query/build")
-    public R<?> buildQueryConditions(@RequestBody Map<String, Object> params) {
-        try {
-            String moduleCode = extractModuleCode(params);
-            checkModulePermission(moduleCode, "query");
-            Map<String, Object> searchConfig = (Map<String, Object>) params.get("searchConfig");
-            Map<String, Object> queryParams = (Map<String, Object>) params.get("queryParams");
-            
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-            Object result = queryEngine.buildQueryConditions(queryWrapper, searchConfig, queryParams);
-            return R.ok(result);
-        } catch (Exception e) {
-            return R.fail("构建查询条件失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 获取可用的查询类型
-     */
-    @GetMapping("/query/types")
-    public R<?> getAvailableQueryTypes(@RequestParam(required = false) String moduleCode) {
-        // ✅ 如果有 moduleCode 则检查权限
+    @GetMapping("/query/operators")
+    public R<?> getAvailableOperators(@RequestParam(required = false) String moduleCode) {
+        //  如果有 moduleCode 则检查权限
         if (moduleCode != null && !moduleCode.isEmpty()) {
             checkModulePermission(moduleCode, "query");
         }
-        // 返回支持的查询类型列表
-        List<String> types = java.util.Arrays.asList("like", "left_like", "right_like", "in", "between", "gt", "ge", "lt", "le", "ne", "eq");
-        return R.ok(types);
+        // 返回构建器模式支持的所有运算符
+        List<String> operators = java.util.Arrays.asList(
+            "eq",      // 等于
+            "ne",      // 不等于
+            "gt",      // 大于
+            "ge",      // 大于等于
+            "lt",      // 小于
+            "le",      // 小于等于
+            "like",    // 模糊匹配（%值%）
+            "left_like",   // 左模糊匹配（%值）
+            "right_like",  // 右模糊匹配（值%）
+            "in",      // IN 条件
+            "between", // BETWEEN 条件
+            "isNull",  // IS NULL
+            "isNotNull" // IS NOT NULL
+        );
+        return R.ok(operators);
     }
 
     // ==================== 表单验证引擎接口 ====================
@@ -218,7 +231,7 @@ public class ErpEngineController {
      */
     @GetMapping("/validation/rules")
     public R<?> getAvailableValidationRules(@RequestParam(required = false) String moduleCode) {
-        // ✅ 如果有 moduleCode 则检查权限
+        //  如果有 moduleCode 则检查权限
         if (moduleCode != null && !moduleCode.isEmpty()) {
             checkModulePermission(moduleCode, "query");
         }
@@ -268,13 +281,13 @@ public class ErpEngineController {
             checkModulePermission(moduleCode, "query");
             Map<String, Object> billData = (Map<String, Object>) params.get("billData");
             
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
             }
             
-            // ✅ 解析 JSON 配置并获取当前审批步骤
+            //  解析 JSON 配置并获取当前审批步骤
             List<Map<String, Object>> workflow = parseWorkflow(flowConfig.getFlowDefinition());
             ApprovalWorkflowEngine.ApprovalStep currentStep = 
                 approvalEngine.getCurrentStep(workflow, billData);
@@ -286,7 +299,7 @@ public class ErpEngineController {
                 return R.ok(result);
             }
             
-            // ✅ 构建返回结果
+            //  构建返回结果
             Map<String, Object> result = new java.util.HashMap<>();
             result.put("hasCurrentStep", true);
             result.put("currentStep", currentStep);
@@ -316,7 +329,7 @@ public class ErpEngineController {
             String userId = (String) params.get("userId");
             List<String> userRoles = (List<String>) params.get("userRoles");
             
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
@@ -335,12 +348,12 @@ public class ErpEngineController {
             context.setAction(action);
             context.setOpinion(opinion);
             
-            // ✅ 执行审批
+            //  执行审批
             ApprovalWorkflowEngine.ApprovalResult result = 
                 approvalEngine.executeApproval(context, workflow, billData);
             
             if (result.isSuccess()) {
-                // ✅ 保存审批历史到数据库
+                //  保存审批历史到数据库
                 com.ruoyi.erp.domain.entity.ErpApprovalHistory history = 
                     new com.ruoyi.erp.domain.entity.ErpApprovalHistory();
                 history.setModuleCode(moduleCode);
@@ -357,7 +370,7 @@ public class ErpEngineController {
                     log.warn("保存审批历史记录失败");
                 }
                 
-                // ✅ 更新单据审批状态
+                //  更新单据审批状态
                 updateBillApprovalStatus(moduleCode, billId, result.isRejected() ? "REJECTED" : "APPROVED");
                 
                 log.info("审批成功，billId: {}, action: {}, nextStep: {}", 
@@ -420,7 +433,7 @@ public class ErpEngineController {
      */
     @GetMapping("/approval/history")
     public R<?> getApprovalHistoryGet(@RequestParam Map<String, String> params) {
-        // ✅ 检查权限
+        //  检查权限
         String moduleCode = params.get("moduleCode");
         if (moduleCode != null && !moduleCode.isEmpty()) {
             checkModulePermission(moduleCode, "query");
@@ -475,7 +488,7 @@ public class ErpEngineController {
             String userId = (String) params.get("userId");
             List<String> userRoles = (List<String>) params.get("userRoles");
             
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
@@ -497,7 +510,7 @@ public class ErpEngineController {
                 return R.ok(result);
             }
             
-            // ✅ 检查用户是否有审批权限（带条件检查）
+            //  检查用户是否有审批权限（带条件检查）
             boolean hasPermission = approvalEngine.canUserAuditWithConditions(
                 currentStep, userId, userRoles, billData);
             
@@ -524,7 +537,7 @@ public class ErpEngineController {
 
     /**
      * 获取审批历史
-     * ⚠️ TODO: 待实现完整的审批历史功能
+     *  TODO: 待实现完整的审批历史功能
      */
     @GetMapping("/approval/history-detail")
     public R<?> getApprovalHistoryDetail(@RequestParam Map<String, String> params) {
@@ -532,7 +545,7 @@ public class ErpEngineController {
             String moduleCode = params.get("moduleCode");
             checkModulePermission(moduleCode, "query");
             
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
@@ -553,7 +566,7 @@ public class ErpEngineController {
     public R<?> getWorkflowDefinition(@RequestParam String moduleCode) {
         try {
             checkModulePermission(moduleCode, "query");
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
@@ -580,7 +593,7 @@ public class ErpEngineController {
             String targetUserId = (String) params.get("targetUserId");
             String reason = (String) params.get("reason");
             
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
@@ -660,7 +673,7 @@ public class ErpEngineController {
             List<String> userRoles = (List<String>) params.get("userRoles");
             String reason = (String) params.get("reason");
             
-            // ✅ 从数据库获取 workflow 配置
+            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
@@ -684,7 +697,7 @@ public class ErpEngineController {
             
             // 如果没有审批权限，检查是否是申请人本人（简化处理，实际项目中需要查询单据的创建人）
             if (!hasPermission) {
-                // ✅ 检查是否为单据创建人（通过 billData 中的 createBy 字段）
+                //  检查是否为单据创建人（通过 billData 中的 createBy 字段）
                 String createBy = (String) billData.get("createBy");
                 if (createBy != null && !createBy.equals(userId)) {
                     return R.fail("无撤回权限：既不是审批人也不是单据创建人");
@@ -709,7 +722,7 @@ public class ErpEngineController {
                 return R.fail("保存撤回记录失败");
             }
             
-            // 4. ✅ 更新单据审批状态
+            // 4.  更新单据审批状态
             // 将单据状态恢复为"待提交"或"草稿"状态
             updateBillApprovalStatus(moduleCode, billId, "DRAFT");
             
@@ -740,7 +753,7 @@ public class ErpEngineController {
     public R<?> getPushTargets(@RequestParam String moduleCode) {
         try {
             checkModulePermission(moduleCode, "query");
-            // ✅ 从数据库获取该模块的所有下推关系配置
+            //  从数据库获取该模块的所有下推关系配置
             // 注意：ErpPushRelationBo 没有 builder() 方法，直接 new 对象
             ErpPushRelationBo bo = new ErpPushRelationBo();
             bo.setSourceModule(moduleCode);
@@ -765,7 +778,7 @@ public class ErpEngineController {
 
     /**
      * 执行下推操作
-     * ✅ 已实现完整的下推逻辑
+     *  已实现完整的下推逻辑
      */
     @PostMapping("/push/execute")
     public R<?> executePushDown(@RequestBody Map<String, Object> params) {
@@ -776,16 +789,16 @@ public class ErpEngineController {
             Map<String, Object> sourceData = (Map<String, Object>) params.get("sourceData");
             String userId = (String) params.get("userId");
             
-            // ✅ 从数据库获取下推关系配置
+            //  从数据库获取下推关系配置
             ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
             if (relationConfig == null) {
                 return R.fail("未找到从 [" + sourceModule + "] 到 [" + targetModule + "] 的下推配置");
             }
             
-            // ✅ 解析映射规则
+            //  解析映射规则
             Map<String, Object> mappingRules = parseMappingRules(relationConfig.getMappingRules());
             
-            // ✅ 应用字段映射和转换
+            //  应用字段映射和转换
             Map<String, Object> transformed = new HashMap<>();
             Map<String, String> fieldMapping = (Map<String, String>) mappingRules.get("fieldMapping");
             if (fieldMapping != null) {
@@ -798,7 +811,7 @@ public class ErpEngineController {
                 }
             }
             
-            // ✅ 应用默认值
+            //  应用默认值
             Map<String, Object> defaultValue = (Map<String, Object>) mappingRules.get("defaultValue");
             if (defaultValue != null) {
                 for (Map.Entry<String, Object> entry : defaultValue.entrySet()) {
@@ -808,20 +821,20 @@ public class ErpEngineController {
                 }
             }
             
-            // ✅ 添加源单据信息
+            //  添加源单据信息
             transformed.put("sourceBillNo", sourceData.get("fbillNo"));
             transformed.put("sourceId", sourceData.get("id"));
             transformed.put("createBy", userId);
             transformed.put("createTime", java.time.LocalDateTime.now());
             
-            // ✅ 调用对应的 Service 保存目标单据
+            //  调用对应的 Service 保存目标单据
             Long savedId = saveTargetBill(targetModule, transformed, userId);
             if (savedId != null) {
                 transformed.put("id", savedId);
                 log.info("目标单据保存成功，targetModule: {}, id: {}", targetModule, savedId);
             }
             
-            // ✅ 构建返回结果
+            //  构建返回结果
             Map<String, Object> result = new java.util.HashMap<>();
             result.put("success", true);
             result.put("message", "下推成功");
@@ -851,7 +864,7 @@ public class ErpEngineController {
             List<Map<String, Object>> sourceDataList = 
                 (List<Map<String, Object>>) params.get("sourceData");
             
-            // ✅ 从数据库获取下推关系配置
+            //  从数据库获取下推关系配置
             ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
             if (relationConfig == null) {
                 return R.fail("未找到从 [" + sourceModule + "] 到 [" + targetModule + "] 的下推配置");
@@ -918,7 +931,7 @@ public class ErpEngineController {
             String userId = (String) params.get("userId");
             // String userName = (String) params.get("userName"); // 暂未使用
             
-            // ✅ 从数据库获取下推关系配置
+            //  从数据库获取下推关系配置
             ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
             if (relationConfig == null) {
                 return R.fail("未找到从 [" + sourceModule + "] 到 [" + targetModule + "] 的下推配置");
@@ -967,7 +980,7 @@ public class ErpEngineController {
                     transformed.put("createBy", userId);
                     transformed.put("createTime", java.time.LocalDateTime.now());
                     
-                    // 2. ✅ 调用对应的 Service 保存目标单据
+                    // 2.  调用对应的 Service 保存目标单据
                     Long savedId = saveTargetBill(targetModule, transformed, userId);
                     if (savedId != null) {
                         transformed.put("id", savedId);
@@ -1032,7 +1045,7 @@ public class ErpEngineController {
             checkModulePermission(sourceModule, "query");
             String targetModule = params.get("targetModule");
             
-            // ✅ 从数据库获取下推关系配置
+            //  从数据库获取下推关系配置
             ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
             if (relationConfig == null) {
                 return R.fail("未找到从 [" + sourceModule + "] 到 [" + targetModule + "] 的下推配置");
@@ -1047,7 +1060,7 @@ public class ErpEngineController {
 
     /**
      * 验证下推数据
-     * ✅ 已实现验证功能
+     *  已实现验证功能
      */
     @PostMapping("/push/validate")
     public R<?> validatePushData(@RequestBody Map<String, Object> params) {
@@ -1058,16 +1071,16 @@ public class ErpEngineController {
             List<Map<String, Object>> sourceDataList = 
                 (List<Map<String, Object>>) params.get("sourceData");
             
-            // ✅ 从数据库获取下推关系配置
+            //  从数据库获取下推关系配置
             ErpPushRelationVo relationConfig = pushRelationService.getPushRelation(sourceModule, targetModule);
             if (relationConfig == null) {
                 return R.fail("未找到从 [" + sourceModule + "] 到 [" + targetModule + "] 的下推配置");
             }
             
-            // ✅ 解析映射规则
+            //  解析映射规则
             Map<String, Object> mappingRules = parseMappingRules(relationConfig.getMappingRules());
             
-            // ✅ 执行验证
+            //  执行验证
             List<Map<String, Object>> validationResults = new ArrayList<>();
             boolean allValid = true;
             
@@ -1076,7 +1089,7 @@ public class ErpEngineController {
                 validationResult.put("sourceId", sourceData.get("id"));
                 validationResult.put("sourceBillNo", sourceData.get("fbillNo"));
                 
-                // ✅ 验证必填字段
+                //  验证必填字段
                 Map<String, String> fieldMapping = (Map<String, String>) mappingRules.get("fieldMapping");
                 List<String> missingFields = new ArrayList<>();
                 
@@ -1100,7 +1113,7 @@ public class ErpEngineController {
                 validationResults.add(validationResult);
             }
             
-            // ✅ 构建返回结果
+            //  构建返回结果
             Map<String, Object> result = new HashMap<>();
             result.put("valid", allValid);
             result.put("validationResults", validationResults);
@@ -1120,7 +1133,7 @@ public class ErpEngineController {
 
     /**
      * 取消下推
-     * ✅ 已实现取消下推功能
+     *  已实现取消下推功能
      */
     @PostMapping("/push/cancel")
     public R<?> cancelPushDown(@RequestBody Map<String, Object> params) {
@@ -1131,19 +1144,19 @@ public class ErpEngineController {
             // String userId = (String) params.get("userId"); // 暂未使用
             String reason = (String) params.get("reason");
             
-            // ✅ 验证参数
+            //  验证参数
             if (targetBillId == null || targetBillId.isEmpty()) {
                 return R.fail("目标单据 ID 不能为空");
             }
             
-            // ✅ 调用对应的 Service 删除或标记目标单
+            //  调用对应的 Service 删除或标记目标单
             cancelTargetBill(targetModule, targetBillId, reason);
             
-            // ✅ 记录取消日志
+            //  记录取消日志
             log.info("取消下推成功，targetModule: {}, targetBillId: {}, reason: {}", 
                 targetModule, targetBillId, reason);
             
-            // ✅ 构建返回结果
+            //  构建返回结果
             Map<String, Object> result = new HashMap<>();
             result.put("success", true);
             result.put("message", "取消下推成功");
@@ -1167,7 +1180,7 @@ public class ErpEngineController {
             String moduleCode = params.get("moduleCode");
             checkModulePermission(moduleCode, "query");
             
-            // ✅ 从数据库获取该模块的所有下推关系配置
+            //  从数据库获取该模块的所有下推关系配置
             List<ErpPushRelationVo> relations = pushRelationService.selectList(new ErpPushRelationBo() {{ setSourceModule(moduleCode); }});
             
             // 返回下推关系列表（实际项目中应该查询下推历史记录表）
@@ -1175,6 +1188,202 @@ public class ErpEngineController {
         } catch (Exception e) {
             log.error("获取下推历史失败", e);
             return R.fail("获取下推历史失败：" + e.getMessage());
+        }
+    }
+
+    // ==================== 辅助方法 ====================
+
+    // ==================== 字典构建器引擎接口 ====================
+
+    /**
+     * 获取字典数据（构建器模式）
+     */
+    @GetMapping("/dictionary/{name}")
+    public R<?> getDictionary(@PathVariable String name, @RequestParam(required = false) String moduleCode) {
+        try {
+            if (moduleCode != null && !moduleCode.isEmpty()) {
+                checkModulePermission(moduleCode, "query");
+            }
+            
+            List<Map<String, Object>> data = dictionaryBuilderEngine.get(name);
+            log.info("📦 获取字典：{}, 共 {} 条", name, data.size());
+            return R.ok(data);
+        } catch (Exception e) {
+            log.error("❌ 获取字典失败：{}", name, e);
+            return R.fail("获取字典失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 加载字典数据（构建器模式）
+     */
+    @PostMapping("/dictionary/{name}/load")
+    public R<?> loadDictionary(@PathVariable String name, 
+                               @RequestBody Map<String, Object> params,
+                               @RequestParam(required = false) String moduleCode) {
+        try {
+            if (moduleCode != null && !moduleCode.isEmpty()) {
+                checkModulePermission(moduleCode, "query");
+            }
+            
+            DictionaryBuilderEngine.DictionaryLoader loader = () -> {
+                // TODO: 根据配置调用对应的 Service 加载数据
+                // 这里需要从 JSON 配置中读取加载逻辑
+                return new ArrayList<>();
+            };
+            
+            List<Map<String, Object>> data = dictionaryBuilderEngine.load(name, loader);
+            log.info("📦 加载字典：{}, 共 {} 条", name, data.size());
+            return R.ok(data);
+        } catch (Exception e) {
+            log.error("❌ 加载字典失败：{}", name, e);
+            return R.fail("加载字典失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 搜索字典（构建器模式）
+     */
+    @GetMapping("/dictionary/{name}/search")
+    public R<?> searchDictionary(@PathVariable String name,
+                                 @RequestParam String keyword,
+                                 @RequestParam(required = false) String moduleCode) {
+        try {
+            if (moduleCode != null && !moduleCode.isEmpty()) {
+                checkModulePermission(moduleCode, "query");
+            }
+            
+            DictionaryBuilderEngine.DictionarySearcher searcher = (kw) -> {
+                // TODO: 根据配置调用对应的 Service 搜索数据
+                // 这里需要从 JSON 配置中读取搜索逻辑
+                return new ArrayList<>();
+            };
+            
+            List<Map<String, Object>> data = dictionaryBuilderEngine.search(name, keyword, searcher);
+            log.info("🔍 搜索字典：{}, 关键词：{}, 共 {} 条", name, keyword, data.size());
+            return R.ok(data);
+        } catch (Exception e) {
+            log.error("❌ 搜索字典失败：{}, keyword: {}", name, keyword, e);
+            return R.fail("搜索字典失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 清除字典缓存
+     */
+    @DeleteMapping("/dictionary/{name}/cache")
+    public R<?> clearDictionaryCache(@PathVariable String name) {
+        try {
+            dictionaryBuilderEngine.clear(name);
+            log.info("🗑️ 已清除字典缓存：{}", name);
+            return R.ok("清除成功");
+        } catch (Exception e) {
+            log.error("❌ 清除字典缓存失败：{}", name, e);
+            return R.fail("清除失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 清除所有字典缓存
+     */
+    @DeleteMapping("/dictionary/cache/all")
+    public R<?> clearAllDictionaryCaches() {
+        try {
+            dictionaryBuilderEngine.clearAll();
+            log.info("🗑️ 已清除所有字典缓存");
+            return R.ok("清除成功");
+        } catch (Exception e) {
+            log.error("❌ 清除所有字典缓存失败", e);
+            return R.fail("清除失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取所有字典状态
+     */
+    @GetMapping("/dictionary/status")
+    public R<?> getAllDictionaryStatus() {
+        try {
+            Map<String, Map<String, Object>> status = dictionaryBuilderEngine.getAllStatus();
+            log.info("📊 获取所有字典状态，共 {} 个", status.size());
+            return R.ok(status);
+        } catch (Exception e) {
+            log.error("❌ 获取字典状态失败", e);
+            return R.fail("获取状态失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * ⭐ 新增：获取字典数据（复用表格数据构建器）
+     * 直接从数据库表查询字典数据，无需创建 Service
+     * 
+     * @param name 字典名称
+     * @param moduleCode 模块编码
+     * @return 字典数据列表
+     */
+    @GetMapping("/dictionary/{name}/data")
+    public R<?> getDictionaryData(@PathVariable String name,
+                                   @RequestParam(required = false) String moduleCode) {
+        try {
+            // ✅ 权限检查
+            if (moduleCode != null && !moduleCode.isEmpty()) {
+                checkModulePermission(moduleCode, "query");
+            }
+            
+            // ✅ 从配置中读取表名和查询条件
+            JSONObject configJson = configParser.getConfig(name);
+            JSONObject dictionaryConfig = configJson.optJSONObject("dictionaryConfig");
+            
+            if (dictionaryConfig == null) {
+                log.warn("⚠️ 未找到字典配置，字典名称：{}", name);
+                return R.fail("未找到字典配置：" + name);
+            }
+            
+            JSONObject dictionaries = dictionaryConfig.optJSONObject("dictionaries");
+            if (dictionaries == null || !dictionaries.containsKey(name)) {
+                log.warn("⚠️ 未找到字典定义：{}", name);
+                return R.fail("未找到字典定义：" + name);
+            }
+            
+            JSONObject dictConfig = dictionaries.getJSONObject(name);
+            String tableName = dictConfig.getString("tableName");
+            JSONObject queryConfig = dictConfig.optJSONObject("queryConfig");
+            JSONObject fieldMapping = dictConfig.optJSONObject("fieldMapping");
+            
+            // ✅ 表名校验
+            if (tableName == null || tableName.trim().isEmpty()) {
+                log.error("❌ 缺少必需的 tableName 配置，字典：{}", name);
+                return R.fail("缺少必需的 tableName 配置");
+            }
+            
+            // ✅ 构建查询条件
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+            
+            if (queryConfig != null && !queryConfig.isEmpty()) {
+                queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
+            }
+            
+            // ✅ 直接调用表格构建器的 Service 查询数据
+            List<Map<String, Object>> data = dataPermissionService
+                .selectListByModule(moduleCode, queryWrapper);
+            
+            // ✅ 字段映射（如果配置了）
+            if (fieldMapping != null) {
+                String labelField = fieldMapping.getString("labelField");
+                String valueField = fieldMapping.getString("valueField");
+                
+                if (labelField != null && valueField != null) {
+                    data = mapDictionaryFields(data, labelField, valueField);
+                }
+            }
+            
+            log.info("✅ 字典数据加载成功：{}, 共 {} 条", name, data.size());
+            return R.ok(data);
+            
+        } catch (Exception e) {
+            log.error("❌ 字典数据加载失败：{}", name, e);
+            return R.fail("加载失败：" + e.getMessage());
         }
     }
 
@@ -1206,6 +1415,167 @@ public class ErpEngineController {
     }
 
     /**
+     * ⭐⭐⭐ 构建器模式：从 queryConfig 构建查询条件 ⭐⭐⭐
+     * 
+     * @param queryWrapper 查询包装器
+     * @param queryConfig 配置对象
+     * @return QueryWrapper
+     */
+    @SuppressWarnings("unchecked")
+    private com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> buildQueryFromBuilderMode(
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper,
+            Map<String, Object> queryConfig) {
+        
+        try {
+            // ⭐ 1. 解析 conditions 数组
+            List<Map<String, Object>> conditions = (List<Map<String, Object>>) queryConfig.get("conditions");
+            if (conditions != null && !conditions.isEmpty()) {
+                log.info("⭐ 解析构建器条件，共 {} 个", conditions.size());
+                
+                for (Map<String, Object> condition : conditions) {
+                    String field = (String) condition.get("field");
+                    String operator = (String) condition.get("operator");
+                    Object value = condition.get("value");
+                    
+                    // 跳过空值字段
+                    if (field == null || field.trim().isEmpty()) {
+                        continue;
+                    }
+                    
+                    // 支持的运算符：eq, ne, gt, ge, lt, le, like, left_like, right_like, in, between, isNull, isNotNull
+                    switch (operator) {
+                        case "eq":
+                            queryWrapper.eq(field, value);
+                            break;
+                        case "ne":
+                            queryWrapper.ne(field, value);
+                            break;
+                        case "gt":
+                            queryWrapper.gt(field, value);
+                            break;
+                        case "ge":
+                            queryWrapper.ge(field, value);
+                            break;
+                        case "lt":
+                            queryWrapper.lt(field, value);
+                            break;
+                        case "le":
+                            queryWrapper.le(field, value);
+                            break;
+                        case "like":
+                            queryWrapper.like(field, value);
+                            break;
+                        case "left_like":
+                            queryWrapper.likeLeft(field, value);
+                            break;
+                        case "right_like":
+                            queryWrapper.likeRight(field, value);
+                            break;
+                        case "in":
+                            if (value instanceof List) {
+                                queryWrapper.in(field, (List<?>) value);
+                            }
+                            break;
+                        case "between":
+                            if (value instanceof List && ((List<?>) value).size() >= 2) {
+                                List<?> values = (List<?>) value;
+                                queryWrapper.between(field, values.get(0), values.get(1));
+                            }
+                            break;
+                        case "isNull":
+                            queryWrapper.isNull(field);
+                            break;
+                        case "isNotNull":
+                            queryWrapper.isNotNull(field);
+                            break;
+                        default:
+                            log.warn(" 未知的操作符：{}, 已跳过", operator);
+                    }
+                }
+            }
+            
+            // ⭐ 2. 解析 SELECT 字段配置
+            String selectFields = (String) queryConfig.get("select");
+            if (selectFields != null && !selectFields.trim().isEmpty()) {
+                log.info("⭐ 配置 SELECT 字段：{}", selectFields);
+                String[] fields = selectFields.split(",");
+                queryWrapper.select(fields);
+            }
+            
+            // ⭐ 3. 解析排序配置
+            List<Map<String, Object>> orderBy = (List<Map<String, Object>>) queryConfig.get("orderBy");
+            if (orderBy != null && !orderBy.isEmpty()) {
+                log.info("⭐ 配置排序，共 {} 个", orderBy.size());
+                
+                for (Map<String, Object> order : orderBy) {
+                    String field = (String) order.get("field");
+                    String direction = (String) order.getOrDefault("direction", "asc");
+                    
+                    if ("desc".equalsIgnoreCase(direction)) {
+                        queryWrapper.orderByDesc(field);
+                    } else {
+                        queryWrapper.orderByAsc(field);
+                    }
+                }
+            }
+            
+            // ⭐ 4. 解析分组配置（可选）
+            List<String> groupBy = (List<String>) queryConfig.get("groupBy");
+            if (groupBy != null && !groupBy.isEmpty()) {
+                log.info("⭐ 配置分组：{}", groupBy);
+                queryWrapper.groupBy(groupBy);
+            }
+            
+            // ⭐ 5. 解析 HAVING 配置（可选）
+            List<Map<String, Object>> having = (List<Map<String, Object>>) queryConfig.get("having");
+            if (having != null && !having.isEmpty()) {
+                log.info("⭐ 配置 HAVING 条件，共 {} 个", having.size());
+                
+                for (Map<String, Object> h : having) {
+                    String field = (String) h.get("field");
+                    String operator = (String) h.get("operator");
+                    Object value = h.get("value");
+                    
+                    if (field == null || field.trim().isEmpty()) {
+                        continue;
+                    }
+                    
+                    // HAVING 条件支持基本运算符
+                    switch (operator) {
+                        case "eq":
+                            queryWrapper.having(field + " = '" + value + "'");
+                            break;
+                        case "gt":
+                            queryWrapper.having(field + " > " + value);
+                            break;
+                        case "ge":
+                            queryWrapper.having(field + " >= " + value);
+                            break;
+                        case "lt":
+                            queryWrapper.having(field + " < " + value);
+                            break;
+                        case "le":
+                            queryWrapper.having(field + " <= " + value);
+                            break;
+                        case "ne":
+                            queryWrapper.having(field + " <> " + value);
+                            break;
+                        default:
+                            log.warn(" HAVING 不支持的操作符：{}", operator);
+                    }
+                }
+            }
+            
+            log.info(" 构建器模式查询条件构建完成");
+            return queryWrapper;
+            
+        } catch (Exception e) {
+            log.error(" 构建器模式查询条件构建失败", e);
+            throw new RuntimeException("构建器模式查询条件构建失败：" + e.getMessage());
+        }
+    }
+
+    /**
      * 从参数中提取模块编码
      * @param params 请求参数
      * @return 模块编码
@@ -1229,7 +1599,7 @@ public class ErpEngineController {
      */
     private void updateBillApprovalStatus(String moduleCode, String billId, String status) {
         try {
-            // ✅ 调用 ISuperDataPermissionService 的通用方法更新状态
+            //  调用 ISuperDataPermissionService 的通用方法更新状态
             // 注意：实际项目中需要在对应的 Service 中实现更新方法
             log.info("更新单据审批状态，moduleCode: {}, billId: {}, status: {}", moduleCode, billId, status);
             
@@ -1249,7 +1619,7 @@ public class ErpEngineController {
      */
     private Long saveTargetBill(String targetModule, Map<String, Object> transformed, String userId) {
         try {
-            // ✅ 根据 targetModule 调用对应的 Service 保存
+            //  根据 targetModule 调用对应的 Service 保存
             // 注意：实际项目中需要实现一个通用的单据保存服务
             log.info("保存目标单据，targetModule: {}, userId: {}", targetModule, userId);
             
@@ -1272,7 +1642,7 @@ public class ErpEngineController {
      */
     private void cancelTargetBill(String targetModule, String targetBillId, String reason) {
         try {
-            // ✅ 根据 targetModule 调用对应的 Service 删除或标记取消
+            //  根据 targetModule 调用对应的 Service 删除或标记取消
             log.info("取消目标单据，targetModule: {}, targetBillId: {}, reason: {}", targetModule, targetBillId, reason);
             
             // 示例代码（需要实际项目中实现）：
@@ -1280,5 +1650,31 @@ public class ErpEngineController {
         } catch (Exception e) {
             log.error("取消目标单据失败", e);
         }
+    }
+
+    /**
+     * ⭐ 新增：字典字段映射工具方法
+     * 将数据库字段映射为前端需要的 label/value 格式
+     * 
+     * @param data 原始数据列表
+     * @param labelField 显示字段名
+     * @param valueField 值字段名
+     * @return 映射后的数据列表
+     */
+    private List<Map<String, Object>> mapDictionaryFields(
+            List<Map<String, Object>> data,
+            String labelField,
+            String valueField) {
+        
+        return data.stream()
+            .map(item -> {
+                Map<String, Object> mapped = new HashMap<>();
+                mapped.put("label", item.get(labelField));
+                mapped.put("value", item.get(valueField));
+                // 保留原始字段，方便调试和扩展
+                mapped.putAll(item);
+                return mapped;
+            })
+            .collect(java.util.stream.Collectors.toList());
     }
 }

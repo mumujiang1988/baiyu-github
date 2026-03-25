@@ -6,7 +6,7 @@
 
 ---
 
-## 📊 一、冗余代码识别
+##  一、冗余代码识别
 
 ### 1.1 冗余代码分类
 
@@ -41,7 +41,7 @@
 **问题识别**:
 
 ```java
-// ❌ 冗余代码示例1: SalesOrderController
+//  冗余代码示例1: SalesOrderController
 @GetMapping("/list")
 public R<Page<Map<String, Object>>> list(PageQuery pageQuery) {
     String moduleCode = "sales_order";
@@ -51,7 +51,7 @@ public R<Page<Map<String, Object>>> list(PageQuery pageQuery) {
     return R.ok(page);
 }
 
-// ❌ 冗余代码示例2: PurchaseOrderController
+//  冗余代码示例2: PurchaseOrderController
 @GetMapping("/list")
 public R<Page<Map<String, Object>>> list(PageQuery pageQuery) {
     String moduleCode = "purchase_order";
@@ -61,7 +61,7 @@ public R<Page<Map<String, Object>>> list(PageQuery pageQuery) {
     return R.ok(page);
 }
 
-// ❌ 冗余代码示例3: InventoryController
+//  冗余代码示例3: InventoryController
 @GetMapping("/list")
 public R<Page<Map<String, Object>>> list(PageQuery pageQuery) {
     String moduleCode = "inventory";
@@ -82,7 +82,7 @@ public R<Page<Map<String, Object>>> list(PageQuery pageQuery) {
 **问题识别**:
 
 ```java
-// ❌ 冗余代码示例1
+//  冗余代码示例1
 @PostMapping
 public R<?> add(@RequestBody Map<String, Object> data) {
     String moduleCode = "sales_order";
@@ -97,7 +97,7 @@ public R<?> add(@RequestBody Map<String, Object> data) {
     }
 }
 
-// ❌ 冗余代码示例2
+//  冗余代码示例2
 @PostMapping
 public R<?> add(@RequestBody Map<String, Object> data) {
     String moduleCode = "purchase_order";
@@ -125,7 +125,7 @@ public R<?> add(@RequestBody Map<String, Object> data) {
 **问题识别**:
 
 ```java
-// ❌ 冗余代码示例1
+//  冗余代码示例1
 private List<TableColumnConfig> parseTableConfig(JSONObject configJson) {
     JSONObject tableConfig = configJson.getJSONObject("tableConfig");
     if (tableConfig == null) {
@@ -142,7 +142,7 @@ private List<TableColumnConfig> parseTableConfig(JSONObject configJson) {
         .collect(Collectors.toList());
 }
 
-// ❌ 冗余代码示例2
+//  冗余代码示例2
 private List<FormConfig> parseFormConfig(JSONObject configJson) {
     JSONObject formConfig = configJson.getJSONObject("formConfig");
     if (formConfig == null) {
@@ -172,7 +172,7 @@ private List<FormConfig> parseFormConfig(JSONObject configJson) {
 **问题识别**:
 
 ```java
-// ❌ 冗余代码示例1
+//  冗余代码示例1
 private void checkModulePermission(String moduleCode, String operation) {
     ErpPageConfig config = erpPageConfigService.getByModuleCode(moduleCode);
     if (config == null) {
@@ -187,7 +187,7 @@ private void checkModulePermission(String moduleCode, String operation) {
     StpUtil.checkPermission(permission);
 }
 
-// ❌ 冗余代码示例2 (在其他Controller中重复)
+//  冗余代码示例2 (在其他Controller中重复)
 private void checkPermission(String moduleCode, String operation) {
     ErpPageConfig config = configService.getByModuleCode(moduleCode);
     if (config == null) {
@@ -210,7 +210,7 @@ private void checkPermission(String moduleCode, String operation) {
 
 ---
 
-## 🔧 三、清理方案设计
+##  三、清理方案设计
 
 ### 3.1 Controller层重构方案
 
@@ -818,31 +818,31 @@ public class DataProcessor {
 
 ---
 
-## ✅ 五、验收标准
+##  五、验收标准
 
 ### 5.1 功能验收
 
-- ✅ 所有接口功能正常
-- ✅ 权限检查正常
-- ✅ 配置解析正常
-- ✅ 数据处理正常
+-  所有接口功能正常
+-  权限检查正常
+-  配置解析正常
+-  数据处理正常
 
 ### 5.2 代码质量验收
 
-- ✅ 代码重复率 < 10%
-- ✅ 单个方法行数 < 50行
-- ✅ 单个类行数 < 500行
+-  代码重复率 < 10%
+-  单个方法行数 < 50行
+-  单个类行数 < 500行
 - �圈复杂度 < 10
 
 ### 5.3 性能验收
 
-- ✅ 接口响应时间无明显增加
-- ✅ 内存占用无明显增加
-- ✅ CPU使用率无明显增加
+-  接口响应时间无明显增加
+-  内存占用无明显增加
+-  CPU使用率无明显增加
 
 ---
 
-## 📊 六、清理收益
+##  六、清理收益
 
 ### 6.1 代码质量收益
 

@@ -71,5 +71,5 @@ SELECT menu_id, menu_name, parent_id, perms, status
 FROM sys_menu WHERE menu_type = 'F' AND parent_id = @config_menu_id ORDER BY order_num;
 
 SELECT '========================================' AS '';
-SELECT '✅ ERP Configuration Menu Created Successfully!' AS message;
+SELECT ' ERP Configuration Menu Created Successfully!' AS message;
 SELECT '========================================' AS '';

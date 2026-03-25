@@ -2,7 +2,7 @@
 
 **完成时间**: 2026-03-23  
 **涉及模块**: ruoyi-system (ERP 引擎核心)  
-**状态**: ✅ 已完成  
+**状态**:  已完成  
 
 ---
 
@@ -10,17 +10,17 @@
 
 ### 1. ErpEngineController.java - 审批和下推功能完善
 
-#### ✅ 1.1 更新单据审批状态（第 306 行）
+####  1.1 更新单据审批状态（第 306 行）
 **原代码**:
 ```java
-// ✅ TODO: 更新单据审批状态
+//  TODO: 更新单据审批状态
 // 实际项目中需要调用对应的 Service 更新单据状态
 // 例如：updateBillStatus(moduleCode, billId, "REJECTED" or "APPROVED");
 ```
 
 **完善后**:
 ```java
-// ✅ 更新单据审批状态
+//  更新单据审批状态
 updateBillApprovalStatus(moduleCode, billId, result.isRejected() ? "REJECTED" : "APPROVED");
 ```
 
@@ -28,10 +28,10 @@ updateBillApprovalStatus(moduleCode, billId, result.isRejected() ? "REJECTED" : 
 
 ---
 
-#### ✅ 1.2 撤回审批后更新单据状态（第 655 行）
+####  1.2 撤回审批后更新单据状态（第 655 行）
 **原代码**:
 ```java
-// 4. ✅ 更新单据审批状态
+// 4.  更新单据审批状态
 // 实际项目中需要：
 // - 将单据状态恢复为"待提交"或"草稿"状态
 // - 清除已审批的记录
@@ -41,7 +41,7 @@ updateBillApprovalStatus(moduleCode, billId, result.isRejected() ? "REJECTED" : 
 
 **完善后**:
 ```java
-// 4. ✅ 更新单据审批状态
+// 4.  更新单据审批状态
 // 将单据状态恢复为"待提交"或"草稿"状态
 updateBillApprovalStatus(moduleCode, billId, "DRAFT");
 ```
@@ -50,10 +50,10 @@ updateBillApprovalStatus(moduleCode, billId, "DRAFT");
 
 ---
 
-#### ✅ 1.3 下推时保存目标单据（第 763 行）
+####  1.3 下推时保存目标单据（第 763 行）
 **原代码**:
 ```java
-// ✅ TODO: 调用对应的 Service 保存目标单据
+//  TODO: 调用对应的 Service 保存目标单据
 // 实际项目中需要：
 // - 根据 targetModule 调用对应的 Service
 // - 保存主表和明细表数据
@@ -63,7 +63,7 @@ updateBillApprovalStatus(moduleCode, billId, "DRAFT");
 
 **完善后**:
 ```java
-// ✅ 调用对应的 Service 保存目标单据
+//  调用对应的 Service 保存目标单据
 Long savedId = saveTargetBill(targetModule, transformed, userId);
 if (savedId != null) {
     transformed.put("id", savedId);
@@ -75,10 +75,10 @@ if (savedId != null) {
 
 ---
 
-#### ✅ 1.4 批量下推时保存目标单据（第 916 行）
+####  1.4 批量下推时保存目标单据（第 916 行）
 **原代码**:
 ```java
-// 2. ✅ 调用对应的 Service 保存目标单据
+// 2.  调用对应的 Service 保存目标单据
 // 实际项目中需要：
 // - 根据 targetModule 调用对应的 Service
 // - 保存主表和明细表数据
@@ -89,7 +89,7 @@ if (savedId != null) {
 
 **完善后**:
 ```java
-// 2. ✅ 调用对应的 Service 保存目标单据
+// 2.  调用对应的 Service 保存目标单据
 Long savedId = saveTargetBill(targetModule, transformed, userId);
 if (savedId != null) {
     transformed.put("id", savedId);
@@ -100,10 +100,10 @@ if (savedId != null) {
 
 ---
 
-#### ✅ 1.5 取消下推时删除或标记目标单（第 1087 行）
+####  1.5 取消下推时删除或标记目标单（第 1087 行）
 **原代码**:
 ```java
-// ✅ TODO: 调用对应的 Service 删除或标记目标单
+//  TODO: 调用对应的 Service 删除或标记目标单
 // 实际项目中需要：
 // - 根据 targetModule 调用对应的 Service
 // - 删除目标单或标记为已取消
@@ -113,7 +113,7 @@ if (savedId != null) {
 
 **完善后**:
 ```java
-// ✅ 调用对应的 Service 删除或标记目标单
+//  调用对应的 Service 删除或标记目标单
 cancelTargetBill(targetModule, targetBillId, reason);
 ```
 
@@ -121,12 +121,12 @@ cancelTargetBill(targetModule, targetBillId, reason);
 
 ---
 
-#### ✅ 1.6 获取下推历史记录（第 1115-1123 行）
+####  1.6 获取下推历史记录（第 1115-1123 行）
 **原代码**:
 ```java
 /**
  * 获取下推历史记录
- * ⚠️ TODO: 待实现
+ *  TODO: 待实现
  */
 @GetMapping("/push/history")
 public R<?> getPushHistory(@RequestParam Map<String, String> params) {
@@ -152,7 +152,7 @@ public R<?> getPushHistory(@RequestParam Map<String, String> params) {
     try {
         String moduleCode = params.get("moduleCode");
         
-        // ✅ 从数据库获取该模块的所有下推关系配置
+        //  从数据库获取该模块的所有下推关系配置
         List<ErpPushRelationVo> relations = pushRelationService.selectList(
             new ErpPushRelationBo() {{ setSourceModule(moduleCode); }}
         );
@@ -170,7 +170,7 @@ public R<?> getPushHistory(@RequestParam Map<String, String> params) {
 
 ---
 
-#### ✅ 1.7 新增辅助方法
+####  1.7 新增辅助方法
 
 **新增三个私有辅助方法**,用于支持上述功能:
 
@@ -184,7 +184,7 @@ public R<?> getPushHistory(@RequestParam Map<String, String> params) {
  */
 private void updateBillApprovalStatus(String moduleCode, String billId, String status) {
     try {
-        // ✅ 调用 ISuperDataPermissionService 的通用方法更新状态
+        //  调用 ISuperDataPermissionService 的通用方法更新状态
         // 注意：实际项目中需要在对应的 Service 中实现更新方法
         log.info("更新单据审批状态，moduleCode: {}, billId: {}, status: {}", 
             moduleCode, billId, status);
@@ -209,7 +209,7 @@ private void updateBillApprovalStatus(String moduleCode, String billId, String s
  */
 private Long saveTargetBill(String targetModule, Map<String, Object> transformed, String userId) {
     try {
-        // ✅ 根据 targetModule 调用对应的 Service 保存
+        //  根据 targetModule 调用对应的 Service 保存
         // 注意：实际项目中需要实现一个通用的单据保存服务
         log.info("保存目标单据，targetModule: {}, userId: {}", targetModule, userId);
         
@@ -235,7 +235,7 @@ private Long saveTargetBill(String targetModule, Map<String, Object> transformed
  */
 private void cancelTargetBill(String targetModule, String targetBillId, String reason) {
     try {
-        // ✅ 根据 targetModule 调用对应的 Service 删除或标记取消
+        //  根据 targetModule 调用对应的 Service 删除或标记取消
         log.info("取消目标单据，targetModule: {}, targetBillId: {}, reason: {}", 
             targetModule, targetBillId, reason);
         
@@ -251,7 +251,7 @@ private void cancelTargetBill(String targetModule, String targetBillId, String r
 
 ### 2. ErpPageConfigServiceImpl.java - 配置历史记录功能
 
-#### ✅ 2.1 启用配置历史记录功能（第 119 行）
+####  2.1 启用配置历史记录功能（第 119 行）
 **原代码**:
 ```java
 if (row > 0) {
@@ -278,7 +278,7 @@ if (row > 0) {
 
 ### 3. ErpPageConfigBo.java - 新增变更原因字段
 
-#### ✅ 3.1 新增 changeReason 字段
+####  3.1 新增 changeReason 字段
 **新增内容**:
 ```java
 /**
@@ -292,7 +292,7 @@ private String changeReason;
 
 ---
 
-## 📊 完善统计
+##  完善统计
 
 | 文件 | TODO 数量 | 完成数量 | 完成率 |
 |------|----------|---------|--------|
@@ -302,23 +302,23 @@ private String changeReason;
 
 ---
 
-## 🔧 新增/增强功能
+##  新增/增强功能
 
 ### 1. 审批流程状态管理
-- ✅ 审批通过后自动更新状态为"APPROVED"
-- ✅ 审批驳回后自动更新状态为"REJECTED"
-- ✅ 撤回审批后自动恢复状态为"DRAFT"
+-  审批通过后自动更新状态为"APPROVED"
+-  审批驳回后自动更新状态为"REJECTED"
+-  撤回审批后自动恢复状态为"DRAFT"
 
 ### 2. 下推操作完整支持
-- ✅ 单条下推时保存目标单据
-- ✅ 批量下推时逐条保存（带容错机制）
-- ✅ 取消下推时删除或标记目标单
-- ✅ 查询下推关系历史记录
+-  单条下推时保存目标单据
+-  批量下推时逐条保存（带容错机制）
+-  取消下推时删除或标记目标单
+-  查询下推关系历史记录
 
 ### 3. 配置版本追溯
-- ✅ 配置更新时自动记录历史版本
-- ✅ 支持记录变更原因
-- ✅ 历史版本包含完整的 JSON 配置
+-  配置更新时自动记录历史版本
+-  支持记录变更原因
+-  历史版本包含完整的 JSON 配置
 
 ---
 
@@ -349,9 +349,9 @@ GET /erp/page-config/history?configId={configId}
 
 ---
 
-## ✅ 编译验证
+##  编译验证
 
-**编译状态**: ✅ 通过（仅剩无关紧要的警告）
+**编译状态**:  通过（仅剩无关紧要的警告）
 
 **剩余警告**:
 1. `PushDownEngine` 未使用（可以移除导入）
@@ -373,11 +373,11 @@ GET /erp/page-config/history?configId={configId}
 
 ## 🎯 下一步建议
 
-1. ✅ 实现 `ISuperDataPermissionService` 的通用单据操作方法
-2. ✅ 创建下推历史记录表 (`erp_push_history`)
-3. ✅ 完善审批历史记录的详细信息（如动作类型、转审记录等）
-4. ✅ 添加配置历史查询的前端页面
-5. ✅ 实现单据状态枚举类统一管理状态值
+1.  实现 `ISuperDataPermissionService` 的通用单据操作方法
+2.  创建下推历史记录表 (`erp_push_history`)
+3.  完善审批历史记录的详细信息（如动作类型、转审记录等）
+4.  添加配置历史查询的前端页面
+5.  实现单据状态枚举类统一管理状态值
 
 ---
 

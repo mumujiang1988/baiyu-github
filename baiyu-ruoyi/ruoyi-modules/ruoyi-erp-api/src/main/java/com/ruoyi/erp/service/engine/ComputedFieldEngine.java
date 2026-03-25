@@ -302,13 +302,31 @@ public class ComputedFieldEngine {
     }
     
     /**
-     * 简单四则运算计算器
+     * 简单四则运算计算器(修复运算符优先级)
+     * 优先级: 括号 > 乘除 > 加减
      */
     private BigDecimal calculateSimpleExpression(String expression) {
         // 移除空格
         expression = expression.replaceAll("\\s+", "");
         
-        // 处理加减法 (最低优先级)
+        // 处理括号(最高优先级)
+        int parenStart = expression.lastIndexOf('(');
+        if (parenStart >= 0) {
+            int parenEnd = expression.indexOf(')', parenStart);
+            if (parenEnd < 0) {
+                throw new IllegalArgumentException("括号不匹配");
+            }
+            
+            // 递归计算括号内的表达式
+            String before = expression.substring(0, parenStart);
+            String inside = expression.substring(parenStart + 1, parenEnd);
+            String after = expression.substring(parenEnd + 1);
+            
+            BigDecimal insideValue = calculateSimpleExpression(inside);
+            return calculateSimpleExpression(before + insideValue + after);
+        }
+        
+        // 处理加减法(最低优先级,从右往左找)
         int plusIndex = findOperatorIndex(expression, '+');
         if (plusIndex > 0) {
             BigDecimal left = calculateSimpleExpression(expression.substring(0, plusIndex));
@@ -318,20 +336,39 @@ public class ComputedFieldEngine {
         
         int minusIndex = findOperatorIndex(expression, '-');
         if (minusIndex > 0) {
+            // 处理负数情况: -5 或 3*-5
+            if (minusIndex == 0) {
+                // 整个表达式是负数
+                return calculateSimpleExpression(expression.substring(1)).negate();
+            }
+            char prevChar = expression.charAt(minusIndex - 1);
+            if (prevChar == '+' || prevChar == '-' || prevChar == '*' || prevChar == '/') {
+                // 负号,不是减号,继续找下一个减号
+                int nextMinus = findOperatorIndex(expression.substring(0, minusIndex), '-');
+                if (nextMinus > 0) {
+                    minusIndex = nextMinus;
+                } else {
+                    // 整个是负数表达式
+                    return calculateSimpleExpression(expression.substring(1)).negate();
+                }
+            }
+            
             BigDecimal left = calculateSimpleExpression(expression.substring(0, minusIndex));
             BigDecimal right = calculateSimpleExpression(expression.substring(minusIndex + 1));
             return left.subtract(right);
         }
         
-        // 处理乘除法 (高优先级)
+        // 处理乘除法(高优先级)
         int multiplyIndex = expression.indexOf('*');
-        if (multiplyIndex > 0) {
+        int divideIndex = expression.indexOf('/');
+        
+        // 优先处理先出现的运算符(从左往右)
+        if (multiplyIndex > 0 && (divideIndex < 0 || multiplyIndex < divideIndex)) {
             BigDecimal left = calculateSimpleExpression(expression.substring(0, multiplyIndex));
             BigDecimal right = calculateSimpleExpression(expression.substring(multiplyIndex + 1));
             return left.multiply(right);
         }
         
-        int divideIndex = expression.indexOf('/');
         if (divideIndex > 0) {
             BigDecimal left = calculateSimpleExpression(expression.substring(0, divideIndex));
             BigDecimal right = calculateSimpleExpression(expression.substring(divideIndex + 1));
@@ -339,11 +376,6 @@ public class ComputedFieldEngine {
                 throw new ArithmeticException("除数不能为零");
             }
             return left.divide(right, 10, RoundingMode.HALF_UP);
-        }
-        
-        // 处理括号
-        if (expression.startsWith("(") && expression.endsWith(")")) {
-            return calculateSimpleExpression(expression.substring(1, expression.length() - 1));
         }
         
         // 解析数字
