@@ -76,6 +76,12 @@ public class ErpPageConfig implements Serializable {
     private String businessConfig;
 
     /**
+     * 详情页配置 (detail.json)
+     */
+    @TableField("detail_config")
+    private String detailConfig;
+
+    /**
      * 版本号 (每次更新 +1)
      */
     @TableField("version")

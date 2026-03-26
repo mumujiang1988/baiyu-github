@@ -165,21 +165,39 @@ export const replaceTemplateVariables = (conditions, contextData) => {
 export const parseSubTableConfigs = (pageConfig) => {
   const configs = []
   
-  if (!pageConfig || !pageConfig.subTableQueryConfigs) {
-    return configs
+  // 🔥 优先从 detailConfig 中解析（新版本）
+  if (pageConfig && pageConfig.detailConfig && pageConfig.detailConfig.detail) {
+    console.log('✅ 从 detailConfig 中解析子表格配置')
+    const tabs = pageConfig.detailConfig.detail.tabs || []
+    
+    for (const tab of tabs) {
+      if (tab.type === 'table' || tab.type === 'descriptions') {
+        configs.push({
+          key: tab.name,
+          tableName: tab.tableName,
+          defaultConditions: tab.queryConfig?.defaultConditions || [],
+          defaultOrderBy: tab.queryConfig?.defaultOrderBy || [],
+          dataField: tab.dataField || `${tab.name}Data`,
+          type: tab.type
+        })
+      }
+    }
   }
-  
-  const subTableConfigs = pageConfig.subTableQueryConfigs
-  
-  // 遍历所有子表格配置
-  for (const [key, config] of Object.entries(subTableConfigs)) {
-    if (config.enabled) {
-      configs.push({
-        key,
-        tableName: config.tableName,
-        defaultConditions: config.defaultConditions || [],
-        defaultOrderBy: config.defaultOrderBy || []
-      })
+  // 兼容旧的 subTableQueryConfigs（旧版本）
+  else if (pageConfig && pageConfig.subTableQueryConfigs) {
+    console.log('⚠️ 使用旧的 subTableQueryConfigs（已废弃）')
+    const subTableConfigs = pageConfig.subTableQueryConfigs
+    
+    // 遍历所有子表格配置
+    for (const [key, config] of Object.entries(subTableConfigs)) {
+      if (config.enabled) {
+        configs.push({
+          key,
+          tableName: config.tableName,
+          defaultConditions: config.defaultConditions || [],
+          defaultOrderBy: config.defaultOrderBy || []
+        })
+      }
     }
   }
   

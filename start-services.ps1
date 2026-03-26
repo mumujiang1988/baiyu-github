@@ -119,14 +119,37 @@ if (Test-Path $BACKEND_CONFIG) {
 Write-Host "[OK] Config check completed" -ForegroundColor Green
 Write-Host ""
 
-Write-Host "[4/6] Checking backend JAR file..." -ForegroundColor Yellow
+Write-Host "[4/7] Compiling backend with Maven..." -ForegroundColor Yellow
+Write-Host "Tip: This will ensure latest code changes are applied" -ForegroundColor Gray
+Write-Host ""
+
+# Compile backend
+Push-Location $BACKEND_DIR
+try {
+    Write-Host "Running: mvn clean package -DskipTests" -ForegroundColor Gray
+    & mvn clean package -DskipTests
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Maven compilation failed" -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    Write-Host "[OK] Backend compiled successfully" -ForegroundColor Green
+} catch {
+    Write-Host "ERROR: Maven compilation error: $_" -ForegroundColor Red
+    Pop-Location
+    exit 1
+}
+Pop-Location
+
+Write-Host ""
+
+Write-Host "[5/7] Checking backend JAR file..." -ForegroundColor Yellow
 
 # Check if JAR file exists
 $jarFile = "$BACKEND_DIR\target\ruoyi-admin-wms.jar"
 
 if (-not (Test-Path $jarFile)) {
     Write-Host "ERROR: Backend JAR file not exist: $jarFile" -ForegroundColor Red
-    Write-Host "Please compile backend first using: mvn clean package -DskipTests" -ForegroundColor Yellow
     exit 1
 } else {
     $jarAge = (Get-Date) - (Get-Item $jarFile).LastWriteTime
@@ -135,7 +158,7 @@ if (-not (Test-Path $jarFile)) {
 
 Write-Host ""
 
-Write-Host "[5/6] Starting backend service..." -ForegroundColor Yellow
+Write-Host "[6/7] Starting backend service..." -ForegroundColor Yellow
 Write-Host "Backend URL: http://localhost:8180" -ForegroundColor Cyan
 Write-Host "Tip: Backend will start in background, please wait..." -ForegroundColor Gray
 Write-Host ""
@@ -205,7 +228,7 @@ if (-not $backendReady) {
 
 Write-Host ""
 
-Write-Host "[6/6] Starting frontend service..." -ForegroundColor Yellow
+Write-Host "[7/7] Starting frontend service..." -ForegroundColor Yellow
 Write-Host "Frontend URL: http://localhost:8899" -ForegroundColor Cyan
 Write-Host "Tip: Frontend will start in background..." -ForegroundColor Gray
 Write-Host ""

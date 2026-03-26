@@ -16,7 +16,7 @@ import java.util.Map;
  * @date 2026-03-22
  */
 @Slf4j
-@Component
+@Component("erpFormValidationEngine")
 public class FormValidationEngine {
 
     /**

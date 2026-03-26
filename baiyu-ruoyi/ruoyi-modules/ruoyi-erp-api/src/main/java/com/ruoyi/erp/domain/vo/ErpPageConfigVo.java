@@ -82,6 +82,12 @@ public class ErpPageConfigVo implements Serializable {
     private String businessConfig;
 
     /**
+     * 详情页配置 (detail.json)
+     */
+    @ExcelProperty(value = "详情配置")
+    private String detailConfig;
+
+    /**
      * 版本号
      */
     @ExcelProperty(value = "版本号")

@@ -2,6 +2,7 @@ package com.ruoyi.erp.controller.erp;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.common.json.utils.JsonUtils;
 import com.ruoyi.common.log.annotation.Log;
 import com.ruoyi.common.web.core.BaseController;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
@@ -242,23 +243,60 @@ public class ErpPageConfigController extends BaseController {
      */
     @SaCheckPermission("erp:config:query")
     @GetMapping("/get/{moduleCode}")
-    public R<String> getPageConfig(@PathVariable String moduleCode) {
+    public R<Object> getPageConfig(@PathVariable String moduleCode) {
         log.info("🔍 [ErpPageConfigController] 请求页面配置，moduleCode: {}", moduleCode);
         String config = pageConfigService.getPageConfig(moduleCode);
-        
+
         if (config == null) {
             log.error("❌ [ErpPageConfigController] 返回失败，未找到配置，moduleCode: {}", moduleCode);
             return R.fail("未找到配置");
         }
-        
-        log.info("✅ [ErpPageConfigController] 返回成功，moduleCode: {}, configLength: {}", 
+
+        log.info("✅ [ErpPageConfigController] 返回成功，moduleCode: {}, configLength: {}",
             moduleCode, config.length());
-        
-        // 🔍 打印配置内容的前 200 个字符用于调试
+
+        // 打印配置内容的前 200 个字符用于调试
         String preview = config.length() > 200 ? config.substring(0, 200) + "..." : config;
         log.info("📝 [ErpPageConfigController] 配置预览：{}", preview);
+
+        // 修复：将配置数据放在 data 字段中，而不是 msg 字段中
+        // 使用 R.ok(String msg, T data) 方法，将配置字符串作为 data 字段
+        return R.ok("获取配置成功", JsonUtils.parseMap(config));
+    }
+
+    /**
+     * 获取详情页配置 (供抽屉页使用)
+     *
+     * @param moduleCode 模块编码
+     */
+    @SaCheckPermission("erp:config:query")
+    @GetMapping("/detail/{moduleCode}")
+    public R<Object> getDetailConfig(@PathVariable String moduleCode) {
+        log.info("🔍 [ErpPageConfigController] 请求详情配置，moduleCode: {}", moduleCode);
         
-        // ✅ 修复：始终使用 data 字段返回配置，不使用第二个参数（避免放入 msg）
-        return R.ok(config);
+        try {
+            // 获取完整配置
+            String config = pageConfigService.getPageConfig(moduleCode);
+            if (config == null) {
+                log.error("❌ [ErpPageConfigController] 未找到配置，moduleCode: {}", moduleCode);
+                return R.fail("未找到配置");
+            }
+            
+            // 解析 JSON 并提取 detail_config
+            Map<String, Object> configMap = JsonUtils.parseMap(config);
+            Object detailConfig = configMap.get("detailConfig");
+            
+            if (detailConfig == null) {
+                log.warn("⚠️ [ErpPageConfigController] 未找到详情配置，moduleCode: {}", moduleCode);
+                return R.ok("未找到详情配置", null);
+            }
+            
+            log.info("✅ [ErpPageConfigController] 详情配置获取成功，moduleCode: {}", moduleCode);
+            return R.ok("获取详情配置成功", detailConfig);
+            
+        } catch (Exception e) {
+            log.error("❌ [ErpPageConfigController] 获取详情配置失败", e);
+            return R.fail("获取失败：" + e.getMessage());
+        }
     }
 }

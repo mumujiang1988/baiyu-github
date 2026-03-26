@@ -70,6 +70,11 @@ public class ErpPageConfigBo extends BaseEntity {
     private String businessConfig;
 
     /**
+     * 详情页配置 (detail.json)
+     */
+    private String detailConfig;
+
+    /**
      * 版本号 (每次更新 +1)
      */
     private Integer version;

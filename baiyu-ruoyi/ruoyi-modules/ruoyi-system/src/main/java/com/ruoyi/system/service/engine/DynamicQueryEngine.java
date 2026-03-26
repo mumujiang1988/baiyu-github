@@ -1,4 +1,4 @@
-package com.ruoyi.erp.service.engine;
+package com.ruoyi.system.service.engine;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.utils.StringUtils;
@@ -6,18 +6,38 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
- * 动态查询引擎 (极简版)
+ * 动态查询引擎(安全加固版)
  * 根据 JSON 配置生成查询条件
+ * 添加字段白名单校验,防止SQL注入
  * 
  * @author ERP Development Team
  * @date 2026-03-22
  */
 @Slf4j
-@Component("erpDynamicQueryEngine")
+@Component
 public class DynamicQueryEngine {
- 
+
+    /**
+     * 允许查询的字段白名单
+     * 根据实际业务配置
+     */
+    private static final Set<String> ALLOWED_FIELDS = Set.of(
+        // 销售订单字段
+        "fbillNo", "fOraBaseProperty", "fDocumentStatus", "fBillAmount",
+        "fdate", "fCustomerNumber", "fCustomerName", "fCreatorId",
+        "fCreateDate", "fModifierId", "fModifyDate",
+        
+        // 发货通知单字段
+        "sourceBillNo", "bizDate", "customerNumber", "customerName",
+        
+        // 通用字段
+        "id", "createTime", "updateTime", "status", "version",
+        "configId", "moduleCode", "configName", "configType"
+    );
+
     /**
      * 根据配置构建查询条件
      * 
@@ -54,8 +74,12 @@ public class DynamicQueryEngine {
                 if (StringUtils.isEmpty(field)) {
                     continue;
                 }
-                
-                //  简单校验字段非空即可（配置中已使用数据库字段名）
+
+                //  字段白名单校验,防止SQL注入
+                if (!isValidField(field)) {
+                    log.warn("非法字段访问尝试: {}", field);
+                    continue;
+                }
 
                 Object value = queryParams.get(field);
                 if (value == null || StringUtils.isEmpty(value.toString())) {
@@ -168,6 +192,12 @@ public class DynamicQueryEngine {
         }
     }
 
+    /**
+     * 校验字段是否合法(白名单校验)
+     */
+    private boolean isValidField(String field) {
+        return ALLOWED_FIELDS.contains(field);
+    }
 
     /**
      * 解析排序配置(增加字段校验)
@@ -187,14 +217,38 @@ public class DynamicQueryEngine {
         String orderDirection = (String) sortConfig.get("orderDirection");
 
         if (StringUtils.isNotEmpty(orderBy)) {
-            //  排序字段只需校验非空（配置中已使用数据库字段名）
-            // MyBatis-Plus 会自动处理字段名下划线转换
+            // 排序字段也需要校验,防止SQL注入
+            if (!isValidField(orderBy)) {
+                log.warn("非法排序字段: {}", orderBy);
+                return;
+            }
+            
             if ("asc".equalsIgnoreCase(orderDirection)) {
-                queryWrapper.orderByAsc(true, orderBy);
+                queryWrapper.orderByAsc(true, camelToUnderline(orderBy));
             } else {
-                queryWrapper.orderByDesc(true, orderBy);
+                queryWrapper.orderByDesc(true, camelToUnderline(orderBy));
             }
         }
     }
 
+    /**
+     * 驼峰转下划线
+     */
+    private String camelToUnderline(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(Character.toLowerCase(str.charAt(0)));
+        for (int i = 1; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+                sb.append('_');
+                sb.append(Character.toLowerCase(c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

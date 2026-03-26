@@ -31,6 +31,9 @@ DROP TABLE IF EXISTS `erp_push_relation`;
 DROP TABLE IF EXISTS `erp_approval_flow`;
 DROP TABLE IF EXISTS `erp_page_config`;
 
+-- 删除旧触发器（防止重复创建）
+DROP TRIGGER IF EXISTS `trg_erp_config_history`;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
@@ -44,12 +47,13 @@ CREATE TABLE `erp_page_config` (
   `config_name` VARCHAR(200) NOT NULL COMMENT '配置名称',
   `config_type` VARCHAR(50) NOT NULL DEFAULT 'PAGE' COMMENT '配置类型（PAGE/FORM/TABLE/DICT/BUSINESS）',
   
-  -- ========== 强制拆分的 5 个 JSON 字段 ==========
+  -- ========== 强制拆分的 6 个 JSON 字段 ==========
   `page_config` JSON NOT NULL COMMENT '页面基础配置 (page.json)',
   `form_config` JSON COMMENT '表单 UI 组件配置 (form.json)',
   `table_config` JSON COMMENT '表格查询配置 (table.json)',
   `dict_config` JSON COMMENT '字典数据源配置 (dict.json)',
   `business_config` JSON COMMENT '业务规则配置 (config.json)',
+  `detail_config` JSON COMMENT '详情页配置 (detail.json)',
   -- ===========================================
   
   `version` INT NOT NULL DEFAULT 1 COMMENT '版本号',
@@ -66,7 +70,7 @@ CREATE TABLE `erp_page_config` (
   UNIQUE KEY `uk_module_code` (`module_code`),
   KEY `idx_status` (`status`),
   KEY `idx_parent` (`parent_config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP 页面配置表（强制拆分版）';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP 页面配置表（强制拆分版 - 6 字段）';
 
 -- 2. 配置历史表（版本控制）
 CREATE TABLE `erp_page_config_history` (
@@ -75,12 +79,13 @@ CREATE TABLE `erp_page_config_history` (
   `module_code` VARCHAR(100) NOT NULL COMMENT '模块编码',
   `version` INT NOT NULL COMMENT '版本号',
   
-  -- 历史快照（同样拆分 5 个字段）
+  -- 历史快照（同样拆分 6 个字段）
   `page_config` JSON COMMENT '页面配置快照',
   `form_config` JSON COMMENT '表单配置快照',
   `table_config` JSON COMMENT '表格配置快照',
   `dict_config` JSON COMMENT '字典配置快照',
   `business_config` JSON COMMENT '业务配置快照',
+  `detail_config` JSON COMMENT '详情配置快照',
   
   `change_reason` VARCHAR(500) NULL COMMENT '变更原因',
   `change_type` VARCHAR(20) NOT NULL COMMENT '变更类型（CREATE/UPDATE/DELETE/ROLLBACK）',
@@ -160,11 +165,12 @@ CREATE TABLE `erp_push_relation` (
 
 -- 注意：本节已移除示例配置数据，仅保留表结构初始化
 -- 如需添加配置数据，请执行：拆分json导入.sql
--- 该脚本将导入销售订单模块的完整配置（5 字段强制拆分）
+-- 该脚本将导入销售订单模块的完整配置（6 字段强制拆分，包含 detail_config）
 
--- 1. 销售订单页面配置（5 字段强制拆分）- 已移除
+-- 1. 销售订单页面配置（6 字段强制拆分）- 已移除
 -- 2. 插入审批流程配置 - 已移除
 -- 3. 插入下推关系配置 - 已移除
+-- 说明：配置数据已移至【拆分json导入.sql】，包含完整的 detail_config
 
 -- ============================================
 -- 第四步：创建菜单和权限配置
@@ -298,10 +304,13 @@ WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362206255022092');
 -- 说明：该索引已在第 154 行作为 KEY `idx_source_status` 创建，无需重复添加
 
 -- ============================================
--- 第六步：创建触发器（自动记录历史）
+-- 第七步：创建触发器（自动记录历史）
 -- ============================================
 
 DELIMITER $$
+
+-- 先删除已存在的触发器（幂等性保证）
+DROP TRIGGER IF EXISTS `trg_erp_config_history`$$
 
 CREATE TRIGGER `trg_erp_config_history`
 AFTER UPDATE ON `erp_page_config`
@@ -337,7 +346,7 @@ END$$
 DELIMITER ;
 
 -- ============================================
--- 第七步：验证初始化结果
+-- 第八步：验证初始化结果
 -- ============================================
 
 -- 查看表结构
@@ -378,7 +387,7 @@ SELECT '========================================' AS '';
 SELECT '🎉 ERP 配置化表结构初始化完成！' AS '';
 SELECT '========================================' AS '';
 SELECT '已创建：' AS summary;
-SELECT '  ✅ 5 个核心表（强制拆分版）' AS tables;
+SELECT '  ✅ 6 个核心表（强制拆分版 - 含 detail_config）' AS tables;
 SELECT '  ✅ 10 个菜单权限' AS menus;
 SELECT '  ✅ 自动历史触发器' AS triggers;
 SELECT '========================================' AS '';

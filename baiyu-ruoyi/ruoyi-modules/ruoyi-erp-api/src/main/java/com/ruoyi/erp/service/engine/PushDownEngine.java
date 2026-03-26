@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * @date 2026-03-22
  */
 @Slf4j
-@Component
+@Component("erpPushDownEngine")
 public class PushDownEngine {
     
     /**

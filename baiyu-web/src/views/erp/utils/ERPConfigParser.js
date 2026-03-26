@@ -35,29 +35,49 @@ class ERPConfigParser {
       })
       
       // 🔍 添加详细调试信息
-      console.log(' 后端返回的完整响应:', response)
-      console.log(' response.code:', response.code)
-      console.log(' response.data 类型:', typeof response.data, '值:', response.data)
-      console.log(' response.msg:', typeof response.msg, '长度:', response.msg?.length)
+      console.log('📡 后端返回的完整响应:', response)
+      console.log('🔢 response.code:', response.code)
+      console.log('💾 response.data 类型:', typeof response.data, '值:', response.data)
+      console.log('💬 response.msg:', typeof response.msg, '长度:', response.msg?.length)
+      console.log('📋 response 所有键:', Object.keys(response))
       
       if (response.code === 200 || response.code === 0) {
-        // ✅ 修复：直接使用 data 字段，移除 msg 兼容代码
+        // ✅ 统一处理：data 字段应该包含配置数据的 JSON 字符串
         let configContent;
-        const rawData = response.data;
-        
+        let rawData = response.data;
+
+        console.log('原始数据检查:', {
+          data: rawData,
+          msg: response.msg,
+          hasData: !!rawData,
+          isString: typeof rawData === 'string',
+          isObject: typeof rawData === 'object'
+        })
+
+        // 🔧 兼容处理：如果 data 为空但 msg 有数据，尝试从 msg 解析
+        if (!rawData && response.msg && response.msg.length > 0) {
+          console.warn('⚠️ data 为空，尝试从 msg 字段解析配置...')
+          try {
+            rawData = response.msg
+            console.log('✅ 从 msg 获取数据成功')
+          } catch (e) {
+            console.error('❌ 从 msg 获取数据失败:', e)
+          }
+        }
+
         if (!rawData) {
-          console.error(' response.data 为空！', response)
+          console.error('❌ 配置数据为空！', response)
           throw new Error('配置内容为空')
         }
-        
+
         if (typeof rawData === 'string') {
           console.log('📝 rawData 是字符串，长度:', rawData.length)
           // 如果是字符串，尝试解析 JSON
           try {
             configContent = JSON.parse(rawData);
-            console.log(' JSON 解析成功')
+            console.log('✅ JSON 解析成功')
           } catch (parseError) {
-            console.error(' JSON 解析失败:', parseError, '原始数据:', rawData);
+            console.error('❌ JSON 解析失败:', parseError, '原始数据:', rawData);
             throw new Error('配置内容格式错误');
           }
         } else if (rawData && typeof rawData === 'object') {
@@ -65,7 +85,7 @@ class ERPConfigParser {
           // 如果已经是对象，直接使用
           configContent = rawData;
         } else {
-          console.error(' rawData 类型异常:', typeof rawData, '值:', rawData)
+          console.error('❌ rawData 类型异常:', typeof rawData, '值:', rawData)
           throw new Error('配置内容为空或格式不正确');
         }
         
@@ -223,20 +243,48 @@ class ERPConfigParser {
    * 解析抽屉详情配置
    */
   parseDrawerConfig() {
-    const { drawerConfig } = this.config
-    if (!drawerConfig) return { enabled: false, tabs: [] }
-
-    return {
-      enabled: drawerConfig.enabled !== false,
-      trigger: drawerConfig.trigger || 'click',
-      loadStrategy: drawerConfig.loadStrategy || 'lazy',
-      title: drawerConfig.title || '详情',
-      tabs: (drawerConfig.tabs || []).map(tab => ({
-        ...tab,
-        type: tab.type || 'table',
-        columns: tab.columns || 3
-      }))
+    // 🔥 优先使用新的 detailConfig（6 字段版本）
+    const { detailConfig, drawerConfig } = this.config
+    
+    if (detailConfig && detailConfig.detail) {
+      console.log('✅ 使用新的 detailConfig')
+      return {
+        enabled: detailConfig.detail.enabled !== false,
+        displayType: detailConfig.detail.displayType || 'drawer',
+        title: detailConfig.detail.title || '详情',
+        width: detailConfig.detail.width || '60%',
+        direction: detailConfig.detail.direction || 'rtl',
+        loadStrategy: detailConfig.detail.loadStrategy || 'lazy',
+        tabs: (detailConfig.detail.tabs || []).map(tab => ({
+          ...tab,
+          type: tab.type || 'table',
+          dataField: tab.dataField || `${tab.name}Data`,
+          tableName: tab.tableName,
+          queryConfig: tab.queryConfig || {},
+          columns: tab.columns || 3,
+          fields: tab.fields || [],
+          table: tab.table || {}
+        }))
+      }
     }
+    
+    // 兼容旧的 drawerConfig
+    if (drawerConfig) {
+      console.log('⚠️ 使用旧的 drawerConfig（已废弃）')
+      return {
+        enabled: drawerConfig.enabled !== false,
+        trigger: drawerConfig.trigger || 'click',
+        loadStrategy: drawerConfig.loadStrategy || 'lazy',
+        title: drawerConfig.title || '详情',
+        tabs: (drawerConfig.tabs || []).map(tab => ({
+          ...tab,
+          type: tab.type || 'table',
+          columns: tab.columns || 3
+        }))
+      }
+    }
+    
+    return { enabled: false, tabs: [] }
   }
 
   /**

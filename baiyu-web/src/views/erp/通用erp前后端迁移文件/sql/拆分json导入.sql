@@ -1,8 +1,8 @@
 -- ============================================
 -- ERP 配置 JSON 强制拆分方案 - 销售订单模块导入 SQL
--- 版本：v2.0 (生产交付标准版)
+-- 版本：v2.1 (生产交付标准版 - 含 detail_config)
 -- 日期：2026-03-26
--- 说明：导入销售订单页面配置数据（5 字段强制拆分）
+-- 说明：导入销售订单页面配置数据（6 字段强制拆分，包含详情页配置）
 -- 适用范围：生产环境部署
 -- ============================================
 
@@ -27,7 +27,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 第二步：插入销售订单页面配置数据
 -- ============================================
 
--- 销售订单页面配置（5 字段强制拆分）
+-- 销售订单页面配置（6 字段强制拆分，包含 detail_config）
 INSERT INTO `erp_page_config` (
   `module_code`,
   `config_name`,
@@ -37,6 +37,7 @@ INSERT INTO `erp_page_config` (
   `table_config`,
   `dict_config`,
   `business_config`,
+  `detail_config`,
   `version`,
   `status`,
   `is_public`,
@@ -53,7 +54,8 @@ INSERT INTO `erp_page_config` (
     "pageName": "销售订单管理",
     "permission": "k3:saleorder:query",
     "layout": "standard",
-    "apiPrefix": "/erp/engine"
+    "apiPrefix": "/erp/engine",
+    "tableName": "t_sale_order"
   }',
   
   -- form_config: 从 form.json 读取
@@ -483,11 +485,112 @@ INSERT INTO `erp_page_config` (
     "drawerTitle": "{entityName}详情 - {billNo}"
   }',
   
+  -- detail_config: 从 detail.json 读取（销售订单明细 + 成本暂估）
+  '{
+    "detail": {
+      "enabled": true,
+      "displayType": "drawer",
+      "title": "{entityName}详情 - {billNo}",
+      "width": "60%",
+      "direction": "rtl",
+      "loadStrategy": "lazy",
+      "tabs": [
+        {
+          "name": "entry",
+          "label": "销售订单明细",
+          "icon": "Document",
+          "type": "table",
+          "dataField": "entryList",
+          "tableName": "t_sale_order_entry",
+          "queryConfig": {
+            "enabled": true,
+            "defaultConditions": [
+              {
+                "field": "fbillno",
+                "operator": "eq",
+                "value": "${FBillNo}",
+                "description": "按订单编号查询明细"
+              }
+            ],
+            "defaultOrderBy": [{"field": "fPlanMaterialId", "direction": "ASC"}]
+          },
+          "table": {
+            "border": true,
+            "stripe": true,
+            "maxHeight": "500",
+            "showOverflowTooltip": true,
+            "columns": [
+              {"prop": "fplanmaterialid", "label": "物料编码", "width": 120, "align": "center", "sortable": true},
+              {"prop": "fplanmaterialname", "label": "物料名称", "width": 180, "align": "left", "showOverflowTooltip": true, "sortable": true},
+              {"prop": "fqty", "label": "数量", "width": 100, "align": "right", "renderType": "number", "sortable": true},
+              {"prop": "fprice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
+              {"prop": "ftaxprice", "label": "含税单价", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
+              {"prop": "fallamount", "label": "金额合计", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
+              {"prop": "fdeliqty", "label": "已交付数量", "width": 100, "align": "right", "renderType": "number", "sortable": true},
+              {"prop": "f_mz", "label": "毛重", "width": 80, "align": "right", "renderType": "number"},
+              {"prop": "f_jz", "label": "净重", "width": 80, "align": "right", "renderType": "number"},
+              {"prop": "f_kpdj", "label": "开票单价", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
+              {"prop": "f_ygcb", "label": "预估成本", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
+              {"prop": "f_hsbm", "label": "海关编码", "width": 100, "align": "center"},
+              {"prop": "f_cplb", "label": "产品类别", "width": 100, "align": "center"}
+            ]
+          }
+        },
+        {
+          "name": "cost",
+          "label": "成本暂估",
+          "icon": "Money",
+          "type": "descriptions",
+          "dataField": "costData",
+          "tableName": "t_sale_order_cost",
+          "queryConfig": {
+            "enabled": true,
+            "defaultConditions": [
+              {
+                "field": "fbillno",
+                "operator": "eq",
+                "value": "${FBillNo}",
+                "description": "按订单编号查询成本"
+              }
+            ],
+            "defaultOrderBy": [{"field": "FID", "direction": "ASC"}]
+          },
+          "columns": 3,
+          "fields": [
+            {"prop": "F_hyf", "label": "海运费 (外币)", "renderType": "currency", "precision": 2},
+            {"prop": "FBillAllAmount", "label": "价税合计", "renderType": "currency", "precision": 2},
+            {"prop": "FBillAllAmount_LC", "label": "价税合计 (本位币)", "renderType": "currency", "precision": 2},
+            {"prop": "F_bxf", "label": "保险费", "renderType": "currency", "precision": 2},
+            {"prop": "F_gwyhfy", "label": "国外银行费用", "renderType": "currency", "precision": 2},
+            {"prop": "F_qtwbfy", "label": "其他外币费用", "renderType": "currency", "precision": 2},
+            {"prop": "F_mxcbhj", "label": "明细成本合计", "renderType": "currency", "precision": 2},
+            {"prop": "F_mxtshj", "label": "明细退税合计", "renderType": "currency", "precision": 2},
+            {"prop": "F_cbxj", "label": "成本小计 RMB", "renderType": "currency", "precision": 2},
+            {"prop": "F_bzf", "label": "包装费", "renderType": "currency", "precision": 2},
+            {"prop": "F_dlf", "label": "代理费", "renderType": "currency", "precision": 2},
+            {"prop": "F_rzf", "label": "认证费", "renderType": "currency", "precision": 2},
+            {"prop": "F_kdf", "label": "快递费成本", "renderType": "currency", "precision": 2},
+            {"prop": "F_hdf", "label": "货贷费", "renderType": "currency", "precision": 2},
+            {"prop": "F_lyf", "label": "陆运费", "renderType": "currency", "precision": 2},
+            {"prop": "F_qtfy", "label": "其他费用", "renderType": "currency", "precision": 2},
+            {"prop": "F_mjf", "label": "模具费", "renderType": "currency", "precision": 2},
+            {"prop": "F_jcf", "label": "进仓费", "renderType": "currency", "precision": 2},
+            {"prop": "F_fyxj", "label": "费用小计", "renderType": "currency", "precision": 2},
+            {"prop": "F_wbyk", "label": "外币盈亏", "renderType": "currency", "precision": 2},
+            {"prop": "F_jlre", "label": "净利润额", "renderType": "currency", "precision": 2},
+            {"prop": "F_lrl", "label": "毛净利润率%", "renderType": "percent", "precision": 2},
+            {"prop": "F_jlrl", "label": "净利润率%", "renderType": "percent", "precision": 2}
+          ]
+        }
+      ]
+    }
+  }',
+  
   1,
   '1',
   '0',
   'admin',
-  '销售订单配置（JSON 强制拆分版）'
+  '销售订单配置（JSON 强制拆分版 - 含详情页配置）'
 );
 
 -- ============================================
@@ -508,7 +611,8 @@ SELECT
   JSON_LENGTH(form_config) AS form_fields,
   JSON_LENGTH(table_config) AS table_columns,
   JSON_LENGTH(dict_config) AS dictionaries,
-  JSON_LENGTH(business_config) AS buttons
+  JSON_LENGTH(business_config) AS buttons,
+  JSON_LENGTH(detail_config) AS detail_tabs
 FROM erp_page_config
 WHERE module_code = 'saleorder';
 
@@ -519,7 +623,8 @@ SELECT
   CONCAT('页面配置字段数：', JSON_LENGTH(JSON_EXTRACT(form_config, '$.fields'))) AS form_fields_count,
   CONCAT('表格列数：', JSON_LENGTH(JSON_EXTRACT(table_config, '$.columns'))) AS table_columns_count,
   CONCAT('字典数量：', JSON_LENGTH(JSON_EXTRACT(dict_config, '$.dicts'))) AS dicts_count,
-  CONCAT('按钮数量：', JSON_LENGTH(JSON_EXTRACT(business_config, '$.buttons'))) AS buttons_count
+  CONCAT('按钮数量：', JSON_LENGTH(JSON_EXTRACT(business_config, '$.buttons'))) AS buttons_count,
+  CONCAT('详情页签数：', JSON_LENGTH(JSON_EXTRACT(detail_config, '$.detail.tabs'))) AS detail_tabs_count
 FROM erp_page_config
 WHERE module_code = 'saleorder';
 
