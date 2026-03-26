@@ -1,0 +1,103 @@
+{
+  "buttons": [
+    {
+      "key": "add",
+      "label": "新增",
+      "icon": "Plus",
+      "permission": "k3:saleorder:add",
+      "type": "primary",
+      "position": "left"
+    },
+    {
+      "key": "edit",
+      "label": "修改",
+      "icon": "Edit",
+      "permission": "k3:saleorder:edit",
+      "type": "success",
+      "position": "left",
+      "disabled": "single"
+    },
+    {
+      "key": "delete",
+      "label": "删除",
+      "icon": "Delete",
+      "permission": "k3:saleorder:remove",
+      "type": "danger",
+      "position": "left",
+      "disabled": "multiple",
+      "confirm": "是否确认删除选中的 {count} 条数据？"
+    },
+    {
+      "key": "audit",
+      "label": "审核",
+      "icon": "CircleCheck",
+      "permission": "k3:saleorder:audit",
+      "type": "success",
+      "position": "left",
+      "disabled": "multiple",
+      "confirm": "是否确认审核选中的 {count} 条数据？"
+    },
+    {
+      "key": "unAudit",
+      "label": "反审核",
+      "icon": "Close",
+      "permission": "k3:saleorder:unAudit",
+      "type": "warning",
+      "position": "left",
+      "disabled": "multiple",
+      "confirm": "是否确认反审核选中的 {count} 条数据？"
+    },
+    {
+      "key": "push",
+      "label": "下推",
+      "icon": "Download",
+      "permission": "k3:saleorder:push",
+      "type": "info",
+      "position": "left",
+      "disabled": "single"
+    },
+    {
+      "key": "export",
+      "label": "导出",
+      "icon": "Download",
+      "permission": "k3:saleorder:export",
+      "type": "warning",
+      "position": "left",
+      "disabled": "multiple"
+    },
+    {
+      "key": "columnSetting",
+      "label": "列设置",
+      "icon": "Setting",
+      "type": "info",
+      "position": "right"
+    }
+  ],
+  "messages": {
+    "selectOne": "请选择一条数据",
+    "confirmDelete": "是否确认删除选中的 {count} 条数据？",
+    "confirmAudit": "是否确认审核选中的 {count} 条数据？",
+    "confirmUnAudit": "是否确认反审核选中的 {count} 条数据？",
+    "success": {
+      "add": "新增成功",
+      "edit": "修改成功",
+      "delete": "删除成功",
+      "audit": "审核成功",
+      "unAudit": "反审核成功"
+    },
+    "error": {
+      "load": "加载数据失败",
+      "save": "保存失败",
+      "delete": "删除失败",
+      "audit": "审核失败",
+      "unAudit": "反审核失败"
+    }
+  },
+  "entityName": "销售订单",
+  "entityNameSingular": "订单",
+  "dialogTitle": {
+    "add": "新增{entityName}",
+    "edit": "修改{entityName}"
+  },
+  "drawerTitle": "{entityName}详情 - {billNo}"
+}

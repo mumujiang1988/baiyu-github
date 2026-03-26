@@ -16,6 +16,7 @@ import com.ruoyi.erp.domain.entity.ErpPageConfig;
 import com.ruoyi.erp.domain.entity.ErpPageConfigHistory;
 import com.ruoyi.erp.domain.vo.ErpPageConfigVo;
 import com.ruoyi.erp.domain.vo.ErpPageConfigHistoryVo;
+import com.ruoyi.erp.event.ConfigRefreshEvent;
 import com.ruoyi.erp.mapper.ErpPageConfigMapper;
 import com.ruoyi.erp.mapper.ErpPageConfigHistoryMapper;
 import com.ruoyi.erp.service.ErpPageConfigService;
@@ -23,10 +24,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +46,9 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
     private final ErpPageConfigMapper pageConfigMapper;
     private final ErpPageConfigHistoryMapper historyMapper;
+    
+    // ✅ 添加事件发布器
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public ErpPageConfigVo selectById(Long configId) {
@@ -122,8 +128,21 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         if (row > 0) {
             // 记录历史版本
             recordHistory(config, bo.getChangeReason());
-            // 清除缓存
+            
+            // ✅ 优化 1：主动清除缓存（而不是等待 TTL）
             CacheUtils.evict(CacheNames.ERP_CONFIG, config.getModuleCode());
+            log.info("✅ 已清除配置缓存，moduleCode: {}, version: {}", 
+                config.getModuleCode(), newVersion);
+            
+            // ✅ 优化 2：广播刷新事件（供其他模块监听处理）
+            try {
+                eventPublisher.publishEvent(
+                    new ConfigRefreshEvent(this, config.getModuleCode(), newVersion)
+                );
+                log.info("📢 已广播配置刷新事件，moduleCode: {}", config.getModuleCode());
+            } catch (Exception e) {
+                log.warn("广播配置刷新事件失败，但不影响主流程", e);
+            }
         }
         
         return row;
@@ -139,7 +158,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             history.setModuleCode(config.getModuleCode());
             history.setConfigType(config.getConfigType());
             history.setVersion(config.getVersion());
-            history.setConfigContent(config.getConfigContent());
+            // 🔧 修复：设置 5 个独立的 JSON 字段
+            history.setPageConfig(config.getPageConfig());
+            history.setFormConfig(config.getFormConfig());
+            history.setTableConfig(config.getTableConfig());
+            history.setDictConfig(config.getDictConfig());
+            history.setBusinessConfig(config.getBusinessConfig());
             history.setChangeReason(changeReason);
             history.setChangeType("UPDATE");
             history.setCreateBy(config.getUpdateBy());
@@ -212,27 +236,54 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             return null;
         }
         
-        String content = config.getConfigContent();
-        
-        log.info("[getPageConfig] 数据库查询成功，configId: {}, moduleCode: {}, configName: {}, version: {}, status: {}, contentLength: {}",
-            config.getConfigId(), 
-            config.getModuleCode(),
-            config.getConfigName(),
-            config.getVersion(),
-            config.getStatus(),
-            content != null ? content.length() : 0);
-        
-        if (content == null || content.trim().isEmpty()) {
-            log.error("[getPageConfig] 配置内容为空！configId: {}, moduleCode: {}", 
-                config.getConfigId(), moduleCode);
+        // 🔧 修复：将 5 个 JSON 字段组合成一个对象返回
+        try {
+            Map<String, Object> result = new HashMap<>();
+            result.put("pageConfig", parseJson(config.getPageConfig()));
+            result.put("formConfig", parseJson(config.getFormConfig()));
+            result.put("tableConfig", parseJson(config.getTableConfig()));
+            result.put("dictionaryConfig", parseJson(config.getDictConfig()));
+            result.put("businessConfig", parseJson(config.getBusinessConfig()));
+            result.put("moduleCode", config.getModuleCode());
+            result.put("configName", config.getConfigName());
+            result.put("version", config.getVersion());
+            
+            String jsonString = JsonUtils.toJsonString(result);
+            
+            log.info("[getPageConfig] 数据库查询成功，configId: {}, moduleCode: {}, configName: {}, version: {}, status: {}, combinedJsonLength: {}",
+                config.getConfigId(), 
+                config.getModuleCode(),
+                config.getConfigName(),
+                config.getVersion(),
+                config.getStatus(),
+                jsonString != null ? jsonString.length() : 0);
+            
+            // 放入缓存 (TTL: 1 小时 - 已在 CacheNames.ERP_CONFIG 中定义)
+            CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, jsonString);
+            log.info("[getPageConfig] 已放入缓存，moduleCode: {}", moduleCode);
+            
+            return jsonString;
+        } catch (Exception e) {
+            log.error("[getPageConfig] 组合 JSON 失败", e);
+            throw new ServiceException("配置解析失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 解析 JSON 字符串为对象
+     * @param jsonStr JSON 字符串
+     * @return 解析后的对象，如果为空则返回 null
+     */
+    private Object parseJson(String jsonStr) {
+        if (jsonStr == null || jsonStr.trim().isEmpty()) {
             return null;
         }
-        
-        // 放入缓存 (TTL: 1 小时 - 已在 CacheNames.ERP_CONFIG 中定义)
-        CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, content);
-        log.info("[getPageConfig] 已放入缓存，moduleCode: {}", moduleCode);
-        
-        return content;
+        try {
+            return JsonUtils.parseObject(jsonStr, Object.class);
+        } catch (Exception e) {
+            log.error("[parseJson] JSON 解析失败：{}", jsonStr, e);
+            return null;
+        }
     }
 
     @Override
@@ -322,7 +373,11 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             }
             
             // 3. 更新配置内容为目标版本
-            currentConfig.setConfigContent(targetVersionHistory.getConfigContent());
+            currentConfig.setPageConfig(targetVersionHistory.getPageConfig());
+            currentConfig.setFormConfig(targetVersionHistory.getFormConfig());
+            currentConfig.setTableConfig(targetVersionHistory.getTableConfig());
+            currentConfig.setDictConfig(targetVersionHistory.getDictConfig());
+            currentConfig.setBusinessConfig(targetVersionHistory.getBusinessConfig());
             currentConfig.setVersion(currentConfig.getVersion() + 1); // 版本号 +1
             
             int updateCount = pageConfigMapper.updateById(currentConfig);
@@ -336,7 +391,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             rollbackHistory.setModuleCode(currentConfig.getModuleCode());
             rollbackHistory.setConfigType(currentConfig.getConfigType());
             rollbackHistory.setVersion(currentConfig.getVersion());
-            rollbackHistory.setConfigContent(targetVersionHistory.getConfigContent());
+            // 🔧 修复：设置 5 个独立的 JSON 字段
+            rollbackHistory.setPageConfig(targetVersionHistory.getPageConfig());
+            rollbackHistory.setFormConfig(targetVersionHistory.getFormConfig());
+            rollbackHistory.setTableConfig(targetVersionHistory.getTableConfig());
+            rollbackHistory.setDictConfig(targetVersionHistory.getDictConfig());
+            rollbackHistory.setBusinessConfig(targetVersionHistory.getBusinessConfig());
             rollbackHistory.setChangeReason(reason != null ? reason : "回滚到版本 v" + targetVersion);
             rollbackHistory.setChangeType("ROLLBACK");
             rollbackHistory.setCreateBy(currentConfig.getUpdateBy());
@@ -370,8 +430,14 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 java.net.URLEncoder.encode(config.getModuleCode() + "_config.json", "UTF-8"));
             
             // 3. 写入 JSON 数据
-            String jsonContent = config.getConfigContent();
-            response.getWriter().write(jsonContent);
+            // 🔧 修复：组合 5 个字段为 JSON 对象
+            Map<String, Object> jsonContent = new HashMap<>();
+            jsonContent.put("pageConfig", parseJson(config.getPageConfig()));
+            jsonContent.put("formConfig", parseJson(config.getFormConfig()));
+            jsonContent.put("tableConfig", parseJson(config.getTableConfig()));
+            jsonContent.put("dictionaryConfig", parseJson(config.getDictConfig()));
+            jsonContent.put("businessConfig", parseJson(config.getBusinessConfig()));
+            response.getWriter().write(JsonUtils.toJsonString(jsonContent));
             response.getWriter().flush();
             
             log.info("[exportConfig] 导出成功，moduleCode: {}", config.getModuleCode());
@@ -391,8 +457,8 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             String content = new String(file.getBytes(), "UTF-8");
             
             // 2. 解析 JSON 并验证格式
-            Object jsonConfig = JsonUtils.parseObject(content, Object.class);
-            if (jsonConfig == null) {
+            Object parsedJson = JsonUtils.parseObject(content, Object.class);
+            if (parsedJson == null) {
                 throw new ServiceException("JSON 格式错误");
             }
             
@@ -404,7 +470,21 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             bo.setModuleCode(moduleCode);
             bo.setConfigName("导入的配置 - " + System.currentTimeMillis());
             bo.setConfigType("PAGE");
-            bo.setConfigContent(content);
+            // 🔧 修复：解析 JSON 并设置 5 个字段
+            try {
+                if (parsedJson instanceof Map) {
+                    Map<String, Object> configMap = (Map<String, Object>) parsedJson;
+                    bo.setPageConfig(JsonUtils.toJsonString(configMap.get("pageConfig")));
+                    bo.setFormConfig(JsonUtils.toJsonString(configMap.get("formConfig")));
+                    bo.setTableConfig(JsonUtils.toJsonString(configMap.get("tableConfig")));
+                    bo.setDictConfig(JsonUtils.toJsonString(configMap.get("dictionaryConfig")));
+                    bo.setBusinessConfig(JsonUtils.toJsonString(configMap.get("businessConfig")));
+                }
+            } catch (Exception e) {
+                log.warn("解析导入的 JSON 失败，将使用原始字符串", e);
+                // 如果解析失败，将整个内容作为 pageConfig
+                bo.setPageConfig(content);
+            }
             bo.setStatus("1");
             bo.setIsPublic("0");
             bo.setRemark("通过导入功能创建");
@@ -436,7 +516,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             newConfig.setModuleCode(originalConfig.getModuleCode() + "_copy_" + System.currentTimeMillis());
             newConfig.setConfigName(originalConfig.getConfigName() + " (副本)");
             newConfig.setConfigType(originalConfig.getConfigType());
-            newConfig.setConfigContent(originalConfig.getConfigContent());
+            // 🔧 修复：复制 5 个字段
+            newConfig.setPageConfig(originalConfig.getPageConfig());
+            newConfig.setFormConfig(originalConfig.getFormConfig());
+            newConfig.setTableConfig(originalConfig.getTableConfig());
+            newConfig.setDictConfig(originalConfig.getDictConfig());
+            newConfig.setBusinessConfig(originalConfig.getBusinessConfig());
             newConfig.setStatus("1");
             newConfig.setIsPublic("0");
             newConfig.setRemark("复制自配置 ID: " + configId);

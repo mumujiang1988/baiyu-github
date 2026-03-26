@@ -52,10 +52,34 @@ public class ErpPageConfigVo implements Serializable {
     private String configType;
 
     /**
-     * 完整的 JSON 配置内容
+     * 页面基础配置 (page.json)
      */
-    @ExcelProperty(value = "配置内容")
-    private String configContent;
+    @ExcelProperty(value = "页面配置")
+    private String pageConfig;
+
+    /**
+     * 表单 UI 组件配置 (form.json)
+     */
+    @ExcelProperty(value = "表单配置")
+    private String formConfig;
+
+    /**
+     * 表格查询配置 (table.json)
+     */
+    @ExcelProperty(value = "表格配置")
+    private String tableConfig;
+
+    /**
+     * 字典数据源配置 (dict.json)
+     */
+    @ExcelProperty(value = "字典配置")
+    private String dictConfig;
+
+    /**
+     * 业务规则配置 (config.json)
+     */
+    @ExcelProperty(value = "业务配置")
+    private String businessConfig;
 
     /**
      * 版本号

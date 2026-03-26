@@ -54,7 +54,34 @@ public class ConfigParser {
         if (config == null) {
             throw new ErpConfigException(moduleCode, "CONFIG_NOT_FOUND", "配置不存在");
         }
-        return JSON.parseObject(config.getConfigContent());
+        // 🔧 修复：组合 5 个 JSON 字段为一个对象
+        JSONObject result = new JSONObject();
+        result.put("pageConfig", parseJson(config.getPageConfig()));
+        result.put("formConfig", parseJson(config.getFormConfig()));
+        result.put("tableConfig", parseJson(config.getTableConfig()));
+        result.put("dictionaryConfig", parseJson(config.getDictConfig()));
+        result.put("businessConfig", parseJson(config.getBusinessConfig()));
+        result.put("moduleCode", config.getModuleCode());
+        result.put("configName", config.getConfigName());
+        result.put("version", config.getVersion());
+        return result;
+    }
+    
+    /**
+     * 解析 JSON 字符串为对象
+     * @param jsonStr JSON 字符串
+     * @return 解析后的对象，如果为空则返回 null
+     */
+    private Object parseJson(String jsonStr) {
+        if (jsonStr == null || jsonStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return JSON.parse(jsonStr);
+        } catch (Exception e) {
+            log.error("[parseJson] JSON 解析失败：{}", jsonStr, e);
+            return null;
+        }
     }
     
     /**

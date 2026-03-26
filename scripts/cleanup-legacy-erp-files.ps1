@@ -71,14 +71,14 @@ foreach ($file in $filesToDelete) {
     if (Test-Path $file) {
         try {
             Remove-Item $file -Force
-            Write-Host "✅ 已删除：$file" -ForegroundColor Gray
+            Write-Host " 已删除：$file" -ForegroundColor Gray
             $deletedCount++
         } catch {
             Write-Host "❌ 删除失败：$file - $_" -ForegroundColor Red
             $errorCount++
         }
     } else {
-        Write-Host "⚠️  文件不存在：$file" -ForegroundColor DarkGray
+        Write-Host "  文件不存在：$file" -ForegroundColor DarkGray
     }
 }
 
@@ -88,14 +88,14 @@ foreach ($file in $xmlMappers) {
     if (Test-Path $file) {
         try {
             Remove-Item $file -Force
-            Write-Host "✅ 已删除：$file" -ForegroundColor Gray
+            Write-Host " 已删除：$file" -ForegroundColor Gray
             $deletedCount++
         } catch {
             Write-Host "❌ 删除失败：$file - $_" -ForegroundColor Red
             $errorCount++
         }
     } else {
-        Write-Host "⚠️  文件不存在：$file" -ForegroundColor DarkGray
+        Write-Host "  文件不存在：$file" -ForegroundColor DarkGray
     }
 }
 
@@ -112,23 +112,23 @@ foreach ($dir in $emptyDirs) {
         if ($files.Count -eq 0) {
             try {
                 Remove-Item $dir -Force -Recurse
-                Write-Host "✅ 已删除空目录：$dir" -ForegroundColor Gray
+                Write-Host " 已删除空目录：$dir" -ForegroundColor Gray
             } catch {
                 Write-Host "❌ 删除目录失败：$dir - $_" -ForegroundColor Red
                 $errorCount++
             }
         } else {
-            Write-Host "⚠️  目录非空，保留：$dir" -ForegroundColor DarkGray
+            Write-Host "  目录非空，保留：$dir" -ForegroundColor DarkGray
         }
     }
 }
 
 Write-Host "`n=== 清理完成 ===" -ForegroundColor Cyan
-Write-Host "✅ 成功删除：$deletedCount 个文件" -ForegroundColor Green
+Write-Host " 成功删除：$deletedCount 个文件" -ForegroundColor Green
 Write-Host "❌ 失败：$errorCount 个文件" -ForegroundColor $(if ($errorCount -eq 0) { "Green" } else { "Red" })
 
 if ($deletedCount -gt 0) {
-    Write-Host "`n⚠️  重要提示：" -ForegroundColor Yellow
+    Write-Host "`n  重要提示：" -ForegroundColor Yellow
     Write-Host "1. 请重新编译项目以确保没有引用错误" -ForegroundColor White
     Write-Host "2. 检查是否有其他文件引用了这些已删除的类" -ForegroundColor White
     Write-Host "3. 如果需要恢复，可以从 Git 历史中找回" -ForegroundColor White

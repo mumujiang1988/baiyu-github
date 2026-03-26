@@ -1,0 +1,246 @@
+{
+  "tableName": "t_sale_order",
+  "primaryKey": "id",
+  "queryBuilder": {
+    "enabled": true,
+    "fields": [
+      {
+        "field": "FDate",
+        "label": "日期区间",
+        "component": "daterange",
+        "op": "between",
+        "props": {
+          "startPlaceholder": "开始日期",
+          "endPlaceholder": "结束日期",
+          "valueFormat": "YYYY-MM-DD",
+          "style": { "width": "240px" }
+        },
+        "defaultValue": "currentMonth"
+      },
+      {
+        "field": "FBillNo",
+        "label": "单据编号",
+        "component": "input",
+        "op": "right_like",
+        "props": {
+          "placeholder": "输入单据编号",
+          "clearable": true,
+          "prefixIcon": "Search",
+          "style": { "width": "180px" }
+        }
+      },
+      {
+        "field": "F_ora_BaseProperty",
+        "label": "客户简称",
+        "component": "input",
+        "op": "like",
+        "props": {
+          "placeholder": "输入客户简称",
+          "clearable": true,
+          "prefixIcon": "User",
+          "style": { "width": "150px" }
+        }
+      },
+      {
+        "field": "FSalerId",
+        "label": "销售员",
+        "component": "select",
+        "op": "eq",
+        "dictionary": "salespersons",
+        "props": {
+          "placeholder": "选择销售员",
+          "clearable": true,
+          "filterable": true,
+          "style": { "width": "120px" }
+        }
+      },
+      {
+        "field": "orderStatus",
+        "label": "订单状态",
+        "component": "select",
+        "op": "eq",
+        "dictionary": "orderStatus",
+        "props": {
+          "placeholder": "选择状态",
+          "clearable": true,
+          "style": { "width": "100px" }
+        }
+      },
+      {
+        "field": "FDocumentStatus",
+        "label": "单据状态",
+        "component": "select",
+        "op": "eq",
+        "dictionary": "documentStatus",
+        "props": {
+          "placeholder": "选择单据状态",
+          "clearable": true,
+          "filterable": true,
+          "style": { "width": "120px" }
+        }
+      }
+    ],
+    "defaultConditions": [
+      {
+        "field": "FDate",
+        "operator": "between",
+        "value": ["${startDate}", "${endDate}"],
+        "description": "日期范围查询"
+      },
+      {
+        "field": "FBillNo",
+        "operator": "right_like",
+        "value": "${billNo}",
+        "description": "单据编号右模糊查询"
+      },
+      {
+        "field": "F_ora_BaseProperty",
+        "operator": "like",
+        "value": "${customerName}",
+        "description": "客户简称模糊查询"
+      },
+      {
+        "field": "FSalerId",
+        "operator": "eq",
+        "value": "${salerId}",
+        "description": "销售员精确匹配"
+      },
+      {
+        "field": "orderStatus",
+        "operator": "eq",
+        "value": "${status}",
+        "description": "订单状态精确匹配"
+      },
+      {
+        "field": "FDocumentStatus",
+        "operator": "eq",
+        "value": "${docStatus}",
+        "description": "单据状态精确匹配"
+      }
+    ],
+    "defaultOrderBy": [
+      {
+        "field": "FCreateDate",
+        "direction": "DESC"
+      }
+    ]
+  },
+  "columns": [
+    {
+      "type": "selection",
+      "width": 55,
+      "fixed": "left",
+      "resizable": false
+    },
+    {
+      "type": "expand",
+      "width": 100,
+      "fixed": "left",
+      "resizable": false,
+      "label": "详情"
+    },
+    {
+      "prop": "FBillNo",
+      "label": "单据编号",
+      "width": 150,
+      "fixed": "left",
+      "align": "left",
+      "visible": true,
+      "resizable": true,
+      "renderType": "text"
+    },
+    {
+      "prop": "F_ora_BaseProperty",
+      "label": "客户简称",
+      "width": 150,
+      "fixed": "left",
+      "align": "left",
+      "visible": true,
+      "resizable": true
+    },
+    {
+      "prop": "orderStatus",
+      "label": "订单状态",
+      "width": 120,
+      "align": "center",
+      "visible": true,
+      "renderType": "tag",
+      "dictionary": "orderStatus"
+    },
+    {
+      "prop": "FDocumentStatus",
+      "label": "单据状态",
+      "width": 140,
+      "align": "center",
+      "visible": true,
+      "renderType": "tag",
+      "dictionary": "documentStatus"
+    },
+    {
+      "prop": "FDate",
+      "label": "销售合同日期",
+      "width": 140,
+      "align": "center",
+      "visible": true,
+      "renderType": "date",
+      "format": "YYYY-MM-DD"
+    },
+    {
+      "prop": "FSalerId",
+      "label": "销售员",
+      "width": 120,
+      "align": "left",
+      "visible": true,
+      "renderType": "text",
+      "dictionary": "salespersons"
+    },
+    {
+      "prop": "FBillAmount",
+      "label": "订单金额",
+      "width": 140,
+      "align": "right",
+      "visible": true,
+      "renderType": "currency",
+      "precision": 2
+    },
+    {
+      "prop": "FBillTaxAmount",
+      "label": "税额",
+      "width": 100,
+      "align": "right",
+      "visible": true,
+      "renderType": "currency",
+      "precision": 2
+    },
+    {
+      "prop": "FSettleCurrId",
+      "label": "结算币别",
+      "width": 140,
+      "align": "center",
+      "visible": true,
+      "renderType": "text",
+      "dictionary": "currency"
+    },
+    {
+      "prop": "FCreateDate",
+      "label": "创建时间",
+      "width": 160,
+      "align": "center",
+      "visible": true,
+      "renderType": "datetime",
+      "format": "YYYY-MM-DD HH:mm:ss"
+    },
+    {
+      "prop": "FCreatorId",
+      "label": "创建人",
+      "width": 100,
+      "align": "left",
+      "visible": true,
+      "renderType": "text"
+    }
+  ],
+  "pagination": {
+    "defaultPageSize": 10,
+    "pageSizeOptions": [10, 20, 50, 100]
+  }
+}

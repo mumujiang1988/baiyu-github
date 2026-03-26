@@ -84,7 +84,7 @@ redisson:
     # 发布和订阅连接池大小
     subscriptionConnectionPoolSize: 50
     # 密码（如无密码则设为空字符串）
-    password: "difyai123456"
+    password: difyai123456
 
 --- # mail 邮件发送
 mail:

@@ -2,28 +2,28 @@
 
 **修改时间**: 2026-03-25  
 **修改文件**: `business.config.template.refactored.json`  
-**修改状态**: ✅ **已完成**
+**修改状态**:  **已完成**
 
 ---
 
-## ✅ 已完成的修改
+##  已完成的修改
 
 ### 修改的字典配置（7 个）
 
 | # | 字典名称 | 表名 | 状态 |
 |---|---------|------|------|
-| 1 | salespersons | sys_user | ✅ 已修改 |
-| 2 | currency | bymaterial_dictionary | ✅ 已修改 |
-| 3 | paymentTerms | bymaterial_dictionary | ✅ 已修改 |
-| 4 | tradeType | bymaterial_dictionary | ✅ 已修改 |
-| 5 | customers | bd_customer | ✅ 已修改 |
-| 6 | materials | by_material | ✅ 已修改 |
-| 7 | productCategory | bymaterial_dictionary | ✅ 已修改 |
+| 1 | salespersons | sys_user |  已修改 |
+| 2 | currency | bymaterial_dictionary |  已修改 |
+| 3 | paymentTerms | bymaterial_dictionary |  已修改 |
+| 4 | tradeType | bymaterial_dictionary |  已修改 |
+| 5 | customers | bd_customer |  已修改 |
+| 6 | materials | by_material |  已修改 |
+| 7 | productCategory | bymaterial_dictionary |  已修改 |
 
 **保留的配置**:
-- ✅ nation - remote 类型（无需修改）
-- ✅ orderStatus - static 类型（无需修改）
-- ✅ documentStatus - static 类型（无需修改）
+-  nation - remote 类型（无需修改）
+-  orderStatus - static 类型（无需修改）
+-  documentStatus - static 类型（无需修改）
 
 ---
 
@@ -83,10 +83,10 @@
 ```
 
 **新增内容**:
-- ✅ tableName: `sys_user`
-- ✅ queryConfig: 查询条件（deleted IS NULL, 按 nick_name 升序）
-- ✅ fieldMapping: 字段映射（nick_name → label, user_id → value）
-- ✅ API 路径更新为 `/data` 后缀
+-  tableName: `sys_user`
+-  queryConfig: 查询条件（deleted IS NULL, 按 nick_name 升序）
+-  fieldMapping: 字段映射（nick_name → label, user_id → value）
+-  API 路径更新为 `/data` 后缀
 
 ---
 
@@ -403,15 +403,15 @@ ORDER BY name ASC
 
 | 特性 | 修改前 | 修改后 | 提升 |
 |------|--------|--------|------|
-| **表名定义** | ❌ 无 | ✅ 明确指定 | +100% |
-| **查询条件** | ❌ 无 | ✅ 完整配置 | +100% |
-| **字段映射** | ⚠️ 部分 | ✅ 完整配置 | +50% |
-| **排序规则** | ❌ 无 | ✅ 明确指定 | +100% |
-| **复用 Service** | ❌ 否 | ✅ 是 | +100% |
+| **表名定义** | ❌ 无 |  明确指定 | +100% |
+| **查询条件** | ❌ 无 |  完整配置 | +100% |
+| **字段映射** |  部分 |  完整配置 | +50% |
+| **排序规则** | ❌ 无 |  明确指定 | +100% |
+| **复用 Service** | ❌ 否 |  是 | +100% |
 
 ---
 
-## ✅ 验证清单
+##  验证清单
 
 ### 1. JSON 格式验证
 
@@ -420,31 +420,31 @@ ORDER BY name ASC
 node -e "console.log(JSON.parse(require('fs').readFileSync('business.config.template.refactored.json')))"
 ```
 
-**期望**: ✅ 解析成功，无语法错误
+**期望**:  解析成功，无语法错误
 
 ---
 
 ### 2. 配置完整性检查
 
 检查每个字典是否包含：
-- ✅ type 字段
-- ✅ tableName 字段
-- ✅ queryConfig 字段
-- ✅ fieldMapping 字段
-- ✅ config.api 字段（包含 /data 后缀）
+-  type 字段
+-  tableName 字段
+-  queryConfig 字段
+-  fieldMapping 字段
+-  config.api 字段（包含 /data 后缀）
 
-**结果**: ✅ 全部符合
+**结果**:  全部符合
 
 ---
 
 ### 3. 字段名一致性检查
 
 **检查项**:
-- ✅ 数据库字段使用小写 + 下划线（如：nick_name）
-- ✅ 前端字段使用驼峰命名（如：nickName）
-- ✅ 大小写转换在 mapDictionaryFields() 中处理
+-  数据库字段使用小写 + 下划线（如：nick_name）
+-  前端字段使用驼峰命名（如：nickName）
+-  大小写转换在 mapDictionaryFields() 中处理
 
-**结果**: ✅ 符合规范
+**结果**:  符合规范
 
 ---
 
@@ -457,7 +457,7 @@ cd baiyu-ruoyi/ruoyi-modules/ruoyi-erp-api
 mvn clean compile
 ```
 
-**期望**: ✅ 编译成功
+**期望**:  编译成功
 
 ---
 
@@ -525,19 +525,19 @@ curl -X GET "http://localhost:8080/erp/engine/dictionary/customers/data?moduleCo
 2. **打开销售订单页面**
    - 访问：http://localhost:80/vms/saleorder
    - 检查下拉框:
-     - ✅ 销售员下拉框显示选项
-     - ✅ 币别下拉框显示选项
-     - ✅ 客户下拉框显示选项
-     - ✅ 付款条件下拉框显示选项
-     - ✅ 贸易方式下拉框显示选项
-     - ✅ 物料下拉框显示选项
-     - ✅ 产品类别下拉框显示选项
+     -  销售员下拉框显示选项
+     -  币别下拉框显示选项
+     -  客户下拉框显示选项
+     -  付款条件下拉框显示选项
+     -  贸易方式下拉框显示选项
+     -  物料下拉框显示选项
+     -  产品类别下拉框显示选项
 
 3. **浏览器控制台日志**
    ```
-   ✅ 字典数据加载成功：salespersons, 共 15 条
-   ✅ 字典数据加载成功：currency, 共 5 条
-   ✅ 字典数据加载成功：customers, 共 20 条
+    字典数据加载成功：salespersons, 共 15 条
+    字典数据加载成功：currency, 共 5 条
+    字典数据加载成功：customers, 共 20 条
    ```
 
 ---
@@ -552,9 +552,9 @@ curl -X GET "http://localhost:8080/erp/engine/dictionary/customers/data?moduleCo
 - ❌ 需要维护 7 个类
 
 **修改后**:
-- ✅ 直接复用 SuperDataPermissionServiceImpl
-- ✅ 配置驱动，无需 Java 代码
-- ✅ 只需维护 1 个通用接口
+-  直接复用 SuperDataPermissionServiceImpl
+-  配置驱动，无需 Java 代码
+-  只需维护 1 个通用接口
 
 ---
 
@@ -575,10 +575,10 @@ curl -X GET "http://localhost:8080/erp/engine/dictionary/customers/data?moduleCo
 ### 3. 易于维护
 
 **优势**:
-- ✅ 统一的查询逻辑
-- ✅ 统一的 SQL 生成
-- ✅ 统一的错误处理
-- ✅ 统一的代码风格
+-  统一的查询逻辑
+-  统一的 SQL 生成
+-  统一的错误处理
+-  统一的代码风格
 
 ---
 
@@ -606,20 +606,20 @@ curl -X GET "http://localhost:8080/erp/engine/dictionary/customers/data?moduleCo
 
 ---
 
-## ✅ 总结
+##  总结
 
 ### 已完成的工作
 
-1. ✅ 后端接口实现（ErpEngineController.java）
-2. ✅ 字段映射工具方法（mapDictionaryFields）
-3. ✅ JSON 配置修改（7 个字典配置）
+1.  后端接口实现（ErpEngineController.java）
+2.  字段映射工具方法（mapDictionaryFields）
+3.  JSON 配置修改（7 个字典配置）
 
 ### 总体进度
 
 | 阶段 | 状态 | 完成度 |
 |------|------|--------|
-| **Phase 1: 后端实现** | ✅ 完成 | 100% |
-| **Phase 2: 配置修改** | ✅ 完成 | 100% |
+| **Phase 1: 后端实现** |  完成 | 100% |
+| **Phase 2: 配置修改** |  完成 | 100% |
 | **Phase 3: 测试验证** | ⏳ 待开始 | 0% |
 
 **总体进度**: **67%** (2/3 完成) 🚀
@@ -628,5 +628,5 @@ curl -X GET "http://localhost:8080/erp/engine/dictionary/customers/data?moduleCo
 
 **修改人员**: AI Assistant  
 **修改日期**: 2026-03-25  
-**状态**: ✅ **配置修改已完成**  
+**状态**:  **配置修改已完成**  
 **下一步**: 测试验证

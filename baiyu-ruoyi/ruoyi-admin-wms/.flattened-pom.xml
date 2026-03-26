@@ -71,6 +71,10 @@
       <artifactId>ruoyi-system</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.ruoyi</groupId>
+      <artifactId>ruoyi-erp-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.minio</groupId>
       <artifactId>minio</artifactId>
       <version>8.5.7</version>

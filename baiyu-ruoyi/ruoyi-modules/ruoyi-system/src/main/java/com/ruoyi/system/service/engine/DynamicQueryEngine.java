@@ -75,7 +75,7 @@ public class DynamicQueryEngine {
                     continue;
                 }
 
-                // ✅ 字段白名单校验,防止SQL注入
+                //  字段白名单校验,防止SQL注入
                 if (!isValidField(field)) {
                     log.warn("非法字段访问尝试: {}", field);
                     continue;

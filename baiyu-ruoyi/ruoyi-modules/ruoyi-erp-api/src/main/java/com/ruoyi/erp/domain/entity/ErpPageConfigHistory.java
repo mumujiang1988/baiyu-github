@@ -52,10 +52,34 @@ public class ErpPageConfigHistory implements Serializable {
     private Integer version;
 
     /**
-     * 完整的 JSON 配置
+     * 页面配置快照 (page.json)
      */
-    @TableField("config_content")
-    private String configContent;
+    @TableField("page_config")
+    private String pageConfig;
+
+    /**
+     * 表单配置快照 (form.json)
+     */
+    @TableField("form_config")
+    private String formConfig;
+
+    /**
+     * 表格配置快照 (table.json)
+     */
+    @TableField("table_config")
+    private String tableConfig;
+
+    /**
+     * 字典配置快照 (dict.json)
+     */
+    @TableField("dict_config")
+    private String dictConfig;
+
+    /**
+     * 业务配置快照 (config.json)
+     */
+    @TableField("business_config")
+    private String businessConfig;
 
     /**
      * 变更原因

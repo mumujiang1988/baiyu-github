@@ -11,8 +11,8 @@
 ```javascript
 // 前端控制台报错
 ❌ 从配置构建字典完成，共 0 个  // 应该是 10 个
-⚠️ 字典未注册：salespersons
-⚠️ 字典未注册：orderStatus
+ 字典未注册：salespersons
+ 字典未注册：orderStatus
 ```
 
 ### 根本原因
@@ -29,7 +29,7 @@ Value: "\x00\x00\x00\x00\x00\x00\x00\x00\xd7m\x00\x00\"{\\\"pageConfig\\\":{...}
 
 ---
 
-## ✅ 优化方案
+##  优化方案
 
 ### 修改的文件
 `d:\baiyuyunma\baiyu-github\baiyu-github\baiyu-ruoyi\ruoyi-common\ruoyi-common-redis\src\main\java\com\ruoyi\common\redis\config\RedisConfig.java`
@@ -45,11 +45,11 @@ CompositeCodec codec = new CompositeCodec(StringCodec.INSTANCE, jsonCodec, jsonC
 
 **修改后**：
 ```java
-// ✅ 创建纯 JSON 序列化器，避免 FST 二进制格式
+//  创建纯 JSON 序列化器，避免 FST 二进制格式
 // 使用 TypedJsonJacksonCodec 确保前后端都能解析
 TypedJsonJacksonCodec jsonCodec = new TypedJsonJacksonCodec(Object.class, om);
 
-// ✅ 组合序列化：key 使用 String，value 使用纯 JSON 格式
+//  组合序列化：key 使用 String，value 使用纯 JSON 格式
 // 这样前端可以直接 JSON.parse() 解析，不会有二进制前缀
 CompositeCodec codec = new CompositeCodec(
     StringCodec.INSTANCE,  // Key: 纯字符串
@@ -66,13 +66,13 @@ CompositeCodec codec = new CompositeCodec(
 
 | 维度 | FST 序列化 | JSON 序列化 | 选择 |
 |------|-----------|------------|------|
-| **格式** | 二进制 | 文本 | ✅ JSON |
-| **可读性** | ❌ 不可读 | ✅ 人类可读 | ✅ JSON |
-| **跨语言** | ❌ 仅 Java | ✅ 所有语言 | ✅ JSON |
-| **前端解析** | ❌ 无法解析 | ✅ JSON.parse() | ✅ JSON |
-| **性能** | ✅ 稍快 | ⚠️ 稍慢 | FST |
-| **兼容性** | ❌ 版本敏感 | ✅ 向后兼容 | ✅ JSON |
-| **调试** | ❌ 困难 | ✅ 容易 | ✅ JSON |
+| **格式** | 二进制 | 文本 |  JSON |
+| **可读性** | ❌ 不可读 |  人类可读 |  JSON |
+| **跨语言** | ❌ 仅 Java |  所有语言 |  JSON |
+| **前端解析** | ❌ 无法解析 |  JSON.parse() |  JSON |
+| **性能** |  稍快 |  稍慢 | FST |
+| **兼容性** | ❌ 版本敏感 |  向后兼容 |  JSON |
+| **调试** | ❌ 困难 |  容易 |  JSON |
 
 ### 为什么选择 JSON 序列化？
 
@@ -177,14 +177,14 @@ INFO  c.r.c.redis.config.RedisConfig - 初始化 redis 配置
 
 # 访问时应该看到
 INFO  从数据库加载配置：saleorder
-INFO  ✅ 字典数据加载成功：salespersons, 共 X 条
+INFO   字典数据加载成功：salespersons, 共 X 条
 ```
 
 ---
 
 ## 📋 实施步骤
 
-### 步骤 1: 修改代码 ✅
+### 步骤 1: 修改代码 
 已完成
 
 ### 步骤 2: 重新编译后端
@@ -219,19 +219,19 @@ redis-cli -h localhost -p 6379 -a difyai123456 DEL "erp_config" "{erp_config}:re
 
 ### 修改后的优势
 
-1. **✅ 前端可以正常解析**
+1. ** 前端可以正常解析**
    - 不再有 `\x00` 二进制前缀
    - `JSON.parse()` 可以直接工作
 
-2. **✅ 易于调试**
+2. ** 易于调试**
    - 可以用 `redis-cli` 直接查看内容
    - 日志中可以看到完整的数据
 
-3. **✅ 跨语言兼容**
+3. ** 跨语言兼容**
    - JavaScript、Python、Go 等都能读取
    - 便于微服务架构扩展
 
-4. **✅ 版本兼容**
+4. ** 版本兼容**
    - 不同版本的 Redisson 都能正常工作
    - 避免了序列化版本冲突
 
@@ -299,7 +299,7 @@ public RedissonAutoConfigurationCustomizer redissonCustomizer() {
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
         
-        // ✅ 纯 JSON 序列化
+        //  纯 JSON 序列化
         TypedJsonJacksonCodec jsonCodec = new TypedJsonJacksonCodec(Object.class, om);
         CompositeCodec codec = new CompositeCodec(
             StringCodec.INSTANCE,
@@ -323,10 +323,10 @@ public RedissonAutoConfigurationCustomizer redissonCustomizer() {
 
 本次优化将 Redis 序列化方式统一为 **纯 JSON 格式**，彻底解决了：
 
-1. ✅ **FST 二进制前缀问题** - 前端可以正常解析
-2. ✅ **跨语言兼容问题** - 所有语言都能读取
-3. ✅ **调试困难问题** - 可以直接查看缓存内容
-4. ✅ **版本冲突问题** - 不同 Redisson 版本兼容
+1.  **FST 二进制前缀问题** - 前端可以正常解析
+2.  **跨语言兼容问题** - 所有语言都能读取
+3.  **调试困难问题** - 可以直接查看缓存内容
+4.  **版本冲突问题** - 不同 Redisson 版本兼容
 
 虽然性能略有下降（约 60%），但对于配置数据场景（低频访问、小数据量），这个影响完全可以忽略。
 

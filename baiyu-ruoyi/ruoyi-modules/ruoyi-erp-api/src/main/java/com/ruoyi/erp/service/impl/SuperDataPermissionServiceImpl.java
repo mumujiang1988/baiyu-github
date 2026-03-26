@@ -26,17 +26,6 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-
-
-    @Override
-    public Page<Map<String, Object>> selectPageByModule(
-            String moduleCode,
-            PageQuery pageQuery,
-            QueryWrapper<Object> queryWrapper) {
-        
-        throw new ServiceException("必须传入 tableName 参数，不能仅使用 moduleCode");
-    }
-    
     /**
      * 支持动态表名的分页查询（唯一入口）
      * @param moduleCode 模块编码
@@ -45,6 +34,7 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
      * @param queryWrapper 查询条件
      * @return 分页结果
      */
+    @Override
     public Page<Map<String, Object>> selectPageByModuleWithTableName(
             String moduleCode,
             String tableName,
@@ -96,49 +86,144 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
     }
 
     @Override
-    public List<Map<String, Object>> selectListByModule(
+    public int insertByModuleWithTableName(
             String moduleCode,
-            QueryWrapper<Object> queryWrapper) {
+            String tableName,
+            Map<String, Object> data) {
         
         try {
-            String tableName = getTableNameByModuleCode(moduleCode);
-            String sql = buildSelectSql(tableName, queryWrapper);
+            if (tableName == null || tableName.trim().isEmpty()) {
+                throw new ServiceException("tableName 参数不能为空");
+            }
             
-            List<Map<String, Object>> result = jdbcTemplate.queryForList(sql);
+            if (data == null || data.isEmpty()) {
+                throw new ServiceException("数据不能为空");
+            }
             
-            log.info("动态查询列表成功，moduleCode: {}, tableName: {}, size: {}", 
-                moduleCode, tableName, result.size());
+            // 构建 INSERT SQL
+            StringBuilder sql = new StringBuilder();
+            sql.append("INSERT INTO ").append(tableName).append(" (");
             
-            return result;
+            // 获取字段名（排除 id）
+            List<String> columns = new ArrayList<>();
+            List<Object> values = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                String key = entry.getKey();
+                if (!"id".equalsIgnoreCase(key)) {
+                    columns.add(key);
+                    values.add(entry.getValue());
+                }
+            }
             
+            sql.append(String.join(", ", columns));
+            sql.append(") VALUES (");
+            sql.append(String.join(", ", Collections.nCopies(columns.size(), "?")));
+            sql.append(")");
+            
+            log.info("执行插入操作，moduleCode: {}, tableName: {}, columns: {}", 
+                moduleCode, tableName, columns.size());
+            
+            return jdbcTemplate.update(sql.toString(), values.toArray());
+            
+        } catch (ServiceException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("动态查询列表失败，moduleCode: {}", moduleCode, e);
-            throw new ServiceException("查询失败：" + e.getMessage());
+            log.error("插入数据失败，moduleCode: {}", moduleCode, e);
+            throw new ServiceException("插入失败：" + e.getMessage());
         }
     }
 
     @Override
-    public Map<String, Object> selectById(String moduleCode, Long id) {
+    public int updateByModuleWithTableName(
+            String moduleCode,
+            String tableName,
+            Map<String, Object> data) {
         
         try {
-            String tableName = getTableNameByModuleCode(moduleCode);
-            String sql = "SELECT * FROM " + tableName + " WHERE id = ?";
+            if (tableName == null || tableName.trim().isEmpty()) {
+                throw new ServiceException("tableName 参数不能为空");
+            }
             
-            Map<String, Object> result = jdbcTemplate.queryForMap(sql, id);
+            if (data == null || data.isEmpty()) {
+                throw new ServiceException("数据不能为空");
+            }
             
-            log.info("根据 ID 查询成功，moduleCode: {}, id: {}", moduleCode, id);
+            Object id = data.get("id");
+            if (id == null) {
+                throw new ServiceException("更新数据必须包含 id 字段");
+            }
             
-            return result;
+            // 构建 UPDATE SQL
+            StringBuilder sql = new StringBuilder();
+            sql.append("UPDATE ").append(tableName).append(" SET ");
             
+            // 获取字段名（排除 id）
+            List<String> columns = new ArrayList<>();
+            List<Object> values = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                String key = entry.getKey();
+                if (!"id".equalsIgnoreCase(key)) {
+                    columns.add(key);
+                    values.add(entry.getValue());
+                }
+            }
+            
+            // 构建 SET 子句
+            List<String> setClauses = new ArrayList<>();
+            for (String column : columns) {
+                setClauses.add(column + " = ?");
+            }
+            sql.append(String.join(", ", setClauses));
+            sql.append(" WHERE id = ?");
+            
+            values.add(id);
+            
+            log.info("执行更新操作，moduleCode: {}, tableName: {}, id: {}", 
+                moduleCode, tableName, id);
+            
+            return jdbcTemplate.update(sql.toString(), values.toArray());
+            
+        } catch (ServiceException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("根据 ID 查询失败，moduleCode: {}, id: {}", moduleCode, id, e);
-            throw new ServiceException("查询失败：" + e.getMessage());
+            log.error("更新数据失败，moduleCode: {}", moduleCode, e);
+            throw new ServiceException("更新失败：" + e.getMessage());
         }
     }
 
     @Override
-    public String getTableNameByModuleCode(String moduleCode) {
-        throw new ServiceException("已废弃：必须使用 tableName 参数，不能仅使用 moduleCode 获取表名");
+    public int deleteByModuleWithTableName(
+            String moduleCode,
+            String tableName,
+            Object[] ids) {
+        
+        try {
+            if (tableName == null || tableName.trim().isEmpty()) {
+                throw new ServiceException("tableName 参数不能为空");
+            }
+            
+            if (ids == null || ids.length == 0) {
+                throw new ServiceException("删除的 ID 列表不能为空");
+            }
+            
+            // 构建 DELETE SQL
+            StringBuilder sql = new StringBuilder();
+            sql.append("DELETE FROM ").append(tableName);
+            sql.append(" WHERE id IN (");
+            sql.append(String.join(", ", Collections.nCopies(ids.length, "?")));
+            sql.append(")");
+            
+            log.info("执行删除操作，moduleCode: {}, tableName: {}, count: {}", 
+                moduleCode, tableName, ids.length);
+            
+            return jdbcTemplate.update(sql.toString(), ids);
+            
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("删除数据失败，moduleCode: {}", moduleCode, e);
+            throw new ServiceException("删除失败：" + e.getMessage());
+        }
     }
 
     /**

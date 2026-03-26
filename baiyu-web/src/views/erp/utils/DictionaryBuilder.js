@@ -55,7 +55,7 @@ class DictionaryBuilder {
       ttl: Infinity // 静态字典永不过期
     })
     builder.cache = new DictionaryCache(options, Infinity)
-    console.log(`✅ 构建静态字典：${name}, 共 ${options.length} 条`)
+    console.log(` 构建静态字典：${name}, 共 ${options.length} 条`)
     return builder
   }
 
@@ -71,7 +71,7 @@ class DictionaryBuilder {
       config: config,
       ttl: config.ttl || 5 * 60 * 1000
     })
-    console.log(`✅ 构建动态字典：${name}`)
+    console.log(` 构建动态字典：${name}`)
     return builder
   }
 
@@ -87,7 +87,7 @@ class DictionaryBuilder {
       config: config,
       ttl: config.ttl || 5 * 60 * 1000
     })
-    console.log(`✅ 构建远程搜索字典：${name}`)
+    console.log(` 构建远程搜索字典：${name}`)
     return builder
   }
 
@@ -109,7 +109,7 @@ class DictionaryBuilder {
       
       // 更新缓存
       this.cache = new DictionaryCache(data, this.ttl)
-      console.log(`✅ 字典加载成功：${this.name}, 共 ${data.length} 条`)
+      console.log(` 字典加载成功：${this.name}, 共 ${data.length} 条`)
       
       return data
     } catch (error) {
@@ -129,7 +129,7 @@ class DictionaryBuilder {
    */
   async search(keyword, searcher) {
     if (!this.cache) {
-      console.warn(`⚠️ 字典不存在：${this.name}`)
+      console.warn(` 字典不存在：${this.name}`)
       return []
     }
 
@@ -139,7 +139,7 @@ class DictionaryBuilder {
       
       // 更新缓存
       this.cache = new DictionaryCache(data, this.ttl)
-      console.log(`✅ 字典搜索成功：${this.name}, 共 ${data.length} 条`)
+      console.log(` 字典搜索成功：${this.name}, 共 ${data.length} 条`)
       
       return data
     } catch (error) {
@@ -224,7 +224,7 @@ class DictionaryBuilderEngine {
   get(name) {
     const builder = this.registry.get(name)
     if (!builder) {
-      console.warn(`⚠️ 字典未注册：${name}`)
+      console.warn(` 字典未注册：${name}`)
     }
     return builder
   }
@@ -328,7 +328,7 @@ class DictionaryBuilderEngine {
       }
     }
 
-    console.log(`✅ 从配置构建字典完成，共 ${this.registry.size} 个`)
+    console.log(` 从配置构建字典完成，共 ${this.registry.size} 个`)
     return this
   }
 
@@ -353,9 +353,18 @@ class DictionaryBuilderEngine {
             data = response
           }
 
-          // 数据映射
+          // 数据映射 - 仅当后端未映射时才进行（避免重复映射）
           const labelField = builder.config.labelField || 'label'
           const valueField = builder.config.valueField || 'value'
+          
+          // 检查后端是否已经映射了 label/value 字段
+          if (data.length > 0 && data[0].label !== undefined && data[0].value !== undefined) {
+            console.log(`✅ 字典 ${name} 已映射，直接使用后端数据`)
+            return data
+          }
+          
+          // 后端未映射，前端进行映射
+          console.log(`🔧 字典 ${name} 前端映射：label=${labelField}, value=${valueField}`)
           return data.map(item => ({
             label: item[labelField],
             value: item[valueField],
@@ -367,7 +376,7 @@ class DictionaryBuilderEngine {
     })
 
     await Promise.all(promises)
-    console.log('✅ 字典预加载完成')
+    console.log(' 字典预加载完成')
   }
 }
 

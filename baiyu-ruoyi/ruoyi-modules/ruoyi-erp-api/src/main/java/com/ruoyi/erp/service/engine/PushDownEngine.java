@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public class PushDownEngine {
     
     /**
-     * ✅ 正则表达式编译为静态常量,避免重复编译
+     *  正则表达式编译为静态常量,避免重复编译
      */
     private static final Pattern VARIABLE_PATTERN = 
         Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b");
@@ -205,7 +205,7 @@ public class PushDownEngine {
         // 替换变量为实际值
         String expression = formula;
         
-        // ✅ 使用静态Pattern,避免重复编译
+        //  使用静态Pattern,避免重复编译
         java.util.regex.Matcher matcher = VARIABLE_PATTERN.matcher(formula);
         
         StringBuffer sb = new StringBuffer();
@@ -300,7 +300,7 @@ public class PushDownEngine {
                     x *= parseFactor();
                 } else if (eat('/')) {
                     double divisor = parseFactor();
-                    // ✅ 检查除数是否为0
+                    //  检查除数是否为0
                     if (Math.abs(divisor) < 1e-10) { // 浮点数精度问题,使用极小值判断
                         throw new ArithmeticException("除数不能为零");
                     }

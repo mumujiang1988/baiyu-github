@@ -4,11 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.core.domain.R;
-import com.ruoyi.erp.service.engine.DynamicQueryEngine;
 import com.ruoyi.erp.service.engine.FormValidationEngine;
 import com.ruoyi.erp.service.engine.ApprovalWorkflowEngine;
-import com.ruoyi.erp.service.engine.ComputedFieldEngine;
-import com.ruoyi.erp.service.engine.VirtualFieldService;
 import com.ruoyi.erp.service.engine.DictionaryBuilderEngine;
 import com.ruoyi.erp.service.ErpApprovalFlowService;
 import com.ruoyi.erp.service.ErpPushRelationService;
@@ -16,8 +13,6 @@ import com.ruoyi.erp.service.ISuperDataPermissionService;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
-import com.ruoyi.erp.domain.entity.ErpPageConfig;
-import com.ruoyi.erp.service.ErpPageConfigService;
 import com.alibaba.fastjson2.JSONObject;
 import com.ruoyi.erp.utils.ConfigParser;
 import com.ruoyi.erp.utils.DataProcessor;
@@ -42,19 +37,15 @@ import java.util.*;
 @RequestMapping("/erp/engine")
 public class ErpEngineController {
 
-    private final DynamicQueryEngine queryEngine;
     private final FormValidationEngine validationEngine;
     private final ApprovalWorkflowEngine approvalEngine;
     private final ErpApprovalFlowService approvalFlowService;
     private final ErpPushRelationService pushRelationService;
     private final ISuperDataPermissionService dataPermissionService;
     private final com.ruoyi.erp.mapper.ErpApprovalHistoryMapper approvalHistoryMapper;
-    private final ComputedFieldEngine computedFieldEngine;
-    private final VirtualFieldService virtualFieldService;
-    private final ErpPageConfigService erpPageConfigService;
     private final DictionaryBuilderEngine dictionaryBuilderEngine;
     
-    // 新增工具类
+    // 工具类
     private final ErpPermissionChecker permissionChecker;
     private final ConfigParser configParser;
     private final DataProcessor dataProcessor;
@@ -88,28 +79,33 @@ public class ErpEngineController {
 
     /**
      * 执行动态查询（构建器模式）
-     * ⭐⭐⭐ 强制使用 queryConfig.builder 模式 ⭐⭐⭐
+     *  强制使用 queryConfig.builder 模式 
      */
     @PostMapping("/query/execute")
     public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            
-            // ⭐⭐⭐ 使用注入的权限检查器（同时检查数据库配置和权限） ⭐⭐⭐
+            log.info("🔍 收到查询请求，moduleCode: {}, params: {}", moduleCode, params.keySet());
+                
+            //  使用注入的权限检查器（同时检查数据库配置和权限） 
+            log.info("✅ 开始权限检查，moduleCode: {}, operation: query", moduleCode);
             permissionChecker.checkModulePermission(moduleCode, "query");
-            
+            log.info("✅ 权限检查通过");
+                
             //  tableName 为必填参数，来自前端 JSON 配置的 pageConfig.tableName
             String tableName = (String) params.get("tableName");
+            log.info("✅ 获取 tableName 参数：{}", tableName);
             if (tableName == null || tableName.trim().isEmpty()) {
-                log.error(" 缺少必需的 tableName 参数，moduleCode: {}", moduleCode);
+                log.error("❌ 缺少必需的 tableName 参数，moduleCode: {}", moduleCode);
                 return R.fail("缺少必需的 tableName 参数，请在 JSON 配置的 pageConfig.tableName 中配置表名");
             }
-            log.info(" 使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
+            log.info("✅ 使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
             
             //  获取 queryConfig（构建器模式）
             Map<String, Object> queryConfig = (Map<String, Object>) params.get("queryConfig");
+            log.info("✅ 获取 queryConfig: {}", queryConfig != null ? "已提供" : "null");
             if (queryConfig == null || queryConfig.isEmpty()) {
-                log.error(" 缺少必需的 queryConfig 参数，moduleCode: {}", moduleCode);
+                log.error("❌ 缺少必需的 queryConfig 参数，moduleCode: {}", moduleCode);
                 return R.fail("缺少必需的 queryConfig 参数，请使用构建器模式配置查询条件");
             }
             
@@ -120,7 +116,7 @@ public class ErpEngineController {
             pageQuery.setPageNum(pageNum);
             pageQuery.setPageSize(pageSize);
             
-            // ⭐⭐⭐ 使用构建器模式构建查询条件 ⭐⭐⭐
+            //  使用构建器模式构建查询条件 
             com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
             queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
@@ -154,7 +150,7 @@ public class ErpEngineController {
     }
 
     /**
-     * ⭐ 获取构建器模式支持的运算符
+     *  获取构建器模式支持的运算符
      */
     @GetMapping("/query/operators")
     public R<?> getAvailableOperators(@RequestParam(required = false) String moduleCode) {
@@ -1260,7 +1256,7 @@ public class ErpEngineController {
     }
 
     /**
-     * ⭐ 新增：获取字典数据（复用表格数据构建器）
+     *  新增：获取字典数据（复用表格数据构建器）
      * 直接从数据库表查询字典数据，无需创建 Service
      * 
      * @param name 字典名称
@@ -1271,38 +1267,38 @@ public class ErpEngineController {
     public R<?> getDictionaryData(@PathVariable String name,
                                    @RequestParam(required = false) String moduleCode) {
         try {
-            // ✅ 权限检查
+            //  权限检查
             if (moduleCode != null && !moduleCode.isEmpty()) {
                 permissionChecker.checkModulePermission(moduleCode, "query");
             }
             
-            // ✅ 从配置中读取表名和查询条件
+            //  从配置中读取表名和查询条件
             JSONObject configJson = configParser.getConfig(name);
-            JSONObject dictionaryConfig = configJson.optJSONObject("dictionaryConfig");
+            JSONObject dictionaryConfig = configJson.getJSONObject("dictionaryConfig");
             
             if (dictionaryConfig == null) {
-                log.warn("⚠️ 未找到字典配置，字典名称：{}", name);
+                log.warn(" 未找到字典配置，字典名称：{}", name);
                 return R.fail("未找到字典配置：" + name);
             }
             
-            JSONObject dictionaries = dictionaryConfig.optJSONObject("dictionaries");
+            JSONObject dictionaries = dictionaryConfig.getJSONObject("dictionaries");
             if (dictionaries == null || !dictionaries.containsKey(name)) {
-                log.warn("⚠️ 未找到字典定义：{}", name);
+                log.warn(" 未找到字典定义：{}", name);
                 return R.fail("未找到字典定义：" + name);
             }
             
             JSONObject dictConfig = dictionaries.getJSONObject(name);
             String tableName = dictConfig.getString("tableName");
-            JSONObject queryConfig = dictConfig.optJSONObject("queryConfig");
-            JSONObject fieldMapping = dictConfig.optJSONObject("fieldMapping");
+            JSONObject queryConfig = dictConfig.getJSONObject("queryConfig");
+            JSONObject fieldMapping = dictConfig.getJSONObject("fieldMapping");
             
-            // ✅ 表名校验
+            //  表名校验
             if (tableName == null || tableName.trim().isEmpty()) {
                 log.error("❌ 缺少必需的 tableName 配置，字典：{}", name);
                 return R.fail("缺少必需的 tableName 配置");
             }
             
-            // ✅ 构建查询条件
+            //  构建查询条件
             com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
             
@@ -1310,11 +1306,21 @@ public class ErpEngineController {
                 queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
             }
             
-            // ✅ 直接调用表格构建器的 Service 查询数据
-            List<Map<String, Object>> data = dataPermissionService
-                .selectListByModule(moduleCode, queryWrapper);
+            //  直接调用表格构建器的 Service 查询数据（使用新的 selectPageByModuleWithTableName 方法）
+            // 注意：selectListByModule 已废弃，改用 selectPageByModuleWithTableName 并取所有记录
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> listQueryWrapper = queryWrapper.clone();
+            listQueryWrapper.last("LIMIT " + Integer.MAX_VALUE); // 获取所有数据
             
-            // ✅ 字段映射（如果配置了）
+            PageQuery pageQuery = new PageQuery();
+            pageQuery.setPageNum(1);
+            pageQuery.setPageSize(Integer.MAX_VALUE);
+            
+            var pageResult = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) dataPermissionService)
+                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, listQueryWrapper);
+            
+            List<Map<String, Object>> data = pageResult.getRecords();
+            
+            //  字段映射（如果配置了）
             if (fieldMapping != null) {
                 String labelField = fieldMapping.getString("labelField");
                 String valueField = fieldMapping.getString("valueField");
@@ -1324,7 +1330,7 @@ public class ErpEngineController {
                 }
             }
             
-            log.info("✅ 字典数据加载成功：{}, 共 {} 条", name, data.size());
+            log.info(" 字典数据加载成功：{}, 共 {} 条", name, data.size());
             return R.ok(data);
             
         } catch (Exception e) {
@@ -1361,7 +1367,7 @@ public class ErpEngineController {
     }
 
     /**
-     * ⭐⭐⭐ 构建器模式：从 queryConfig 构建查询条件 ⭐⭐⭐
+     *  构建器模式：从 queryConfig 构建查询条件 
      * 
      * @param queryWrapper 查询包装器
      * @param queryConfig 配置对象
@@ -1373,10 +1379,10 @@ public class ErpEngineController {
             Map<String, Object> queryConfig) {
         
         try {
-            // ⭐ 1. 解析 conditions 数组
+            //  1. 解析 conditions 数组
             List<Map<String, Object>> conditions = (List<Map<String, Object>>) queryConfig.get("conditions");
             if (conditions != null && !conditions.isEmpty()) {
-                log.info("⭐ 解析构建器条件，共 {} 个", conditions.size());
+                log.info(" 解析构建器条件，共 {} 个", conditions.size());
                 
                 for (Map<String, Object> condition : conditions) {
                     String field = (String) condition.get("field");
@@ -1440,18 +1446,18 @@ public class ErpEngineController {
                 }
             }
             
-            // ⭐ 2. 解析 SELECT 字段配置
+            //  2. 解析 SELECT 字段配置
             String selectFields = (String) queryConfig.get("select");
             if (selectFields != null && !selectFields.trim().isEmpty()) {
-                log.info("⭐ 配置 SELECT 字段：{}", selectFields);
+                log.info(" 配置 SELECT 字段：{}", selectFields);
                 String[] fields = selectFields.split(",");
                 queryWrapper.select(fields);
             }
             
-            // ⭐ 3. 解析排序配置
+            //  3. 解析排序配置
             List<Map<String, Object>> orderBy = (List<Map<String, Object>>) queryConfig.get("orderBy");
             if (orderBy != null && !orderBy.isEmpty()) {
-                log.info("⭐ 配置排序，共 {} 个", orderBy.size());
+                log.info(" 配置排序，共 {} 个", orderBy.size());
                 
                 for (Map<String, Object> order : orderBy) {
                     String field = (String) order.get("field");
@@ -1465,17 +1471,17 @@ public class ErpEngineController {
                 }
             }
             
-            // ⭐ 4. 解析分组配置（可选）
+            //  4. 解析分组配置（可选）
             List<String> groupBy = (List<String>) queryConfig.get("groupBy");
             if (groupBy != null && !groupBy.isEmpty()) {
-                log.info("⭐ 配置分组：{}", groupBy);
+                log.info(" 配置分组：{}", groupBy);
                 queryWrapper.groupBy(groupBy);
             }
             
-            // ⭐ 5. 解析 HAVING 配置（可选）
+            //  5. 解析 HAVING 配置（可选）
             List<Map<String, Object>> having = (List<Map<String, Object>>) queryConfig.get("having");
             if (having != null && !having.isEmpty()) {
-                log.info("⭐ 配置 HAVING 条件，共 {} 个", having.size());
+                log.info(" 配置 HAVING 条件，共 {} 个", having.size());
                 
                 for (Map<String, Object> h : having) {
                     String field = (String) h.get("field");
@@ -1599,7 +1605,7 @@ public class ErpEngineController {
     }
 
     /**
-     * ⭐ 新增：字典字段映射工具方法
+     *  新增：字典字段映射工具方法
      * 将数据库字段映射为前端需要的 label/value 格式
      * 
      * @param data 原始数据列表

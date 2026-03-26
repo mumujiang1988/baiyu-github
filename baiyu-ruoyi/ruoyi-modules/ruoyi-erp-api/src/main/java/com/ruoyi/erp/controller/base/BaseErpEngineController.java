@@ -1,9 +1,11 @@
 package com.ruoyi.erp.controller.base;
 
 import cn.dev33.satoken.exception.NotPermissionException;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.erp.exception.ErpConfigException;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
@@ -76,14 +78,26 @@ public abstract class BaseErpEngineController {
             // 1. 权限检查
             permissionChecker.checkModulePermission(moduleCode, "query");
             
-            // 2. 查询数据
-            Page<Map<String, Object>> page = superDataPermissionService
-                .selectPageByModule(moduleCode, pageQuery, wrapper);
+            // 2. 从配置中获取表名
+            var moduleConfig = configParser.getConfig(moduleCode);
+            String tableName = null;
+            if (moduleConfig != null && moduleConfig.containsKey("pageConfig")) {
+                JSONObject pageConfig = moduleConfig.getJSONObject("pageConfig");
+                tableName = pageConfig.getString("tableName");
+            }
             
-            // 3. 处理数据 (计算字段、虚拟字段等)
+            if (tableName == null || tableName.trim().isEmpty()) {
+                log.error("未找到模块 [{}] 对应的表名配置", moduleCode);
+                throw new ServiceException("未找到模块 [" + moduleCode + "] 对应的表名配置");
+            }
+            
+            // 3. 查询数据（使用新的 selectPageByModuleWithTableName 方法）
+            Page<Map<String, Object>> page = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) superDataPermissionService)
+                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, wrapper);
+            
+            // 4. 处理数据 (计算字段、虚拟字段等)
             if (page != null && page.getRecords() != null && !page.getRecords().isEmpty()) {
-                var config = configParser.getConfig(moduleCode);
-                page.setRecords(dataProcessor.process(page.getRecords(), config));
+                page.setRecords(dataProcessor.process(page.getRecords(), moduleConfig));
             }
             
             return R.ok(page);
@@ -110,10 +124,24 @@ public abstract class BaseErpEngineController {
             // 2. 数据验证
             validateData(data, moduleCode);
             
-            // 3. 新增数据 - TODO: 需要在 ISuperDataPermissionService 中实现
-            log.warn("insertByModule 方法暂未实现，moduleCode={}", moduleCode);
-            // superDataPermissionService.insertByModule(moduleCode, data);
+            // 3. 从配置中获取表名
+            var moduleConfig = configParser.getConfig(moduleCode);
+            String tableName = null;
+            if (moduleConfig != null && moduleConfig.containsKey("pageConfig")) {
+                JSONObject pageConfig = moduleConfig.getJSONObject("pageConfig");
+                tableName = pageConfig.getString("tableName");
+            }
             
+            if (tableName == null || tableName.trim().isEmpty()) {
+                log.error("未找到模块 [{}] 对应的表名配置", moduleCode);
+                throw new ServiceException("未找到模块 [" + moduleCode + "] 对应的表名配置");
+            }
+            
+            // 4. 新增数据（使用新的 insertByModuleWithTableName 方法）
+            int result = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) superDataPermissionService)
+                .insertByModuleWithTableName(moduleCode, tableName, data);
+            
+            log.info("新增数据成功，moduleCode: {}, rows: {}", moduleCode, result);
             return R.ok();
             
         } catch (Exception e) {
@@ -138,10 +166,24 @@ public abstract class BaseErpEngineController {
             // 2. 数据验证
             validateData(data, moduleCode);
             
-            // 3. 修改数据 - TODO: 需要在 ISuperDataPermissionService 中实现
-            log.warn("updateByModule 方法暂未实现，moduleCode={}", moduleCode);
-            // superDataPermissionService.updateByModule(moduleCode, data);
+            // 3. 从配置中获取表名
+            var moduleConfig = configParser.getConfig(moduleCode);
+            String tableName = null;
+            if (moduleConfig != null && moduleConfig.containsKey("pageConfig")) {
+                JSONObject pageConfig = moduleConfig.getJSONObject("pageConfig");
+                tableName = pageConfig.getString("tableName");
+            }
             
+            if (tableName == null || tableName.trim().isEmpty()) {
+                log.error("未找到模块 [{}] 对应的表名配置", moduleCode);
+                throw new ServiceException("未找到模块 [" + moduleCode + "] 对应的表名配置");
+            }
+            
+            // 4. 修改数据（使用新的 updateByModuleWithTableName 方法）
+            int result = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) superDataPermissionService)
+                .updateByModuleWithTableName(moduleCode, tableName, data);
+            
+            log.info("修改数据成功，moduleCode: {}, rows: {}", moduleCode, result);
             return R.ok();
             
         } catch (Exception e) {
@@ -163,10 +205,24 @@ public abstract class BaseErpEngineController {
             // 1. 权限检查
             permissionChecker.checkModulePermission(moduleCode, "delete");
             
-            // 2. 删除数据 - TODO: 需要在 ISuperDataPermissionService 中实现
-            log.warn("deleteByModule 方法暂未实现，moduleCode={}, ids={}", moduleCode, ids);
-            // superDataPermissionService.deleteByModule(moduleCode, ids);
+            // 2. 从配置中获取表名
+            var moduleConfig = configParser.getConfig(moduleCode);
+            String tableName = null;
+            if (moduleConfig != null && moduleConfig.containsKey("pageConfig")) {
+                JSONObject pageConfig = moduleConfig.getJSONObject("pageConfig");
+                tableName = pageConfig.getString("tableName");
+            }
             
+            if (tableName == null || tableName.trim().isEmpty()) {
+                log.error("未找到模块 [{}] 对应的表名配置", moduleCode);
+                throw new ServiceException("未找到模块 [" + moduleCode + "] 对应的表名配置");
+            }
+            
+            // 3. 删除数据（使用新的 deleteByModuleWithTableName 方法）
+            int result = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) superDataPermissionService)
+                .deleteByModuleWithTableName(moduleCode, tableName, ids);
+            
+            log.info("删除数据成功，moduleCode: {}, count: {}", moduleCode, result);
             return R.ok();
             
         } catch (Exception e) {

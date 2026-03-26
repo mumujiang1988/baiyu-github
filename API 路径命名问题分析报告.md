@@ -8,11 +8,11 @@
 ## ❓ 用户的疑问
 
 **用户原话**: 
-> "/erp/engine/dictionary/salespersons/data ✅ GET /dictionary/{name}/data ✅ 存在
+> "/erp/engine/dictionary/salespersons/data  GET /dictionary/{name}/data  存在
 > 
-> /erp/engine/custom/entry ✅ GET /custom/entry ✅ 存在
+> /erp/engine/custom/entry  GET /custom/entry  存在
 > 
-> /erp/engine/custom/cost ✅ GET /custom/cost 这些api的路径好奇怪 为什么不是通用数据构建器查询路径"
+> /erp/engine/custom/cost  GET /custom/cost 这些api的路径好奇怪 为什么不是通用数据构建器查询路径"
 
 **核心问题**:
 1. 为什么明细表和成本表的 API 使用 `/custom/entry` 和 `/custom/cost`？
@@ -37,8 +37,8 @@ public R<?> getCostData(...) { ... }
 ```
 
 **搜索结果**:
-- ✅ `ErpEngineController.java` (74KB) - 未找到 `/custom/entry` 或 `/custom/cost` 接口
-- ✅ 整个后端项目 - 未找到任何处理 `/custom/*` 的 Controller
+-  `ErpEngineController.java` (74KB) - 未找到 `/custom/entry` 或 `/custom/cost` 接口
+-  整个后端项目 - 未找到任何处理 `/custom/*` 的 Controller
 
 **结论**: **这些 API 路径是虚构的，后端根本没有实现！**
 
@@ -78,9 +78,9 @@ public R<?> getCostData(...) { ... }
 
 ---
 
-## ✅ 正确的做法
+##  正确的做法
 
-### 方案一：使用通用查询接口（推荐）⭐
+### 方案一：使用通用查询接口（推荐）
 
 **核心思想**: 复用 `/erp/engine/query/execute` 接口，通过配置区分不同的表
 
@@ -132,7 +132,7 @@ public R<?> getCostData(...) { ... }
 ```javascript
 import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
 
-// ✅ 使用通用接口查询所有子表格
+//  使用通用接口查询所有子表格
 const results = await multiTableQueryBuilder.queryAllSubTables(
   moduleCode,
   subTableConfigs,
@@ -141,10 +141,10 @@ const results = await multiTableQueryBuilder.queryAllSubTables(
 
 // 查询结果
 if (results.entry) {
-  entryList.value = results.entry.data  // ✅ 明细表数据
+  entryList.value = results.entry.data  //  明细表数据
 }
 if (results.cost) {
-  costData.value = results.cost.data[0] || {}  // ✅ 成本表数据
+  costData.value = results.cost.data[0] || {}  //  成本表数据
 }
 ```
 
@@ -157,10 +157,10 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
     String tableName = (String) params.get("tableName");
     Map<String, Object> queryConfig = (Map<String, Object>) params.get("queryConfig");
     
-    // ✅ 构建查询条件
+    //  构建查询条件
     QueryWrapper<Object> queryWrapper = buildQueryFromBuilderMode(queryConfig);
     
-    // ✅ 执行查询
+    //  执行查询
     Page<Map<String, Object>> page = dataPermissionService
         .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, queryWrapper);
     
@@ -169,10 +169,10 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
 ```
 
 **优势**:
-- ✅ 统一的接口，易于维护
-- ✅ 符合构建器模式规范
-- ✅ 无需编写额外的 Controller
-- ✅ 配置驱动，灵活可扩展
+-  统一的接口，易于维护
+-  符合构建器模式规范
+-  无需编写额外的 Controller
+-  配置驱动，灵活可扩展
 
 ---
 
@@ -183,7 +183,7 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
 **正确的命名方式**:
 
 ```java
-// ✅ 推荐的命名
+//  推荐的命名
 @GetMapping("/engine/entry/{billNo}")
 public R<?> getEntryData(@PathVariable String billNo,
                          @RequestParam String moduleCode) {
@@ -211,9 +211,9 @@ public R<?> getCostData(@PathVariable String billNo,
 ```
 
 **优势**:
-- ✅ 路径清晰明确
-- ✅ 符合 RESTful 规范
-- ✅ 易于理解和维护
+-  路径清晰明确
+-  符合 RESTful 规范
+-  易于理解和维护
 
 ---
 
@@ -250,8 +250,8 @@ public R<?> getCostData(@PathVariable String billNo,
 
 | API 路径 | 状态 | 评价 | 建议 |
 |---------|------|------|------|
-| `/erp/engine/dictionary/{name}/data` | ✅ 已实现 | 符合规范 | ✅ 推荐 |
-| `/erp/engine/query/execute` | ✅ 已实现 | 通用接口 | ✅ 强烈推荐 |
+| `/erp/engine/dictionary/{name}/data` |  已实现 | 符合规范 |  推荐 |
+| `/erp/engine/query/execute` |  已实现 | 通用接口 |  强烈推荐 |
 | `/erp/engine/custom/entry` | ❌ 未实现 | 违反规范 | ❌ 必须修改 |
 | `/erp/engine/custom/cost` | ❌ 未实现 | 违反规范 | ❌ 必须修改 |
 
@@ -275,8 +275,8 @@ public R<?> getCostData(@PathVariable String billNo,
 **修改后**:
 ```json
 {
-  // ✅ 删除错误的 API 引用
-  // ✅ 改用 subTableQueryConfigs + multiTableQueryBuilder
+  //  删除错误的 API 引用
+  //  改用 subTableQueryConfigs + multiTableQueryBuilder
 }
 ```
 
@@ -297,7 +297,7 @@ const loadEntryData = async (billNo) => {
   entryList.value = response.data
 }
 
-// ✅ 新代码：使用通用查询接口
+//  新代码：使用通用查询接口
 const loadEntryData = async (billNo) => {
   const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(config.value)
   const results = await multiTableQueryBuilder.queryAllSubTables(
@@ -328,10 +328,10 @@ const loadEntryData = async (billNo) => {
 
 3. **查看浏览器控制台**
    ```javascript
-   // ✅ 应该看到
-   ✅ 主表格查询成功，共 50 条
-   ✅ 子表格查询成功：entry, 共 120 条
-   ✅ 子表格查询成功：cost, 共 50 条
+   //  应该看到
+    主表格查询成功，共 50 条
+    子表格查询成功：entry, 共 120 条
+    子表格查询成功：cost, 共 50 条
    
    // ❌ 不应该看到
    ❌ GET /erp/engine/custom/entry 404
@@ -340,9 +340,9 @@ const loadEntryData = async (billNo) => {
 
 4. **查看 Network 面板**
    ```
-   ✅ POST /erp/engine/query/execute (主表)
-   ✅ POST /erp/engine/query/execute (明细表)
-   ✅ POST /erp/engine/query/execute (成本表)
+    POST /erp/engine/query/execute (主表)
+    POST /erp/engine/query/execute (明细表)
+    POST /erp/engine/query/execute (成本表)
    ```
 
 ---
@@ -354,7 +354,7 @@ const loadEntryData = async (billNo) => {
 **推荐模式**:
 
 ```javascript
-// ✅ 通用查询接口
+//  通用查询接口
 POST /erp/engine/query/execute
   Body: {
     moduleCode: 'saleorder',
@@ -362,13 +362,13 @@ POST /erp/engine/query/execute
     queryConfig: {...}
   }
 
-// ✅ 字典查询接口
+//  字典查询接口
 GET /erp/engine/dictionary/{name}/data?moduleCode={moduleCode}
 
-// ✅ 配置获取接口
+//  配置获取接口
 GET /erp/config/get/{moduleCode}
 
-// ✅ 表单验证接口
+//  表单验证接口
 POST /erp/engine/validation/execute
 ```
 
@@ -394,7 +394,7 @@ GET /erp/engine/saleorder/cost
 **正确示例**:
 
 ```json
-// ✅ 配置化：声明要查询哪个表、什么条件
+//  配置化：声明要查询哪个表、什么条件
 {
   "subTableQueryConfigs": {
     "entry": {
@@ -441,8 +441,8 @@ GET /erp/engine/saleorder/cost
 ### 问题本质
 
 **用户发现的问题**:
-- ✅ API 路径命名不规范
-- ✅ 与字典接口的命名方式不一致
+-  API 路径命名不规范
+-  与字典接口的命名方式不一致
 
 **深层问题**:
 - ❌ JSON 配置引用了不存在的后端接口
@@ -464,10 +464,10 @@ GET /erp/engine/saleorder/cost
 ### 核心价值
 
 **通过这次修复**:
-- ✅ 统一了 API 路径命名
-- ✅ 消除了前后端不一致
-- ✅ 强化了构建器模式的应用
-- ✅ 提升了代码质量
+-  统一了 API 路径命名
+-  消除了前后端不一致
+-  强化了构建器模式的应用
+-  提升了代码质量
 
 ---
 

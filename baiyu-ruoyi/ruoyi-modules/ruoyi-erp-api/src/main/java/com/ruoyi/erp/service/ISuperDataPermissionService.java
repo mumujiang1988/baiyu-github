@@ -17,48 +17,60 @@ import java.util.Map;
 public interface ISuperDataPermissionService {
 
     /**
-     * 根据模块编码和查询条件分页查询
+     * 根据模块编码、表名和查询条件分页查询（唯一入口）
      * 
      * @param moduleCode 模块编码（如：saleOrder, deliveryOrder 等）
+     * @param tableName 表名（必填，来自 JSON 配置）
      * @param pageQuery 分页参数
      * @param queryWrapper 查询条件包装器
      * @return 分页结果
      */
-    Page<Map<String, Object>> selectPageByModule(
+    Page<Map<String, Object>> selectPageByModuleWithTableName(
         String moduleCode,
+        String tableName,
         PageQuery pageQuery,
         QueryWrapper<Object> queryWrapper
     );
-
+    
     /**
-     * 根据模块编码和查询条件查询全部数据
+     * 根据模块编码和表名新增数据
      * 
      * @param moduleCode 模块编码
-     * @param queryWrapper 查询条件包装器
-     * @return 数据列表
+     * @param tableName 表名（必填，来自 JSON 配置）
+     * @param data 数据对象
+     * @return 影响行数
      */
-    List<Map<String, Object>> selectListByModule(
+    int insertByModuleWithTableName(
         String moduleCode,
-        QueryWrapper<Object> queryWrapper
+        String tableName,
+        Map<String, Object> data
     );
-
+    
     /**
-     * 根据模块编码和 ID 查询单条数据
+     * 根据模块编码和表名修改数据
      * 
      * @param moduleCode 模块编码
-     * @param id 主键 ID
-     * @return 数据对象
+     * @param tableName 表名（必填，来自 JSON 配置）
+     * @param data 数据对象（必须包含 id 字段）
+     * @return 影响行数
      */
-    Map<String, Object> selectById(
+    int updateByModuleWithTableName(
         String moduleCode,
-        Long id
+        String tableName,
+        Map<String, Object> data
     );
-
+    
     /**
-     * 获取模块对应的表名
+     * 根据模块编码和表名删除数据
      * 
      * @param moduleCode 模块编码
-     * @return 表名
+     * @param tableName 表名（必填，来自 JSON 配置）
+     * @param ids 主键 ID 数组
+     * @return 影响行数
      */
-    String getTableNameByModuleCode(String moduleCode);
+    int deleteByModuleWithTableName(
+        String moduleCode,
+        String tableName,
+        Object[] ids
+    );
 }

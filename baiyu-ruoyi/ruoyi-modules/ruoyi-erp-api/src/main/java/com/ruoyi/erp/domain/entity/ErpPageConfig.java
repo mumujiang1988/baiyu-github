@@ -46,10 +46,34 @@ public class ErpPageConfig implements Serializable {
     private String configType;
 
     /**
-     * 完整的 JSON 配置内容
+     * 页面基础配置 (page.json)
      */
-    @TableField("config_content")
-    private String configContent;
+    @TableField("page_config")
+    private String pageConfig;
+
+    /**
+     * 表单 UI 组件配置 (form.json)
+     */
+    @TableField("form_config")
+    private String formConfig;
+
+    /**
+     * 表格查询配置 (table.json)
+     */
+    @TableField("table_config")
+    private String tableConfig;
+
+    /**
+     * 字典数据源配置 (dict.json)
+     */
+    @TableField("dict_config")
+    private String dictConfig;
+
+    /**
+     * 业务规则配置 (config.json)
+     */
+    @TableField("business_config")
+    private String businessConfig;
 
     /**
      * 版本号 (每次更新 +1)

@@ -1,0 +1,7 @@
+{
+  "pageId": "saleorder",
+  "pageName": "销售订单管理",
+  "permission": "k3:saleorder:query",
+  "layout": "standard",
+  "apiPrefix": "/erp/engine"
+}

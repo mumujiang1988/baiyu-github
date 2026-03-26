@@ -2,7 +2,7 @@
 
 **修复时间**: 2026-03-25  
 **修复文件**: `business.config.template.json`  
-**修复状态**: ✅ **已完成**
+**修复状态**:  **已完成**
 
 ---
 
@@ -11,11 +11,11 @@
 ### 用户发现的问题
 
 **用户质疑**:
-> "/erp/engine/dictionary/salespersons/data ✅ GET /dictionary/{name}/data ✅ 存在
+> "/erp/engine/dictionary/salespersons/data  GET /dictionary/{name}/data  存在
 > 
-> /erp/engine/custom/entry ✅ GET /custom/entry ✅ 存在
+> /erp/engine/custom/entry  GET /custom/entry  存在
 > 
-> /erp/engine/custom/cost ✅ GET /custom/cost 这些api的路径好奇怪 为什么不是通用数据构建器查询路径"
+> /erp/engine/custom/cost  GET /custom/cost 这些api的路径好奇怪 为什么不是通用数据构建器查询路径"
 
 **核心问题**:
 1. ❌ `/erp/engine/custom/entry` - 后端不存在此接口
@@ -45,7 +45,7 @@ grep -r "/custom/cost" baiyu-ruoyi/
 
 ---
 
-## ✅ 修复方案
+##  修复方案
 
 ### 正确的架构设计
 
@@ -55,12 +55,12 @@ grep -r "/custom/cost" baiyu-ruoyi/
 
 ```json
 {
-  // ✅ 主表查询配置
+  //  主表查询配置
   "pageConfig": {
     "tableName": "t_sale_order"
   },
   
-  // ✅ 子表格查询配置（复用通用接口）
+  //  子表格查询配置（复用通用接口）
   "subTableQueryConfigs": {
     "entry": {
       "enabled": true,
@@ -105,17 +105,17 @@ grep -r "/custom/cost" baiyu-ruoyi/
 ```javascript
 import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
 
-// ✅ 解析子表格配置
+//  解析子表格配置
 const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(config.value)
 
-// ✅ 并行查询所有子表格
+//  并行查询所有子表格
 const results = await multiTableQueryBuilder.queryAllSubTables(
   moduleCode,
   subTableConfigs,
   { billNo }
 )
 
-// ✅ 使用查询结果
+//  使用查询结果
 if (results.entry) {
   entryList.value = results.entry.data
 }
@@ -127,7 +127,7 @@ if (results.cost) {
 **后端实现**:
 
 ```java
-// ✅ 同一个接口，查询不同的表
+//  同一个接口，查询不同的表
 @PostMapping("/query/execute")
 public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
     String tableName = params.get("tableName");  // t_sale_order_entry
@@ -171,7 +171,7 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
   "name": "entry",
   "label": "销售订单明细",
   "dataField": "entryList",
-  // ✅ 移除错误的 API，数据加载由 multiTableQueryBuilder 处理
+  //  移除错误的 API，数据加载由 multiTableQueryBuilder 处理
   "table": {...}
 }
 ```
@@ -197,7 +197,7 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
   "name": "cost",
   "label": "成本暂估",
   "dataField": "costData",
-  // ✅ 移除错误的 API，数据加载由 multiTableQueryBuilder 处理
+  //  移除错误的 API，数据加载由 multiTableQueryBuilder 处理
   "type": "descriptions"
 }
 ```
@@ -223,7 +223,7 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
   "name": "entry",
   "label": "销售订单明细",
   "dataField": "entryList",
-  // ✅ 移除错误的 API，数据加载由 multiTableQueryBuilder 处理
+  //  移除错误的 API，数据加载由 multiTableQueryBuilder 处理
   "type": "table"
 }
 ```
@@ -249,7 +249,7 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
   "name": "cost",
   "label": "成本暂估",
   "dataField": "costData",
-  // ✅ 移除错误的 API，数据加载由 multiTableQueryBuilder 处理
+  //  移除错误的 API，数据加载由 multiTableQueryBuilder 处理
   "type": "descriptions"
 }
 ```
@@ -260,28 +260,28 @@ public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
 
 | 修改项 | 修改前 | 修改后 | 状态 |
 |--------|--------|--------|------|
-| expandRow.entry API | ❌ `/custom/entry` | ✅ 移除 | ✅ 已修复 |
-| expandRow.cost API | ❌ `/custom/cost` | ✅ 移除 | ✅ 已修复 |
-| drawerConfig.entry API | ❌ `/custom/entry` | ✅ 移除 | ✅ 已修复 |
-| drawerConfig.cost API | ❌ `/custom/cost` | ✅ 移除 | ✅ 已修复 |
+| expandRow.entry API | ❌ `/custom/entry` |  移除 |  已修复 |
+| expandRow.cost API | ❌ `/custom/cost` |  移除 |  已修复 |
+| drawerConfig.entry API | ❌ `/custom/entry` |  移除 |  已修复 |
+| drawerConfig.cost API | ❌ `/custom/cost` |  移除 |  已修复 |
 
 **代码变更**: -4 行
 
 ---
 
-## ✅ 修复后的完整流程
+##  修复后的完整流程
 
 ### 1. 页面加载时
 
 ```javascript
-// ✅ 主表格查询
+//  主表格查询
 const mainTableData = await queryMainTable({
   moduleCode: 'saleorder',
   tableName: 't_sale_order',
   queryConfig: config.value.queryConfig
 })
 
-// ✅ 子表格配置已定义
+//  子表格配置已定义
 const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(config.value)
 // subTableConfigs.entry: { tableName: 't_sale_order_entry', ... }
 // subTableConfigs.cost: { tableName: 't_sale_order_cost', ... }
@@ -292,7 +292,7 @@ const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(config.value
 ### 2. 展开行详情时（懒加载）
 
 ```vue
-<!-- ✅ 展开行组件 -->
+<!--  展开行组件 -->
 <el-table-column type="expand">
   <template #default="props">
     <el-tabs v-model="activeTab">
@@ -320,17 +320,17 @@ const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(config.value
 ```
 
 ```javascript
-// ✅ 监听展开事件
+//  监听展开事件
 const handleExpandChange = async (row) => {
   if (row.expanded) {
-    // ✅ 懒加载：只在展开时才查询子表
+    //  懒加载：只在展开时才查询子表
     const results = await multiTableQueryBuilder.queryAllSubTables(
       'saleorder',
       subTableConfigs,
       { billNo: row.FBillNo }
     )
     
-    // ✅ 设置数据
+    //  设置数据
     if (results.entry) {
       entryList.value = results.entry.data
     }
@@ -346,7 +346,7 @@ const handleExpandChange = async (row) => {
 ### 3. Drawer 详情页
 
 ```vue
-<!-- ✅ 详情抽屉 -->
+<!--  详情抽屉 -->
 <el-drawer v-model="drawerVisible">
   <el-tabs v-model="drawerTab">
     
@@ -369,18 +369,18 @@ const handleExpandChange = async (row) => {
 ```
 
 ```javascript
-// ✅ 打开 Drawer 时加载数据
+//  打开 Drawer 时加载数据
 const openDrawer = async (row) => {
   currentRow.value = row
   
-  // ✅ 懒加载：只在打开 Drawer 时才查询子表
+  //  懒加载：只在打开 Drawer 时才查询子表
   const results = await multiTableQueryBuilder.queryAllSubTables(
     'saleorder',
     subTableConfigs,
     { billNo: row.FBillNo }
   )
   
-  // ✅ 设置数据
+  //  设置数据
   if (results.entry) {
     entryList.value = results.entry.data
   }
@@ -407,7 +407,7 @@ GET /erp/engine/custom/cost?billNo=xxx
 
 **现在**:
 ```javascript
-// ✅ 统一的通用接口
+//  统一的通用接口
 POST /erp/engine/query/execute
 Body: {
   moduleCode: 'saleorder',
@@ -437,7 +437,7 @@ Body: {
 
 **现在**:
 ```json
-// ✅ 配置化：声明要查询哪个表、什么条件
+//  配置化：声明要查询哪个表、什么条件
 {
   "subTableQueryConfigs": {
     "entry": {
@@ -464,7 +464,7 @@ public R<?> getCost(...) { ... }
 
 **现在**:
 ```java
-// ✅ 一个通用接口支持所有查询
+//  一个通用接口支持所有查询
 @PostMapping("/query/execute")
 public R<?> executeDynamicQuery(...) { ... }
 ```
@@ -474,13 +474,13 @@ public R<?> executeDynamicQuery(...) { ... }
 ### 4. 性能优化
 
 **懒加载策略**:
-- ✅ 只在展开行或打开 Drawer 时才查询子表
-- ✅ 避免不必要的数据库查询
-- ✅ 提升页面初始加载速度
+-  只在展开行或打开 Drawer 时才查询子表
+-  避免不必要的数据库查询
+-  提升页面初始加载速度
 
 **并行查询**:
 ```javascript
-// ✅ Promise.all 同时查询多个表
+//  Promise.all 同时查询多个表
 const [entryResult, costResult] = await Promise.all([
   queryEntry(billNo),
   queryCost(billNo)
@@ -524,7 +524,7 @@ const [entryResult, costResult] = await Promise.all([
 
 2. **查看 Network 面板**
    ```
-   ✅ 应该看到:
+    应该看到:
    POST /erp/engine/query/execute (主表)
    POST /erp/engine/query/execute (明细表)
    POST /erp/engine/query/execute (成本表)
@@ -548,12 +548,12 @@ const [entryResult, costResult] = await Promise.all([
 
 ## 🎉 总结
 
-### ✅ 已完成的工作
+###  已完成的工作
 
-1. ✅ 移除了 4 个不存在的 API 引用
-2. ✅ 统一使用通用查询接口
-3. ✅ 符合构建器模式规范
-4. ✅ 消除了前后端不一致
+1.  移除了 4 个不存在的 API 引用
+2.  统一使用通用查询接口
+3.  符合构建器模式规范
+4.  消除了前后端不一致
 
 ---
 
@@ -565,27 +565,27 @@ const [entryResult, costResult] = await Promise.all([
 - ❌ 违反构建器模式规范
 
 **修复后**:
-- ✅ 0 个自定义接口
-- ✅ 复用通用查询引擎
-- ✅ 完全符合构建器模式
+-  0 个自定义接口
+-  复用通用查询引擎
+-  完全符合构建器模式
 
 ---
 
 ### 🚀 长期收益
 
 **可维护性**:
-- ✅ 统一的查询逻辑
-- ✅ 减少代码重复
-- ✅ 易于扩展和维护
+-  统一的查询逻辑
+-  减少代码重复
+-  易于扩展和维护
 
 **一致性**:
-- ✅ 与字典接口保持一致
-- ✅ 符合低代码架构规范
-- ✅ 提升代码质量
+-  与字典接口保持一致
+-  符合低代码架构规范
+-  提升代码质量
 
 ---
 
 **修复人员**: AI Assistant (erp-lowcode-dev-assistant)  
 **修复日期**: 2026-03-25  
 **适用框架**: RuoYi-WMS + Vue 3 + Element Plus  
-**状态**: ✅ **配置修复完成，等待测试验证**
+**状态**:  **配置修复完成，等待测试验证**

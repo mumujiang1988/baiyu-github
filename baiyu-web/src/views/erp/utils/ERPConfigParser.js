@@ -41,18 +41,12 @@ class ERPConfigParser {
       console.log(' response.msg:', typeof response.msg, '长度:', response.msg?.length)
       
       if (response.code === 200 || response.code === 0) {
-        //  修复：后端返回的 data 字段可能是字符串或对象
+        // ✅ 修复：直接使用 data 字段，移除 msg 兼容代码
         let configContent;
-        
-        // 🔍 检查 response.data 是否存在，如果不存在尝试从 msg 字段获取（兼容处理）
-        let rawData = response.data;
-        if (!rawData && response.msg) {
-          console.warn(' response.data 为空，尝试从 msg 字段读取配置...')
-          rawData = response.msg;
-        }
+        const rawData = response.data;
         
         if (!rawData) {
-          console.error(' response.data 和 response.msg 都为空！', response)
+          console.error(' response.data 为空！', response)
           throw new Error('配置内容为空')
         }
         
@@ -284,13 +278,13 @@ class ERPConfigParser {
     const { dictionaryConfig } = this.config
     if (!dictionaryConfig) return
 
-    // ⭐ 强制使用新构建器模式
+    //  强制使用新构建器模式
     if (!dictionaryConfig.builder?.enabled) {
-      console.warn('⚠️ 未启用字典构建器，请设置 dictionaryConfig.builder.enabled = true')
+      console.warn(' 未启用字典构建器，请设置 dictionaryConfig.builder.enabled = true')
       return
     }
 
-    // ⭐ 强制使用 dictionaries 结构
+    //  强制使用 dictionaries 结构
     const dictMap = dictionaryConfig.dictionaries
     if (!dictMap) {
       console.error('❌ 字典配置格式错误：缺少 dictionaryConfig.dictionaries')

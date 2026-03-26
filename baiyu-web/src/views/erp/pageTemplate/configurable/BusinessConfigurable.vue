@@ -67,7 +67,7 @@
               :style="field.props.style"
             >
               <el-option
-                v-for="option in getDictOptions(field.dictionary, field.options)"
+                v-for="option in getDictOptions(field.dictionary, field.options, field.dictRequired)"
                 :key="option.value"
                 :label="option.label"
                 :value="option.value"
@@ -280,7 +280,7 @@
                     style="width: 100%"
                   >
                     <el-option
-                      v-for="option in getDictOptions(field.dictionary, field.options)"
+                      v-for="option in getDictOptions(field.dictionary, field.options, field.dictRequired)"
                       :key="option.value"
                       :label="option.label"
                       :value="option.value"
@@ -526,13 +526,13 @@ import {
   executeDynamicQuery,
   buildQueryConditions,
   getAvailableQueryTypes
-} from '../../../api/engine/query'
+} from '../../api/engine/query'
 import {
   executeValidation,
   batchValidate,
   getAvailableValidationRules,
   validateField
-} from '../../../api/engine/validation'
+} from '../../api/engine/validation'
 import {
   getCurrentApprovalStep,
   executeApproval,
@@ -541,7 +541,7 @@ import {
   getWorkflowDefinition,
   transferApproval,
   withdrawApproval
-} from '../../../api/engine/approval'
+} from '../../api/engine/approval'
 import {
   getPushTargets,
   executePushDown,
@@ -551,7 +551,7 @@ import {
   validatePushData,
   cancelPushDown,
   getPushHistory
-} from '../../../api/engine/push'
+} from '../../api/engine/push'
 
 // ==================== Props 定义（强制在线模式）====================
 const props = defineProps({
@@ -593,15 +593,22 @@ const getList = async () => {
     // 获取主表表名
     const tableName = getTableNameFromConfig()
     
+    // 获取 moduleCode
+    const moduleCode = currentConfig.value?.pageConfig?.moduleCode || 'business'
+    
+    console.log('🔍 主表格查询 - 开始')
+    console.log('🔍 主表格查询 - moduleCode:', moduleCode)
     console.log('🔍 主表格查询 - 表名:', tableName)
     console.log('🔍 主表格查询 - queryConfig:', mainQueryConfig)
+    console.log('🔍 主表格查询 - currentConfig:', currentConfig.value)
+    console.log('🔍 主表格查询 - pageConfig:', currentConfig.value?.pageConfig)
     
     // 使用通用引擎查询接口（构建器模式）
     const response = await request({
       url: '/erp/engine/query/execute',
       method: 'post',
       data: {
-        moduleCode: currentConfig.value?.pageConfig?.moduleCode || 'business',
+        moduleCode: moduleCode,
         tableName: tableName,
         queryConfig: mainQueryConfig,
         pageNum: queryParams.value.pageNum,
@@ -609,7 +616,7 @@ const getList = async () => {
       }
     })
     
-    console.log(' 主表格查询结果:', response)
+    console.log('✅ 主表格查询成功:', response)
     tableData.value = response.rows || []
     total.value = response.total || 0
     
@@ -698,7 +705,7 @@ const loadSubTablesData = async () => {
     // 暂时不查询子表格，等待展开行或详情页时再查询
     console.log(' 子表格配置已解析，等待需要时再查询')
   } catch (error) {
-    console.warn('⚠️ 加载子表格配置失败:', error.message)
+    console.warn(' 加载子表格配置失败:', error.message)
   }
 }
 
@@ -743,10 +750,19 @@ const loadSubTablesByBillNo = async (billNo) => {
 
 /**
  * 从配置获取表名
+ * @returns {string} 表名
+ * @throws {Error} 当配置中未指定表名时抛出错误
  */
 const getTableNameFromConfig = () => {
-  // 从配置中获取表名，或使用默认值
-  return currentConfig.value?.pageConfig?.tableName || 't_sale_order'
+  const tableName = currentConfig.value?.pageConfig?.tableName
+  
+  if (!tableName) {
+    const moduleCode = getModuleCode()
+    console.error(`❌ 模块 [${moduleCode}] 的配置中缺少 pageConfig.tableName 字段`)
+    throw new Error(`配置错误：请在 JSON 配置的 pageConfig.tableName 中指定表名`)
+  }
+  
+  return tableName
 }
 
 // 配置解析器
@@ -879,11 +895,45 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
-    // ✅ 构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
+    // ✅ 增强：在解析表单配置时标记必填字典
+    markRequiredDictionaries()
+    
+    //  构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
   } catch (error) {
     ElMessage.error(`加载配置失败：${error.message}`)
     throw error
   }
+}
+
+/**
+ * 标记必填字典（用于后续验证）
+ */
+const markRequiredDictionaries = () => {
+  const requiredDicts = new Set()
+  
+  // 遍历表单配置中的所有字段
+  parsedConfig.form?.sections?.forEach(section => {
+    section.fields.forEach(field => {
+      // 必填字段且有字典配置
+      if (field.required && field.dictionary) {
+        field.dictRequired = true
+        requiredDicts.add(field.dictionary)
+      }
+    })
+  })
+  
+  // 遍历搜索表单中的所有字段
+  parsedConfig.search?.fields?.forEach(field => {
+    if (field.required && field.dictionary) {
+      field.dictRequired = true
+      requiredDicts.add(field.dictionary)
+    }
+  })
+  
+  // 保存必填字典列表（供后续验证使用）
+  window._erpRequiredDicts = requiredDicts
+  
+  console.log('📋 必填字典列表:', Array.from(requiredDicts))
 }
 
 /**
@@ -910,7 +960,7 @@ const loadDatabaseConfig = async (moduleCode) => {
 }
 
 // 获取字典选项（纯构建器模式）
-const getDictOptions = (dictName, staticOptions) => {
+const getDictOptions = (dictName, staticOptions, required = false) => {
   // 优先使用静态配置
   if (staticOptions && Array.isArray(staticOptions)) {
     return staticOptions
@@ -925,14 +975,21 @@ const getDictOptions = (dictName, staticOptions) => {
     return []
   }
   
-  // ✅ 使用字典构建器引擎获取（无降级方案）
+  //  使用字典构建器引擎获取（无降级方案）
   const data = dictionaryBuilderEngine.get(dictName)
   if (data && data.length > 0) {
     return data
   }
   
-  // ⚠️ 如果字典未注册，返回空数组（不再降级到 parser）
-  console.warn(`⚠️ 字典未注册：${dictName}`)
+  //  增强验证：必填字典未注册时报错
+  if (required) {
+    console.error(`❌ 必填字典 "${dictName}" 未注册，页面无法正常使用`)
+    ElMessage.error(`必填字典 "${dictName}" 未注册，页面无法正常使用`)
+    throw new Error(`必填字典缺失：${dictName}`)
+  }
+  
+  // 非必填字典未注册时返回空数组
+  console.warn(`⚠️  字典未注册：${dictName}`)
   return []
 }
 
@@ -949,31 +1006,6 @@ const getTagConfig = (value, dictName) => {
   return {
     label: option?.label || value,
     type: option?.type || 'info'
-  }
-}
-
-// 查询列表 - 使用通用引擎 API
-const getList = async () => {
-  loading.value = true
-  try {
-    // 使用通用引擎查询接口
-    const response = await request({
-      url: '/erp/engine/list',
-      method: 'post',
-      data: {
-        ...queryParams.value,
-        moduleCode: BusinessTemplate.value?.pageConfig?.moduleCode || 'business'
-      }
-    })
-    
-    console.log(' 查询结果:', response)
-    tableData.value = response.rows || []
-    total.value = response.total || 0
-  } catch (error) {
-    console.error(' 查询失败:', error)
-    ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
-  } finally {
-    loading.value = false
   }
 }
 
@@ -1387,7 +1419,7 @@ const preloadDictionaries = async () => {
   try {
     const dictConfig = BusinessTemplate.value.dictionaryConfig
     if (!dictConfig || !dictConfig.builder?.enabled) {
-      console.log('⚠️ 字典构建器未启用，跳过预加载')
+      console.log(' 字典构建器未启用，跳过预加载')
       return
     }
 
@@ -1397,7 +1429,7 @@ const preloadDictionaries = async () => {
     // 预加载所有动态字典
     await dictionaryBuilderEngine.preloadAll(getModuleCode())
 
-    console.log('✅ 字典构建器预加载完成')
+    console.log(' 字典构建器预加载完成')
   } catch (error) {
     console.warn('❌ 预加载字典失败:', error.message)
   }

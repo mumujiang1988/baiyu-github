@@ -859,7 +859,7 @@ public class CustomerServiceImpl implements CustomerService {
                 }
             });
         } else {
-            log.warn("[QueryWrapper] ⚠️ 没有任何模糊搜索条件!");
+            log.warn("[QueryWrapper]  没有任何模糊搜索条件!");
         }
 
         log.info("[QueryWrapper] 最终SQL条件: {}", wrapper.getCustomSqlSegment());

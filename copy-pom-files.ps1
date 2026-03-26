@@ -15,7 +15,7 @@ Write-Host ""
 Write-Host "[1/15] 复制根 pom.xml..." -ForegroundColor Yellow
 if (Test-Path "$sourceBase\pom.xml") {
     Copy-Item -Path "$sourceBase\pom.xml" -Destination "$targetBase\pom.xml" -Force
-    Write-Host "  ✅ 已复制：pom.xml" -ForegroundColor Green
+    Write-Host "   已复制：pom.xml" -ForegroundColor Green
 } else {
     Write-Host "  ❌ 源文件不存在：$sourceBase\pom.xml" -ForegroundColor Red
 }
@@ -24,7 +24,7 @@ if (Test-Path "$sourceBase\pom.xml") {
 Write-Host "[2/15] 复制 ruoyi-admin-wms/pom.xml..." -ForegroundColor Yellow
 if (Test-Path "$sourceBase\ruoyi-admin-wms\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-admin-wms\pom.xml" -Destination "$targetBase\ruoyi-admin-wms\pom.xml" -Force
-    Write-Host "  ✅ 已复制：ruoyi-admin-wms/pom.xml" -ForegroundColor Green
+    Write-Host "   已复制：ruoyi-admin-wms/pom.xml" -ForegroundColor Green
 } else {
     Write-Host "  ❌ 源文件不存在" -ForegroundColor Red
 }
@@ -33,7 +33,7 @@ if (Test-Path "$sourceBase\ruoyi-admin-wms\pom.xml") {
 Write-Host "[3/15] 复制 ruoyi-common/pom.xml..." -ForegroundColor Yellow
 if (Test-Path "$sourceBase\ruoyi-common\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-common\pom.xml" -Destination "$targetBase\ruoyi-common\pom.xml" -Force
-    Write-Host "  ✅ 已复制：ruoyi-common/pom.xml" -ForegroundColor Green
+    Write-Host "   已复制：ruoyi-common/pom.xml" -ForegroundColor Green
 } else {
     Write-Host "  ❌ 源文件不存在" -ForegroundColor Red
 }
@@ -42,7 +42,7 @@ if (Test-Path "$sourceBase\ruoyi-common\pom.xml") {
 Write-Host "[4/15] 复制 ruoyi-common-bom/pom.xml..." -ForegroundColor Yellow
 if (Test-Path "$sourceBase\ruoyi-common\ruoyi-common-bom\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-common\ruoyi-common-bom\pom.xml" -Destination "$targetBase\ruoyi-common\ruoyi-common-bom\pom.xml" -Force
-    Write-Host "  ✅ 已复制" -ForegroundColor Green
+    Write-Host "   已复制" -ForegroundColor Green
 }
 
 # 5-18. 复制 ruoyi-common 子模块
@@ -62,9 +62,9 @@ for ($i = 0; $i -lt $commonModules.Length; $i++) {
     
     if (Test-Path $sourcePath) {
         Copy-Item -Path $sourcePath -Destination $targetPath -Force
-        Write-Host "  ✅ 已复制：ruoyi-common/$module/pom.xml" -ForegroundColor Green
+        Write-Host "   已复制：ruoyi-common/$module/pom.xml" -ForegroundColor Green
     } else {
-        Write-Host "  ⚠️  跳过：$module (源文件不存在)" -ForegroundColor Gray
+        Write-Host "    跳过：$module (源文件不存在)" -ForegroundColor Gray
     }
 }
 
@@ -72,7 +72,7 @@ for ($i = 0; $i -lt $commonModules.Length; $i++) {
 Write-Host "[19/23] 复制 ruoyi-modules/pom.xml..." -ForegroundColor Yellow
 if (Test-Path "$sourceBase\ruoyi-modules\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-modules\pom.xml" -Destination "$targetBase\ruoyi-modules\pom.xml" -Force
-    Write-Host "  ✅ 已复制：ruoyi-modules/pom.xml" -ForegroundColor Green
+    Write-Host "   已复制：ruoyi-modules/pom.xml" -ForegroundColor Green
 } else {
     Write-Host "  ❌ 源文件不存在" -ForegroundColor Red
 }
@@ -88,9 +88,9 @@ for ($i = 0; $i -lt $modulesModules.Length; $i++) {
     
     if (Test-Path $sourcePath) {
         Copy-Item -Path $sourcePath -Destination $targetPath -Force
-        Write-Host "  ✅ 已复制：ruoyi-modules/$module/pom.xml" -ForegroundColor Green
+        Write-Host "   已复制：ruoyi-modules/$module/pom.xml" -ForegroundColor Green
     } else {
-        Write-Host "  ⚠️  跳过：$module (源文件不存在)" -ForegroundColor Gray
+        Write-Host "    跳过：$module (源文件不存在)" -ForegroundColor Gray
     }
 }
 

@@ -54,11 +54,11 @@ public class RedisConfig {
             // 指定序列化输入的类型，类必须是非 final 修饰的。序列化时将对象全类名一起保存下来
             om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
                         
-            // ✅ 创建纯 JSON 序列化器，避免 FST 二进制格式
+            //  创建纯 JSON 序列化器，避免 FST 二进制格式
             // 使用 TypedJsonJacksonCodec 确保前后端都能解析
             TypedJsonJacksonCodec jsonCodec = new TypedJsonJacksonCodec(Object.class, om);
             
-            // ✅ 组合序列化：key 使用 String，value 使用纯 JSON 格式
+            //  组合序列化：key 使用 String，value 使用纯 JSON 格式
             // 这样前端可以直接 JSON.parse() 解析，不会有二进制前缀
             CompositeCodec codec = new CompositeCodec(
                 StringCodec.INSTANCE,  // Key: 纯字符串

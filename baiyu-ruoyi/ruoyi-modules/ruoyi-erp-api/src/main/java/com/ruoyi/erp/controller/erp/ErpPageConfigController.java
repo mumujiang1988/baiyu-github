@@ -243,18 +243,22 @@ public class ErpPageConfigController extends BaseController {
     @SaCheckPermission("erp:config:query")
     @GetMapping("/get/{moduleCode}")
     public R<String> getPageConfig(@PathVariable String moduleCode) {
-        log.info("[ErpPageConfigController] 请求页面配置，moduleCode: {}", moduleCode);
+        log.info("🔍 [ErpPageConfigController] 请求页面配置，moduleCode: {}", moduleCode);
         String config = pageConfigService.getPageConfig(moduleCode);
         
         if (config == null) {
-            log.error("[ErpPageConfigController] 返回失败，未找到配置，moduleCode: {}", moduleCode);
+            log.error("❌ [ErpPageConfigController] 返回失败，未找到配置，moduleCode: {}", moduleCode);
             return R.fail("未找到配置");
         }
         
-        log.info("[ErpPageConfigController] 返回成功，moduleCode: {}, configLength: {}", 
+        log.info("✅ [ErpPageConfigController] 返回成功，moduleCode: {}, configLength: {}", 
             moduleCode, config.length());
         
-        //  明确设置 data 字段为配置内容，msg 为提示信息
-        return R.ok("操作成功", config);
+        // 🔍 打印配置内容的前 200 个字符用于调试
+        String preview = config.length() > 200 ? config.substring(0, 200) + "..." : config;
+        log.info("📝 [ErpPageConfigController] 配置预览：{}", preview);
+        
+        // ✅ 修复：始终使用 data 字段返回配置，不使用第二个参数（避免放入 msg）
+        return R.ok(config);
     }
 }

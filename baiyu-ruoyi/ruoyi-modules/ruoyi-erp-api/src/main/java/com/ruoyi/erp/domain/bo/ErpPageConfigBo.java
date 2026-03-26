@@ -45,10 +45,29 @@ public class ErpPageConfigBo extends BaseEntity {
     private String configType;
 
     /**
-     * 完整的 JSON 配置内容
+     * 页面基础配置 (page.json)
      */
-    @NotBlank(message = "配置内容不能为空")
-    private String configContent;
+    private String pageConfig;
+
+    /**
+     * 表单 UI 组件配置 (form.json)
+     */
+    private String formConfig;
+
+    /**
+     * 表格查询配置 (table.json)
+     */
+    private String tableConfig;
+
+    /**
+     * 字典数据源配置 (dict.json)
+     */
+    private String dictConfig;
+
+    /**
+     * 业务规则配置 (config.json)
+     */
+    private String businessConfig;
 
     /**
      * 版本号 (每次更新 +1)

@@ -55,7 +55,7 @@ public class DictionaryBuilderEngine {
      */
     public DictionaryBuilderEngine buildStatic(String name, List<Map<String, Object>> options) {
         dictionaryCache.put(name, new DictionaryCache(options, Long.MAX_VALUE));
-        log.info("✅ 构建静态字典：{}, 共 {} 条", name, options.size());
+        log.info(" 构建静态字典：{}, 共 {} 条", name, options.size());
         return this;
     }
     
@@ -72,7 +72,7 @@ public class DictionaryBuilderEngine {
         cacheConfig.putAll(config);
         
         dictionaryCache.put(name, new DictionaryCache(null, DEFAULT_TTL));
-        log.info("✅ 构建动态字典：{}", name);
+        log.info(" 构建动态字典：{}", name);
         return this;
     }
     
@@ -89,7 +89,7 @@ public class DictionaryBuilderEngine {
         cacheConfig.putAll(config);
         
         dictionaryCache.put(name, new DictionaryCache(new ArrayList<>(), DEFAULT_TTL));
-        log.info("✅ 构建远程搜索字典：{}", name);
+        log.info(" 构建远程搜索字典：{}", name);
         return this;
     }
     
@@ -105,7 +105,7 @@ public class DictionaryBuilderEngine {
         DictionaryCache cache = dictionaryCache.get(name);
         
         if (cache == null) {
-            log.warn("⚠️ 字典不存在：{}", name);
+            log.warn(" 字典不存在：{}", name);
             return new ArrayList<>();
         }
         
@@ -121,7 +121,7 @@ public class DictionaryBuilderEngine {
             
             // 更新缓存
             dictionaryCache.put(name, new DictionaryCache(data, cache.ttl));
-            log.info("✅ 字典加载成功：{}, 共 {} 条", name, data.size());
+            log.info(" 字典加载成功：{}, 共 {} 条", name, data.size());
             
             return data;
         } catch (Exception e) {
@@ -144,7 +144,7 @@ public class DictionaryBuilderEngine {
         DictionaryCache cache = dictionaryCache.get(name);
         
         if (cache == null) {
-            log.warn("⚠️ 字典不存在：{}", name);
+            log.warn(" 字典不存在：{}", name);
             return new ArrayList<>();
         }
         
@@ -154,7 +154,7 @@ public class DictionaryBuilderEngine {
             
             // 更新缓存
             dictionaryCache.put(name, new DictionaryCache(data, cache.ttl));
-            log.info("✅ 字典搜索成功：{}, 共 {} 条", name, data.size());
+            log.info(" 字典搜索成功：{}, 共 {} 条", name, data.size());
             
             return data;
         } catch (Exception e) {
