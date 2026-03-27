@@ -109,3 +109,5 @@ baiyu-web/.gitignore
 */target
 *.zip
 /后端备份/ruoyi-modules/ruoyi-system/target
+/target
+baiyu-ruoyi/ruoyi-modules/ruoyi-erp-api/nul
