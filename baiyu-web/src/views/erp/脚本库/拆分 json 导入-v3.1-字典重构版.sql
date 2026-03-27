@@ -1,9 +1,17 @@
 -- ============================================
--- ERP 配置 JSON 强制拆分方案 - 销售订单模块导入 SQL
--- 版本：v2.1 (生产交付标准版 - 含 detail_config)
--- 日期：2026-03-26
--- 说明：导入销售订单页面配置数据（6 字段强制拆分，包含详情页配置）
--- 适用范围：生产环境部署
+-- ERP 配置 JSON 强制拆分方案 - 销售订单模块导入 SQL（字典重构版）
+-- 版本：v3.1 (字典构建器格式)
+-- 日期：2026-03-27
+-- 说明：导入销售订单页面配置数据（8 字段强制拆分 + 新字典格式）
+--   - page_config: 页面基础配置
+--   - form_config: 表单配置
+--   - table_config: 表格列配置
+--   - search_config: 搜索区域配置（新增）
+--   - action_config: 按钮操作配置（新增）
+--   - dict_config: 字典数据源配置（✨ 重构为新构建器格式）
+--   - business_config: 业务规则配置
+--   - detail_config: 详情页配置
+-- 适用范围：生产环境部署（支持新的字典构建器）
 -- ============================================
 
 USE test;
@@ -27,7 +35,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 第二步：插入销售订单页面配置数据
 -- ============================================
 
--- 销售订单页面配置（6 字段强制拆分，包含 detail_config）
+-- 销售订单页面配置（8 字段强制拆分，包含 search_config 和 action_config）
 INSERT INTO `erp_page_config` (
   `module_code`,
   `config_name`,
@@ -35,6 +43,8 @@ INSERT INTO `erp_page_config` (
   `page_config`,
   `form_config`,
   `table_config`,
+  `search_config`,
+  `action_config`,
   `dict_config`,
   `business_config`,
   `detail_config`,
@@ -48,7 +58,7 @@ INSERT INTO `erp_page_config` (
   '销售订单管理',
   'PAGE',
   
-  -- page_config: 页面基础配置 (统一为 JSON 字符串格式)
+  -- page_config: 页面基础配置
   '{
     "pageId": "saleorder",
     "pageName": "销售订单管理",
@@ -243,99 +253,10 @@ INSERT INTO `erp_page_config` (
     ]
   }',
   
-  -- table_config: 从 table.json 读取
+  -- table_config: 从 table.json 读取（只包含表格列配置）
   '{
     "tableName": "t_sale_order",
     "primaryKey": "id",
-    "queryBuilder": {
-      "enabled": true,
-      "fields": [
-        {
-          "field": "FDate",
-          "label": "日期区间",
-          "component": "daterange",
-          "op": "between",
-          "props": {
-            "startPlaceholder": "开始日期",
-            "endPlaceholder": "结束日期",
-            "valueFormat": "YYYY-MM-DD",
-            "style": {"width": "240px"}
-          },
-          "defaultValue": "currentMonth"
-        },
-        {
-          "field": "FBillNo",
-          "label": "单据编号",
-          "component": "input",
-          "op": "right_like",
-          "props": {
-            "placeholder": "输入单据编号",
-            "clearable": true,
-            "prefixIcon": "Search",
-            "style": {"width": "180px"}
-          }
-        },
-        {
-          "field": "F_ora_BaseProperty",
-          "label": "客户简称",
-          "component": "input",
-          "op": "like",
-          "props": {
-            "placeholder": "输入客户简称",
-            "clearable": true,
-            "prefixIcon": "User",
-            "style": {"width": "150px"}
-          }
-        },
-        {
-          "field": "FSalerId",
-          "label": "销售员",
-          "component": "select",
-          "op": "eq",
-          "dictionary": "salespersons",
-          "props": {
-            "placeholder": "选择销售员",
-            "clearable": true,
-            "filterable": true,
-            "style": {"width": "120px"}
-          }
-        },
-        {
-          "field": "orderStatus",
-          "label": "订单状态",
-          "component": "select",
-          "op": "eq",
-          "dictionary": "orderStatus",
-          "props": {
-            "placeholder": "选择状态",
-            "clearable": true,
-            "style": {"width": "100px"}
-          }
-        },
-        {
-          "field": "FDocumentStatus",
-          "label": "单据状态",
-          "component": "select",
-          "op": "eq",
-          "dictionary": "documentStatus",
-          "props": {
-            "placeholder": "选择单据状态",
-            "clearable": true,
-            "filterable": true,
-            "style": {"width": "120px"}
-          }
-        }
-      ],
-      "defaultConditions": [
-        {"field": "FDate", "operator": "between", "value": ["${startDate}", "${endDate}"], "description": "日期范围查询"},
-        {"field": "FBillNo", "operator": "right_like", "value": "${billNo}", "description": "单据编号右模糊查询"},
-        {"field": "F_ora_BaseProperty", "operator": "like", "value": "${customerName}", "description": "客户简称模糊查询"},
-        {"field": "FSalerId", "operator": "eq", "value": "${salerId}", "description": "销售员精确匹配"},
-        {"field": "orderStatus", "operator": "eq", "value": "${status}", "description": "订单状态精确匹配"},
-        {"field": "FDocumentStatus", "operator": "eq", "value": "${docStatus}", "description": "单据状态精确匹配"}
-      ],
-      "defaultOrderBy": [{"field": "FCreateDate", "direction": "DESC"}]
-    },
     "columns": [
       {"type": "selection", "width": 55, "fixed": "left", "resizable": false},
       {"type": "expand", "width": 100, "fixed": "left", "resizable": false, "label": "详情"},
@@ -357,120 +278,308 @@ INSERT INTO `erp_page_config` (
     }
   }',
   
-  -- dict_config: 从 dict.json 读取
+  -- search_config: 从 search.json 读取（查询表单配置）
   '{
-    "dicts": [
+    "showSearch": true,
+    "defaultExpand": true,
+    "fields": [
       {
-        "dictKey": "salespersons",
-        "dictType": "dynamic",
-        "table": "sys_user",
-        "conditions": [{"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "nick_name", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "user_id", "labelField": "nick_name"},
-        "config": {"api": "/erp/engine/dictionary/salespersons/data?moduleCode={moduleCode}", "labelField": "nickName", "valueField": "fseller", "ttl": 600000},
-        "cacheable": true,
-        "cacheTTL": 600000
+        "field": "FDate",
+        "label": "日期区间",
+        "component": "daterange",
+        "props": {
+          "startPlaceholder": "开始日期",
+          "endPlaceholder": "结束日期",
+          "valueFormat": "YYYY-MM-DD",
+          "style": {"width": "240px"}
+        },
+        "defaultValue": "currentMonth",
+        "changeEvent": "handleQuery",
+        "queryOperator": "between"
       },
       {
-        "dictKey": "currency",
-        "dictType": "dynamic",
-        "table": "bymaterial_dictionary",
-        "conditions": [{"field": "category", "operator": "eq", "value": "currency"}, {"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "name", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "kingdee", "labelField": "name"},
-        "config": {"api": "/erp/engine/dictionary/currency/data?moduleCode={moduleCode}", "labelField": "name", "valueField": "kingdee", "ttl": 600000},
-        "cacheable": true,
-        "cacheTTL": 600000
+        "field": "FBillNo",
+        "label": "单据编号",
+        "component": "input",
+        "props": {
+          "placeholder": "输入单据编号",
+          "clearable": true,
+          "prefixIcon": "Search",
+          "style": {"width": "180px"}
+        },
+        "queryOperator": "right_like"
       },
       {
-        "dictKey": "paymentTerms",
-        "dictType": "dynamic",
-        "table": "bymaterial_dictionary",
-        "conditions": [{"field": "category", "operator": "eq", "value": "payment_clause"}, {"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "name", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "kingdee", "labelField": "name"},
-        "config": {"api": "/erp/engine/dictionary/paymentTerms/data?moduleCode={moduleCode}", "labelField": "name", "valueField": "kingdee", "ttl": 600000},
-        "cacheable": true,
-        "cacheTTL": 600000
+        "field": "F_ora_BaseProperty",
+        "label": "客户简称",
+        "component": "input",
+        "props": {
+          "placeholder": "输入客户简称",
+          "clearable": true,
+          "prefixIcon": "User",
+          "style": {"width": "150px"}
+        },
+        "queryOperator": "like"
       },
       {
-        "dictKey": "nation",
-        "dictType": "remote",
-        "config": {"searchApi": "/erp/engine/dictionary/search/nation?keyword={keyword}&moduleCode={moduleCode}", "minKeywordLength": 1, "debounce": 300}
+        "field": "FSalerId",
+        "label": "销售员",
+        "component": "select",
+        "dictionary": "salespersons",
+        "props": {
+          "placeholder": "选择销售员",
+          "clearable": true,
+          "filterable": true,
+          "style": {"width": "120px"}
+        },
+        "defaultValue": "",
+        "queryOperator": "eq"
       },
       {
-        "dictKey": "tradeType",
-        "dictType": "dynamic",
-        "table": "bymaterial_dictionary",
-        "conditions": [{"field": "category", "operator": "eq", "value": "trade_way"}, {"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "name", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "kingdee", "labelField": "name"},
-        "config": {"api": "/erp/engine/dictionary/tradeType/data?moduleCode={moduleCode}", "labelField": "name", "valueField": "kingdee", "ttl": 600000},
-        "cacheable": true,
-        "cacheTTL": 600000
+        "field": "orderStatus",
+        "label": "订单状态",
+        "component": "select",
+        "dictionary": "orderStatus",
+        "props": {
+          "placeholder": "选择状态",
+          "clearable": true,
+          "style": {"width": "100px"}
+        },
+        "defaultValue": "",
+        "queryOperator": "eq"
       },
       {
-        "dictKey": "customers",
-        "dictType": "dynamic",
-        "table": "bd_customer",
-        "conditions": [{"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "fname", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "fnumber", "labelField": "fname"},
-        "config": {"api": "/erp/engine/dictionary/customers/data?moduleCode={moduleCode}", "labelField": "fname", "valueField": "fnumber", "ttl": 300000},
-        "cacheable": true,
-        "cacheTTL": 300000
-      },
-      {
-        "dictKey": "materials",
-        "dictType": "dynamic",
-        "table": "by_material",
-        "conditions": [{"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "name", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "materialId", "labelField": "name"},
-        "config": {"api": "/erp/engine/dictionary/materials/data?moduleCode={moduleCode}", "labelField": "materialName", "valueField": "materialId", "ttl": 300000},
-        "cacheable": true,
-        "cacheTTL": 300000
-      },
-      {
-        "dictKey": "productCategory",
-        "dictType": "dynamic",
-        "table": "bymaterial_dictionary",
-        "conditions": [{"field": "category", "operator": "eq", "value": "product_category"}, {"field": "deleted", "operator": "isNull"}],
-        "orderBy": [{"field": "name", "direction": "ASC"}],
-        "fieldMapping": {"valueField": "kingdee", "labelField": "name"},
-        "config": {"api": "/erp/engine/dictionary/productCategory/data?moduleCode={moduleCode}", "labelField": "name", "valueField": "kingdee", "ttl": 600000},
-        "cacheable": true,
-        "cacheTTL": 600000
-      },
-      {
-        "dictKey": "orderStatus",
-        "dictType": "static",
-        "data": [{"label": "未关闭", "value": "A", "type": "success"}, {"label": "已关闭", "value": "B", "type": "info"}, {"label": "业务终止", "value": "C", "type": "danger"}]
-      },
-      {
-        "dictKey": "documentStatus",
-        "dictType": "static",
-        "data": [{"label": "暂存", "value": "Z", "type": "info"}, {"label": "创建", "value": "A", "type": "success"}, {"label": "审核中", "value": "B", "type": "warning"}, {"label": "已审核", "value": "C", "type": "success"}, {"label": "重新审核", "value": "D", "type": "primary"}]
+        "field": "FDocumentStatus",
+        "label": "单据状态",
+        "component": "select",
+        "dictionary": "documentStatus",
+        "props": {
+          "placeholder": "选择单据状态",
+          "clearable": true,
+          "filterable": true,
+          "style": {"width": "120px"}
+        },
+        "defaultValue": "",
+        "queryOperator": "eq"
       }
+    ]
+  }',
+  
+  -- action_config: 按钮操作配置（从 config.json 的 buttons 提取）
+  '{
+    "toolbar": [
+      {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:saleorder:add", "type": "primary", "position": "left", "handler": "handleAdd"},
+      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "k3:saleorder:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
+      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "k3:saleorder:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
+      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "k3:saleorder:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
+      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "k3:saleorder:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
+      {"key": "push", "label": "下推", "icon": "Download", "permission": "k3:saleorder:push", "type": "info", "position": "left", "disabled": "single", "handler": "handleOpenPushDialog"},
+      {"key": "export", "label": "导出", "icon": "Download", "permission": "k3:saleorder:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
+      {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
+    "row": []
+  }',
+  
+  -- ✨ dict_config: 从 dict.json 读取（重构为新构建器格式）
+  -- ✨ 变更：从 dicts 数组改为 dictionaries 对象，增加 builder.enabled
+  '{
+    "builder": {
+      "enabled": true
+    },
+    "dictionaries": {
+      "salespersons": {
+        "type": "dynamic",
+        "table": "sys_user",
+        "conditions": [
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "nick_name", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "user_id",
+          "labelField": "nick_name"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/salespersons/data?moduleCode={moduleCode}",
+          "labelField": "nickName",
+          "valueField": "fseller",
+          "ttl": 600000
+        },
+        "cacheable": true,
+        "cacheTTL": 600000
+      },
+      "currency": {
+        "type": "dynamic",
+        "table": "bymaterial_dictionary",
+        "conditions": [
+          {"field": "category", "operator": "eq", "value": "currency"},
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "name", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "kingdee",
+          "labelField": "name"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/currency/data?moduleCode={moduleCode}",
+          "labelField": "name",
+          "valueField": "kingdee",
+          "ttl": 600000
+        },
+        "cacheable": true,
+        "cacheTTL": 600000
+      },
+      "paymentTerms": {
+        "type": "dynamic",
+        "table": "bymaterial_dictionary",
+        "conditions": [
+          {"field": "category", "operator": "eq", "value": "payment_clause"},
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "name", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "kingdee",
+          "labelField": "name"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/paymentTerms/data?moduleCode={moduleCode}",
+          "labelField": "name",
+          "valueField": "kingdee",
+          "ttl": 600000
+        },
+        "cacheable": true,
+        "cacheTTL": 600000
+      },
+      "nation": {
+        "type": "remote",
+        "config": {
+          "searchApi": "/erp/engine/country/search?keyword={keyword}&limit=20",
+          "minKeywordLength": 1,
+          "debounce": 300
+        }
+      },
+      "tradeType": {
+        "type": "dynamic",
+        "table": "bymaterial_dictionary",
+        "conditions": [
+          {"field": "category", "operator": "eq", "value": "trade_way"},
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "name", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "kingdee",
+          "labelField": "name"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/tradeType/data?moduleCode={moduleCode}",
+          "labelField": "name",
+          "valueField": "kingdee",
+          "ttl": 600000
+        },
+        "cacheable": true,
+        "cacheTTL": 600000
+      },
+      "customers": {
+        "type": "dynamic",
+        "table": "bd_customer",
+        "conditions": [
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "fname", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "fnumber",
+          "labelField": "fname"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/customers/data?moduleCode={moduleCode}",
+          "labelField": "fname",
+          "valueField": "fnumber",
+          "ttl": 300000
+        },
+        "cacheable": true,
+        "cacheTTL": 300000
+      },
+      "materials": {
+        "type": "dynamic",
+        "table": "by_material",
+        "conditions": [
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "name", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "materialId",
+          "labelField": "name"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/materials/data?moduleCode={moduleCode}",
+          "labelField": "materialName",
+          "valueField": "materialId",
+          "ttl": 300000
+        },
+        "cacheable": true,
+        "cacheTTL": 300000
+      },
+      "productCategory": {
+        "type": "dynamic",
+        "table": "bymaterial_dictionary",
+        "conditions": [
+          {"field": "category", "operator": "eq", "value": "product_category"},
+          {"field": "deleted", "operator": "isNull"}
+        ],
+        "orderBy": [
+          {"field": "name", "direction": "ASC"}
+        ],
+        "fieldMapping": {
+          "valueField": "kingdee",
+          "labelField": "name"
+        },
+        "config": {
+          "api": "/erp/engine/dictionary/productCategory/data?moduleCode={moduleCode}",
+          "labelField": "name",
+          "valueField": "kingdee",
+          "ttl": 600000
+        },
+        "cacheable": true,
+        "cacheTTL": 600000
+      },
+      "orderStatus": {
+        "type": "static",
+        "data": [
+          {"label": "未关闭", "value": "A", "type": "success"},
+          {"label": "已关闭", "value": "B", "type": "info"},
+          {"label": "业务终止", "value": "C", "type": "danger"}
+        ]
+      },
+      "documentStatus": {
+        "type": "static",
+        "data": [
+          {"label": "暂存", "value": "Z", "type": "info"},
+          {"label": "创建", "value": "A", "type": "success"},
+          {"label": "审核中", "value": "B", "type": "warning"},
+          {"label": "已审核", "value": "C", "type": "success"},
+          {"label": "重新审核", "value": "D", "type": "primary"}
+        ]
+      }
+    },
     "globalCacheSettings": {
       "enabled": true,
       "defaultTTL": 300000
     }
   }',
   
-  -- business_config: 从 config.json 读取
+  -- business_config: 业务消息和实体名称配置（已移除 buttons 到 action_config）
   '{
-    "buttons": [
-      {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:saleorder:add", "type": "primary", "position": "left"},
-      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "k3:saleorder:edit", "type": "success", "position": "left", "disabled": "single"},
-      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "k3:saleorder:remove", "type": "danger", "position": "left", "disabled": "multiple", "confirm": "是否确认删除选中的 {count} 条数据？"},
-      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "k3:saleorder:audit", "type": "success", "position": "left", "disabled": "multiple", "confirm": "是否确认审核选中的 {count} 条数据？"},
-      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "k3:saleorder:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "confirm": "是否确认反审核选中的 {count} 条数据？"},
-      {"key": "push", "label": "下推", "icon": "Download", "permission": "k3:saleorder:push", "type": "info", "position": "left", "disabled": "single"},
-      {"key": "export", "label": "导出", "icon": "Download", "permission": "k3:saleorder:export", "type": "warning", "position": "left", "disabled": "multiple"},
-      {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right"}
-    ],
     "messages": {
       "selectOne": "请选择一条数据",
       "confirmDelete": "是否确认删除选中的 {count} 条数据？",
@@ -590,7 +699,7 @@ INSERT INTO `erp_page_config` (
   '1',
   '0',
   'admin',
-  '销售订单配置（JSON 强制拆分版 - 含详情页配置）'
+  '销售订单配置（v3.1 字典构建器格式 - 支持 DictionaryBuilder 和 DictionaryLoader）'
 );
 
 -- ============================================
@@ -598,7 +707,7 @@ INSERT INTO `erp_page_config` (
 -- ============================================
 
 SELECT '========================================' AS '';
-SELECT '✅ 销售订单配置导入成功！' AS '';
+SELECT '✅ 销售订单配置导入成功（字典重构版）！' AS '';
 SELECT '========================================' AS '';
 
 SELECT 
@@ -609,9 +718,11 @@ SELECT
   status,
   JSON_LENGTH(page_config) AS page_fields,
   JSON_LENGTH(form_config) AS form_fields,
+  JSON_LENGTH(search_config) AS search_fields,
+  JSON_LENGTH(action_config) AS actions,
   JSON_LENGTH(table_config) AS table_columns,
   JSON_LENGTH(dict_config) AS dictionaries,
-  JSON_LENGTH(business_config) AS buttons,
+  JSON_LENGTH(business_config) AS business_rules,
   JSON_LENGTH(detail_config) AS detail_tabs
 FROM erp_page_config
 WHERE module_code = 'saleorder';
@@ -621,13 +732,21 @@ SELECT '📊 配置统计信息：' AS '';
 SELECT '========================================' AS '';
 SELECT 
   CONCAT('页面配置字段数：', JSON_LENGTH(JSON_EXTRACT(form_config, '$.fields'))) AS form_fields_count,
+  CONCAT('搜索字段数：', JSON_LENGTH(JSON_EXTRACT(search_config, '$.fields'))) AS search_fields_count,
+  CONCAT('工具栏按钮数：', JSON_LENGTH(JSON_EXTRACT(action_config, '$.toolbar'))) AS toolbar_buttons_count,
   CONCAT('表格列数：', JSON_LENGTH(JSON_EXTRACT(table_config, '$.columns'))) AS table_columns_count,
-  CONCAT('字典数量：', JSON_LENGTH(JSON_EXTRACT(dict_config, '$.dicts'))) AS dicts_count,
-  CONCAT('按钮数量：', JSON_LENGTH(JSON_EXTRACT(business_config, '$.buttons'))) AS buttons_count,
+  CONCAT('字典数量：', JSON_LENGTH(JSON_EXTRACT(dict_config, '$.dictionaries'))) AS dicts_count,
   CONCAT('详情页签数：', JSON_LENGTH(JSON_EXTRACT(detail_config, '$.detail.tabs'))) AS detail_tabs_count
 FROM erp_page_config
 WHERE module_code = 'saleorder';
 
+SELECT '========================================' AS '';
+SELECT '✨ 字典配置升级说明：' AS '';
+SELECT '========================================' AS '';
+SELECT '  ✅ 格式：dicts 数组 → dictionaries 对象' AS upgrade1;
+SELECT '  ✅ 新增：builder.enabled = true' AS upgrade2;
+SELECT '  ✅ 类型：dictType → type' AS upgrade3;
+SELECT '  ✅ 支持：DictionaryBuilder 和 DictionaryLoader' AS upgrade4;
 SELECT '========================================' AS '';
 SELECT '下一步操作：' AS '';
 SELECT '  后续将添加：' AS note1;

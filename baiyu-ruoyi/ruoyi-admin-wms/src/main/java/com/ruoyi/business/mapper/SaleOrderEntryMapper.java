@@ -9,11 +9,11 @@ import java.util.List;
 @Mapper
 public interface SaleOrderEntryMapper {
     /**
-     * 根据订单编号查询销售订单明细列表
-     * @param fbillNo 订单单据编号
+     * 根据订单ID查询销售订单明细列表
+     * @param fid 订单主键ID
      * @return 销售订单明细列表
      */
-    List<SaleOrderEntry> selectByOrderId(@Param("fbillNo") String fbillNo);
+    List<SaleOrderEntry> selectByOrderId(Long fid);
 
     /**
      * 插入销售订单明细

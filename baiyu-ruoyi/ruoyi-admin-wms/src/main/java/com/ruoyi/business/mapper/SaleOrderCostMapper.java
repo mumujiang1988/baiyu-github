@@ -2,7 +2,6 @@ package com.ruoyi.business.mapper;
 
 import com.ruoyi.business.entity.SaleOrderCost;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -10,17 +9,10 @@ import java.util.List;
 public interface SaleOrderCostMapper {
     /**
      * 根据主键查询销售订单成本
-     * @param fid 主键 ID（销售订单 FID）
+     * @param fid 主键ID（销售订单FID）
      * @return 销售订单成本实体
      */
     SaleOrderCost selectById(Long fid);
-    
-    /**
-     * 根据单据编号查询销售订单成本
-     * @param fbillNo 单据编号
-     * @return 销售订单成本实体
-     */
-    SaleOrderCost selectByBillNo(@Param("fbillNo") String fbillNo);
     
     /**
      * 插入销售订单成本

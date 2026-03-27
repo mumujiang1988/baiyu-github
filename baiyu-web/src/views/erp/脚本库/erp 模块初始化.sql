@@ -1,11 +1,12 @@
 -- ============================================
--- ERP配置化 JSON 强制拆分方案 - 数据库初始化脚本
--- 版本：v2.0 (强制拆分版)
--- 日期：2026-03-26
+-- ERP 配置化 JSON 强制拆分方案 - 数据库初始化脚本
+-- 版本：v3.0 (完全拆分版 - 8 字段)
+-- 日期：2026-03-27
 -- 说明：
---   - 强制拆分 JSON 配置为 5 个独立字段
+--   - 强制拆分 JSON 配置为 8 个独立字段
+--   - 新增 search_config（搜索区域配置）
+--   - 新增 action_config（按钮操作配置）
 --   - 不包含历史数据兼容
---   - 不包含旧实现清理逻辑
 --   - 行业标准做法，支持复用、审计、高性能
 -- ============================================
 
@@ -16,7 +17,8 @@ USE test;
 -- ============================================
 -- 1. 此脚本会删除所有旧数据并重建表结构
 -- 2. 不再兼容旧的 config_content 单字段设计
--- 3. 采用全新的 5 字段强制拆分架构
+-- 3. 采用全新的 8 字段强制拆分架构
+--    (page/form/table/search/action/dict/business/detail)
 -- ============================================
 
 -- ============================================
@@ -37,20 +39,22 @@ DROP TRIGGER IF EXISTS `trg_erp_config_history`;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
--- 第二步：创建核心表结构（强制拆分版）
+-- 第二步：创建核心表结构（强制拆分版 - 8 字段）
 -- ============================================
 
--- 1. 页面配置表（核心表 - 5 字段强制拆分）
+-- 1. 页面配置表（核心表 - 8 字段强制拆分）
 CREATE TABLE `erp_page_config` (
   `config_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '配置 ID',
   `module_code` VARCHAR(100) NOT NULL COMMENT '模块编码（唯一标识）',
   `config_name` VARCHAR(200) NOT NULL COMMENT '配置名称',
   `config_type` VARCHAR(50) NOT NULL DEFAULT 'PAGE' COMMENT '配置类型（PAGE/FORM/TABLE/DICT/BUSINESS）',
   
-  -- ========== 强制拆分的 6 个 JSON 字段 ==========
+  -- ========== 强制拆分的 8 个 JSON 字段 ==========
   `page_config` JSON NOT NULL COMMENT '页面基础配置 (page.json)',
   `form_config` JSON COMMENT '表单 UI 组件配置 (form.json)',
-  `table_config` JSON COMMENT '表格查询配置 (table.json)',
+  `table_config` JSON COMMENT '表格列配置 (table.json)',
+  `search_config` JSON COMMENT '查询表单配置 (search.json)',
+  `action_config` JSON COMMENT '按钮操作配置 (action.json)',
   `dict_config` JSON COMMENT '字典数据源配置 (dict.json)',
   `business_config` JSON COMMENT '业务规则配置 (config.json)',
   `detail_config` JSON COMMENT '详情页配置 (detail.json)',
@@ -70,7 +74,7 @@ CREATE TABLE `erp_page_config` (
   UNIQUE KEY `uk_module_code` (`module_code`),
   KEY `idx_status` (`status`),
   KEY `idx_parent` (`parent_config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP 页面配置表（强制拆分版 - 6 字段）';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP 页面配置表（强制拆分版 - 8 字段）';
 
 -- 2. 配置历史表（版本控制）
 CREATE TABLE `erp_page_config_history` (
@@ -79,10 +83,12 @@ CREATE TABLE `erp_page_config_history` (
   `module_code` VARCHAR(100) NOT NULL COMMENT '模块编码',
   `version` INT NOT NULL COMMENT '版本号',
   
-  -- 历史快照（同样拆分 6 个字段）
+  -- 历史快照（同样拆分 8 个字段）
   `page_config` JSON COMMENT '页面配置快照',
   `form_config` JSON COMMENT '表单配置快照',
   `table_config` JSON COMMENT '表格配置快照',
+  `search_config` JSON COMMENT '搜索配置快照',
+  `action_config` JSON COMMENT '按钮操作配置快照',
   `dict_config` JSON COMMENT '字典配置快照',
   `business_config` JSON COMMENT '业务配置快照',
   `detail_config` JSON COMMENT '详情配置快照',
@@ -96,7 +102,7 @@ CREATE TABLE `erp_page_config_history` (
   KEY `idx_config_id` (`config_id`),
   KEY `idx_module_version` (`module_code`, `version`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP配置历史表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP 配置历史表';
 
 -- 3. 审批流程配置表
 CREATE TABLE `erp_approval_flow` (
@@ -160,17 +166,17 @@ CREATE TABLE `erp_push_relation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ERP 下推关系配置表';
 
 -- ============================================
--- 第三步：插入示例数据（销售订单模块）
+-- 第三步：配置数据说明
 -- ============================================
 
 -- 注意：本节已移除示例配置数据，仅保留表结构初始化
--- 如需添加配置数据，请执行：拆分json导入.sql
--- 该脚本将导入销售订单模块的完整配置（6 字段强制拆分，包含 detail_config）
+-- 如需添加配置数据，请执行：拆分 json 导入-v3.sql
+-- 该脚本将导入销售订单模块的完整配置（8 字段强制拆分，含 search_config 和 action_config）
 
--- 1. 销售订单页面配置（6 字段强制拆分）- 已移除
+-- 1. 销售订单页面配置（8 字段强制拆分）- 已移除
 -- 2. 插入审批流程配置 - 已移除
 -- 3. 插入下推关系配置 - 已移除
--- 说明：配置数据已移至【拆分json导入.sql】，包含完整的 detail_config
+-- 说明：配置数据已移至【拆分 json 导入-v3.sql】，包含完整的 8 字段配置
 
 -- ============================================
 -- 第四步：创建菜单和权限配置
@@ -290,21 +296,7 @@ SELECT '1943362206255022092', '导出', '1943362205181280258', 8, '', '', '', 0,
 WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362206255022092');
 
 -- ============================================
--- 第五步：添加性能优化索引
--- ============================================
-
--- 1. 复合索引（已在表创建时创建）
--- ALTER TABLE `erp_page_config`
--- ADD INDEX `idx_module_status_version` (`module_code`, `status`, `version`);
--- 说明：该索引已在第 68 行作为 KEY `idx_module_status_version` 创建，无需重复添加
-
--- 2. 复合索引（已在表创建时创建）
--- ALTER TABLE `erp_push_relation`
--- ADD INDEX `idx_source_status` (`source_module`, `status`);
--- 说明：该索引已在第 154 行作为 KEY `idx_source_status` 创建，无需重复添加
-
--- ============================================
--- 第七步：创建触发器（自动记录历史）
+-- 第五步：创建触发器（自动记录历史 - 支持 8 字段）
 -- ============================================
 
 DELIMITER $$
@@ -323,8 +315,11 @@ BEGIN
     page_config,
     form_config,
     table_config,
+    search_config,
+    action_config,
     dict_config,
     business_config,
+    detail_config,
     change_reason,
     change_type,
     create_by
@@ -335,8 +330,11 @@ BEGIN
     NEW.page_config,
     NEW.form_config,
     NEW.table_config,
+    NEW.search_config,
+    NEW.action_config,
     NEW.dict_config,
     NEW.business_config,
+    NEW.detail_config,
     CONCAT('版本更新：', NEW.remark),
     'UPDATE',
     NEW.update_by
@@ -346,7 +344,7 @@ END$$
 DELIMITER ;
 
 -- ============================================
--- 第八步：验证初始化结果
+-- 第六步：验证初始化结果
 -- ============================================
 
 -- 查看表结构
@@ -387,12 +385,12 @@ SELECT '========================================' AS '';
 SELECT '🎉 ERP 配置化表结构初始化完成！' AS '';
 SELECT '========================================' AS '';
 SELECT '已创建：' AS summary;
-SELECT '  ✅ 6 个核心表（强制拆分版 - 含 detail_config）' AS tables;
+SELECT '  ✅ 5 个核心表（8 字段强制拆分版）' AS tables;
 SELECT '  ✅ 10 个菜单权限' AS menus;
-SELECT '  ✅ 自动历史触发器' AS triggers;
+SELECT '  ✅ 自动历史触发器（支持 8 字段）' AS triggers;
 SELECT '========================================' AS '';
 SELECT '下一步操作：' AS next_steps;
-SELECT '  1. 编译后端：mvn clean install -DskipTests' AS step1;
-SELECT '  2. 启动服务：java -jar ruoyi-admin-wms.jar' AS step2;
-SELECT '  3. 通过配置管理页面添加业务模块配置' AS step3;
+SELECT '  1. 执行【拆分 json 导入-v3.sql】导入配置' AS step1;
+SELECT '  2. 编译后端：mvn clean package -DskipTests' AS step2;
+SELECT '  3. 启动服务：java -jar ruoyi-admin-wms.jar' AS step3;
 SELECT '========================================' AS '';

@@ -70,6 +70,18 @@ public class ErpPageConfigHistory implements Serializable {
     private String tableConfig;
 
     /**
+     * 搜索配置快照 (search.json)
+     */
+    @TableField("search_config")
+    private String searchConfig;
+
+    /**
+     * 按钮配置快照 (action.json)
+     */
+    @TableField("action_config")
+    private String actionConfig;
+
+    /**
      * 字典配置快照 (dict.json)
      */
     @TableField("dict_config")

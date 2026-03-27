@@ -748,22 +748,10 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Override
     public TableDataInfo<Customer> getList(CustomerBo customer, PageQuery pageQuery) {
-        log.info("====== 开始查询客户列表 ======");
-        log.info("查询条件：fnumber={}, fname={}, fshortName={}", 
-            customer.getFnumber(), customer.getFname(), customer.getFshortName());
-        log.info("分页参数：pageNum={}, pageSize={}", 
-            pageQuery != null ? pageQuery.getPageNum() : "null", 
-            pageQuery != null ? pageQuery.getPageSize() : "null");
-        
         // 1. 查询原始 CustomerVo 分页数据（实际类型为 CustomerVo）
         Page<Customer> records = customerMapper.selectList(pageQuery.build(),this.buildQueryWrapper(customer));
 
         if (records.getRecords() != null && !records.getRecords().isEmpty()){
-            log.info("查询结果：{} 条", records.getRecords().size());
-            log.info("第一条数据：fnumber={}, fname={}, fshortName={}", 
-                records.getRecords().get(0).getFnumber(), 
-                records.getRecords().get(0).getFname(), 
-                records.getRecords().get(0).getFshortName());
             records.getRecords().forEach(re ->{
                 //供应商付款信息
                 String supplierNumber = re.getFnumber();
@@ -803,68 +791,16 @@ public class CustomerServiceImpl implements CustomerService {
      * @return 客户列表
      */
     private Wrapper<Customer> buildQueryWrapper(CustomerBo customer) {
-        log.info("========== buildQueryWrapper 开始构建查询条件 ==========");
-        log.info("[QueryWrapper] CustomerBo参数:");
-        log.info("  - fnumber: '{}'", customer.getFnumber());
-        log.info("  - fname: '{}'", customer.getFname());
-        log.info("  - fshortName: '{}'", customer.getFshortName());
-        log.info("  - id: {}", customer.getId());
-        log.info("  - fseller: {}", customer.getFseller());
-        log.info("  - fkhly: {}", customer.getFkhly());
-        log.info("  - fcustTypeId: {}", customer.getFcustTypeId());
-        
         QueryWrapper<Customer> wrapper = Wrappers.query();
         wrapper
-            .eq(ObjectUtil.isNotNull(customer.getId()),"id", customer.getId())
-            .eq(ObjectUtil.isNotNull(customer.getFseller()),"fseller", customer.getFseller())
-            .eq(ObjectUtil.isNotNull(customer.getFkhly()),"f_khly", customer.getFkhly())
-            .eq(ObjectUtil.isNotNull(customer.getFcustTypeId()),"fcustTypeId", customer.getFcustTypeId())
-            .orderByDesc("fcreate_date");
-
-        // 模糊搜索条件：客户编码、客户名称、客户简称使用 OR 连接
-        boolean hasFnumber = StringUtils.isNotBlank(customer.getFnumber());
-        boolean hasFname = StringUtils.isNotBlank(customer.getFname());
-        boolean hasFshortName = StringUtils.isNotBlank(customer.getFshortName());
-
-        log.info("[QueryWrapper] 模糊搜索条件判断:");
-        log.info("  - hasFnumber: {}", hasFnumber);
-        log.info("  - hasFname: {}", hasFname);
-        log.info("  - hasFshortName: {}", hasFshortName);
-
-        if (hasFnumber || hasFname || hasFshortName) {
-            log.info("[QueryWrapper] 构建OR模糊查询条件");
-            wrapper.and(w -> {
-                boolean isFirst = true;
-                if (hasFnumber) {
-                    log.info("[QueryWrapper] 添加条件: fnumber LIKE '%{}%'", customer.getFnumber());
-                    w.like("fnumber", customer.getFnumber());
-                    isFirst = false;
-                }
-                if (hasFname) {
-                    if (!isFirst) {
-                        log.info("[QueryWrapper] 添加OR连接");
-                        w.or();
-                    }
-                    log.info("[QueryWrapper] 添加条件: fname LIKE '%{}%'", customer.getFname());
-                    w.like("fname", customer.getFname());
-                    isFirst = false;
-                }
-                if (hasFshortName) {
-                    if (!isFirst) {
-                        log.info("[QueryWrapper] 添加OR连接");
-                        w.or();
-                    }
-                    log.info("[QueryWrapper] 添加条件: fshort_name LIKE '%{}%'", customer.getFshortName());
-                    w.like("fshort_name", customer.getFshortName());
-                }
-            });
-        } else {
-            log.warn("[QueryWrapper]  没有任何模糊搜索条件!");
-        }
-
-        log.info("[QueryWrapper] 最终SQL条件: {}", wrapper.getCustomSqlSegment());
-        log.info("========== buildQueryWrapper 结束 ==========");
-
+            .eq(ObjectUtil.isNotNull(customer.getId()),"bcr.id", customer.getId())
+            .like(StringUtils.isNotBlank(customer.getFnumber()), "bcr.fnumber", customer.getFnumber())
+            .like(StringUtils.isNotBlank(customer.getFname()), "bcr.fname", customer.getFname())
+            .like(StringUtils.isNotBlank(customer.getFshortName()), "bcr.fshort_name", customer.getFshortName())
+            .eq(ObjectUtil.isNotNull(customer.getFseller()),"bcr.fseller", customer.getFseller())
+            .eq(ObjectUtil.isNotNull(customer.getFkhly()),"bcr.f_khly", customer.getFkhly())
+            .eq(ObjectUtil.isNotNull(customer.getFcustTypeId()),"bcr.fcustTypeId", customer.getFcustTypeId())
+            .orderByDesc("bcr.fcreate_date");
         return wrapper;
     }
 

@@ -567,7 +567,7 @@ const props = defineProps({
 const route = useRoute()
 // 优先从路由 query 参数获取，其次从 props 获取，最后使用默认值
 const getModuleCode = () => {
-  return route.query.moduleCode || props.moduleCode || 'business'
+  return route.query.moduleCode || props.moduleCode  
 }
 
 // ==================== 业务模板配置（从 currentConfig 获取）====================
@@ -594,14 +594,18 @@ const getList = async () => {
     const tableName = getTableNameFromConfig()
     
     // 获取 moduleCode
-    const moduleCode = currentConfig.value?.pageConfig?.moduleCode || 'business'
+    const moduleCode = currentConfig.value?.moduleCode
     
-    console.log('🔍 主表格查询 - 开始')
-    console.log('🔍 主表格查询 - moduleCode:', moduleCode)
-    console.log('🔍 主表格查询 - 表名:', tableName)
-    console.log('🔍 主表格查询 - queryConfig:', mainQueryConfig)
-    console.log('🔍 主表格查询 - currentConfig:', currentConfig.value)
-    console.log('🔍 主表格查询 - pageConfig:', currentConfig.value?.pageConfig)
+    if (!moduleCode) {
+      throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
+    }
+    
+    console.log('主表格查询 - 开始')
+    console.log('主表格查询 - moduleCode:', moduleCode)
+    console.log('主表格查询 - 表名:', tableName)
+    console.log('主表格查询 - queryConfig:', mainQueryConfig)
+    console.log('主表格查询 - currentConfig:', currentConfig.value)
+    console.log('主表格查询 - pageConfig:', currentConfig.value?.pageConfig)
     
     // 使用通用引擎查询接口（构建器模式）
     const response = await request({
@@ -616,11 +620,15 @@ const getList = async () => {
       }
     })
     
-    console.log('✅ 主表格查询成功:', response)
-    tableData.value = response.rows || []
-    total.value = response.total || 0
+    console.log('主表格查询结果:', response)
+    console.log('主表格查询 - response.data:', response.data)
+    console.log('主表格查询 - response.data.rows:', response.data?.rows)
     
-    // 🆕 并行查询所有子表格数据
+    // 后端返回的是 R.ok(result),所以数据在 response.data 中
+    tableData.value = response.data?.rows || []
+    total.value = response.data?.total || 0
+    
+    // 并行查询所有子表格数据
     await loadSubTablesData()
     
   } catch (error) {
@@ -685,7 +693,7 @@ const buildMainQueryConfig = () => {
 }
 
 /**
- * 🆕 加载子表格数据（明细表和成本表）
+ * 加载子表格数据（明细表和成本表）
  */
 const loadSubTablesData = async () => {
   try {
@@ -693,7 +701,7 @@ const loadSubTablesData = async () => {
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     
     if (subTableConfigs.length === 0) {
-      console.log('ℹ️ 没有配置子表格，跳过查询')
+      console.log('没有配置子表格，跳过查询')
       return
     }
     
@@ -710,12 +718,16 @@ const loadSubTablesData = async () => {
 }
 
 /**
- * 🆕 查询指定单据的子表格数据（用于展开行或详情页）
+ * 查询指定单据的子表格数据（用于展开行或详情页）
  * @param {String} billNo - 单据编号
  */
 const loadSubTablesByBillNo = async (billNo) => {
   try {
-    const moduleCode = currentConfig.value?.pageConfig?.moduleCode || 'saleorder'
+    const moduleCode = currentConfig.value?.moduleCode
+    
+    if (!moduleCode) {
+      throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
+    }
     
     // 使用多表格查询构建器
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
@@ -758,7 +770,7 @@ const getTableNameFromConfig = () => {
   
   if (!tableName) {
     const moduleCode = getModuleCode()
-    console.error(`❌ 模块 [${moduleCode}] 的配置中缺少 pageConfig.tableName 字段`)
+    console.error(`模块 [${moduleCode}] 的配置中缺少 pageConfig.tableName 字段`)
     throw new Error(`配置错误：请在 JSON 配置的 pageConfig.tableName 中指定表名`)
   }
   
@@ -895,7 +907,7 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
-    // ✅ 增强：在解析表单配置时标记必填字典
+    // 增强：在解析表单配置时标记必填字典
     markRequiredDictionaries()
     
     //  构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
@@ -933,7 +945,7 @@ const markRequiredDictionaries = () => {
   // 保存必填字典列表（供后续验证使用）
   window._erpRequiredDicts = requiredDicts
   
-  console.log('📋 必填字典列表:', Array.from(requiredDicts))
+  console.log('必填字典列表:', Array.from(requiredDicts))
 }
 
 /**
@@ -983,13 +995,13 @@ const getDictOptions = (dictName, staticOptions, required = false) => {
   
   //  增强验证：必填字典未注册时报错
   if (required) {
-    console.error(`❌ 必填字典 "${dictName}" 未注册，页面无法正常使用`)
+    console.error(`必填字典 "${dictName}" 未注册，页面无法正常使用`)
     ElMessage.error(`必填字典 "${dictName}" 未注册，页面无法正常使用`)
     throw new Error(`必填字典缺失：${dictName}`)
   }
   
   // 非必填字典未注册时返回空数组
-  console.warn(`⚠️  字典未注册：${dictName}`)
+  console.warn(`字典未注册：${dictName}`)
   return []
 }
 
@@ -1077,7 +1089,7 @@ const handleViewDetail = async (row) => {
   currentDetailRow.value = { ...row }
   
   try {
-    // 🆕 使用新的多表格查询方法
+    // 使用新的多表格查询方法
     const billNoValue = row[billNoField] || row.FBillNo
     if (billNoValue) {
       // 查询子表格数据（明细表和成本表）
@@ -1382,13 +1394,15 @@ const searchNations = async (keyword) => {
   
   nationSearchLoading.value = true
   try {
-    // 从配置中获取国家字典的 API
-    const nationDict = BusinessTemplate.value.dictionaryConfig?.nation
-    if (nationDict && nationDict.api) {
-      // 使用专门的搜索 API（如果存在）或普通 API 带参数
-      const searchUrl = nationDict.api.includes('/search') 
-        ? `${nationDict.api}?keyword=${encodeURIComponent(keyword)}`
-        : `${nationDict.api.replace('{moduleCode}', getModuleCode())}&keyword=${encodeURIComponent(keyword)}`
+    // ✅ 从配置中获取国家字典的配置
+    const dictConfig = BusinessTemplate.value.dictionaryConfig?.dictionaries?.nation
+    
+    if (dictConfig && dictConfig.type === 'remote') {
+      // ✅ 使用配置中的搜索 API
+      const searchApi = dictConfig.config?.searchApi || '/erp/engine/country/search?keyword={keyword}&limit=20'
+      const searchUrl = searchApi.replace('{keyword}', encodeURIComponent(keyword))
+      
+      console.log(`🔍 搜索国家：${keyword}, URL: ${searchUrl}`)
       
       const response = await request(searchUrl)
       
@@ -1399,13 +1413,20 @@ const searchNations = async (keyword) => {
         data = response
       }
       
+      // ✅ 映射为标准格式 { label, value }
       nationOptions.value = data.map(item => ({
-        label: item[nationDict.labelField] || item.label || item.name,
-        value: item[nationDict.valueField] || item.value || item.kingdee
+        label: item.labelZh || item.name || item.label,
+        value: item.id || item.kingdee || item.value,
+        labelEn: item.labelEn || item.name_en // 保留英文用于扩展
       }))
+      
+      console.log(`✅ 国家搜索结果：${nationOptions.value.length} 条`)
+    } else {
+      console.warn('⚠️ 国家字典未配置或类型不正确')
+      nationOptions.value = []
     }
   } catch (error) {
-    console.warn('🔍 搜索国家失败:', error.message)
+    console.warn('搜索国家失败:', error.message)
     nationOptions.value = []
   } finally {
     nationSearchLoading.value = false
@@ -1431,7 +1452,7 @@ const preloadDictionaries = async () => {
 
     console.log(' 字典构建器预加载完成')
   } catch (error) {
-    console.warn('❌ 预加载字典失败:', error.message)
+    console.warn('预加载字典失败:', error.message)
   }
 }
 

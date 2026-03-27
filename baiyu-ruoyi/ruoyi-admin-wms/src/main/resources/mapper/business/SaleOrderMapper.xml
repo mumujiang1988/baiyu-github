@@ -8,13 +8,12 @@
 
         <result column="FBillNo" property="fBillNo"/>
         <result column="Document_type" property="documentType"/>
-        <result column="FDocumentStatus" property="fDocumentStatus"/>
         <result column="FDate" property="fDate"/>
         <result column="FCustId" property="fCustId"/>
         <result column="orderStatus" property="orderStatus"/>
-        <result column="FOraBaseProperty" property="fOraBaseProperty"/>
-        <result column="FKhhth" property="fKhhth"/>
-        <result column="FKglxr" property="fKglxr"/>
+        <result column="F_ora_BaseProperty" property="fOraBaseProperty"/>
+        <result column="F_khhth" property="fKhhth"/>
+        <result column="F_kglxr" property="fKglxr"/>
         <result column="FCtyBaseProperty1" property="fCtyBaseProperty1"/>
         <result column="FSettleCurrId" property="fSettleCurrId"/>
         <result column="FTcbl" property="fTcbl"/>
@@ -64,51 +63,50 @@
             t.FBillNo,
             t.orderStatus,
             t.Document_type,
-            t.FDocumentStatus,
             t.FDate,
             bd.fnumber                          AS FCustId,
-            t.F_ora_BaseProperty                AS FOraBaseProperty,
-            t.F_khhth                           AS FKhhth,
-            sc.contact_name                     AS FKglxr,
-            t.F_cty_BaseProperty1               AS FCtyBaseProperty1,
-            byd_settle.name                     AS FSettleCurrId,
-            t.F_tcbl                            AS FTcbl,
-            t.F_KHSD                            AS FKhsd,
+            t.F_ora_BaseProperty,
+            t.F_khhth,
+            sc.contact_name                     AS F_kglxr,
+            t.F_cty_BaseProperty1,
+            byd_settle.name                    AS FSettleCurrId,
+            t.F_tcbl,
+            t.F_KHSD,
             t.FIsIncludedTax,
-            t.F_sfbg                            AS FSfbg,
+            t.F_sfbg,
             se.fname                            AS FSalerId,
-            t.F_lrl                             AS FLrl,
-            t.F_jlrl                            AS FJlrl,
-            t.F_gj                              AS FGj,
-            bdy_trade.name                      AS FMyfs,
-            t.F_zyxb                            AS FZyxb,
-            fi.account_name                     AS FYhzh,
-            t.F_cty_Date                        AS FCtyDate,
-            t.F_sygs                            AS FSygs,
+            t.F_lrl,
+            t.F_jlrl,
+            t.F_gj,
+            bdy_trade.name                      AS F_myfs,
+            t.F_zyxb,
+            fi.account_name                     AS F_yhzh,
+            t.F_cty_Date,
+            t.F_sygs,
             bld_rec.name                        AS FRecConditionId,
-            bdc_pack.name                       AS FBzfs,
+            bdc_pack.name                      AS Fbzfs,
             t.FReceiveId,
             bc.fname                            AS FSettleId,
-            bc.fname                            AS FSettleAddress,
+            bc.fname                           AS FSettleAddress,
             t.FChargeId,
-            t.F_shhl                            AS FShhl,
-            t.F_shzt                            AS FShzt,
-            t.F_shje                            AS FShje,
-            t.F_cty_Date1                       AS FCtyDate1,
-            su.user_name                        AS FCreatorId,
+            t.F_shhl,
+            t.F_shzt,
+            t.F_shje,
+            t.F_cty_Date1,
+            su.user_name                      AS FCreatorId,
             t.FCreateDate,
-            sur.user_name                       AS FModifierId,
+            sur.user_name                    AS FModifierId,
             t.FModifyDate,
             t.FAllDisCount,
-            t.F_ysbl1                           AS FYsbl1,
+            t.F_ysbl1,
             t.FBillTaxAmount,
             t.FBillAmount,
-            bdty_local.name                     AS FLocalCurrId,
+            bdty_local.name                  AS FLocalCurrId,
             t.FExchangeTypeId,
             t.FExchangeRate,
-            t.fplannotrecamount                 AS FPlannotRecAmount,
-            t.fplanallrecamount                 AS FPlanAllRecAmount,
-            t.fplanrefundamount                 AS FPlanRefundAmount
+            t.fplannotrecamount,
+            t.fplanallrecamount,
+            t.fplanrefundamount
         FROM t_sale_order t
 
                  LEFT JOIN bd_customer bd
@@ -235,7 +233,7 @@
     <!-- 插入销售订单 -->
     <insert id="insert" parameterType="com.ruoyi.business.entity.SaleOrder">
         INSERT INTO t_sale_order (
-            FID, FBillNo, Document_type, FDocumentStatus, orderStatus, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
+            FID, FBillNo,orderStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
             F_cty_BaseProperty1, FSettleCurrId, F_tcbl, F_KHSD, FIsIncludedTax,
             F_sfbg, FSalerId, F_lrl, F_jlrl, F_gj,fstate, F_myfs, F_zyxb, F_yhzh,
             F_cty_Date, F_sygs, FRecConditionId, Fbzfs, FReceiveId,
@@ -246,7 +244,7 @@
             FExchangeTypeId, FExchangeRate,
             fplannotrecamount, fplanallrecamount, fplanrefundamount
         ) VALUES (
-            #{fid}, #{fBillNo}, #{documentType}, #{fDocumentStatus}, #{orderStatus}, #{fDate}, #{fCustId}, #{fOraBaseProperty}, #{fKhhth}, #{fKglxr},
+            #{fid}, #{fBillNo},#{orderStatus}, #{documentType}, #{fDate}, #{fCustId}, #{fOraBaseProperty}, #{fKhhth}, #{fKglxr},
             #{fCtyBaseProperty1}, #{fSettleCurrId}, #{fTcbl}, #{fKhsd}, #{fIsIncludedTax},
             #{fSfbg}, #{fSalerId}, #{fLrl}, #{fJlrl}, #{fGj},#{fstate}, #{fMyfs}, #{fZyxb}, #{fYhzh},
             #{fCtyDate}, #{fSygs}, #{fRecConditionId}, #{fbzfs}, #{fReceiveId},
@@ -319,7 +317,6 @@
         <set>
             FBillNo = #{fBillNo},
             Document_type = #{documentType},
-            FDocumentStatus = #{fDocumentStatus},
             orderStatus = #{orderStatus},
             FDate = #{fDate},
             FCustId = #{fCustId},
@@ -375,11 +372,6 @@
         DELETE FROM t_sale_order
     </delete>
 
-    <!-- 根据自增主键删除销售订单 -->
-    <delete id="deleteByAutoId" parameterType="java.lang.Long">
-        DELETE FROM t_sale_order WHERE id = #{id}
-    </delete>
-
     <!-- 分页查询销售订单 -->
     <select id="selectPage" resultMap="SaleOrderMap">
         SELECT
@@ -387,7 +379,6 @@
         t.FID,
         t.orderStatus,
         t.Document_type,
-        t.FDocumentStatus,
         t.FBillNo,
         t.FDate,
         bd.fnumber                    AS FCustId,
@@ -437,6 +428,9 @@
 
         JOIN bd_customer bd
         ON bd.fcustid = t.FCustId
+        <if test="query != null and query.fCustId != null and query.fCustId != ''">
+            AND bd.fnumber = #{query.fCustId}
+        </if>
 
         LEFT JOIN bd_customer bc
         ON bc.fcustid = t.FSettleId
@@ -511,17 +505,7 @@
                     AND t.F_ora_BaseProperty LIKE CONCAT('%', #{query.fOraBaseProperty}, '%')
                 </if>
                 <if test="query.fSalerId != null and query.fSalerId != ''">
-                    AND (
-                        se.fname LIKE CONCAT('%', #{query.fSalerId}, '%')
-                        OR se.salesman_id = #{query.fSalerId}
-                        OR t.FSalerId = #{query.fSalerId}
-                    )
-                </if>
-                <if test="query.orderStatus != null and query.orderStatus != ''">
-                    AND t.orderStatus = #{query.orderStatus}
-                </if>
-                <if test="query.fDocumentStatus != null and query.fDocumentStatus != ''">
-                    AND t.FDocumentStatus = #{query.fDocumentStatus}
+                    AND se.fname LIKE CONCAT('%', #{query.fSalerId}, '%')
                 </if>
                 <if test="query.fKhhth != null and query.fKhhth != ''">
                     AND t.F_khhth LIKE CONCAT('%', #{query.fKhhth}, '%')
@@ -541,13 +525,6 @@
                 <if test="query.fDate != null">
                     AND DATE(t.FDate) = DATE(#{query.fDate})
                 </if>
-            </if>
-            <!-- 日期区间查询条件 -->
-            <if test="query.beginDate != null and query.beginDate != ''">
-                AND DATE(t.FDate) &gt;= #{query.beginDate}
-            </if>
-            <if test="query.endDate != null and query.endDate != ''">
-                AND DATE(t.FDate) &lt;= #{query.endDate}
             </if>
         </where>
 
@@ -717,16 +694,5 @@
         LEFT JOIN sys_user sur ON sur.k3_key = t.FModifierId
         WHERE
         t.FBillNo = #{billNo}
-    </select>
-
-    <!-- 查询销售订单中存在的销售员列表（去重） -->
-    <select id="selectSalespersonsFromOrders" resultType="java.util.Map">
-        SELECT DISTINCT
-            se.id AS id,
-            se.fname AS nickName,
-            se.salesman_id AS fseller
-        FROM t_sale_order t
-        INNER JOIN sys_employee se ON se.salesman_id = t.FSalerId
-        WHERE t.FSalerId IS NOT NULL AND t.FSalerId != ''
     </select>
 </mapper>

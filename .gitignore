@@ -106,4 +106,6 @@ baiyu-web/src/**/*.scss.d.ts
 
 # 子项目冗余配置（避免与主仓库 .gitignore 冲突）
 baiyu-web/.gitignore
-/target
+*/target
+*.zip
+/后端备份/ruoyi-modules/ruoyi-system/target

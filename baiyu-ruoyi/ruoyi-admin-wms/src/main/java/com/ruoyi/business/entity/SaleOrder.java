@@ -14,8 +14,6 @@ public class SaleOrder {
 
     /**单据类型*/
     private String documentType;
-    /**单据状态*/
-    private String fDocumentStatus;
     /**订单状态*/
     private String orderStatus; //A:未关闭 B:已关闭 C:业务终止手动关闭
     /** 金蝶主键 */
@@ -113,61 +111,9 @@ public class SaleOrder {
     /** 累计退款金额 */
     private BigDecimal fPlanRefundAmount;
 
-    /** 开始日期（用于查询） */
-    private String beginDate;
-
-    /** 结束日期（用于查询） */
-    private String endDate;
-
     /**
      * 明细列表*/
     private List<SaleOrderEntry> entryList;
     /**成本核算*/
     private SaleOrderCost saleOrderCost;
-
-    // ==================== 兼容前端的小写命名字段 ====================
-    
-    /**
-     * 兼容前端的 fbillNo 命名
-     */
-    public void setFbillNo(String fbillNo) {
-        this.fBillNo = fbillNo;
-    }
-    
-    /**
-     * 兼容前端的 foraBaseProperty 命名
-     */
-    public void setForaBaseProperty(String foraBaseProperty) {
-        this.fOraBaseProperty = foraBaseProperty;
-    }
-    
-    /**
-     * 兼容前端的 fsalerId 命名
-     */
-    public void setFsalerId(String fsalerId) {
-        this.fSalerId = fsalerId;
-    }
-    
-    // ==================== 兼容金蝶 K3 API 的大写命名字段 ====================
-    
-    /**
-     * 兼容金蝶 K3 API 的 FBillNo 命名
-     */
-    public void setFBillNo(String fBillNo) {
-        this.fBillNo = fBillNo;
-    }
-    
-    /**
-     * 兼容金蝶 K3 API 的 FOraBaseProperty 命名
-     */
-    public void setFOraBaseProperty(String fOraBaseProperty) {
-        this.fOraBaseProperty = fOraBaseProperty;
-    }
-    
-    /**
-     * 兼容金蝶 K3 API 的 FSalerId 命名
-     */
-    public void setFSalerId(String fSalerId) {
-        this.fSalerId = fSalerId;
-    }
 }

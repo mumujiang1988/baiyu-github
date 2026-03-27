@@ -624,7 +624,7 @@ public class SalesPriceServiceImpl implements SalesPriceService {
 
             }
             Long userId = LoginHelper.getUserId();
-            SysUserVo user = sysUserMapper.selectVoById(userId);
+            SysUserVo user  = sysUserMapper.selectVoById(userId);
             billFlat.setCreatorId(user.getK3Key());
             billFlat.setDocumentStatus("A");
 

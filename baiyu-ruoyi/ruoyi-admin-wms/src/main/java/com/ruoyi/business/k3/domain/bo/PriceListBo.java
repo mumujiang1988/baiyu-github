@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.ruoyi.business.entity.PriceListEntry;
 import com.ruoyi.common.mybatis.core.domain.BaseEntity;
+import com.ruoyi.system.domain.entity.SysUser;
+import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,7 +20,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TableName("t_price_list")
+@AutoMapper(target = SysUser.class, reverseConvertGenerate = false)
 public class PriceListBo extends BaseEntity {
 
     /** 主键ID，自增 */

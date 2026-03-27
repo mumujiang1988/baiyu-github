@@ -125,7 +125,7 @@ public class DictionaryBuilderEngine {
             
             return data;
         } catch (Exception e) {
-            log.error("❌ 字典加载失败：{}", name, e);
+            log.error("字典加载失败：{}", name, e);
             cache.error = e.getMessage();
             return new ArrayList<>();
         }
@@ -149,7 +149,7 @@ public class DictionaryBuilderEngine {
         }
         
         try {
-            log.info("🔍 搜索字典：{}, 关键词：{}", name, keyword);
+            log.info("搜索字典：{}, 关键词：{}", name, keyword);
             List<Map<String, Object>> data = searcher.search(keyword);
             
             // 更新缓存
@@ -158,7 +158,7 @@ public class DictionaryBuilderEngine {
             
             return data;
         } catch (Exception e) {
-            log.error("❌ 字典搜索失败：{}", name, e);
+            log.error("字典搜索失败：{}", name, e);
             return new ArrayList<>();
         }
     }
@@ -188,7 +188,7 @@ public class DictionaryBuilderEngine {
             cache.loaded = false;
             cache.data = null;
             cache.timestamp = 0;
-            log.info("🗑️ 已清除字典缓存：{}", name);
+            log.info("已清除字典缓存：{}", name);
         }
     }
     
@@ -201,7 +201,7 @@ public class DictionaryBuilderEngine {
             cache.data = null;
             cache.timestamp = 0;
         });
-        log.info("🗑️ 已清除所有字典缓存");
+        log.info("已清除所有字典缓存");
     }
     
     /**

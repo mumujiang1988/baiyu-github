@@ -28,7 +28,8 @@ export const queryMainTable = async (params) => {
     })
     
     console.log(' 主表格查询结果:', response)
-    return response
+    // 注意：后端返回的是 R.ok(result),所以数据在 response.data 中
+    return response.data || {}
   } catch (error) {
     console.error(' 主表格查询失败:', error)
     throw error
@@ -57,7 +58,8 @@ export const querySubTable = async (params) => {
     })
     
     console.log(` 子表格 [${tableName}] 查询结果:`, response)
-    return response
+    // 注意：后端返回的是 R.ok(result),所以数据在 response.data 中
+    return response.data || {}
   } catch (error) {
     console.error(` 子表格 [${tableName}] 查询失败:`, error)
     throw error
@@ -93,6 +95,7 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
         pageSize: 100 // 子表格通常不需要分页
       })
       
+      // result 已经是 response.data，包含 rows 和 total
       return {
         key,
         data: result.rows || [],
@@ -165,9 +168,9 @@ export const replaceTemplateVariables = (conditions, contextData) => {
 export const parseSubTableConfigs = (pageConfig) => {
   const configs = []
   
-  // 🔥 优先从 detailConfig 中解析（新版本）
+  // 优先从 detailConfig 中解析（新版本）
   if (pageConfig && pageConfig.detailConfig && pageConfig.detailConfig.detail) {
-    console.log('✅ 从 detailConfig 中解析子表格配置')
+    console.log('从 detailConfig 中解析子表格配置')
     const tabs = pageConfig.detailConfig.detail.tabs || []
     
     for (const tab of tabs) {
@@ -185,7 +188,7 @@ export const parseSubTableConfigs = (pageConfig) => {
   }
   // 兼容旧的 subTableQueryConfigs（旧版本）
   else if (pageConfig && pageConfig.subTableQueryConfigs) {
-    console.log('⚠️ 使用旧的 subTableQueryConfigs（已废弃）')
+    console.log('使用旧的 subTableQueryConfigs（已废弃）')
     const subTableConfigs = pageConfig.subTableQueryConfigs
     
     // 遍历所有子表格配置
@@ -201,7 +204,7 @@ export const parseSubTableConfigs = (pageConfig) => {
     }
   }
   
-  console.log('📋 解析到的子表格配置:', configs)
+  console.log('解析到的子表格配置:', configs)
   return configs
 }
 
@@ -253,6 +256,7 @@ export const queryEntryByBillNo = async (moduleCode, billNo) => {
     pageSize: 100
   })
   
+  // response 已经是 response.data，包含 rows 和 total
   return response.rows || []
 }
 
@@ -287,6 +291,7 @@ export const queryCostByBillNo = async (moduleCode, billNo) => {
     pageSize: 1 // 成本表通常只有一条记录
   })
   
+  // response 已经是 response.data，包含 rows 和 total
   return response.rows?.[0] || {}
 }
 

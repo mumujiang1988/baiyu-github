@@ -42,13 +42,24 @@
             <artifactId>ruoyi-common-mybatis</artifactId>
         </dependency>
         
+        <!-- 系统模块 -->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-system</artifactId>
+        </dependency>
+        
         <!-- Excel 导入导出 -->
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-common-excel</artifactId>
         </dependency>
         
-        <!-- MyBatis Plus (通过 ruoyi-common-mybatis 引入) -->
+        <!-- MyBatis Plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.5</version>
+        </dependency>
         
         <!-- Sa-Token 权限认证 -->
         <dependency>

@@ -1,4 +1,4 @@
-package com.ruoyi.business.utils;
+package com.ruoyi.business.util;
 
 import com.ruoyi.business.entity.SaleOrder;
 import com.ruoyi.business.entity.SaleOrderCost;

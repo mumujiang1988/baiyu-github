@@ -10,6 +10,7 @@ import com.ruoyi.erp.service.engine.DictionaryBuilderEngine;
 import com.ruoyi.erp.service.ErpApprovalFlowService;
 import com.ruoyi.erp.service.ErpPushRelationService;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
+import org.springframework.jdbc.core.JdbcTemplate;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
@@ -19,8 +20,8 @@ import com.ruoyi.erp.utils.DataProcessor;
 import com.ruoyi.erp.utils.ErpPermissionChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.*; 
+import jakarta.annotation.Resource;
 import java.util.*;
 
 /**
@@ -49,6 +50,10 @@ public class ErpEngineController {
     private final ErpPermissionChecker permissionChecker;
     private final ConfigParser configParser;
     private final DataProcessor dataProcessor;
+    
+    // JdbcTemplate 用于直接 SQL 查询
+    @Resource
+    private JdbcTemplate jdbcTemplate;
 
     // ==================== 权限辅助方法 ====================
 
@@ -85,27 +90,27 @@ public class ErpEngineController {
     public R<?> executeDynamicQuery(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
-            log.info("🔍 收到查询请求，moduleCode: {}, params: {}", moduleCode, params.keySet());
+            log.info("收到查询请求，moduleCode: {}, params: {}", moduleCode, params.keySet());
                 
             //  使用注入的权限检查器（同时检查数据库配置和权限） 
-            log.info("✅ 开始权限检查，moduleCode: {}, operation: query", moduleCode);
+            log.info("开始权限检查，moduleCode: {}, operation: query", moduleCode);
             permissionChecker.checkModulePermission(moduleCode, "query");
-            log.info("✅ 权限检查通过");
+            log.info("权限检查通过");
                 
             //  tableName 为必填参数，来自前端 JSON 配置的 pageConfig.tableName
             String tableName = (String) params.get("tableName");
-            log.info("✅ 获取 tableName 参数：{}", tableName);
+            log.info("获取 tableName 参数：{}", tableName);
             if (tableName == null || tableName.trim().isEmpty()) {
-                log.error("❌ 缺少必需的 tableName 参数，moduleCode: {}", moduleCode);
+                log.error("缺少必需的 tableName 参数，moduleCode: {}", moduleCode);
                 return R.fail("缺少必需的 tableName 参数，请在 JSON 配置的 pageConfig.tableName 中配置表名");
             }
-            log.info("✅ 使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
+            log.info("使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
             
             //  获取 queryConfig（构建器模式）
             Map<String, Object> queryConfig = (Map<String, Object>) params.get("queryConfig");
-            log.info("✅ 获取 queryConfig: {}", queryConfig != null ? "已提供" : "null");
+            log.info("获取 queryConfig: {}", queryConfig != null ? "已提供" : "null");
             if (queryConfig == null || queryConfig.isEmpty()) {
-                log.error("❌ 缺少必需的 queryConfig 参数，moduleCode: {}", moduleCode);
+                log.error("缺少必需的 queryConfig 参数，moduleCode: {}", moduleCode);
                 return R.fail("缺少必需的 queryConfig 参数，请使用构建器模式配置查询条件");
             }
             
@@ -1187,157 +1192,155 @@ public class ErpEngineController {
         }
     }
 
-    // ==================== 辅助方法 ====================
+   
 
-    // ==================== 字典构建器引擎接口 ====================
-
-    /**
-     * 获取字典数据（构建器模式）
-     */
-    @GetMapping("/dictionary/{name}")
-    public R<?> getDictionary(@PathVariable String name, @RequestParam(required = false) String moduleCode) {
-        try {
-            if (moduleCode != null && !moduleCode.isEmpty()) {
-                permissionChecker.checkModulePermission(moduleCode, "query");
-            }
-            
-            List<Map<String, Object>> data = dictionaryBuilderEngine.get(name);
-            log.info("📦 获取字典：{}, 共 {} 条", name, data.size());
-            return R.ok(data);
-        } catch (Exception e) {
-            log.error("❌ 获取字典失败：{}", name, e);
-            return R.fail("获取字典失败：" + e.getMessage());
-        }
-    }
+    // ==================== 系统字典业务字典接口 ====================
 
     /**
-     * 清除字典缓存
-     */
-    @DeleteMapping("/dictionary/{name}/cache")
-    public R<?> clearDictionaryCache(@PathVariable String name) {
-        try {
-            dictionaryBuilderEngine.clear(name);
-            log.info("🗑️ 已清除字典缓存：{}", name);
-            return R.ok("清除成功");
-        } catch (Exception e) {
-            log.error("❌ 清除字典缓存失败：{}", name, e);
-            return R.fail("清除失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 清除所有字典缓存
-     */
-    @DeleteMapping("/dictionary/cache/all")
-    public R<?> clearAllDictionaryCaches() {
-        try {
-            dictionaryBuilderEngine.clearAll();
-            log.info("🗑️ 已清除所有字典缓存");
-            return R.ok("清除成功");
-        } catch (Exception e) {
-            log.error("❌ 清除所有字典缓存失败", e);
-            return R.fail("清除失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 获取所有字典状态
-     */
-    @GetMapping("/dictionary/status")
-    public R<?> getAllDictionaryStatus() {
-        try {
-            Map<String, Map<String, Object>> status = dictionaryBuilderEngine.getAllStatus();
-            log.info("📊 获取所有字典状态，共 {} 个", status.size());
-            return R.ok(status);
-        } catch (Exception e) {
-            log.error("❌ 获取字典状态失败", e);
-            return R.fail("获取状态失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     *  新增：获取字典数据（复用表格数据构建器）
-     * 直接从数据库表查询字典数据，无需创建 Service
+     * 分段返回统一字典数据
      * 
-     * @param name 字典名称
-     * @param moduleCode 模块编码
-     * @return 字典数据列表
+     * 数据结构说明：
+     * - dictTypeList: sys_dict_type（字典类型表）→ 第一段
+     * - dictDataList: sys_dict_data + bymaterial_dictionary（系统字典 + 业务字典合并）→ 第二段
+     * 
+     * @param dictType 字典类型（用于过滤）
+     * @return 分段字典数据
      */
-    @GetMapping("/dictionary/{name}/data")
-    public R<?> getDictionaryData(@PathVariable String name,
-                                   @RequestParam(required = false) String moduleCode) {
+    @GetMapping("/dict/union/{dictType}")
+    public R<Map<String, Object>> getUnionDict(@PathVariable String dictType) {
         try {
-            //  权限检查
-            if (moduleCode != null && !moduleCode.isEmpty()) {
-                permissionChecker.checkModulePermission(moduleCode, "query");
-            }
+            Map<String, Object> result = new HashMap<>();
             
-            //  从配置中读取表名和查询条件
-            JSONObject configJson = configParser.getConfig(name);
-            JSONObject dictionaryConfig = configJson.getJSONObject("dictionaryConfig");
+            // ====================== 第一段：字典类型表 ======================
+            String typeSql = "SELECT dict_name AS label, dict_type AS value, dict_type AS type " +
+                    "FROM sys_dict_type WHERE dict_type = ?";
+            List<Map<String, Object>> dictTypeList = jdbcTemplate.queryForList(typeSql, dictType);
+            result.put("dictTypeList", dictTypeList);
             
-            if (dictionaryConfig == null) {
-                log.warn(" 未找到字典配置，字典名称：{}", name);
-                return R.fail("未找到字典配置：" + name);
-            }
+            // ====================== 第二段：系统字典 + 业务字典 ======================
+            String dataSql = "SELECT dict_label AS label, dict_value AS value, dict_type AS type " +
+                    "FROM sys_dict_data WHERE dict_type = ? " +
+                    "UNION ALL " +
+                    "SELECT name AS label, kingdee AS value, category AS type " +
+                    "FROM bymaterial_dictionary WHERE category = ?";
+            List<Map<String, Object>> dictDataList = jdbcTemplate.queryForList(dataSql, dictType, dictType);
+            result.put("dictDataList", dictDataList);
             
-            JSONObject dictionaries = dictionaryConfig.getJSONObject("dictionaries");
-            if (dictionaries == null || !dictionaries.containsKey(name)) {
-                log.warn(" 未找到字典定义：{}", name);
-                return R.fail("未找到字典定义：" + name);
-            }
-            
-            JSONObject dictConfig = dictionaries.getJSONObject(name);
-            String tableName = dictConfig.getString("tableName");
-            JSONObject queryConfig = dictConfig.getJSONObject("queryConfig");
-            JSONObject fieldMapping = dictConfig.getJSONObject("fieldMapping");
-            
-            //  表名校验
-            if (tableName == null || tableName.trim().isEmpty()) {
-                log.error("❌ 缺少必需的 tableName 配置，字典：{}", name);
-                return R.fail("缺少必需的 tableName 配置");
-            }
-            
-            //  构建查询条件
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-            
-            if (queryConfig != null && !queryConfig.isEmpty()) {
-                queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
-            }
-            
-            //  直接调用表格构建器的 Service 查询数据（使用新的 selectPageByModuleWithTableName 方法）
-            // 注意：selectListByModule 已废弃，改用 selectPageByModuleWithTableName 并取所有记录
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> listQueryWrapper = queryWrapper.clone();
-            listQueryWrapper.last("LIMIT " + Integer.MAX_VALUE); // 获取所有数据
-            
-            PageQuery pageQuery = new PageQuery();
-            pageQuery.setPageNum(1);
-            pageQuery.setPageSize(Integer.MAX_VALUE);
-            
-            var pageResult = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) dataPermissionService)
-                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, listQueryWrapper);
-            
-            List<Map<String, Object>> data = pageResult.getRecords();
-            
-            //  字段映射（如果配置了）
-            if (fieldMapping != null) {
-                String labelField = fieldMapping.getString("labelField");
-                String valueField = fieldMapping.getString("valueField");
-                
-                if (labelField != null && valueField != null) {
-                    data = mapDictionaryFields(data, labelField, valueField);
-                }
-            }
-            
-            log.info(" 字典数据加载成功：{}, 共 {} 条", name, data.size());
-            return R.ok(data);
+            return R.ok(result);
             
         } catch (Exception e) {
-            log.error("❌ 字典数据加载失败：{}", name, e);
-            return R.fail("加载失败：" + e.getMessage());
+            log.error("获取统一字典数据失败，dictType: {}", dictType, e);
+            return R.fail("获取字典数据失败：" + e.getMessage());
         }
     }
+    
+    /**
+     * 查询所有字典数据（不分段，全部合并）
+     * 
+     * @return 全部字典数据
+     */
+    @GetMapping("/dict/all")
+    public R<Map<String, Object>> getAllDict() {
+        try {
+            Map<String, Object> result = new HashMap<>();
+            
+            // ====================== 第一段：所有字典类型表 ======================
+            String typeSql = "SELECT dict_name AS label, dict_type AS value, dict_type AS type " +
+                    "FROM sys_dict_type ORDER BY dict_id";
+            List<Map<String, Object>> dictTypeList = jdbcTemplate.queryForList(typeSql);
+            result.put("dictTypeList", dictTypeList);
+            
+            // ====================== 第二段：所有系统字典 + 业务字典 ======================
+            String dataSql = "SELECT dict_label AS label, dict_value AS value, dict_type AS type " +
+                    "FROM sys_dict_data ORDER BY dict_sort " +
+                    "UNION ALL " +
+                    "SELECT name AS label, kingdee AS value, category AS type " +
+                    "FROM bymaterial_dictionary ORDER BY id";
+            List<Map<String, Object>> dictDataList = jdbcTemplate.queryForList(dataSql);
+            result.put("dictDataList", dictDataList);
+            
+            return R.ok(result);
+            
+        } catch (Exception e) {
+            log.error("获取全部字典数据失败", e);
+            return R.fail("获取字典数据失败：" + e.getMessage());
+        }
+    }
+        // ==================== 国家模糊查询接口 ====================
+    
+        /**
+         * 国家模糊查询接口
+         * 
+         * 支持按中文名或英文名模糊搜索
+         * 
+         * @param keyword 搜索关键词（中文或英文）
+         * @param limit 返回数量限制（默认 20）
+         * @return 国家列表
+         */
+        @GetMapping("/country/search")
+        public R<List<Map<String, Object>>> searchCountry(
+                @RequestParam(required = false, defaultValue = "") String keyword,
+                @RequestParam(required = false, defaultValue = "20") Integer limit) {
+            try {
+                // 构建 SQL 查询
+                StringBuilder sql = new StringBuilder(
+                    "SELECT id, name_en AS labelEn, name_zh AS labelZh, status " +
+                    "FROM country WHERE status = 1"
+                );
+                
+                List<Object> params = new ArrayList<>();
+                
+                // 如果有搜索关键词，添加模糊查询条件
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    sql.append(" AND (name_zh LIKE ? OR name_en LIKE ?)")
+                       .append(" ORDER BY name_zh ASC LIMIT ?");
+                    
+                    String likeKeyword = "%" + keyword + "%";
+                    params.add(likeKeyword);
+                    params.add(likeKeyword);
+                    params.add(limit);
+                } else {
+                    // 无关键词时只返回前 limit 条
+                    sql.append(" ORDER BY name_zh ASC LIMIT ?");
+                    params.add(limit);
+                }
+                
+                // 执行查询
+                List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+                
+                log.info("国家模糊查询成功，关键词：{}, 返回：{} 条", keyword, resultList.size());
+                return R.ok(resultList);
+                
+            } catch (Exception e) {
+                log.error("国家模糊查询失败，keyword: {}, limit: {}", keyword, limit, e);
+                return R.fail("查询失败：" + e.getMessage());
+            }
+        }
+        
+        /**
+         * 获取所有启用状态的国家列表
+         * 
+         * @return 国家列表
+         */
+        @GetMapping("/country/list")
+        public R<List<Map<String, Object>>> getAllCountries() {
+            try {
+                String sql = "SELECT id, name_en AS labelEn, name_zh AS labelZh, status " +
+                            "FROM country WHERE status = 1 ORDER BY name_zh ASC";
+                
+                List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql);
+                
+                log.info("获取所有国家列表成功，共 {} 条", resultList.size());
+                return R.ok(resultList);
+                
+            } catch (Exception e) {
+                log.error("获取国家列表失败", e);
+                return R.fail("获取国家列表失败：" + e.getMessage());
+            }
+        }
+    
+
+      
 
     // ==================== 辅助方法 ====================
 
@@ -1605,28 +1608,27 @@ public class ErpEngineController {
     }
 
     /**
-     *  新增：字典字段映射工具方法
-     * 将数据库字段映射为前端需要的 label/value 格式
-     * 
-     * @param data 原始数据列表
-     * @param labelField 显示字段名
-     * @param valueField 值字段名
-     * @return 映射后的数据列表
+     * 根据字典名称获取表名（简化处理）
+     * TODO: 后续可从缓存或配置中读取
      */
-    private List<Map<String, Object>> mapDictionaryFields(
-            List<Map<String, Object>> data,
-            String labelField,
-            String valueField) {
-        
-        return data.stream()
-            .map(item -> {
-                Map<String, Object> mapped = new HashMap<>();
-                mapped.put("label", item.get(labelField));
-                mapped.put("value", item.get(valueField));
-                // 保留原始字段，方便调试和扩展
-                mapped.putAll(item);
-                return mapped;
-            })
-            .collect(java.util.stream.Collectors.toList());
+    private String getTableNameByDictName(String dictName) {
+        // 简单映射关系，后续可优化为从缓存读取
+        switch (dictName) {
+            case "nation":
+                return "country";
+            case "salespersons":
+                return "sys_user";
+            case "customers":
+                return "bd_customer";
+            case "materials":
+                return "by_material";
+            case "currency":
+            case "paymentTerms":
+            case "tradeType":
+            case "productCategory":
+                return "bymaterial_dictionary";
+            default:
+                return null;
+        }
     }
 }

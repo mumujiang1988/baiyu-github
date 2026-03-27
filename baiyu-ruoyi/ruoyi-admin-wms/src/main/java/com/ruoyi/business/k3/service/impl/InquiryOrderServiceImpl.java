@@ -528,7 +528,7 @@ public class InquiryOrderServiceImpl implements InquiryOrderService, AutoCloseab
                 return Result.error("单据编号已存在: " + inquiryOrder.getFbillno());
             }
             Long userId = LoginHelper.getUserId();
-            SysUserVo user = userMapper.selectVoById(userId);
+            SysUserVo user  = userMapper.selectVoById(userId);
             // 设置创建时间
             inquiryOrder.setFcreatedate(LocalDateTime.now());
 

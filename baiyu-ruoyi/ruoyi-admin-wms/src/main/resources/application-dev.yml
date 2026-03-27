@@ -16,7 +16,7 @@ spring:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
           # jdbc 所有参数配置参考 https://lionli.blog.csdn.net/article/details/122018562
-          # rewriteBatchedStatements=true 批处理优化 大幅提升批量插入更新删除性能 (对数据库有性能损耗 使用批量操作应考虑性能问题)
+          # rewriteBatchedStatements=true 批处理优化 大幅提升批量插入更新删除性能(对数据库有性能损耗 使用批量操作应考虑性能问题)
           url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
           username: root
           password: hanzhiyun1988
@@ -55,7 +55,7 @@ spring.data:
     port: 6379
     # 数据库索引
     database: 0
-    # 密码 (如没有密码请注释掉)
+    # 密码(如没有密码请注释掉)
     password: difyai123456
     # 连接超时时间
     timeout: 10s
@@ -83,8 +83,6 @@ redisson:
     timeout: 3000
     # 发布和订阅连接池大小
     subscriptionConnectionPoolSize: 50
-    # 密码（如无密码则设为空字符串）
-    password: difyai123456
 
 --- # mail 邮件发送
 mail:

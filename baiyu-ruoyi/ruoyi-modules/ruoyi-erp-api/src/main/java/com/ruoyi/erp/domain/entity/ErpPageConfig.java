@@ -64,6 +64,18 @@ public class ErpPageConfig implements Serializable {
     private String tableConfig;
 
     /**
+     * 查询表单配置 (search.json)
+     */
+    @TableField("search_config")
+    private String searchConfig;
+
+    /**
+     * 按钮操作配置 (action.json)
+     */
+    @TableField("action_config")
+    private String actionConfig;
+
+    /**
      * 字典数据源配置 (dict.json)
      */
     @TableField("dict_config")

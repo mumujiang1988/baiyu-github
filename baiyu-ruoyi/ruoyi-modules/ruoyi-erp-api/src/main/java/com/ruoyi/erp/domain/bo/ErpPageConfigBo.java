@@ -60,6 +60,16 @@ public class ErpPageConfigBo extends BaseEntity {
     private String tableConfig;
 
     /**
+     * 查询表单配置 (search.json)
+     */
+    private String searchConfig;
+
+    /**
+     * 按钮操作配置 (action.json)
+     */
+    private String actionConfig;
+
+    /**
      * 字典数据源配置 (dict.json)
      */
     private String dictConfig;

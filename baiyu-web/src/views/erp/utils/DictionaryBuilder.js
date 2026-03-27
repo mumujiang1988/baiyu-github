@@ -113,7 +113,7 @@ class DictionaryBuilder {
       
       return data
     } catch (error) {
-      console.error(`❌ 字典加载失败：${this.name}`, error)
+      console.error(`字典加载失败：${this.name}`, error)
       if (this.cache) {
         this.cache.error = error.message
       }
@@ -134,7 +134,7 @@ class DictionaryBuilder {
     }
 
     try {
-      console.log(`🔍 搜索字典：${this.name}, 关键词：${keyword}`)
+      console.log(`搜索字典：${this.name}, 关键词：${keyword}`)
       const data = await searcher(keyword)
       
       // 更新缓存
@@ -143,7 +143,7 @@ class DictionaryBuilder {
       
       return data
     } catch (error) {
-      console.error(`❌ 字典搜索失败：${this.name}`, error)
+      console.error(`字典搜索失败：${this.name}`, error)
       return []
     }
   }
@@ -167,7 +167,7 @@ class DictionaryBuilder {
       this.cache.loaded = false
       this.cache.data = null
       this.cache.timestamp = 0
-      console.log(`🗑️ 已清除字典缓存：${this.name}`)
+      console.log(`已清除字典缓存：${this.name}`)
     }
   }
 
@@ -289,7 +289,7 @@ class DictionaryBuilderEngine {
     this.registry.forEach((builder, name) => {
       builder.clear()
     })
-    console.log('🗑️ 已清除所有字典缓存')
+    console.log('已清除所有字典缓存')
   }
 
   /**
@@ -305,7 +305,7 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 从 JSON 配置批量构建字典
+   * 从 JSON 配置批量构建字典（支持新格式）
    * @param {Object} dictionaryConfig - 字典配置对象
    * @param {string} moduleCode - 模块编码
    * @returns {DictionaryBuilderEngine}
@@ -315,20 +315,33 @@ class DictionaryBuilderEngine {
       return this
     }
 
-    for (const [key, config] of Object.entries(dictionaryConfig)) {
-      if (Array.isArray(config)) {
+    // ✅ 支持新格式：dictionaries 对象
+    const dictionaries = dictionaryConfig.dictionaries || {}
+    
+    for (const [dictName, dictConfig] of Object.entries(dictionaries)) {
+      const { type, data, table, config } = dictConfig
+      
+      if (type === 'static' && Array.isArray(data)) {
         // 静态字典
-        this.register(key, DictionaryBuilder.buildStatic(key, config))
-      } else if (typeof config === 'object' && config.api) {
-        // 动态字典
-        this.register(key, DictionaryBuilder.buildDynamic(key, config))
-      } else if (typeof config === 'object' && config.searchApi) {
-        // 远程搜索字典
-        this.register(key, DictionaryBuilder.buildRemoteSearch(key, config))
+        this.register(dictName, DictionaryBuilder.buildStatic(dictName, data))
+      } else if (type === 'dynamic' || type === 'remote') {
+        // 动态字典或远程搜索字典
+        const builderConfig = config || {}
+        const finalConfig = {
+          ...builderConfig,
+          type: type === 'remote' ? 'remote' : 'dynamic',
+          // ✅ 如果 config 中没有 api，使用统一字典接口
+          api: builderConfig.api || `/erp/engine/dict/union/${dictName}`,
+          // ✅ 国家字典使用专用的搜索接口
+          searchApi: dictName === 'nation'
+            ? (builderConfig.searchApi || `/erp/engine/country/search?keyword={keyword}&limit=20`)
+            : builderConfig.searchApi
+        }
+        this.register(dictName, DictionaryBuilder.buildDynamic(dictName, finalConfig))
       }
     }
 
-    console.log(` 从配置构建字典完成，共 ${this.registry.size} 个`)
+    console.log(`从配置构建字典完成，共 ${this.registry.size} 个`)
     return this
   }
 
@@ -341,42 +354,51 @@ class DictionaryBuilderEngine {
     const promises = []
 
     this.registry.forEach((builder, name) => {
+      // ✅ 只预加载 dynamic 类型，remote 类型按需加载（不预加载）
       if (builder.type === 'dynamic') {
         const promise = builder.load(async () => {
-          const api = builder.config.api.replace(/{moduleCode}/g, moduleCode)
-          const response = await request(api)
+          // ✅ 使用配置中的 api，如果没有则使用统一字典接口
+          const apiUrl = builder.config?.api || `/erp/engine/dict/union/${name}`
+          
+          console.log(`🌐 加载字典：${name}, API: ${apiUrl}`)
+          
+          const response = await request({
+            url: apiUrl,
+            method: 'get'
+          })
           
           let data = []
           if (response.code === 200 || response.errorCode === 0) {
-            data = response.data || response.rows || []
+            // ✅ 处理分段返回的数据（新接口格式）
+            const result = response.data || response
+            // 合并两段数据：dictTypeList + dictDataList
+            data = [
+              ...(result.dictTypeList || []),
+              ...(result.dictDataList || [])
+            ]
+            console.log(`✅ 字典加载成功：${name}, dictTypeList: ${result.dictTypeList?.length || 0}, dictDataList: ${result.dictDataList?.length || 0}, 总计：${data.length}条`)
           } else if (Array.isArray(response)) {
+            // ✅ 兼容旧接口直接返回数组
             data = response
-          }
-
-          // 数据映射 - 仅当后端未映射时才进行（避免重复映射）
-          const labelField = builder.config.labelField || 'label'
-          const valueField = builder.config.valueField || 'value'
-          
-          // 检查后端是否已经映射了 label/value 字段
-          if (data.length > 0 && data[0].label !== undefined && data[0].value !== undefined) {
-            console.log(`✅ 字典 ${name} 已映射，直接使用后端数据`)
-            return data
+            console.log(`✅ 字典加载成功（数组格式）：${name}, 共 ${data.length} 条`)
+          } else {
+            console.warn(`⚠️ 字典加载返回格式异常：${name}`, response)
           }
           
-          // 后端未映射，前端进行映射
-          console.log(`🔧 字典 ${name} 前端映射：label=${labelField}, value=${valueField}`)
-          return data.map(item => ({
-            label: item[labelField],
-            value: item[valueField],
-            ...item
-          }))
+          return data
         })
         promises.push(promise)
+      } else if (builder.type === 'remote') {
+        console.log(`⏭️ 跳过远程搜索字典预加载：${name}（按需加载）`)
       }
     })
 
-    await Promise.all(promises)
-    console.log(' 字典预加载完成')
+    if (promises.length > 0) {
+      await Promise.all(promises)
+      console.log('🎉 字典预加载完成')
+    } else {
+      console.log('ℹ️ 没有需要预加载的字典')
+    }
   }
 }
 

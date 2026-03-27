@@ -603,18 +603,18 @@ function cancelEditMode() {
  * 加载编辑数据
  */
 function loadEditData(configId) {
-  console.log('🔍 开始加载配置数据，configId:', configId)
+  console.log('开始加载配置数据，configId:', configId)
   
   return getConfig(configId)
     .then(res => {
-      console.log('📦 API 响应:', res)
+      console.log('API 响应:', res)
       
       const data = res.data || res
-      console.log('📋 解析后的数据:', data)
+      console.log('解析后的数据:', data)
       
       //  自动格式化 JSON 内容
       let configContent = data.configContent || ''
-      console.log('📝 原始配置内容:', configContent)
+      console.log('原始配置内容:', configContent)
       
       try {
         const parsed = JSON.parse(configContent)

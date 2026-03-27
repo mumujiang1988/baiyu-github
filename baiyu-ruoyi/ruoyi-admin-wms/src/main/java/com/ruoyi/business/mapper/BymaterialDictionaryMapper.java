@@ -92,21 +92,7 @@ public interface BymaterialDictionaryMapper extends BaseMapper<BymaterialDiction
 
     String selectBymaterialDictionary(String kingdee);
 
-    /**
-     * 根据分类标识查询字典项列表
-     * @param category 分类标识 (如：currency, payment_clause 等)
-     * @return 字典项列表
-     */
-    @Select("SELECT id, code, kingdee, name, category, category_name FROM bymaterial_dictionary WHERE category = #{category} ORDER BY id ASC")
-    List<BymaterialDictionary> selectByCategory(@Param("category") String category);
-    
-    /**
-     * 根据分类名称查询字典项列表（兼容旧方法）
-     * @param categoryName 分类名称
-     * @param category 分类标识
-     * @return 字典项列表
-     */
-    @Select(" SELECT id,code,kingdee,name,category,category_name FROM bymaterial_dictionary WHERE category_name = #{categoryName} and category = #{category}")
+    @Select(" SELECT id,code,kingdee,name,category_name FROM bymaterial_dictionary WHERE category_name = #{categoryName} and category = #{category}")
     List<BymaterialDictionary> selectCategoryName(@Param("categoryName") String categoryName, @Param("category") String category);
 
     /**

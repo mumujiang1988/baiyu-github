@@ -196,7 +196,7 @@ public class KingdeeMaterialServiceimpl implements KingdeeMaterialServicer {
         String imageUrl = material.getImage(); // 保存图片URL用于可能的回滚操作
         //LoginUser loginUser = LoginHelper.getLoginUser();
         Long userId = LoginHelper.getUserId();
-        SysUserVo user = userMapper.selectVoById(userId);
+        SysUserVo user  = userMapper.selectVoById(userId);
         material.setCreator(user.getK3Key());
         List<List<Object>> materialList = k3configks.queryMaterialList(0, 10, material.getNumber());
 

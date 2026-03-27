@@ -121,18 +121,4 @@ public interface SaleOrderMapper {
      * @return 销售订单实体
      */
     SaleOrder selectByBillNo(@Param("billNo") String billNo);
-
-    /**
-     * 查询销售订单中存在的销售员列表（去重）
-     *
-     * @return 销售员列表
-     */
-    List<Map<String, Object>> selectSalespersonsFromOrders();
-
-    /**
-     * 根据自增主键删除销售订单
-     * @param id 自增主键 ID
-     * @return 影响行数
-     */
-    int deleteByAutoId(Long id);
 }

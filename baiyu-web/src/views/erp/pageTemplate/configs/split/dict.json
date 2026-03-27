@@ -2,8 +2,8 @@
   "dicts": [
     {
       "dictKey": "salespersons",
-      "dictType": "dynamic",
-      "table": "sys_user",
+      "dictType": "sys_user_sex",
+      "tableName": "sys_user",
       "conditions": [
         {
           "field": "deleted",
@@ -17,22 +17,16 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "user_id",
-        "labelField": "nick_name"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/salespersons/data?moduleCode={moduleCode}",
-        "labelField": "nickName",
-        "valueField": "fseller",
-        "ttl": 600000
+        "labelField": "nick_name",
+        "valueField": "user_id"
       },
       "cacheable": true,
       "cacheTTL": 600000
     },
     {
       "dictKey": "currency",
-      "dictType": "dynamic",
-      "table": "bymaterial_dictionary",
+      "dictType": "currency",
+      "tableName": "bymaterial_dictionary",
       "conditions": [
         {
           "field": "category",
@@ -51,22 +45,16 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "kingdee",
-        "labelField": "name"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/currency/data?moduleCode={moduleCode}",
         "labelField": "name",
-        "valueField": "kingdee",
-        "ttl": 600000
+        "valueField": "kingdee"
       },
       "cacheable": true,
       "cacheTTL": 600000
     },
     {
       "dictKey": "paymentTerms",
-      "dictType": "dynamic",
-      "table": "bymaterial_dictionary",
+      "dictType": "payment_clause",
+      "tableName": "bymaterial_dictionary",
       "conditions": [
         {
           "field": "category",
@@ -85,31 +73,42 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "kingdee",
-        "labelField": "name"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/paymentTerms/data?moduleCode={moduleCode}",
         "labelField": "name",
-        "valueField": "kingdee",
-        "ttl": 600000
+        "valueField": "kingdee"
       },
       "cacheable": true,
       "cacheTTL": 600000
     },
     {
       "dictKey": "nation",
-      "dictType": "remote",
-      "config": {
-        "searchApi": "/erp/engine/dictionary/search/nation?keyword={keyword}&moduleCode={moduleCode}",
-        "minKeywordLength": 1,
-        "debounce": 300
-      }
+      "dictType": "nation",
+      "tableName": "country",
+      "conditions": [
+        {
+          "field": "status",
+          "operator": "eq",
+          "value": 1
+        }
+      ],
+      "orderBy": [
+        {
+          "field": "name_zh",
+          "direction": "ASC"
+        }
+      ],
+      "fieldMapping": {
+        "labelField": "name_zh",
+        "valueField": "id"
+      },
+      "searchable": true,
+      "searchFields": ["name_zh", "name_en"],
+      "cacheable": true,
+      "cacheTTL": 600000
     },
     {
       "dictKey": "tradeType",
-      "dictType": "dynamic",
-      "table": "bymaterial_dictionary",
+      "dictType": "trade_way",
+      "tableName": "bymaterial_dictionary",
       "conditions": [
         {
           "field": "category",
@@ -128,22 +127,16 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "kingdee",
-        "labelField": "name"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/tradeType/data?moduleCode={moduleCode}",
         "labelField": "name",
-        "valueField": "kingdee",
-        "ttl": 600000
+        "valueField": "kingdee"
       },
       "cacheable": true,
       "cacheTTL": 600000
     },
     {
       "dictKey": "customers",
-      "dictType": "dynamic",
-      "table": "bd_customer",
+      "dictType": "customer",
+      "tableName": "bd_customer",
       "conditions": [
         {
           "field": "deleted",
@@ -157,22 +150,16 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "fnumber",
-        "labelField": "fname"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/customers/data?moduleCode={moduleCode}",
         "labelField": "fname",
-        "valueField": "fnumber",
-        "ttl": 300000
+        "valueField": "fnumber"
       },
       "cacheable": true,
       "cacheTTL": 300000
     },
     {
       "dictKey": "materials",
-      "dictType": "dynamic",
-      "table": "by_material",
+      "dictType": "material",
+      "tableName": "by_material",
       "conditions": [
         {
           "field": "deleted",
@@ -186,22 +173,16 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "materialId",
-        "labelField": "name"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/materials/data?moduleCode={moduleCode}",
-        "labelField": "materialName",
-        "valueField": "materialId",
-        "ttl": 300000
+        "labelField": "name",
+        "valueField": "materialId"
       },
       "cacheable": true,
       "cacheTTL": 300000
     },
     {
       "dictKey": "productCategory",
-      "dictType": "dynamic",
-      "table": "bymaterial_dictionary",
+      "dictType": "product_category",
+      "tableName": "bymaterial_dictionary",
       "conditions": [
         {
           "field": "category",
@@ -220,21 +201,15 @@
         }
       ],
       "fieldMapping": {
-        "valueField": "kingdee",
-        "labelField": "name"
-      },
-      "config": {
-        "api": "/erp/engine/dictionary/productCategory/data?moduleCode={moduleCode}",
         "labelField": "name",
-        "valueField": "kingdee",
-        "ttl": 600000
+        "valueField": "kingdee"
       },
       "cacheable": true,
       "cacheTTL": 600000
     },
     {
       "dictKey": "orderStatus",
-      "dictType": "static",
+      "dictType": "order_status",
       "data": [
         { "label": "未关闭", "value": "A", "type": "success" },
         { "label": "已关闭", "value": "B", "type": "info" },
@@ -243,7 +218,7 @@
     },
     {
       "dictKey": "documentStatus",
-      "dictType": "static",
+      "dictType": "f_document_status",
       "data": [
         { "label": "暂存", "value": "Z", "type": "info" },
         { "label": "创建", "value": "A", "type": "success" },

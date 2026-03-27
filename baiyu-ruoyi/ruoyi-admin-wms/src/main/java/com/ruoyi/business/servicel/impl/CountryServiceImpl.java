@@ -17,9 +17,4 @@ public class CountryServiceImpl implements CountryService {
     public List<Country> getnAtion() {
         return countryMapper.selectList();
     }
-    
-    @Override
-    public List<Country> searchNation(String keyword) {
-        return countryMapper.searchNation(keyword);
-    }
 }

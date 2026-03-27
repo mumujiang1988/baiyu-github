@@ -70,6 +70,18 @@ public class ErpPageConfigVo implements Serializable {
     private String tableConfig;
 
     /**
+     * 查询表单配置 (search.json)
+     */
+    @ExcelProperty(value = "搜索配置")
+    private String searchConfig;
+
+    /**
+     * 按钮操作配置 (action.json)
+     */
+    @ExcelProperty(value = "按钮配置")
+    private String actionConfig;
+
+    /**
      * 字典数据源配置 (dict.json)
      */
     @ExcelProperty(value = "字典配置")

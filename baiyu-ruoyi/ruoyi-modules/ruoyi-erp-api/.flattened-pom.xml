@@ -36,7 +36,16 @@
     </dependency>
     <dependency>
       <groupId>com.ruoyi</groupId>
+      <artifactId>ruoyi-system</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ruoyi</groupId>
       <artifactId>ruoyi-common-excel</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.baomidou</groupId>
+      <artifactId>mybatis-plus-boot-starter</artifactId>
+      <version>3.5.5</version>
     </dependency>
     <dependency>
       <groupId>cn.dev33</groupId>

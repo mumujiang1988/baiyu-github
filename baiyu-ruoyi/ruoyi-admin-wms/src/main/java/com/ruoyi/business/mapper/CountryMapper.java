@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper
 public interface CountryMapper extends BaseMapper<Country> {
-    @Select(" SELECT id, name_zh, name_en FROM country WHERE status = 1 ORDER BY name_zh ASC ")
+    @Select(" SELECT id as nation,name_zh FROM country ")
     List<Country> selectList();
 
     @Select("SELECT * FROM country WHERE id = #{id}")
@@ -18,16 +18,5 @@ public interface CountryMapper extends BaseMapper<Country> {
 
     @Select("SELECT * FROM country WHERE name_zh = #{nameZh}")
     Country selectFcountryList(String nameZh);
-    
-    /**
-     * 模糊搜索国家（支持中文和英文）
-     */
-    @Select("<script>" +
-            "SELECT id, name_zh, name_en FROM country " +
-            "WHERE status = 1 " +
-            "AND (name_zh LIKE CONCAT('%', #{keyword}, '%') OR name_en LIKE CONCAT('%', #{keyword}, '%')) " +
-            "ORDER BY name_zh ASC" +
-            "</script>")
-    List<Country> searchNation(@Param("keyword") String keyword);
 
 }

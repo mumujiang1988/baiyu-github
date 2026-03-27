@@ -41,18 +41,6 @@
         WHERE FID = #{fid}
     </select>
 
-    <!-- 根据单据编号查询销售订单成本 -->
-    <select id="selectByBillNo" resultMap="SaleOrderCostMap">
-        SELECT
-            FID, FBillNo,F_hyf, FBillAllAmount, FBillAllAmount_LC,
-            F_bxf, F_gwyhfy, F_qtwbfy, F_mxcbhj, F_mxtshj,
-            F_cbxj, F_bzf, F_dlf, F_rzf, F_kdf, F_hdf,
-            F_lyf, F_qtfy, F_mjf, F_jcf, F_fyxj,
-            F_lrl, F_wbyk, F_jlrl, F_jlre
-        FROM t_sale_order_cost
-        WHERE FBillNo = #{fbillNo}
-    </select>
-
     <!-- 插入销售订单成本 -->
     <insert id="insert" parameterType="com.ruoyi.business.entity.SaleOrderCost">
         INSERT INTO t_sale_order_cost (

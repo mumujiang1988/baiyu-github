@@ -374,9 +374,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                     return Result.error("单据编号已存在: " + poOrderBillHead.getFbillNo());
                 }
             Long userId = LoginHelper.getUserId();
-            SysUserVo user = sysUserMapper.selectVoById(userId);
-            SysUserVo modifier = sysUserMapper.selectVoById(Long.valueOf(poOrderBillHead.getFmodifierId()));
-            SysUserVo approver = sysUserMapper.selectVoById(Long.valueOf(poOrderBillHead.getFapproverId()));
+            SysUserVo user  = sysUserMapper.selectVoById(userId);
+            SysUserVo modifier = sysUserMapper.selectVoById(poOrderBillHead.getFmodifierId());
+            SysUserVo approver = sysUserMapper.selectVoById(poOrderBillHead.getFapproverId());
             Employee employee = employeeMapper.selectByExactStaffNumber(poOrderBillHead.getFGdy1());
             poOrderBillHead.setFassignSupplierId(supplier.getSupplierid());
             poOrderBillHead.setFcreatorId(user.getK3Key());

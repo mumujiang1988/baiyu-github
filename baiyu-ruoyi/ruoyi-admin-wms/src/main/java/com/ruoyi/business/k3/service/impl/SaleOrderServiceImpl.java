@@ -14,7 +14,8 @@ import com.ruoyi.business.mapper.*;
 
 import com.ruoyi.business.util.Result;
 import com.ruoyi.business.util.ThreadPoolUtil;
-import com.ruoyi.business.utils.SaleOrderCostCalculator;
+
+import com.ruoyi.business.util.SaleOrderCostCalculator;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -558,7 +559,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         SaleOrder saleOrder = saleOrderMapper.selectByAutoId(id);
         if (saleOrder != null) {
             saleOrder.setSaleOrderCost(saleOrderCostMapper.selectById(saleOrder.getFid()));
-            saleOrder.setEntryList(saleOrderEntryMapper.selectByOrderId(saleOrder.getFBillNo()));
+            saleOrder.setEntryList(saleOrderEntryMapper.selectByOrderId(saleOrder.getFid()));
         }
         return saleOrder;
     }
@@ -756,7 +757,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
      *
      * @param dictName 字典名称
      * @param category 字典类别
-     * @return 字典编码，如果未找到则返回 null
+     * @return 字典编码，如果未找到则返回null
      */
     private String convertDictNameToCode(String dictName, String category) {
         try {
@@ -771,263 +772,6 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         } catch (Exception e) {
             log.error("查询字典值失败，名称：{}，类别：{}", dictName, category, e);
             return null;
-        }
-    }
-
-    @Override
-    public List<Map<String, Object>> selectEntryList(String fbillNo) {
-        try {
-            log.debug("开始查询销售订单明细，fbillNo: {}", fbillNo);
-            List<SaleOrderEntry> entryList = saleOrderEntryMapper.selectByOrderId(fbillNo);
-            if (entryList == null || entryList.isEmpty()) {
-                log.warn("未查询到销售订单明细数据，fbillNo: {}", fbillNo);
-                return new ArrayList<>();
-            }
-            
-            log.info("查询到销售订单明细 {} 条，fbillNo: {}", entryList.size(), fbillNo);
-            // 将 SaleOrderEntry 转换为 Map 返回
-            List<Map<String, Object>> resultList = new ArrayList<>();
-            for (SaleOrderEntry entry : entryList) {
-                Map<String, Object> entryMap = new HashMap<>();
-                entryMap.put("fEntryId", entry.getFEntryId());
-                entryMap.put("fbillNo", entry.getFbillNo());
-                entryMap.put("fPlanMaterialId", entry.getFPlanMaterialId());
-                entryMap.put("fPlanMaterialName", entry.getFPlanMaterialName());
-                entryMap.put("fQty", entry.getFQty());
-                entryMap.put("fPrice", entry.getFPrice());
-                entryMap.put("fTaxPrice", entry.getFTaxPrice());
-                entryMap.put("fAllAmount", entry.getFAllAmount());
-                entryMap.put("fDeliQty", entry.getFDeliQty());
-                entryMap.put("f_mz", entry.getFmz());
-                entryMap.put("f_jz", entry.getFjz());
-                entryMap.put("f_kpdj", entry.getFKpdj());
-                entryMap.put("f_ygcb", entry.getFYgcb());
-                entryMap.put("f_hsbm", entry.getFHsbm());
-                entryMap.put("f_cplb", entry.getFCplb());
-                resultList.add(entryMap);
-            }
-            return resultList;
-        } catch (Exception e) {
-            log.error("查询销售订单明细失败，fbillNo: {}", fbillNo, e);
-            throw new RuntimeException("查询销售订单明细失败：" + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public Map<String, Object> selectCostDataByBillNo(String fbillNo) {
-        try {
-            log.debug("开始查询销售订单成本，fbillNo: {}", fbillNo);
-            // 直接通过 FBillNo 查询成本表，无需关联主表
-            SaleOrderCost cost = saleOrderCostMapper.selectByBillNo(fbillNo);
-            if (cost == null) {
-                log.warn("未查询到销售订单成本数据，fbillNo: {}", fbillNo);
-                return new HashMap<>();
-            }
-            
-            log.info("查询到销售订单成本，fbillNo: {}", fbillNo);
-            // 将 SaleOrderCost 转换为 Map 返回
-            Map<String, Object> costMap = new HashMap<>();
-            costMap.put("fid", cost.getFid());
-            costMap.put("fbillno", cost.getFbillno());
-            costMap.put("fHyf", cost.getFHyf());
-            costMap.put("fBillAllAmount", cost.getFBillAllAmount());
-            costMap.put("fBillAllAmountLc", cost.getFBillAllAmountLc());
-            costMap.put("fBxf", cost.getFBxf());
-            costMap.put("fGwyhfy", cost.getFGwyhfy());
-            costMap.put("fQtwbfy", cost.getFQtwbfy());
-            costMap.put("fMxcbhj", cost.getFMxcbhj());
-            costMap.put("fMxtshj", cost.getFMxtshj());
-            costMap.put("fCbxj", cost.getFCbxj());
-            costMap.put("fBzf", cost.getFBzf());
-            costMap.put("fDlf", cost.getFDlf());
-            costMap.put("fRzf", cost.getFRzf());
-            costMap.put("fKdf", cost.getFKdf());
-            costMap.put("fHdf", cost.getFHdf());
-            costMap.put("fLyf", cost.getFLyf());
-            costMap.put("fQtfy", cost.getFQtfy());
-            costMap.put("fMjf", cost.getFMjf());
-            costMap.put("fJcf", cost.getFJcf());
-            costMap.put("fFyxj", cost.getFFyxj());
-            costMap.put("fWbyk", cost.getFWbyk());
-            costMap.put("fJlre", cost.getFJlre());
-            costMap.put("fLrl", cost.getFLrl());
-            costMap.put("fJlrl", cost.getFJlrl());
-            return costMap;
-        } catch (Exception e) {
-            log.error("查询销售订单成本失败，fbillNo: {}", fbillNo, e);
-            throw new RuntimeException("查询销售订单成本失败：" + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public SaleOrder selectByBillNo(String billNo) {
-        return saleOrderMapper.selectByBillNo(billNo);
-    }
-
-    @Override
-    public List<Map<String, Object>> getSalespersonsFromOrders() {
-        return saleOrderMapper.selectSalespersonsFromOrders();
-    }
-
-    @Override
-    public int deleteSaleOrderByIds(Long[] ids) {
-        if (ids == null || ids.length == 0) {
-            log.warn("删除销售订单失败，ID 列表为空");
-            return 0;
-        }
-
-        try {
-            int totalCount = 0;
-
-            // 遍历每个 ID 进行删除
-            for (Long id : ids) {
-                // 查询订单信息（用于获取 FBillNo）
-                SaleOrder order = saleOrderMapper.selectByAutoId(id);
-                if (order == null) {
-                    log.warn("订单不存在，跳过删除，ID: {}", id);
-                    continue;
-                }
-
-                String fbillNo = order.getFBillNo();
-                log.info("开始删除销售订单，ID: {}, FBillNo: {}", id, fbillNo);
-
-                // 1. 删除明细表数据
-                if (fbillNo != null && !fbillNo.isEmpty()) {
-                    List<String> fbillNoList = Arrays.asList(fbillNo);
-                    saleOrderEntryMapper.deleteByFids(fbillNoList);
-                    log.debug("删除明细表数据成功，FBillNo: {}", fbillNo);
-                }
-
-                // 2. 删除成本表数据
-                SaleOrderCost cost = saleOrderCostMapper.selectByBillNo(fbillNo);
-                if (cost != null) {
-                    saleOrderCostMapper.deleteById(cost.getFid());
-                    log.debug("删除成本表数据成功，FBillNo: {}", fbillNo);
-                }
-
-                // 3. 删除主表数据
-                int result = saleOrderMapper.deleteByAutoId(id);
-                if (result > 0) {
-                    totalCount++;
-                    log.info("删除销售订单成功，ID: {}, FBillNo: {}", id, fbillNo);
-                } else {
-                    log.error("删除销售订单失败，ID: {}", id);
-                }
-            }
-
-            log.info("批量删除销售订单完成，总计删除 {} 条记录", totalCount);
-            return totalCount;
-
-        } catch (Exception e) {
-            log.error("批量删除销售订单失败", e);
-            throw new RuntimeException("批量删除销售订单失败：" + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Result auditSaleOrders(Long[] ids) {
-        if (ids == null || ids.length == 0) {
-            return Result.error("请选择要审核的数据");
-        }
-
-        try {
-            int successCount = 0;
-            int skipCount = 0;
-            StringBuilder skipBillNos = new StringBuilder();
-
-            // 获取当前用户信息
-            Long userId = LoginHelper.getUserId();
-            SysUser user = sysUserMapper.selectById(userId);
-            String auditorName = user != null ? user.getUserName() : "Unknown";
-
-            for (Long id : ids) {
-                SaleOrder order = saleOrderMapper.selectByAutoId(id);
-                if (order == null) {
-                    log.warn("订单不存在，无法审核，ID: {}", id);
-                    continue;
-                }
-
-                // 检查单据状态，已审核的单据不能再次审核
-                if ("C".equals(order.getFDocumentStatus())) {
-                    skipCount++;
-                    if (skipBillNos.length() > 0) {
-                        skipBillNos.append(", ");
-                    }
-                    skipBillNos.append(order.getFBillNo());
-                    continue;
-                }
-
-                // 更新单据状态为已审核（C）
-                order.setFDocumentStatus("C");
-                int result = saleOrderMapper.updateByFid(order);
-                if (result > 0) {
-                    successCount++;
-                    log.info("审核销售订单成功，ID: {}, FBillNo: {}, 审核人：{}", id, order.getFBillNo(), auditorName);
-                }
-            }
-
-            String message = String.format("审核完成！成功：%d 条", successCount);
-            if (skipCount > 0) {
-                message += String.format("，跳过（已审核）：%d 条 [%s]", skipCount, skipBillNos.toString());
-            }
-
-            return Result.success(message);
-
-        } catch (Exception e) {
-            log.error("审核销售订单失败", e);
-            return Result.error("审核失败：" + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Result unAuditSaleOrders(Long[] ids) {
-        if (ids == null || ids.length == 0) {
-            return Result.error("请选择要反审核的数据");
-        }
-
-        try {
-            int successCount = 0;
-            int skipCount = 0;
-            StringBuilder skipBillNos = new StringBuilder();
-
-            for (Long id : ids) {
-                SaleOrder order = saleOrderMapper.selectByAutoId(id);
-                if (order == null) {
-                    log.warn("订单不存在，无法反审核，ID: {}", id);
-                    continue;
-                }
-
-                // 检查单据状态，只有已审核的单据才能反审核
-                if (!"C".equals(order.getFDocumentStatus())) {
-                    skipCount++;
-                    if (skipBillNos.length() > 0) {
-                        skipBillNos.append(", ");
-                    }
-                    skipBillNos.append(order.getFBillNo());
-                    continue;
-                }
-
-                // 更新单据状态为创建（A）
-                order.setFDocumentStatus("A");
-                int result = saleOrderMapper.updateByFid(order);
-                if (result > 0) {
-                    successCount++;
-                    log.info("反审核销售订单成功，ID: {}, FBillNo: {}", id, order.getFBillNo());
-                }
-            }
-
-            String message = String.format("反审核完成！成功：%d 条", successCount);
-            if (skipCount > 0) {
-                message += String.format("，跳过（未审核）：%d 条 [%s]", skipCount, skipBillNos.toString());
-            }
-
-            return Result.success(message);
-
-        } catch (Exception e) {
-            log.error("反审核销售订单失败", e);
-            return Result.error("反审核失败：" + e.getMessage());
         }
     }
 

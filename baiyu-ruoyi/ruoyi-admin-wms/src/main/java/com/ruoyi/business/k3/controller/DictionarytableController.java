@@ -1,13 +1,10 @@
 package com.ruoyi.business.k3.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.ruoyi.business.entity.Country;
 import com.ruoyi.business.entity.DictionaryTable;
 import com.ruoyi.business.k3.service.DictionaryTableService;
-import com.ruoyi.business.servicel.CountryService;
 import com.ruoyi.business.util.Result;
 import com.ruoyi.common.core.domain.R;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +17,10 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/k3/dictionary")
-@Slf4j
 public class DictionarytableController {
 
     @Autowired
     private DictionaryTableService dictionaryTableService;
-    
-    @Autowired
-    private CountryService countryService;
 
     /**
      * 新增字典项
@@ -138,73 +131,8 @@ public class DictionarytableController {
             System.out.println(tree);
             return Result.success(responseData);
         } catch (Exception e) {
-            return Result.error("查询异常：" + e.getMessage());
+            return Result.error("查询异常: " + e.getMessage());
 
-        }
-    }
-
-    /**
-     * 根据字典类型查询字典项列表
-     * 用于销售订单等页面的字典数据查询
-     *
-     * @param dictType 字典类型 (如：currency, payment_clause, collection_terms, nation 等)
-     * @return 字典项列表，格式：[{value, label}]
-     */
-    @GetMapping("/listByType/{dictType}")
-    public Result listByType(@PathVariable String dictType) {
-        try {
-            // 调用 Service 层查询字典项 (从 bymaterial_dictionary 表或 country 表)
-            List<DictionaryTable> dictList = dictionaryTableService.selectByDictType(dictType);
-            
-            // 转换为前端需要的格式
-            List<Map<String, Object>> resultList = new java.util.ArrayList<>();
-            for (DictionaryTable dict : dictList) {
-                Map<String, Object> map = new java.util.HashMap<>();
-                map.put("value", dict.getDictCode());      // kingdee 字段作为 value
-                map.put("label", dict.getRemark());        // name 字段作为 label
-                map.put("dictName", dict.getDictName());   // category 字段
-                map.put("dictCode", dict.getDictCode());   // kingdee 字段
-                resultList.add(map);
-            }
-            
-            log.info("查询字典 [{}] 成功，共 {} 条记录", dictType, resultList.size());
-            return Result.success(resultList);
-        } catch (Exception e) {
-            log.error("查询字典 [{}] 失败：{}", dictType, e.getMessage(), e);
-            return Result.error("查询字典失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 模糊搜索国家字典
-     * @param keyword 搜索关键词（支持中文、英文）
-     * @return 匹配的国家列表
-     */
-    @GetMapping("/nation/search")
-    public Result searchNation(@RequestParam String keyword) {
-        try {
-            if (keyword == null || keyword.trim().isEmpty()) {
-                return Result.error("搜索关键词不能为空");
-            }
-            
-            List<Country> countries = countryService.searchNation(keyword);
-            
-            // 转换为前端需要的格式
-            List<Map<String, Object>> resultList = new java.util.ArrayList<>();
-            for (Country country : countries) {
-                Map<String, Object> map = new java.util.HashMap<>();
-                map.put("value", country.getId());
-                map.put("label", country.getNameZh() + " (" + country.getNameEn() + ")");
-                map.put("nameZh", country.getNameZh());
-                map.put("nameEn", country.getNameEn());
-                resultList.add(map);
-            }
-            
-            log.info("搜索国家 [{}] 成功，找到 {} 条记录", keyword, resultList.size());
-            return Result.success(resultList);
-        } catch (Exception e) {
-            log.error("搜索国家失败：{}", e.getMessage(), e);
-            return Result.error("搜索国家失败：" + e.getMessage());
         }
     }
 }
