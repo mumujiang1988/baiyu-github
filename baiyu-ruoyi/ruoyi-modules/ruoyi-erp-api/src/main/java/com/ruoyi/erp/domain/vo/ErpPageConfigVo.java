@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 /**
  * ERP 公共配置视图对象 erp_page_config
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

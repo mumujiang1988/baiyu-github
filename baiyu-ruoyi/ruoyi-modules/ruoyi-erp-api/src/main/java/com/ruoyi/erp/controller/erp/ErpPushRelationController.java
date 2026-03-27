@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * ERP 下推关系配置 信息操作处理
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Validated

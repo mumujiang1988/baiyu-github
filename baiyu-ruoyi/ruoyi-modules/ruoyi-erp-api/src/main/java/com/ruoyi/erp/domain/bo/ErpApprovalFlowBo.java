@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 /**
  * ERP 审批流程配置业务对象 erp_approval_flow
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

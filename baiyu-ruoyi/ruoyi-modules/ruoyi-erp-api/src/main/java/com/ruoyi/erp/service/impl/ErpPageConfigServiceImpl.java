@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * ERP 公共配置 Service 业务层实现
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Slf4j

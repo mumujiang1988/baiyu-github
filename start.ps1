@@ -1,108 +1,68 @@
 # RuoYi-WMS One-Click Startup Script
-# Includes: Stop Java processes, Clean build, Start backend, Start frontend
+# Optimized version with separate console windows
 
-$ErrorActionPreference = "Stop"
-$projectRoot = "D:\baiyuyunma\baiyu-github\baiyu-github"
+$ErrorActionPreference = "Continue"
+$projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruoyiPath = "$projectRoot\baiyu-ruoyi"
 $backendPath = "$ruoyiPath\ruoyi-admin-wms"
 $frontendPath = "$projectRoot\baiyu-web"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  RuoYi-WMS Startup Script" -ForegroundColor Cyan
+Write-Host "  RuoYi-WMS 前后端一键启动脚本" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-
-# Step 1: Stop all Java processes
-Write-Host "[1/4] Stopping Java processes..." -ForegroundColor Yellow
-try {
-    taskkill /f /im java.exe 2>$null
-    Start-Sleep -Seconds 2
-    Write-Host "Java processes stopped" -ForegroundColor Green
-} catch {
-    Write-Host "No running Java processes found" -ForegroundColor Gray
-}
+Write-Host "后端：ruoyi-admin-wms (端口：8180)" -ForegroundColor White
+Write-Host "前端：baiyu-web (端口：8899)" -ForegroundColor White
 Write-Host ""
 
-# Step 2: Clean target directories
-Write-Host "[2/4] Cleaning old build files..." -ForegroundColor Yellow
-$targetDirs = @(
-    "$ruoyiPath\ruoyi-modules\ruoyi-system\target",
-    "$ruoyiPath\ruoyi-modules\ruoyi-demo\target",
-    "$ruoyiPath\ruoyi-modules\ruoyi-erp-api\target",
-    "$ruoyiPath\ruoyi-modules\ruoyi-generator\target",
-    "$backendPath\target"
+# Step 1: Start backend in new window
+Write-Host "[1/2] 正在启动后端服务..." -ForegroundColor Yellow
+$backendArgs = @(
+    "-NoExit",
+    "-Command",
+    "Set-Location '$backendPath'; " +
+    "Write-Host '后端编译中...' -ForegroundColor Green; " +
+    "mvn clean install -DskipTests; " +
+    "if (`$LASTEXITCODE -eq 0) { " +
+    "  Write-Host '' ; " +
+    "  Write-Host '后端启动成功！' -ForegroundColor Green; " +
+    "  Write-Host '访问地址：http://localhost:8180' -ForegroundColor Cyan; " +
+    "} else { " +
+    "  Write-Host '后端启动失败，请检查错误信息' -ForegroundColor Red; " +
+    "  pause; " +
+    "}"
 )
+Start-Process powershell -ArgumentList $backendArgs -WindowStyle Normal -Verb RunAs
 
-foreach ($dir in $targetDirs) {
-    if (Test-Path $dir) {
-        Remove-Item -Recurse -Force $dir
-        Write-Host "Cleaned: $dir" -ForegroundColor Green
-    }
-}
-Write-Host ""
+# Wait for backend to start compiling
+Start-Sleep -Seconds 3
 
-# Step 3: Maven clean build
-Write-Host "[3/4] Running Maven clean install..." -ForegroundColor Yellow
-Write-Host "Working directory: $ruoyiPath" -ForegroundColor Gray
-Set-Location $ruoyiPath
-
-try {
-    mvn clean install -DskipTests
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Maven build successful" -ForegroundColor Green
-    } else {
-        throw "Maven build failed"
-    }
-} catch {
-    Write-Host "Maven build failed, please check error messages" -ForegroundColor Red
-    exit 1
-}
-Write-Host ""
-
-# Step 4: Start backend and frontend
-Write-Host "[4/4] Starting backend and frontend services..." -ForegroundColor Yellow
-Write-Host "----------------------------------------" -ForegroundColor Cyan
-Write-Host "  Starting Backend Service..." -ForegroundColor Green
-Write-Host "----------------------------------------" -ForegroundColor Cyan
-Set-Location $backendPath
-
-# 启动后端（新窗口）
-Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
-Set-Location '$backendPath'
-Write-Host '========================================' -ForegroundColor Cyan
-Write-Host '  Starting RuoYi-WMS Backend...' -ForegroundColor Cyan
-Write-Host '========================================' -ForegroundColor Cyan
-Write-Host ''
-mvn spring-boot:run
-"@
-
-Start-Sleep -Seconds 5
-
-Write-Host "----------------------------------------" -ForegroundColor Cyan
-Write-Host "  Starting Frontend Service..." -ForegroundColor Green
-Write-Host "----------------------------------------" -ForegroundColor Cyan
-Set-Location $frontendPath
-
-# 启动前端（新窗口）
-Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
-Set-Location '$frontendPath'
-Write-Host '========================================' -ForegroundColor Cyan
-Write-Host '  Starting RuoYi-WMS Frontend...' -ForegroundColor Cyan
-Write-Host '========================================' -ForegroundColor Cyan
-Write-Host ''
-npm run dev
-"@
+# Step 2: Start frontend in new window
+Write-Host "[2/2] 正在启动前端项目..." -ForegroundColor Yellow
+$frontendArgs = @(
+    "-NoExit",
+    "-Command",
+    "Set-Location '$frontendPath'; " +
+    "Write-Host '前端启动中...' -ForegroundColor Green; " +
+    "npm run dev"
+)
+Start-Process powershell -ArgumentList $frontendArgs -WindowStyle Normal
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Startup Complete!" -ForegroundColor Green
+Write-Host "  服务启动完成！" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Service Information:" -ForegroundColor Yellow
-Write-Host "  • Backend URL: http://localhost:8080" -ForegroundColor White
-Write-Host "  • Frontend URL: http://localhost:80" -ForegroundColor White
+Write-Host "服务信息:" -ForegroundColor Yellow
+Write-Host "  后端 URL: http://localhost:8180" -ForegroundColor White
+Write-Host "  前端 URL: http://localhost:8899" -ForegroundColor White
 Write-Host ""
-Write-Host "Tips:" -ForegroundColor Yellow
-Write-Host "  • Backend and frontend run in separate PowerShell windows" -ForegroundColor Gray
-Write-Host "  • Close the PowerShell window to stop the corresponding service" -ForegroundColor Gray
+Write-Host "提示信息:" -ForegroundColor Yellow
+Write-Host "  - 后端和前端分别在独立窗口运行" -ForegroundColor Gray
+Write-Host "  - 请等待后端 Maven 编译完成（首次启动较慢）" -ForegroundColor Gray
+Write-Host "  - 前端 Vite 启动后会显示访问地址" -ForegroundColor Gray
+Write-Host "  - 关闭此窗口不会影响已启动的服务" -ForegroundColor Gray
+Write-Host "  - 停止服务：直接关闭对应的 PowerShell 窗口即可" -ForegroundColor Gray
 Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+pause

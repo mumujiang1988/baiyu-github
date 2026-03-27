@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 /**
  * ERP 配置历史业务对象 erp_page_config_history
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

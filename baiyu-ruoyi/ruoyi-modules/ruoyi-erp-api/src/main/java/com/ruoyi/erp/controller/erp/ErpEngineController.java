@@ -28,7 +28,7 @@ import java.util.*;
  * ERP 引擎接口控制器
  * 为前端配置化页面提供四大引擎服务
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @SuppressWarnings("unchecked")
@@ -1218,10 +1218,10 @@ public class ErpEngineController {
             result.put("dictTypeList", dictTypeList);
             
             // ====================== 第二段：系统字典 + 业务字典 ======================
-            String dataSql = "SELECT dict_label AS label, dict_value AS value, dict_type AS type " +
+            String dataSql = "SELECT dict_label COLLATE utf8mb4_general_ci AS label, dict_value COLLATE utf8mb4_general_ci AS value, dict_type COLLATE utf8mb4_general_ci AS type " +
                     "FROM sys_dict_data WHERE dict_type = ? " +
                     "UNION ALL " +
-                    "SELECT name AS label, kingdee AS value, category AS type " +
+                    "SELECT name COLLATE utf8mb4_general_ci AS label, kingdee COLLATE utf8mb4_general_ci AS value, category COLLATE utf8mb4_general_ci AS type " +
                     "FROM bymaterial_dictionary WHERE category = ?";
             List<Map<String, Object>> dictDataList = jdbcTemplate.queryForList(dataSql, dictType, dictType);
             result.put("dictDataList", dictDataList);

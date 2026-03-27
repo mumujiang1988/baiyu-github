@@ -12,7 +12,7 @@ import java.io.Serializable;
  * </p>
  *
  * @param <T> 数据类型
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-27
  */
 @Data

@@ -13,7 +13,7 @@ import java.util.Map;
  * 解析和执行审批流程配置
  * 使用Aviator表达式引擎替代ScriptEngine,提升安全性
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Slf4j

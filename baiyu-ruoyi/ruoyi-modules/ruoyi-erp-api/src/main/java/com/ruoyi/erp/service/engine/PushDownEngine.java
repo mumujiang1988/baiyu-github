@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * 根据配置执行下推操作 (字段映射、数据转换等)
  * 使用安全的表达式解析器替代ScriptEngine
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Slf4j

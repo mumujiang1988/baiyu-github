@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * - 虚拟字段配置解析
  * - 字典配置解析
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Slf4j

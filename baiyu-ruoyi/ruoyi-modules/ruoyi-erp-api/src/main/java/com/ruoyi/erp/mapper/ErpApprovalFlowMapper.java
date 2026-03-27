@@ -7,7 +7,7 @@ import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
 /**
  * ERP 审批流程配置 Mapper 接口
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 public interface ErpApprovalFlowMapper extends BaseMapperPlus<ErpApprovalFlow, ErpApprovalFlowVo> {

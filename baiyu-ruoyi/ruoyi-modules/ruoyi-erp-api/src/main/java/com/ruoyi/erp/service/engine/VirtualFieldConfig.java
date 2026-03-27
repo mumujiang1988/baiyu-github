@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * 虚拟字段配置
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Data

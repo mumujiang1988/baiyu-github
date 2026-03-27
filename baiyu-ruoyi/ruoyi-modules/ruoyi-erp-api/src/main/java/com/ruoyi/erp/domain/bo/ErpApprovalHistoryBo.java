@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 /**
  * ERP 审批历史记录业务对象 erp_approval_history
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

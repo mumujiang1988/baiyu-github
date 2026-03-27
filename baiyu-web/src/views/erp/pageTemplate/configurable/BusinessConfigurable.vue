@@ -8,7 +8,7 @@
         <span class="page-title">{{ pageTitle }}</span>
       </div>
       
-      <!-- 第一排：操作按钮 -->
+      <!-- 第一排：操作按钮 + 调试按钮 -->
       <div class="toolbar-row" v-if="leftToolbarActions.length > 0">
         <el-space wrap>
           <el-button
@@ -21,6 +21,16 @@
             v-hasPermi="action.permission ? [action.permission] : []"
           >
             {{ action.label }}
+          </el-button>
+          
+          <!-- 调试按钮（仅开发环境） -->
+          <el-button
+            type="warning"
+            icon="RefreshLeft"
+            @click="reloadDictionaries"
+            title="重新加载字典数据（调试用）"
+          >
+            刷新字典
           </el-button>
         </el-space>
       </div>
@@ -510,6 +520,8 @@ import { Loading, View, Document, Money } from '@element-plus/icons-vue'
 import ERPConfigParser from '@/views/erp/utils/ERPConfigParser'
 import dayjs from 'dayjs'
 import request from '@/utils/request'
+// 新增：用于将 Proxy 转换为普通对象
+import { toRaw } from 'vue'
 
 // ==================== 导入公共工具模块 ====================
 import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils'
@@ -971,37 +983,52 @@ const loadDatabaseConfig = async (moduleCode) => {
   }
 }
 
-// 获取字典选项（纯构建器模式）
+// 获取字典选项（增强日志）
 const getDictOptions = (dictName, staticOptions, required = false) => {
+  console.log(`\n[页面] 请求字典：${dictName}`)
+  console.log(`[页面]   - 静态配置：${staticOptions ? '有' : '无'}, 数量：${staticOptions?.length || 0}`)
+  console.log(`[页面]   - 是否必填：${required}`)
+  
   // 优先使用静态配置
   if (staticOptions && Array.isArray(staticOptions)) {
+    console.log(`[页面]   ✅ 使用静态配置：${dictName}, 数量：${staticOptions.length}`)
     return staticOptions
   }
   
   // 国家字典特殊处理（远程搜索）
   if (dictName === 'nation') { 
+    console.log(`[页面]   🌐 国家字典（远程搜索）`)
     if (nationOptions.value.length > 0) {
+      console.log(`[页面]   ✅ 使用缓存的国家数据：${nationOptions.value.length}条`)
       return nationOptions.value
     }
     // 未搜索时不显示任何数据，等待用户输入
+    console.log(`[页面]   ⏳ 等待用户输入关键词`)
     return []
   }
   
   //  使用字典构建器引擎获取（无降级方案）
+  console.log(`[页面]   🔍 从构建器引擎获取：${dictName}`)
   const data = dictionaryBuilderEngine.get(dictName)
+  
   if (data && data.length > 0) {
+    console.log(`[页面]   ✅ 获取成功：${dictName}, 数量：${data.length}`)
+    console.log(`[页面]   数据预览:`, data.slice(0, 3))
     return data
   }
   
+  console.error(`[页面]   ❌ 构建器返回空数据：${dictName}`)
+  console.error(`[页面]   构建器状态:`, data ? dictionaryBuilderEngine.get(dictName)?.getStatus() : 'null')
+  
   //  增强验证：必填字典未注册时报错
   if (required) {
-    console.error(`必填字典 "${dictName}" 未注册，页面无法正常使用`)
+    console.error(`[页面]   ❌ 必填字典未注册：${dictName}`)
     ElMessage.error(`必填字典 "${dictName}" 未注册，页面无法正常使用`)
     throw new Error(`必填字典缺失：${dictName}`)
   }
   
   // 非必填字典未注册时返回空数组
-  console.warn(`字典未注册：${dictName}`)
+  console.warn(`[页面]   ⚠️ 字典未注册（返回空）：${dictName}`)
   return []
 }
 
@@ -1434,26 +1461,48 @@ const searchNations = async (keyword) => {
 }
 
 /**
- * 预加载字典数据（使用构建器模式）
+ * 预加载字典数据（精简日志版）
  */
 const preloadDictionaries = async () => {
   try {
     const dictConfig = BusinessTemplate.value.dictionaryConfig
+    
     if (!dictConfig || !dictConfig.builder?.enabled) {
-      console.log(' 字典构建器未启用，跳过预加载')
+      console.error('字典构建器未启用')
+      ElMessage.error('字典配置错误')
       return
     }
 
+    // 🔧 关键修复：将 Proxy 对象转换为普通对象
+    const rawDictConfig = toRaw(dictConfig)
+    const rawDictionaries = toRaw(dictConfig.dictionaries)
+    
     // 从配置构建字典
-    dictionaryBuilderEngine.buildFromConfig(dictConfig.dictionaries, getModuleCode())
+    dictionaryBuilderEngine.buildFromConfig(rawDictConfig, getModuleCode())
 
     // 预加载所有动态字典
     await dictionaryBuilderEngine.preloadAll(getModuleCode())
-
-    console.log(' 字典构建器预加载完成')
+    
+    console.log('字典预加载完成，已注册:', Array.from(dictionaryBuilderEngine.registry.keys()))
   } catch (error) {
-    console.warn('预加载字典失败:', error.message)
+    console.error('预加载字典失败:', error.message)
+    ElMessage.error(`预加载字典失败：${error.message}`)
   }
+}
+
+/**
+ * 手动重新加载字典（调试用）
+ */
+const reloadDictionaries = async () => {
+  console.log('\n========== [调试] 手动重新加载字典 ==========')
+  // 清除所有缓存
+  dictionaryBuilderEngine.clearAll()
+  console.log('[调试] 已清除所有字典缓存')
+  
+  // 重新预加载
+  await preloadDictionaries()
+  
+  ElMessage.success('字典重新加载完成')
 }
 
 // 初始化

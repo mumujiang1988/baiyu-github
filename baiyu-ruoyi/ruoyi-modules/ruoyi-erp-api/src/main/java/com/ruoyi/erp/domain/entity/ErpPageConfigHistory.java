@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * ERP 配置历史表实体类
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

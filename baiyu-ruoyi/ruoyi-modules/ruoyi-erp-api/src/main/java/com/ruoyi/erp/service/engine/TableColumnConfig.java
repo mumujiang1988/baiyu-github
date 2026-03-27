@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * 表格列配置
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Data

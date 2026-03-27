@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * ERP 配置化业务异常
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Getter

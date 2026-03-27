@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * 字典配置
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Data
@@ -29,7 +29,7 @@ public class DictionaryConfig {
     /**
      * API 接口地址 (当 dataSourceType 为 api 时使用)
      */
-    private String apiUrl;
+    private String api;
     
     /**
      * 请求方法 (GET/POST)

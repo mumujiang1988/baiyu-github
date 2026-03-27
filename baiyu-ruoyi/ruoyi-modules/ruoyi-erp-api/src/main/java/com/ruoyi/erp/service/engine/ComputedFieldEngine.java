@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * 计算字段配置实体
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Slf4j

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * 提供便捷的响应构建方法
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-27
  */
 @Slf4j

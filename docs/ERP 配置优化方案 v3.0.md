@@ -348,4 +348,4 @@ ADD COLUMN action_config JSON AFTER search_config;
 
 **文档版本**: v3.0  
 **更新日期**: 2026-03-27  
-**维护团队**: ERP Development Team
+**维护团队**: JMH

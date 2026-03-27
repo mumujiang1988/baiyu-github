@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 /**
  * ERP 下推关系配置视图对象 erp_push_relation
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

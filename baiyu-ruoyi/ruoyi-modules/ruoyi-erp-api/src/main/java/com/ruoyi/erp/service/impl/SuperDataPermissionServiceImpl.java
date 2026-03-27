@@ -16,7 +16,7 @@ import java.util.*;
  * 通用数据权限查询服务实现类
  * 用于支持配置化页面的动态查询需求
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-23
  */
 @Slf4j

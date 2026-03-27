@@ -3,7 +3,7 @@
 # 功能：验证 API 文件迁移是否成功
 # 使用方式：.\verify-api-migration.ps1
 # 
-# @author ERP Development Team
+# @author JMH
 # @date 2026-03-25
 
 param(

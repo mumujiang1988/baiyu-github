@@ -21,7 +21,7 @@ import java.util.Map;
  * - 虚拟字段处理
  * - 字典翻译处理
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Slf4j

@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 /**
  * ERP 下推关系配置业务对象 erp_push_relation
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Data

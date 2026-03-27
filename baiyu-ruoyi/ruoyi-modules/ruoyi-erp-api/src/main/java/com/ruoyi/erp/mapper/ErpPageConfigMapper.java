@@ -7,7 +7,7 @@ import com.ruoyi.erp.domain.vo.ErpPageConfigVo;
 /**
  * ERP 公共配置 Mapper 接口
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 public interface ErpPageConfigMapper extends BaseMapperPlus<ErpPageConfig, ErpPageConfigVo> {

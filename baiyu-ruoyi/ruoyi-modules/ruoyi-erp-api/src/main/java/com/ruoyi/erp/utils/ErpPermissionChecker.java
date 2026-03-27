@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * - 数据权限检查
  * - 批量权限检查
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Slf4j

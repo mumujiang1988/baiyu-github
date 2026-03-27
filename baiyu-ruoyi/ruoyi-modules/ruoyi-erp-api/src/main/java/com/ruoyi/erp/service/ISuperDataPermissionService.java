@@ -11,7 +11,7 @@ import java.util.Map;
  * 通用数据权限查询服务接口
  * 用于支持配置化页面的动态查询需求
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-23
  */
 public interface ISuperDataPermissionService {

@@ -3,7 +3,7 @@
  * @module views/erp/utils/DictionaryLoader
  * @description 专门用于加载新的分段返回字典接口数据
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-27
  */
 

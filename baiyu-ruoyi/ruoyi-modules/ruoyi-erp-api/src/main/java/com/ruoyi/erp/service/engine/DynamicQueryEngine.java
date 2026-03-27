@@ -11,7 +11,7 @@ import java.util.Map;
  * 动态查询引擎 (极简版)
  * 根据 JSON 配置生成查询条件
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Slf4j

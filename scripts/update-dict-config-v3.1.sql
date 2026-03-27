@@ -1,4 +1,12 @@
-{
+-- ============================================
+-- 更新字典配置为新格式 (v3.1)
+-- 日期：2026-03-27
+-- 说明：将 dict_config 从旧格式 (dicts 数组) 更新为新格式 (dictionaries 对象)
+-- ============================================
+
+-- 更新销售订单模块的字典配置
+UPDATE erp_page_config 
+SET dict_config = '{
   "builder": {
     "enabled": true
   },
@@ -83,4 +91,16 @@
     "enabled": true,
     "defaultTTL": 300000
   }
-}
+}'
+WHERE module_code = 'saleorder';
+
+-- 验证更新结果
+SELECT 
+  config_id,
+  module_code,
+  config_name,
+  JSON_EXTRACT(dict_config, '$.builder.enabled') as builder_enabled,
+  JSON_LENGTH(JSON_EXTRACT(dict_config, '$.dictionaries')) as dict_count,
+  JSON_KEYS(JSON_EXTRACT(dict_config, '$.dictionaries')) as dict_keys
+FROM erp_page_config
+WHERE module_code = 'saleorder';

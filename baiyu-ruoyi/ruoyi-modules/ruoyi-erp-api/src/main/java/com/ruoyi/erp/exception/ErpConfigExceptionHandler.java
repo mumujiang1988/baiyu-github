@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * ERP 配置化异常处理器
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @RestControllerAdvice

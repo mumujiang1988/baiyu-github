@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * ERP 公共配置 信息操作处理
  *
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 @Slf4j

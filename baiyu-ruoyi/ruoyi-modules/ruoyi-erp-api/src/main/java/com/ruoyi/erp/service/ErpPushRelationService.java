@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * ERP 下推关系配置 Service 业务层接口
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-22
  */
 public interface ErpPushRelationService {

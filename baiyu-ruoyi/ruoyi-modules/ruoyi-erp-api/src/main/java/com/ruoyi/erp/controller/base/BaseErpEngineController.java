@@ -26,7 +26,7 @@ import java.util.Map;
  * - 配置解析
  * - 异常处理
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 @Slf4j

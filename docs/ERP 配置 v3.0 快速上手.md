@@ -124,4 +124,4 @@ SHOW COLUMNS FROM erp_page_config LIKE '%config';
 ---
 
 **最后更新**: 2026-03-27  
-**维护团队**: ERP Development Team
+**维护团队**: JMH

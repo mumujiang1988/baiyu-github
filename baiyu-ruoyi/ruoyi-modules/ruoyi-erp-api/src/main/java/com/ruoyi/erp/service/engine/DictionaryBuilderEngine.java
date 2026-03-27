@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 字典构建器引擎 - 构建器模式
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-25
  */
 @Slf4j

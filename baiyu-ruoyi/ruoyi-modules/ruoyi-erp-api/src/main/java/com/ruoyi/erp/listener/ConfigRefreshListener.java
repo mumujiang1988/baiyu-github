@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 /**
  * 配置刷新事件监听器
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-26
  */
 @Slf4j

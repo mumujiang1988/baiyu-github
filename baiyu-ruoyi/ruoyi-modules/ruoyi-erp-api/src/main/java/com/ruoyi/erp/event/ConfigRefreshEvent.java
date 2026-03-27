@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationEvent;
 /**
  * 配置刷新事件
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-26
  */
 @Getter

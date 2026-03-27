@@ -3,7 +3,7 @@ package com.ruoyi.erp.exception;
 /**
  * 虚拟字段异常
  * 
- * @author ERP Development Team
+ * @author JMH
  * @date 2026-03-24
  */
 public class VirtualFieldException extends ErpConfigException {
