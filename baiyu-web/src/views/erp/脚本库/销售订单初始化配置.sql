@@ -1,13 +1,14 @@
 -- ============================================
 -- ERP 配置 JSON 强制拆分方案 - 销售订单模块导入 SQL（字典重构版）
--- 版本：v3.3 (字典统一 API 版本)
--- 日期：2025-03-28
--- 说明：导入销售订单页面配置数据（8 字段强制拆分 + 统一字典 API）
+-- 版本：v4.0 (9字段拆分 + API配置版)
+-- 日期：2026-03-28
+-- 说明：导入销售订单页面配置数据（9 字段强制拆分 + API配置 + 统一字典 API）
 --   - page_config: 页面基础配置
 --   - form_config: 表单配置
 --   - table_config: 表格列配置
---   - search_config: 搜索区域配置（新增）
---   - action_config: 按钮操作配置（新增）
+--   - search_config: 搜索区域配置
+--   - action_config: 按钮操作配置
+--   - api_config: API接口配置 ✨ 新增
 --   - dict_config: 字典数据源配置（✨ 统一使用 /erp/engine/dict/all API）
 --   - business_config: 业务规则配置
 --   - detail_config: 详情页配置
@@ -34,7 +35,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 第二步：插入销售订单页面配置数据
 -- ============================================
 
--- 销售订单页面配置（8 字段强制拆分，包含 search_config 和 action_config）
+-- 销售订单页面配置（9 字段强制拆分，包含 api_config、search_config 和 action_config）
 INSERT INTO `erp_page_config` (
   `module_code`,
   `config_name`,
@@ -44,6 +45,7 @@ INSERT INTO `erp_page_config` (
   `table_config`,
   `search_config`,
   `action_config`,
+  `api_config`,
   `dict_config`,
   `business_config`,
   `detail_config`,
@@ -378,6 +380,59 @@ INSERT INTO `erp_page_config` (
       {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
     "row": []
+  }',
+  
+  -- ✨ api_config: API接口配置（新增）
+  -- ✨ 说明：定义所有CRUD操作的API接口
+  '{
+    "baseUrl": "/api/saleorder",
+    "methods": {
+      "list": {
+        "url": "/list",
+        "method": "GET",
+        "description": "查询销售订单列表"
+      },
+      "get": {
+        "url": "/{id}",
+        "method": "GET",
+        "description": "获取销售订单详情"
+      },
+      "add": {
+        "url": "/add",
+        "method": "POST",
+        "description": "新增销售订单"
+      },
+      "update": {
+        "url": "/update",
+        "method": "PUT",
+        "description": "修改销售订单"
+      },
+      "delete": {
+        "url": "/delete",
+        "method": "DELETE",
+        "description": "删除销售订单"
+      },
+      "entry": {
+        "url": "/entry/{billNo}",
+        "method": "GET",
+        "description": "获取销售订单明细"
+      },
+      "cost": {
+        "url": "/cost/{billNo}",
+        "method": "GET",
+        "description": "获取销售订单成本"
+      },
+      "audit": {
+        "url": "/audit",
+        "method": "POST",
+        "description": "审核销售订单"
+      },
+      "unAudit": {
+        "url": "/unAudit",
+        "method": "POST",
+        "description": "反审核销售订单"
+      }
+    }
   }',
   
   -- ✨ dict_config: 从 dict.json 读取（重构为新构建器格式）
