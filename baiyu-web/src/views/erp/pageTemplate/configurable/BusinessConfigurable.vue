@@ -1,7 +1,13 @@
 <template>
   <div class="app-container">
+    <!-- 字典加载中提示 -->
+    <div v-if="!dictLoaded" class="dict-loading-container">
+      <el-icon class="is-loading" :size="40"><Loading /></el-icon>
+      <p>字典数据加载中...</p>
+    </div>
+    
     <!-- 搜索区域 -->
-    <el-card shadow="never" class="search-card" v-if="parsedConfig.search?.showSearch">
+    <el-card shadow="never" class="search-card" v-else-if="parsedConfig.search?.showSearch">
       <!-- 页面标题 -->
       <div class="page-header" v-if="pageTitle">
         <el-icon :size="20" v-if="parsedConfig.page?.icon"><component :is="parsedConfig.page.icon" /></el-icon>
@@ -94,8 +100,8 @@
       </el-form>
     </el-card>
 
-    <!-- 表格区域 -->
-    <el-card shadow="never" class="table-card">
+    <!-- 表格区域 - 字典加载完成后才渲染 -->
+    <el-card shadow="never" class="table-card" v-if="dictLoaded">
       <div class="table-wrapper">
         <el-table
           v-loading="loading"
@@ -533,6 +539,9 @@ import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
 // ==================== 导入字典构建器 ====================
 import dictionaryBuilderEngine, { DictionaryBuilder } from '@/views/erp/utils/DictionaryBuilder'
 
+// ==================== 导入字典管理器（新增） ====================
+import dictionaryManager from '@/views/erp/utils/DictionaryManager'
+
 // ==================== 导入引擎 API====================
 import {
   executeDynamicQuery,
@@ -873,6 +882,9 @@ const pushTargetModule = ref('')
 const nationSearchLoading = ref(false)
 const nationOptions = ref([])
 
+// 字典加载状态
+const dictLoaded = ref(false)
+
 // 按钮状态
 const buttonState = reactive({
   single: true,
@@ -983,52 +995,38 @@ const loadDatabaseConfig = async (moduleCode) => {
   }
 }
 
-// 获取字典选项（增强日志）
+/**
+ * 获取字典选项（简化版）
+ * 优先级：静态配置 > 字典管理器 > 构建器引擎
+ */
 const getDictOptions = (dictName, staticOptions, required = false) => {
-  console.log(`\n[页面] 请求字典：${dictName}`)
-  console.log(`[页面]   - 静态配置：${staticOptions ? '有' : '无'}, 数量：${staticOptions?.length || 0}`)
-  console.log(`[页面]   - 是否必填：${required}`)
-  
-  // 优先使用静态配置
+  // 优先级1: 静态配置
   if (staticOptions && Array.isArray(staticOptions)) {
-    console.log(`[页面]   ✅ 使用静态配置：${dictName}, 数量：${staticOptions.length}`)
     return staticOptions
   }
-  
-  // 国家字典特殊处理（远程搜索）
-  if (dictName === 'nation') { 
-    console.log(`[页面]   🌐 国家字典（远程搜索）`)
-    if (nationOptions.value.length > 0) {
-      console.log(`[页面]   ✅ 使用缓存的国家数据：${nationOptions.value.length}条`)
-      return nationOptions.value
-    }
-    // 未搜索时不显示任何数据，等待用户输入
-    console.log(`[页面]   ⏳ 等待用户输入关键词`)
-    return []
+
+  // 优先级2: 国家字典（远程搜索）
+  if (dictName === 'nation') {
+    return nationOptions.value
   }
-  
-  //  使用字典构建器引擎获取（无降级方案）
-  console.log(`[页面]   🔍 从构建器引擎获取：${dictName}`)
-  const data = dictionaryBuilderEngine.get(dictName)
-  
-  if (data && data.length > 0) {
-    console.log(`[页面]   ✅ 获取成功：${dictName}, 数量：${data.length}`)
-    console.log(`[页面]   数据预览:`, data.slice(0, 3))
-    return data
+
+  // 优先级3: 字典管理器
+  const dataFromManager = dictionaryManager.getDictOptions(dictName)
+  if (dataFromManager && dataFromManager.length > 0) {
+    return dataFromManager
   }
-  
-  console.error(`[页面]   ❌ 构建器返回空数据：${dictName}`)
-  console.error(`[页面]   构建器状态:`, data ? dictionaryBuilderEngine.get(dictName)?.getStatus() : 'null')
-  
-  //  增强验证：必填字典未注册时报错
+
+  // 优先级4: 构建器引擎（降级）
+  const dataFromBuilder = dictionaryBuilderEngine.get(dictName)
+  if (dataFromBuilder && dataFromBuilder.length > 0) {
+    return dataFromBuilder
+  }
+
+  // 必填字典缺失时返回空数组（不抛错，避免渲染中断）
   if (required) {
-    console.error(`[页面]   ❌ 必填字典未注册：${dictName}`)
-    ElMessage.error(`必填字典 "${dictName}" 未注册，页面无法正常使用`)
-    throw new Error(`必填字典缺失：${dictName}`)
+    console.warn(`⚠️ 必填字典 "${dictName}" 暂无数据`)
   }
-  
-  // 非必填字典未注册时返回空数组
-  console.warn(`[页面]   ⚠️ 字典未注册（返回空）：${dictName}`)
+
   return []
 }
 
@@ -1038,10 +1036,13 @@ const getButtonDisabled = (disabledKey) => {
   return buttonState[disabledKey] || false
 }
 
-// 获取标签配置
 const getTagConfig = (value, dictName) => {
   const dict = getDictOptions(dictName)
-  const option = dict.find(item => item.value === value)
+  
+  const option = dict.find(item => {
+    return String(item.value) === String(value)
+  })
+  
   return {
     label: option?.label || value,
     type: option?.type || 'info'
@@ -1461,15 +1462,16 @@ const searchNations = async (keyword) => {
 }
 
 /**
- * 预加载字典数据（精简日志版）
+ * 预加载字典数据（优化版 - 使用全局管理器）
  */
 const preloadDictionaries = async () => {
   try {
     const dictConfig = BusinessTemplate.value.dictionaryConfig
-    
+
     if (!dictConfig || !dictConfig.builder?.enabled) {
       console.error('字典构建器未启用')
       ElMessage.error('字典配置错误')
+      dictLoaded.value = true // 即使配置错误也允许页面渲染
       return
     }
 
@@ -1477,18 +1479,36 @@ const preloadDictionaries = async () => {
     const rawDictConfig = toRaw(dictConfig)
     const rawDictionaries = toRaw(dictConfig.dictionaries)
     
-    // 从配置构建字典
-    dictionaryBuilderEngine.buildFromConfig(rawDictConfig, getModuleCode())
-
-    // 预加载所有动态字典
-    await dictionaryBuilderEngine.preloadAll(getModuleCode())
+    // 优化策略：先使用 DictionaryManager 一次性加载全部字典
+    const allDicts = await dictionaryManager.loadAll()
+    console.log(`✅ 字典加载完成：${Object.keys(allDicts).length} 个字典类型`)
     
-    console.log('字典预加载完成，已注册:', Array.from(dictionaryBuilderEngine.registry.keys()))
+    // 从配置构建字典（用于兼容和降级）
+    dictionaryBuilderEngine.buildFromConfig(rawDictConfig, getModuleCode())
+    
+    // 仅加载标记为需要单独预加载的字典
+    const needPreload = []
+    for (const [dictName, dictValue] of Object.entries(rawDictionaries)) {
+      if (dictValue.preload === true && !allDicts[dictName]) {
+        needPreload.push(dictName)
+      }
+    }
+    
+    if (needPreload.length > 0) {
+      console.log(`⚠️ 需要单独预加载的字典：${needPreload.join(', ')}`)
+      await dictionaryBuilderEngine.preloadAll(getModuleCode())
+    }
+    
+    dictLoaded.value = true
   } catch (error) {
     console.error('预加载字典失败:', error.message)
     ElMessage.error(`预加载字典失败：${error.message}`)
+    dictLoaded.value = false
   }
 }
+
+// 页面加载时自动测试（调试用，用完可删除）
+// testDictAPI()
 
 /**
  * 手动重新加载字典（调试用）
@@ -1505,30 +1525,103 @@ const reloadDictionaries = async () => {
   ElMessage.success('字典重新加载完成')
 }
 
-// 初始化
+// ==================== 全局调试工具（挂载到 window）====================
+if (typeof window !== 'undefined') {
+  // 查看所有字典数据
+  window.getDictData = (dictName) => {
+    if (dictName) {
+      const data = dictionaryManager.getDictOptions(dictName)
+      console.log(`📦 字典 "${dictName}" 的数据:`, data)
+      return data
+    }
+    // 不传参数时返回所有字典
+    const allDicts = {}
+    dictionaryBuilderEngine.registry.forEach((builder, name) => {
+      allDicts[name] = builder.get()
+    })
+    console.log('📦 所有字典数据:', allDicts)
+    return allDicts
+  }
+  
+  // 查看字典统计信息
+  window.getDictStats = () => {
+    const stats = {
+      total: dictionaryBuilderEngine.registry.size,
+      dictionaries: []
+    }
+    
+    dictionaryBuilderEngine.registry.forEach((builder, name) => {
+      const data = builder.get()
+      stats.dictionaries.push({
+        name,
+        type: builder.type,
+        loaded: !!data,
+        count: Array.isArray(data) ? data.length : 0,
+        status: builder.getStatus()
+      })
+    })
+    
+    console.log('📊 字典统计信息:', stats)
+    return stats
+  }
+  
+  // 打印指定字典的完整 JSON
+  window.printDictJSON = (dictName) => {
+    const data = dictionaryManager.getDictOptions(dictName)
+    console.log(`\n📄 [${dictName}] 完整 JSON 数据:`)
+    console.log(JSON.stringify(data, null, 2))
+    return data
+  }
+  
+  // 搜索字典中的数据
+  window.searchDict = (dictName, keyword) => {
+    const data = dictionaryManager.getDictOptions(dictName)
+    if (!data || data.length === 0) {
+      console.warn(`字典 "${dictName}" 无数据`)
+      return []
+    }
+    
+    const results = data.filter(item => {
+      const label = String(item.label || '').toLowerCase()
+      const value = String(item.value || '').toLowerCase()
+      const searchKey = keyword.toLowerCase()
+      return label.includes(searchKey) || value.includes(searchKey)
+    })
+    
+    console.log(`🔍 在 "${dictName}" 中搜索 "${keyword}": 找到 ${results.length} 条`)
+    console.log('搜索结果:', results)
+    return results
+  }
+}
+
+// 初始化 - 简化加载顺序：配置 → 字典 → 渲染
 onMounted(async () => {
-  // 1. 先加载配置
-  await initConfig()
-  
-  // 2. 预加载字典数据（国家、销售人员等）
-  await preloadDictionaries()
-  
-  // 3. 初始化引擎配置
-  await initEngineConfig()
-  
-  // 设置默认日期区间为当月
-  const now = new Date()
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  dateRange.value = [
-    dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
-    dayjs(now).format('YYYY-MM-DD')
-  ]
-  
-  // 设置查询参数的日期
-  queryParams.value.beginDate = dateRange.value[0]
-  queryParams.value.endDate = dateRange.value[1]
-  
-  getList()
+  try {
+    // 步骤1: 加载页面配置
+    await initConfig()
+
+    // 步骤2: 加载字典数据（必须完成后才允许渲染）
+    await preloadDictionaries()
+
+    // 步骤3: 初始化引擎配置
+    await initEngineConfig()
+
+    // 步骤4: 设置默认日期区间
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    dateRange.value = [
+      dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
+      dayjs(now).format('YYYY-MM-DD')
+    ]
+    queryParams.value.beginDate = dateRange.value[0]
+    queryParams.value.endDate = dateRange.value[1]
+
+    // 步骤5: 加载列表数据
+    getList()
+  } catch (error) {
+    console.error('页面初始化失败:', error)
+    ElMessage.error(`页面初始化失败：${error.message}`)
+  }
 })
 
 // ==================== 引擎相关方法 ====================
@@ -1837,6 +1930,21 @@ const handlePushDown = async () => {
 
 <style scoped>
 @import './BusinessConfigurable.styles.css';
+
+/* 字典加载容器样式 */
+.dict-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #409EFF;
+}
+
+.dict-loading-container p {
+  margin-top: 16px;
+  font-size: 14px;
+}
 
 /* 抽屉样式 */
 .drawer-loading {

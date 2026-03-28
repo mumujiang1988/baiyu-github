@@ -225,10 +225,6 @@ class DictionaryBuilderEngine {
     const builder = this.registry.get(name)
     if (!builder) {
       console.error(`[字典引擎] ❌ 字典未注册：${name}`)
-      console.error(`[字典引擎] 当前已注册的字典：`, Array.from(this.registry.keys()))
-      console.error(`[字典引擎] 调用堆栈:`, new Error().stack)
-    } else {
-      console.debug(`[字典引擎] ✅ 找到字典：${name}, 类型：${builder.type}, 状态：`, builder.getStatus())
     }
     return builder
   }
@@ -500,12 +496,6 @@ if (typeof window !== 'undefined') {
     console.log('字典引擎实例:', engine)
     return engine
   }
-  
-  console.log('\n✅ 字典调试工具已加载:')
-  console.log('  - window.checkDict(name) - 检查单个字典')
-  console.log('  - window.checkAllDicts() - 检查所有字典')
-  console.log('  - window.getDictEngine() - 获取引擎实例')
-  console.log('使用方法：在控制台输入 checkDict("orderStatus")\n')
 }
 
 export default engine

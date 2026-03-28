@@ -137,4 +137,11 @@ public interface BymaterialDictionaryMapper extends BaseMapper<BymaterialDiction
      * */
     @Select(" SELECT number as FMaterialId,name as FMaterialName FROM by_material")
     List<BymaterialDictionary> selectmaterial();
+    
+    /**
+     * 查询所有业务字典项
+     * @return 业务字典列表
+     */
+    @Select("SELECT id, code, kingdee, name, category, category_name FROM bymaterial_dictionary ORDER BY create_time")
+    List<BymaterialDictionary> selectMaterialAll();
 }

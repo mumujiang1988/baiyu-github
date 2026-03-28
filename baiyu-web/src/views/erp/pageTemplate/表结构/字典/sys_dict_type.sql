@@ -11,7 +11,7 @@
  Target Server Version : 80045 (8.0.45)
  File Encoding         : 65001
 
- Date: 27/03/2026 05:09:16
+ Date: 28/03/2026 11:59:28
 */
 
 SET NAMES utf8mb4;
@@ -63,5 +63,25 @@ INSERT INTO `sys_dict_type` VALUES (2029009137273573378, '商标授权', 'f_sbsq
 INSERT INTO `sys_dict_type` VALUES (2031634305997230081, '价目表对象', 'price_object', '1', 'admin', '2026-03-11 15:32:19', 'admin', '2026-03-11 15:32:19', '价目表对象');
 INSERT INTO `sys_dict_type` VALUES (2032320827088068610, '是否用于业务询价', 'business_inquiry', '1', 'admin', '2026-03-13 13:00:19', 'admin', '2026-03-13 13:00:19', '是否用于业务询价');
 INSERT INTO `sys_dict_type` VALUES (2032618796060413953, '中性说明书', 'f_zxsms', '1', 'admin', '2026-03-14 08:44:20', 'admin', '2026-03-14 08:44:20', '中性说明书');
+INSERT INTO `sys_dict_type` VALUES (2034567890123456001, '币种', 'currency', '1', 'admin', '2026-01-09 10:00:00', '', NULL, '币种列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890234567002, '付款条款', 'payment_clause', '1', 'admin', '2026-01-09 10:01:00', '', NULL, '付款条款列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890345678003, '贸易方式', 'trade_way', '1', 'admin', '2026-01-09 10:02:00', '', NULL, '贸易方式列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890456789004, '产品分类', 'product_category', '1', 'admin', '2026-01-09 10:03:00', '', NULL, '产品分类列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890567890005, '客户分类', 'customer_category', '1', 'admin', '2026-01-09 10:04:00', '', NULL, '客户分类列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890678901006, '客户分组', 'customer_grouping', '1', 'admin', '2026-01-09 10:05:00', '', NULL, '客户分组列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890789012007, '客户来源', 'customer_source', '1', 'admin', '2026-01-09 10:06:00', '', NULL, '客户来源列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890890123008, '单据类型', 'document_type', '1', 'admin', '2026-01-09 10:07:00', '', NULL, '单据类型列表');
+INSERT INTO `sys_dict_type` VALUES (2034567890901234009, '库存状态', 'inventory_status', '1', 'admin', '2026-01-09 10:08:00', '', NULL, '库存状态列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891012345010, '发票类型', 'invoice_type', '1', 'admin', '2026-01-09 10:09:00', '', NULL, '发票类型列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891123456011, '价格类型', 'price_type', '1', 'admin', '2026-01-09 10:10:00', '', NULL, '价格类型列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891234567012, '产品类型', 'product_type', '1', 'admin', '2026-01-09 10:11:00', '', NULL, '产品类型列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891345678013, '供应商分类', 'supplier_classification', '1', 'admin', '2026-01-09 10:12:00', '', NULL, '供应商分类列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891456789014, '供应类别', 'supply_category', '1', 'admin', '2026-01-09 10:13:00', '', NULL, '供应类别列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891567890015, '包装方式', 'manner_packing', '1', 'admin', '2026-01-09 10:14:00', '', NULL, '包装方式列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891678901016, '汇率类型', 'exchange_type', '1', 'admin', '2026-01-09 10:15:00', '', NULL, '汇率类型列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891789012017, '收款条款', 'collection_terms', '1', 'admin', '2026-01-09 10:16:00', '', NULL, '收款条款列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891890123018, '订单产品分类', 'order_product_category', '1', 'admin', '2026-01-09 10:17:00', '', NULL, '订单产品分类列表');
+INSERT INTO `sys_dict_type` VALUES (2034567891901234019, '关税名称', 'tariff_nomenclature', '1', 'admin', '2026-01-09 10:18:00', '', NULL, '关税名称列表');
+INSERT INTO `sys_dict_type` VALUES (2034567892012345020, 'ERP 分类属性', 'erpClsId_property', '1', 'admin', '2026-01-09 10:19:00', '', NULL, 'ERP 分类属性列表');
 
 SET FOREIGN_KEY_CHECKS = 1;

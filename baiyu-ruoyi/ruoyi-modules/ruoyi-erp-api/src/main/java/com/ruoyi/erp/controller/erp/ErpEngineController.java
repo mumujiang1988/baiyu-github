@@ -10,7 +10,7 @@ import com.ruoyi.erp.service.engine.DictionaryBuilderEngine;
 import com.ruoyi.erp.service.ErpApprovalFlowService;
 import com.ruoyi.erp.service.ErpPushRelationService;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.ruoyi.erp.service.ErpDictionaryService;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
@@ -45,15 +45,12 @@ public class ErpEngineController {
     private final ISuperDataPermissionService dataPermissionService;
     private final com.ruoyi.erp.mapper.ErpApprovalHistoryMapper approvalHistoryMapper;
     private final DictionaryBuilderEngine dictionaryBuilderEngine;
+    private final ErpDictionaryService dictionaryService;
     
     // 工具类
     private final ErpPermissionChecker permissionChecker;
     private final ConfigParser configParser;
     private final DataProcessor dataProcessor;
-    
-    // JdbcTemplate 用于直接 SQL 查询
-    @Resource
-    private JdbcTemplate jdbcTemplate;
 
     // ==================== 权限辅助方法 ====================
 
@@ -1196,8 +1193,10 @@ public class ErpEngineController {
 
     // ==================== 系统字典业务字典接口 ====================
 
+    // ==================== 字典查询优化接口 ====================
+    
     /**
-     * 分段返回统一字典数据
+     * 分段返回统一字典数据（优化版）
      * 
      * 数据结构说明：
      * - dictTypeList: sys_dict_type（字典类型表）→ 第一段
@@ -1209,21 +1208,15 @@ public class ErpEngineController {
     @GetMapping("/dict/union/{dictType}")
     public R<Map<String, Object>> getUnionDict(@PathVariable String dictType) {
         try {
+            // 1. 查询字典类型
+            List<Map<String, Object>> dictTypeList = dictionaryService.getDictTypes(dictType);
+            
+            // 2. 查询字典数据（Java 合并）
+            List<Map<String, Object>> dictDataList = dictionaryService.getUnionDict(dictType);
+            
+            // 3. 组装成分段格式
             Map<String, Object> result = new HashMap<>();
-            
-            // ====================== 第一段：字典类型表 ======================
-            String typeSql = "SELECT dict_name AS label, dict_type AS value, dict_type AS type " +
-                    "FROM sys_dict_type WHERE dict_type = ?";
-            List<Map<String, Object>> dictTypeList = jdbcTemplate.queryForList(typeSql, dictType);
             result.put("dictTypeList", dictTypeList);
-            
-            // ====================== 第二段：系统字典 + 业务字典 ======================
-            String dataSql = "SELECT dict_label COLLATE utf8mb4_general_ci AS label, dict_value COLLATE utf8mb4_general_ci AS value, dict_type COLLATE utf8mb4_general_ci AS type " +
-                    "FROM sys_dict_data WHERE dict_type = ? " +
-                    "UNION ALL " +
-                    "SELECT name COLLATE utf8mb4_general_ci AS label, kingdee COLLATE utf8mb4_general_ci AS value, category COLLATE utf8mb4_general_ci AS type " +
-                    "FROM bymaterial_dictionary WHERE category = ?";
-            List<Map<String, Object>> dictDataList = jdbcTemplate.queryForList(dataSql, dictType, dictType);
             result.put("dictDataList", dictDataList);
             
             return R.ok(result);
@@ -1242,21 +1235,15 @@ public class ErpEngineController {
     @GetMapping("/dict/all")
     public R<Map<String, Object>> getAllDict() {
         try {
+            // 1. 查询所有字典类型
+            List<Map<String, Object>> dictTypeList = dictionaryService.getDictTypes(null);
+            
+            // 2. 查询所有字典数据（Java 合并）
+            List<Map<String, Object>> dictDataList = dictionaryService.getAllDict();
+            
+            // 3. 组装成分段格式（兼容前端 DictionaryManager）
             Map<String, Object> result = new HashMap<>();
-            
-            // ====================== 第一段：所有字典类型表 ======================
-            String typeSql = "SELECT dict_name AS label, dict_type AS value, dict_type AS type " +
-                    "FROM sys_dict_type ORDER BY dict_id";
-            List<Map<String, Object>> dictTypeList = jdbcTemplate.queryForList(typeSql);
             result.put("dictTypeList", dictTypeList);
-            
-            // ====================== 第二段：所有系统字典 + 业务字典 ======================
-            String dataSql = "SELECT dict_label AS label, dict_value AS value, dict_type AS type " +
-                    "FROM sys_dict_data ORDER BY dict_sort " +
-                    "UNION ALL " +
-                    "SELECT name AS label, kingdee AS value, category AS type " +
-                    "FROM bymaterial_dictionary ORDER BY id";
-            List<Map<String, Object>> dictDataList = jdbcTemplate.queryForList(dataSql);
             result.put("dictDataList", dictDataList);
             
             return R.ok(result);
@@ -1266,78 +1253,114 @@ public class ErpEngineController {
             return R.fail("获取字典数据失败：" + e.getMessage());
         }
     }
-        // ==================== 国家模糊查询接口 ====================
     
-        /**
-         * 国家模糊查询接口
-         * 
-         * 支持按中文名或英文名模糊搜索
-         * 
-         * @param keyword 搜索关键词（中文或英文）
-         * @param limit 返回数量限制（默认 20）
-         * @return 国家列表
-         */
-        @GetMapping("/country/search")
-        public R<List<Map<String, Object>>> searchCountry(
-                @RequestParam(required = false, defaultValue = "") String keyword,
-                @RequestParam(required = false, defaultValue = "20") Integer limit) {
-            try {
-                // 构建 SQL 查询
-                StringBuilder sql = new StringBuilder(
-                    "SELECT id, name_en AS labelEn, name_zh AS labelZh, status " +
-                    "FROM country WHERE status = 1"
-                );
-                
-                List<Object> params = new ArrayList<>();
-                
-                // 如果有搜索关键词，添加模糊查询条件
-                if (keyword != null && !keyword.trim().isEmpty()) {
-                    sql.append(" AND (name_zh LIKE ? OR name_en LIKE ?)")
-                       .append(" ORDER BY name_zh ASC LIMIT ?");
-                    
-                    String likeKeyword = "%" + keyword + "%";
-                    params.add(likeKeyword);
-                    params.add(likeKeyword);
-                    params.add(limit);
-                } else {
-                    // 无关键词时只返回前 limit 条
-                    sql.append(" ORDER BY name_zh ASC LIMIT ?");
-                    params.add(limit);
-                }
-                
-                // 执行查询
-                List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), params.toArray());
-                
-                log.info("国家模糊查询成功，关键词：{}, 返回：{} 条", keyword, resultList.size());
-                return R.ok(resultList);
-                
-            } catch (Exception e) {
-                log.error("国家模糊查询失败，keyword: {}, limit: {}", keyword, limit, e);
-                return R.fail("查询失败：" + e.getMessage());
-            }
+    // ==================== 国家模糊查询接口 ====================
+    
+    /**
+     * 国家模糊查询接口（优化版）
+     * 
+     * 支持按中文名或英文名模糊搜索，参考旧 API DictionaryLookupcontroller.getnAtion()
+     * 
+     * @param keyword 搜索关键词（中文或英文）
+     * @param limit 返回数量限制（默认 20）
+     * @return 国家列表（包含多个字段别名，适配不同业务场景）
+     */
+    @GetMapping("/country/search")
+    public R<List<Map<String, Object>>> searchCountry(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "20") Integer limit) {
+        try {
+            List<Map<String, Object>> resultList = dictionaryService.searchCountries(keyword, limit);
+            return R.ok(resultList);
+            
+        } catch (Exception e) {
+            log.error("国家模糊查询失败，keyword: {}, limit: {}", keyword, limit, e);
+            return R.fail("查询失败：" + e.getMessage());
         }
-        
-        /**
-         * 获取所有启用状态的国家列表
-         * 
-         * @return 国家列表
-         */
-        @GetMapping("/country/list")
-        public R<List<Map<String, Object>>> getAllCountries() {
-            try {
-                String sql = "SELECT id, name_en AS labelEn, name_zh AS labelZh, status " +
-                            "FROM country WHERE status = 1 ORDER BY name_zh ASC";
-                
-                List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql);
-                
-                log.info("获取所有国家列表成功，共 {} 条", resultList.size());
-                return R.ok(resultList);
-                
-            } catch (Exception e) {
-                log.error("获取国家列表失败", e);
-                return R.fail("获取国家列表失败：" + e.getMessage());
-            }
+    }
+    
+    /**
+     * 获取所有启用状态的国家列表（完整数据）
+     * 
+     * @return 国家列表（包含所有业务字段）
+     */
+    @GetMapping("/country/list")
+    public R<List<Map<String, Object>>> getAllCountries() {
+        try {
+            List<Map<String, Object>> resultList = dictionaryService.getAllCountries();
+            return R.ok(resultList);
+            
+        } catch (Exception e) {
+            log.error("获取国家列表失败", e);
+            return R.fail("获取国家列表失败：" + e.getMessage());
         }
+    }
+    
+    /**
+     * 根据国家 ID 获取国家详情
+     * 
+     * @param id 国家 ID
+     * @return 国家详情
+     */
+    @GetMapping("/country/get/{id}")
+    public R<Map<String, Object>> getCountryById(@PathVariable Long id) {
+        try {
+            Map<String, Object> result = dictionaryService.getCountryById(id);
+            if (result == null) {
+                return R.fail("国家不存在");
+            }
+            return R.ok(result);
+            
+        } catch (Exception e) {
+            log.error("获取国家详情失败，id: {}", id, e);
+            return R.fail("获取国家详情失败：" + e.getMessage());
+        }
+    }
+    
+    // ==================== 通用业务字典查询接口 ====================
+    
+    /**
+     * 通用业务字典查询（根据 category 查询 bymaterial_dictionary）
+     * 
+     * 参考旧 API DictionaryLookupcontroller 中的各种分类查询
+     * 
+     * @param category 字典分类（如：currency, payment_clause, customer_source 等）
+     * @return 字典列表
+     */
+    @GetMapping("/bizdict/{category}")
+    public R<List<Map<String, Object>>> getBizDict(@PathVariable String category) {
+        try {
+            List<Map<String, Object>> resultList = dictionaryService.getBizDictByCategory(category);
+            return R.ok(resultList);
+            
+        } catch (Exception e) {
+            log.error("获取业务字典失败，category: {}", category, e);
+            return R.fail("获取业务字典失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 带字段别名的业务字典查询（适配特定业务需求）
+     * 
+     * 通过 fieldMapping 参数动态指定返回字段别名
+     * 
+     * @param category 字典分类
+     * @param valueField 值字段别名（如：ftradingCurrId, fgroupId 等）
+     * @return 字典列表（包含自定义字段别名）
+     */
+    @GetMapping("/bizdict/{category}/custom")
+    public R<List<Map<String, Object>>> getBizDictCustom(
+            @PathVariable String category,
+            @RequestParam(defaultValue = "value") String valueField) {
+        try {
+            List<Map<String, Object>> resultList = dictionaryService.getBizDictCustom(category, valueField);
+            return R.ok(resultList);
+            
+        } catch (Exception e) {
+            log.error("获取自定义业务字典失败，category: {}, valueField: {}", category, valueField, e);
+            return R.fail("获取自定义业务字典失败：" + e.getMessage());
+        }
+    }
     
 
       

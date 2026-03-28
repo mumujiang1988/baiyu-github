@@ -106,15 +106,18 @@ INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create
 VALUES (2034567892012345020, 'ERP 分类属性', 'erpClsId_property', '1', 'ERP 分类属性列表', 'admin', '2026-01-09 10:19:00')
 ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
 
--- =====================================================
--- 验证导入结果
--- =====================================================
--- SELECT dict_id, dict_name, dict_type FROM sys_dict_type 
--- WHERE dict_type IN (
---     'currency', 'payment_clause', 'trade_way', 'product_category',
---     'customer_category', 'customer_grouping', 'customer_source',
---     'document_type', 'inventory_status', 'invoice_type', 'price_type',
---     'product_type', 'supplier_classification', 'supply_category',
---     'manner_packing', 'exchange_type', 'collection_terms',
---     'order_product_category', 'tariff_nomenclature', 'erpClsId_property'
--- ) ORDER BY dict_id;
+-- 21. 销售人员字典 (2026-01-09 10:20:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892123456021, '销售人员', 'salespersons', '1', '销售人员列表（包含部门、角色信息）', 'admin', '2026-01-09 10:20:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 22. 订单状态字典 (2026-01-09 10:21:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892234567022, '订单状态', 'order_status', '1', '订单状态：未关闭/已关闭/业务终止', 'admin', '2026-01-09 10:21:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 23. 单据状态字典 (2026-01-09 10:22:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892345678023, '单据状态', 'f_document_status', '1', '单据状态：创建/审核中/已审核/重新审核/暂存', 'admin', '2026-01-09 10:22:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+

@@ -28,21 +28,12 @@ class ERPConfigParser {
     }
     
     try {
-      console.log('从数据库加载配置:', moduleCode)
       const response = await request({
         url: `/erp/config/get/${moduleCode}`,
         method: 'get'
       })
       
-      // 添加详细调试信息
-      console.log('后端返回的完整响应:', response)
-      console.log('response.code:', response.code)
-      console.log('response.data 类型:', typeof response.data, '值:', response.data)
-      console.log('response.msg:', typeof response.msg, '长度:', response.msg?.length)
-      console.log('response 所有键:', Object.keys(response))
-      
       if (response.code === 200 || response.code === 0) {
-        // 标准处理：后端直接返回JSON字符串，前端自己解析
         let configContent;
         const rawData = response.data;
 
@@ -52,10 +43,8 @@ class ERPConfigParser {
         }
 
         if (typeof rawData === 'string') {
-          console.log('rawData 是字符串，长度:', rawData.length)
           try {
             configContent = JSON.parse(rawData);
-            console.log('JSON 解析成功')
           } catch (parseError) {
             console.error('JSON 解析失败:', parseError, '原始数据:', rawData);
             throw new Error('配置内容格式错误');
@@ -71,8 +60,7 @@ class ERPConfigParser {
           timestamp: Date.now()
         });
 
-        console.log('数据库配置加载成功:', configContent.pageConfig?.title || configContent.pageConfig?.pageName);
-        console.log('配置版本:', configContent.version || 'N/A');
+        console.log('配置加载成功:', configContent.pageConfig?.title || configContent.pageConfig?.pageName);
 
         return configContent;
       } else {
@@ -244,7 +232,6 @@ class ERPConfigParser {
     
     if (Array.isArray(formConfig.fields)) {
       // 新格式：扁平字段数组
-      console.log('使用新格式 formConfig.fields，字段数量:', formConfig.fields.length)
       return {
         dialogWidth: formConfig.dialogWidth || '1000px',
         labelWidth: formConfig.labelWidth || '120px',
@@ -273,7 +260,6 @@ class ERPConfigParser {
       }
     } else if (Array.isArray(formConfig.sections)) {
       // 旧格式：sections 数组
-      console.log('使用旧格式 formConfig.sections，分组数量:', formConfig.sections.length)
       return {
         dialogWidth: formConfig.dialogWidth || '1000px',
         labelWidth: formConfig.labelWidth || '120px',
@@ -307,7 +293,6 @@ class ERPConfigParser {
     const { detailConfig, drawerConfig } = this.config
     
     if (detailConfig && detailConfig.detail) {
-      console.log('使用新的 detailConfig')
       return {
         enabled: detailConfig.detail.enabled !== false,
         displayType: detailConfig.detail.displayType || 'drawer',
@@ -330,7 +315,6 @@ class ERPConfigParser {
     
     // 兼容旧的 drawerConfig
     if (drawerConfig) {
-      console.log('使用旧的 drawerConfig（已废弃）')
       return {
         enabled: drawerConfig.enabled !== false,
         trigger: drawerConfig.trigger || 'click',
@@ -444,7 +428,6 @@ class ERPConfigParser {
         }
       } else if (config.type === 'remote') {
         // 远程搜索字典（不预加载，由搜索触发）
-        console.log(`远程搜索字典 "${key}" 已注册，等待搜索时加载`)
       } else {
         console.error(`字典 "${key}" 类型错误：type 必须是 static/dynamic/remote 之一`)
       }
