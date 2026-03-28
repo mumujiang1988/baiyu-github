@@ -28,16 +28,6 @@
           >
             {{ action.label }}
           </el-button>
-          
-          <!-- 调试按钮（仅开发环境） -->
-          <el-button
-            type="warning"
-            icon="RefreshLeft"
-            @click="reloadDictionaries"
-            title="重新加载字典数据（调试用）"
-          >
-            刷新字典
-          </el-button>
         </el-space>
       </div>
       
@@ -205,7 +195,8 @@
             </template>
           </el-table-column>
         </template>
-      </el-table>
+        </el-table>
+      </div>
       
       <!-- 分页 -->
       <div class="pagination-wrapper">
@@ -220,7 +211,6 @@
           layout="total, sizes, prev, pager, next, jumper"
           background
         />
-      </div>
       </div>
     </el-card>
 
@@ -533,6 +523,21 @@ import { toRaw } from 'vue'
 import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils'
 import { isSuccessResponse, getResponseData } from '@/views/erp/utils'
 
+// ==================== 统一响应处理工具 ====================
+/**
+ * 判断API响应是否成功
+ */
+const isResponseSuccess = (response) => {
+  return response && (response.code === 200 || response.code === 0 || response.errorCode === 0)
+}
+
+/**
+ * 获取响应数据
+ */
+const getResponseResult = (response, defaultValue = null) => {
+  return isResponseSuccess(response) ? (response.data || defaultValue) : defaultValue
+}
+
 // ==================== 导入多表格查询构建器 ====================
 import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
 
@@ -574,6 +579,51 @@ import {
   getPushHistory
 } from '../../api/engine/push'
 
+// ==================== API 方法映射 ====================
+/**
+ * 获取API方法（基于配置）
+ * @param {string} methodType - 方法类型 (get, add, update, delete, audit, unAudit, entry, cost)
+ * @returns {Function|null} API方法或null
+ */
+const getApiMethod = async (methodType) => {
+  const apiConfig = currentConfig.value?.apiConfig
+  
+  if (!apiConfig || !apiConfig.methods) {
+    console.warn('API配置未找到')
+    return null
+  }
+  
+  const methodConfig = apiConfig.methods[methodType]
+  
+  if (!methodConfig) {
+    console.warn(`API方法 [${methodType}] 未配置`)
+    return null
+  }
+  
+  // 如果配置的是字符串URL,构建简单的请求方法
+  if (typeof methodConfig === 'string') {
+    return (data) => request({
+      url: methodConfig,
+      method: methodType === 'get' || methodType === 'entry' || methodType === 'cost' ? 'get' : 'post',
+      params: methodType === 'get' || methodType === 'entry' || methodType === 'cost' ? { id: data } : undefined,
+      data: methodType === 'get' || methodType === 'entry' || methodType === 'cost' ? undefined : data
+    })
+  }
+  
+  // 如果配置的是对象,包含url和method
+  if (typeof methodConfig === 'object' && methodConfig.url) {
+    return (data) => request({
+      url: methodConfig.url,
+      method: methodConfig.method || 'post',
+      params: methodConfig.method === 'get' ? data : undefined,
+      data: methodConfig.method !== 'get' ? data : undefined
+    })
+  }
+  
+  console.warn(`API方法 [${methodType}] 配置格式错误`)
+  return null
+}
+
 // ==================== Props 定义（强制在线模式）====================
 const props = defineProps({
   // 模块编码，用于从数据库加载配置（从路由 query 参数获取）
@@ -598,8 +648,6 @@ const BusinessTemplate = computed(() => ({
   pageConfig: currentConfig.value?.pageConfig || {}
 }))
 
-// ==================== 动态 API 导入（根据配置）====================
-const apiModuleMap = new Map()
 
 // ==================== 通用引擎 API（低代码方案）====================
 /**
@@ -621,13 +669,6 @@ const getList = async () => {
       throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
     }
     
-    console.log('主表格查询 - 开始')
-    console.log('主表格查询 - moduleCode:', moduleCode)
-    console.log('主表格查询 - 表名:', tableName)
-    console.log('主表格查询 - queryConfig:', mainQueryConfig)
-    console.log('主表格查询 - currentConfig:', currentConfig.value)
-    console.log('主表格查询 - pageConfig:', currentConfig.value?.pageConfig)
-    
     // 使用通用引擎查询接口（构建器模式）
     const response = await request({
       url: '/erp/engine/query/execute',
@@ -640,10 +681,6 @@ const getList = async () => {
         pageSize: queryParams.value.pageSize
       }
     })
-    
-    console.log('主表格查询结果:', response)
-    console.log('主表格查询 - response.data:', response.data)
-    console.log('主表格查询 - response.data.rows:', response.data?.rows)
     
     // 后端返回的是 R.ok(result),所以数据在 response.data 中
     tableData.value = response.data?.rows || []
@@ -722,7 +759,6 @@ const loadSubTablesData = async () => {
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     
     if (subTableConfigs.length === 0) {
-      console.log('没有配置子表格，跳过查询')
       return
     }
     
@@ -764,17 +800,13 @@ const loadSubTablesByBillNo = async (billNo) => {
       { billNo } // 上下文数据，用于替换 ${billNo}
     )
     
-    console.log(' 子表格查询完成:', results)
-    
     // 存储到对应的数据变量中
     if (results.entry) {
       entryList.value = results.entry.data
-      console.log(` 明细表数据：${results.entry.data.length} 条`)
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
-      console.log(' 成本表数据:', results.cost.data[0])
     }
   } catch (error) {
     console.error(' 查询子表格失败:', error)
@@ -885,12 +917,6 @@ const nationOptions = ref([])
 // 字典加载状态
 const dictLoaded = ref(false)
 
-// 按钮状态
-const buttonState = reactive({
-  single: true,
-  multiple: true
-})
-
 // 左侧工具栏按钮
 const leftToolbarActions = computed(() => {
   return parsedConfig.actions?.toolbar?.filter(a => a.position === 'left') || []
@@ -968,8 +994,6 @@ const markRequiredDictionaries = () => {
   
   // 保存必填字典列表（供后续验证使用）
   window._erpRequiredDicts = requiredDicts
-  
-  console.log('必填字典列表:', Array.from(requiredDicts))
 }
 
 /**
@@ -1033,7 +1057,9 @@ const getDictOptions = (dictName, staticOptions, required = false) => {
 // 获取按钮禁用状态
 const getButtonDisabled = (disabledKey) => {
   if (!disabledKey) return false
-  return buttonState[disabledKey] || false
+  if (disabledKey === 'single') return single.value
+  if (disabledKey === 'multiple') return multiple.value
+  return false
 }
 
 const getTagConfig = (value, dictName) => {
@@ -1062,15 +1088,22 @@ const handleQuery = () => {
   getList()
 }
 
-// 重置查询
-const resetQuery = () => {
-  queryRef.value?.resetFields()
+// 初始化日期范围
+const initDateRange = () => {
   const now = new Date()
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   dateRange.value = [
     dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
     dayjs(now).format('YYYY-MM-DD')
   ]
+  queryParams.value.beginDate = dateRange.value[0]
+  queryParams.value.endDate = dateRange.value[1]
+}
+
+// 重置查询
+const resetQuery = () => {
+  queryRef.value?.resetFields()
+  initDateRange()
   handleQuery()
 }
 
@@ -1217,22 +1250,16 @@ const loadFormData = async (id) => {
       const entryMethod = await getApiMethod('entry')
       if (entryMethod) {
         const entryResponse = await entryMethod(billNoValue)
-        if (entryResponse.code === 200 || entryResponse.code === 0 || entryResponse.errorCode === 0) {
-          entryList.value = entryResponse.data && Array.isArray(entryResponse.data) 
-            ? entryResponse.data 
-            : (entryResponse.data || [])
-        }
+        const entryData = getResponseResult(entryResponse, [])
+        entryList.value = Array.isArray(entryData) ? entryData : []
       }
       
       // 加载成本数据
       const costMethod = await getApiMethod('cost')
       if (costMethod) {
         const costResponse = await costMethod(billNoValue)
-        if (costResponse.code === 200 || costResponse.code === 0 || costResponse.errorCode === 0) {
-          costData.value = costResponse.data && typeof costResponse.data === 'object' && Object.keys(costResponse.data).length > 0
-            ? costResponse.data
-            : {}
-        }
+        const costResult = getResponseResult(costResponse, {})
+        costData.value = typeof costResult === 'object' && Object.keys(costResult).length > 0 ? costResult : {}
       }
     }
   } catch (error) {
@@ -1426,11 +1453,9 @@ const searchNations = async (keyword) => {
     const dictConfig = BusinessTemplate.value.dictionaryConfig?.dictionaries?.nation
     
     if (dictConfig && dictConfig.type === 'remote') {
-      // ✅ 使用配置中的搜索 API
+      // 使用配置中的搜索 API
       const searchApi = dictConfig.config?.searchApi || '/erp/engine/country/search?keyword={keyword}&limit=20'
       const searchUrl = searchApi.replace('{keyword}', encodeURIComponent(keyword))
-      
-      console.log(`🔍 搜索国家：${keyword}, URL: ${searchUrl}`)
       
       const response = await request(searchUrl)
       
@@ -1441,16 +1466,13 @@ const searchNations = async (keyword) => {
         data = response
       }
       
-      // ✅ 映射为标准格式 { label, value }
+      // 映射为标准格式 { label, value }
       nationOptions.value = data.map(item => ({
         label: item.labelZh || item.name || item.label,
         value: item.id || item.kingdee || item.value,
         labelEn: item.labelEn || item.name_en // 保留英文用于扩展
       }))
-      
-      console.log(`✅ 国家搜索结果：${nationOptions.value.length} 条`)
     } else {
-      console.warn('⚠️ 国家字典未配置或类型不正确')
       nationOptions.value = []
     }
   } catch (error) {
@@ -1481,7 +1503,6 @@ const preloadDictionaries = async () => {
     
     // 优化策略：先使用 DictionaryManager 一次性加载全部字典
     const allDicts = await dictionaryManager.loadAll()
-    console.log(`✅ 字典加载完成：${Object.keys(allDicts).length} 个字典类型`)
     
     // 从配置构建字典（用于兼容和降级）
     dictionaryBuilderEngine.buildFromConfig(rawDictConfig, getModuleCode())
@@ -1495,7 +1516,6 @@ const preloadDictionaries = async () => {
     }
     
     if (needPreload.length > 0) {
-      console.log(`⚠️ 需要单独预加载的字典：${needPreload.join(', ')}`)
       await dictionaryBuilderEngine.preloadAll(getModuleCode())
     }
     
@@ -1507,92 +1527,6 @@ const preloadDictionaries = async () => {
   }
 }
 
-// 页面加载时自动测试（调试用，用完可删除）
-// testDictAPI()
-
-/**
- * 手动重新加载字典（调试用）
- */
-const reloadDictionaries = async () => {
-  console.log('\n========== [调试] 手动重新加载字典 ==========')
-  // 清除所有缓存
-  dictionaryBuilderEngine.clearAll()
-  console.log('[调试] 已清除所有字典缓存')
-  
-  // 重新预加载
-  await preloadDictionaries()
-  
-  ElMessage.success('字典重新加载完成')
-}
-
-// ==================== 全局调试工具（挂载到 window）====================
-if (typeof window !== 'undefined') {
-  // 查看所有字典数据
-  window.getDictData = (dictName) => {
-    if (dictName) {
-      const data = dictionaryManager.getDictOptions(dictName)
-      console.log(`📦 字典 "${dictName}" 的数据:`, data)
-      return data
-    }
-    // 不传参数时返回所有字典
-    const allDicts = {}
-    dictionaryBuilderEngine.registry.forEach((builder, name) => {
-      allDicts[name] = builder.get()
-    })
-    console.log('📦 所有字典数据:', allDicts)
-    return allDicts
-  }
-  
-  // 查看字典统计信息
-  window.getDictStats = () => {
-    const stats = {
-      total: dictionaryBuilderEngine.registry.size,
-      dictionaries: []
-    }
-    
-    dictionaryBuilderEngine.registry.forEach((builder, name) => {
-      const data = builder.get()
-      stats.dictionaries.push({
-        name,
-        type: builder.type,
-        loaded: !!data,
-        count: Array.isArray(data) ? data.length : 0,
-        status: builder.getStatus()
-      })
-    })
-    
-    console.log('📊 字典统计信息:', stats)
-    return stats
-  }
-  
-  // 打印指定字典的完整 JSON
-  window.printDictJSON = (dictName) => {
-    const data = dictionaryManager.getDictOptions(dictName)
-    console.log(`\n📄 [${dictName}] 完整 JSON 数据:`)
-    console.log(JSON.stringify(data, null, 2))
-    return data
-  }
-  
-  // 搜索字典中的数据
-  window.searchDict = (dictName, keyword) => {
-    const data = dictionaryManager.getDictOptions(dictName)
-    if (!data || data.length === 0) {
-      console.warn(`字典 "${dictName}" 无数据`)
-      return []
-    }
-    
-    const results = data.filter(item => {
-      const label = String(item.label || '').toLowerCase()
-      const value = String(item.value || '').toLowerCase()
-      const searchKey = keyword.toLowerCase()
-      return label.includes(searchKey) || value.includes(searchKey)
-    })
-    
-    console.log(`🔍 在 "${dictName}" 中搜索 "${keyword}": 找到 ${results.length} 条`)
-    console.log('搜索结果:', results)
-    return results
-  }
-}
 
 // 初始化 - 简化加载顺序：配置 → 字典 → 渲染
 onMounted(async () => {
@@ -1607,14 +1541,7 @@ onMounted(async () => {
     await initEngineConfig()
 
     // 步骤4: 设置默认日期区间
-    const now = new Date()
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    dateRange.value = [
-      dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
-      dayjs(now).format('YYYY-MM-DD')
-    ]
-    queryParams.value.beginDate = dateRange.value[0]
-    queryParams.value.endDate = dateRange.value[1]
+    initDateRange()
 
     // 步骤5: 加载列表数据
     getList()

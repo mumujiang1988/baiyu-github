@@ -16,6 +16,12 @@
         </div>
       </template>
 
+      <!-- 页签结构 -->
+      <el-tabs v-model="activeTab" class="config-tabs">
+        <!-- 第一页签：页面配置 -->
+        <el-tab-pane label="页面配置" name="config">
+          <div class="tab-content">
+
       <!-- 搜索区域 -->
       <el-form :model="queryParams" :inline="true" label-width="70px">
         <el-row :gutter="8">
@@ -169,6 +175,68 @@
         :total="total"
         @pagination="getList"
       />
+          </div>
+        </el-tab-pane>
+
+        <!-- 第二页签：低代码 -->
+        <el-tab-pane label="字典接口" name="lowcode">
+          <div class="tab-content">
+            <!-- 字典接口展示 -->
+            <el-card shadow="never" class="dict-card">
+              <template #header>
+                <div class="dict-header">
+                  <span>字典接口数据展示</span>
+                  <el-button type="primary" size="small" icon="Refresh" @click="loadAllDicts">
+                    刷新数据
+                  </el-button>
+                </div>
+              </template>
+
+              <el-tabs v-model="dictActiveTab" type="card">
+                <!-- All 字典接口 -->
+                <el-tab-pane label="All 字典接口" name="all">
+                  <div class="dict-section">
+                    <div class="dict-info">
+                      <el-tag type="info" size="small">接口：/erp/engine/dict/all</el-tag>
+                      <el-tag type="success" size="small" style="margin-left: 8px">
+                        共 {{ Object.keys(allDictsData).length }} 个字典类型
+                      </el-tag>
+                    </div>
+                    <div class="json-viewer">
+                      <codemirror
+                        v-model="allDictsJson"
+                        :extensions="[json()]"
+                        :style="{ height: '400px' }"
+                        :readonly="true"
+                      />
+                    </div>
+                  </div>
+                </el-tab-pane>
+              
+                <!-- 国家字典接口 -->
+                <el-tab-pane label="国家字典" name="nation">
+                  <div class="dict-section">
+                    <div class="dict-info">
+                      <el-tag type="info" size="small">接口：/erp/engine/country/search</el-tag>
+                      <el-tag type="success" size="small" style="margin-left: 8px">
+                        共 {{ nationDictData.length }} 条数据
+                      </el-tag>
+                    </div>
+                    <div class="json-viewer">
+                      <codemirror
+                        v-model="nationDictJson"
+                        :extensions="[json()]"
+                        :style="{ height: '400px' }"
+                        :readonly="true"
+                      />
+                    </div>
+                  </div>
+                </el-tab-pane>
+              </el-tabs>
+            </el-card>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </el-card>
 
     <!-- 配置查看对话框 -->
@@ -428,14 +496,27 @@
 
 <script setup name="ErpConfig">
 import { listConfig, delConfig, getConfig, saveConfig, getConfigHistory, rollbackToVersion } from '../api/config'
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/Pagination'
 import { getConfigTypeLabel, getConfigTypeTag, getConfigTypeOptions } from '@/constants/configTypes'
 import { Codemirror } from 'vue-codemirror'
 import { json } from '@codemirror/lang-json'
+import request from '@/utils/request'
 
 // ==================== 状态定义 ====================
+// 页签状态
+const activeTab = ref('config')
+const dictActiveTab = ref('all')
+
+// 字典数据状态
+const allDictsData = ref({})
+const nationDictData = ref([])
+const dictLoading = ref(false)
+
+// 字典 JSON 展示
+const allDictsJson = computed(() => JSON.stringify(allDictsData.value, null, 2))
+const nationDictJson = computed(() => JSON.stringify(nationDictData.value, null, 2))
 const loading = ref(false)
 const total = ref(0)
 const configList = ref([])
@@ -825,6 +906,55 @@ function handleDelete(row) {
 onMounted(() => {
   getList()
 })
+
+// ==================== 字典接口相关方法 ====================
+/**
+ * 加载所有字典数据
+ */
+async function loadAllDicts() {
+  dictLoading.value = true
+  try {
+    // 并行加载 All 字典和国家字典接口
+    const promises = [
+      request({ url: '/erp/engine/dict/all', method: 'get' }).then(res => {
+        if (res && (res.code === 200 || res.code === 0)) {
+          allDictsData.value = res.data || {}
+        }
+        return { success: true, data: res.data || {} }
+      }).catch(error => {
+        console.warn('加载 All 字典接口失败:', error)
+        return { success: false, error }
+      }),
+      
+      request({ url: '/erp/engine/country/search', method: 'get', params: { keyword: '', limit: 100 } }).then(res => {
+        if (res && (res.code === 200 || res.code === 0)) {
+          nationDictData.value = res.data || []
+        }
+        return { success: true, data: res.data || [] }
+      }).catch(error => {
+        console.warn('加载国家字典接口失败:', error)
+        return { success: false, error }
+      })
+    ]
+
+    const results = await Promise.all(promises)
+    
+    // 统计成功和失败的接口
+    const successCount = results.filter(r => r.success).length
+    const failCount = results.filter(r => !r.success).length
+    
+    if (successCount > 0) {
+      ElMessage.success(`字典数据加载完成：成功${successCount}个，失败${failCount}个`)
+    } else {
+      ElMessage.warning('字典数据加载失败')
+    }
+  } catch (error) {
+    console.error('加载字典数据异常:', error)
+    ElMessage.error('加载字典数据时发生异常')
+  } finally {
+    dictLoading.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -916,5 +1046,45 @@ onMounted(() => {
 
 .config-view-dialog :deep(.el-divider) {
   margin: 16px 0;
+}
+
+/* 页签样式 */
+.config-tabs {
+  margin-top: 16px;
+}
+
+.config-tabs :deep(.el-tabs__header) {
+  margin-bottom: 16px;
+}
+
+.tab-content {
+  min-height: 400px;
+}
+
+/* 字典卡片样式 */
+.dict-card {
+  margin-bottom: 16px;
+}
+
+.dict-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dict-section {
+  padding: 16px 0;
+}
+
+.dict-info {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.json-viewer {
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  overflow: hidden;
 }
 </style>
