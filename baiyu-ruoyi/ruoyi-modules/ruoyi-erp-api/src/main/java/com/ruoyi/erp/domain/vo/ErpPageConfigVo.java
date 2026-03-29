@@ -88,6 +88,12 @@ public class ErpPageConfigVo implements Serializable {
     private String dictConfig;
 
     /**
+     * API 接口配置 (api.json)
+     */
+    @ExcelProperty(value = "API 配置")
+    private String apiConfig;
+
+    /**
      * 业务规则配置 (config.json)
      */
     @ExcelProperty(value = "业务配置")

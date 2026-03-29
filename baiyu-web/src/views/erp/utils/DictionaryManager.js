@@ -95,8 +95,6 @@ class DictionaryManager {
         // 缓存结果
         this.allDictData = groupedDicts
         
-        console.log(`✅ 字典加载完成：${Object.keys(groupedDicts).length} 个类型`)
-        
         return groupedDicts
         
       } catch (error) {

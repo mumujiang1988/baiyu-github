@@ -86,26 +86,37 @@ export const buildQueryConfig = (searchFields, queryParams, dateRange) => {
   }
   
   searchFields.forEach(field => {
-    const value = queryParams[field.field]
+    let value = queryParams[field.field]
     const operator = field.queryOperator || 'eq'
+    
+    // 日期范围特殊处理：从 dateRange 获取值
+    if (field.component === 'daterange') {
+      if (Array.isArray(dateRange) && dateRange.length === 2) {
+        // 使用 dateRange 的值
+        value = dateRange
+      } else {
+        // 日期范围为空，跳过该条件
+        return
+      }
+    }
     
     // 跳过空值
     if (value === undefined || value === null || value === '') {
       return
     }
     
-    // 日期范围特殊处理
-    if (field.component === 'daterange' && Array.isArray(dateRange) && dateRange.length === 2) {
+    // 日期范围已在上面处理过
+    if (field.component === 'daterange') {
       conditions.push({
         field: field.field,
-        operator: 'between',
-        value: dateRange
+        operator: operator, // between
+        value: value
       })
     } else if (Array.isArray(value)) {
       // IN 条件
       conditions.push({
         field: field.field,
-        operator: 'in',
+        operator: operator, // in
         value: value
       })
     } else {

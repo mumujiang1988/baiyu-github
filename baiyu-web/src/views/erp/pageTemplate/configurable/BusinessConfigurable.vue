@@ -655,9 +655,12 @@ const BusinessTemplate = computed(() => ({
  */
 const getList = async () => {
   loading.value = true
+  console.log('🔍 [getList] 开始查询主表格...')
+  
   try {
     // 构建主表格的 queryConfig 配置
     const mainQueryConfig = buildMainQueryConfig()
+    console.log('🔍 [getList] 查询配置:', JSON.stringify(mainQueryConfig, null, 2))
     
     // 获取主表表名
     const tableName = getTableNameFromConfig()
@@ -670,6 +673,7 @@ const getList = async () => {
     }
     
     // 使用通用引擎查询接口（构建器模式）
+    console.log('🔍 [getList] 发送查询请求到后端...')
     const response = await request({
       url: '/erp/engine/query/execute',
       method: 'post',
@@ -682,9 +686,13 @@ const getList = async () => {
       }
     })
     
+    console.log('✅ [getList] 查询成功，返回数据:', response.data)
+    
     // 后端返回的是 R.ok(result),所以数据在 response.data 中
     tableData.value = response.data?.rows || []
     total.value = response.data?.total || 0
+    
+    console.log(`✅ [getList] 渲染数据：${tableData.value.length} 条，总计：${total.value}`)
     
     // 并行查询所有子表格数据
     await loadSubTablesData()
@@ -707,26 +715,37 @@ const buildMainQueryConfig = () => {
   const searchFields = parsedConfig.search?.fields || []
   
   searchFields.forEach(field => {
-    const value = queryParams.value[field.field]
+    let value = queryParams.value[field.field]
     const operator = field.queryOperator || 'eq'
+    
+    // 日期范围特殊处理：从 dateRange 获取值
+    if (field.component === 'daterange') {
+      if (Array.isArray(dateRange.value) && dateRange.value.length === 2) {
+        // 使用 dateRange 的值
+        value = dateRange.value
+      } else {
+        // 日期范围为空，跳过该条件
+        return
+      }
+    }
     
     // 跳过空值
     if (value === undefined || value === null || value === '') {
       return
     }
     
-    // 日期范围特殊处理
-    if (field.component === 'daterange' && Array.isArray(dateRange.value) && dateRange.value.length === 2) {
+    // 日期范围已在上面处理过
+    if (field.component === 'daterange') {
       conditions.push({
         field: field.field,
-        operator: 'between',
-        value: dateRange.value
+        operator: operator, // between
+        value: value
       })
     } else if (Array.isArray(value)) {
       // IN 条件
       conditions.push({
         field: field.field,
-        operator: 'in',
+        operator: operator, // in
         value: value
       })
     } else {
@@ -768,7 +787,6 @@ const loadSubTablesData = async () => {
     }
     
     // 暂时不查询子表格，等待展开行或详情页时再查询
-    console.log(' 子表格配置已解析，等待需要时再查询')
   } catch (error) {
     console.warn(' 加载子表格配置失败:', error.message)
   }
@@ -1069,22 +1087,39 @@ const getTagConfig = (value, dictName) => {
     return String(item.value) === String(value)
   })
   
+  // Element Plus Tag 组件支持的 type 值
+  const validTypes = ['success', 'info', 'warning', 'danger', '']
+  let tagType = option?.type || 'info'
+  
+  // 如果不是有效的 type 值，则使用 info
+  if (!validTypes.includes(tagType)) {
+    tagType = 'info'
+  }
+  
   return {
     label: option?.label || value,
-    type: option?.type || 'info'
+    type: tagType
   }
 }
 
 // 处理查询
 const handleQuery = () => {
+  console.log('🔍 [搜索] 开始查询...')
+  console.log('🔍 [搜索] dateRange:', dateRange.value)
+  console.log('🔍 [搜索] queryParams:', queryParams.value)
+  
   if (dateRange.value && dateRange.value.length === 2) {
     queryParams.value.beginDate = dateRange.value[0]
     queryParams.value.endDate = dateRange.value[1]
+    console.log('✅ [搜索] 已设置日期范围:', queryParams.value.beginDate, 'to', queryParams.value.endDate)
   } else {
     queryParams.value.beginDate = undefined
     queryParams.value.endDate = undefined
+    console.log('⚠️ [搜索] 日期范围为空')
   }
   queryParams.value.pageNum = 1
+  
+  console.log('🔍 [搜索] 调用 getList()')
   getList()
 }
 

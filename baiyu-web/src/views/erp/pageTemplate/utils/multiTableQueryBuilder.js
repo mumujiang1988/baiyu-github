@@ -170,7 +170,6 @@ export const parseSubTableConfigs = (pageConfig) => {
   
   // 优先从 detailConfig 中解析（新版本）
   if (pageConfig && pageConfig.detailConfig && pageConfig.detailConfig.detail) {
-    console.log('从 detailConfig 中解析子表格配置')
     const tabs = pageConfig.detailConfig.detail.tabs || []
     
     for (const tab of tabs) {
@@ -188,7 +187,6 @@ export const parseSubTableConfigs = (pageConfig) => {
   }
   // 兼容旧的 subTableQueryConfigs（旧版本）
   else if (pageConfig && pageConfig.subTableQueryConfigs) {
-    console.log('使用旧的 subTableQueryConfigs（已废弃）')
     const subTableConfigs = pageConfig.subTableQueryConfigs
     
     // 遍历所有子表格配置
@@ -204,7 +202,6 @@ export const parseSubTableConfigs = (pageConfig) => {
     }
   }
   
-  console.log('解析到的子表格配置:', configs)
   return configs
 }
 

@@ -49,20 +49,48 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
             
             log.info(" 使用 JSON 配置的表名，moduleCode: {}, tableName: {}", moduleCode, tableName);
             
-            // 构建 SQL
+            // 构建 SQL 和参数
             String sql = buildSelectSql(tableName, queryWrapper);
             String countSql = buildCountSql(tableName, queryWrapper);
+            
+            // 从 QueryWrapper 中提取参数值
+            List<Object> sqlArgs = new ArrayList<>();
+            if (queryWrapper != null) {
+                try {
+                    java.lang.reflect.Field field = queryWrapper.getClass().getDeclaredField("paramNameValuePairs");
+                    field.setAccessible(true);
+                    Map<String, Object> paramMap = (Map<String, Object>) field.get(queryWrapper);
+                    if (paramMap != null) {
+                        // 按顺序提取参数值（MPGENVAL1, MPGENVAL2, ...）
+                        int i = 1;
+                        while (true) {
+                            String paramName = "MPGENVAL" + i;
+                            if (paramMap.containsKey(paramName)) {
+                                sqlArgs.add(paramMap.get(paramName));
+                                i++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("提取 QueryWrapper 参数失败", e);
+                }
+            }
             
             // 分页参数
             int pageNum = pageQuery.getPageNum();
             int pageSize = pageQuery.getPageSize();
             int offset = (pageNum - 1) * pageSize;
             
+            // 添加分页参数
+            sqlArgs.add(pageSize);
+            sqlArgs.add(offset);
+            
             // 查询数据
             List<Map<String, Object>> records = jdbcTemplate.queryForList(
                 sql + " LIMIT ? OFFSET ?", 
-                pageSize, 
-                offset
+                sqlArgs.toArray()
             );
             
             // 查询总数
@@ -272,12 +300,40 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
             return null;
         }
         
-        // 获取 ExpressionSegment 集合
         try {
-            java.lang.reflect.Field field = queryWrapper.getClass()
-                .getDeclaredField("children");
-            field.setAccessible(true);
+            // 使用 MyBatis-Plus 提供的公共 API 获取 SQL 片段
+            String whereSql = queryWrapper.getSqlSegment();
+            log.info("通过 getSqlSegment 获取 WHERE 条件：{}", whereSql);
             
+            if (whereSql != null && !whereSql.isEmpty()) {
+                return whereSql;
+            }
+            
+            // 如果 getSqlSegment 返回空，尝试反射获取 children 字段
+            java.lang.reflect.Field field = null;
+            Class<?> clazz = queryWrapper.getClass();
+            
+            // 尝试获取 children 字段（可能是父类的）
+            while (clazz != null && field == null) {
+                try {
+                    field = clazz.getDeclaredField("children");
+                } catch (NoSuchFieldException e) {
+                    // 继续检查父类
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            
+            // 如果还是找不到，尝试其他可能的字段名
+            if (field == null) {
+                try {
+                    field = queryWrapper.getClass().getDeclaredField("expressionSegments");
+                } catch (NoSuchFieldException e2) {
+                    log.warn("无法找到 QueryWrapper 的条件字段，跳过 WHERE 条件构建");
+                    return null;
+                }
+            }
+            
+            field.setAccessible(true);
             List<Object> segments = (List<Object>) field.get(queryWrapper);
             
             if (segments == null || segments.isEmpty()) {
@@ -301,7 +357,7 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
             return whereClause.length() > 0 ? whereClause.toString() : null;
             
         } catch (Exception e) {
-            log.warn("解析 QueryWrapper 失败，使用默认条件", e);
+            log.error("解析 QueryWrapper 失败", e);
             return null;
         }
     }

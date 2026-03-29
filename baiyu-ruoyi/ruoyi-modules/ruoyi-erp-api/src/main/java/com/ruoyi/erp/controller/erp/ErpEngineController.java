@@ -1415,6 +1415,8 @@ public class ErpEngineController {
                     String operator = (String) condition.get("operator");
                     Object value = condition.get("value");
                     
+                    log.info("  - 条件：field={}, operator={}, value={}", field, operator, value);
+                    
                     // 跳过空值字段
                     if (field == null || field.trim().isEmpty()) {
                         continue;

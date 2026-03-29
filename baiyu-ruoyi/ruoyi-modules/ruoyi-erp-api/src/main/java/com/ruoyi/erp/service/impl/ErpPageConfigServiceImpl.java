@@ -163,6 +163,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             history.setTableConfig(config.getTableConfig());
             history.setSearchConfig(config.getSearchConfig());
             history.setActionConfig(config.getActionConfig());
+            history.setApiConfig(config.getApiConfig());
             history.setDictConfig(config.getDictConfig());
             history.setBusinessConfig(config.getBusinessConfig());
             history.setChangeReason(changeReason);
@@ -238,14 +239,15 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         }
 
         // 标准返回：直接组合JSON字符串，不做解析和序列化
-        // 八字段强制拆分：pageConfig, formConfig, tableConfig, searchConfig, actionConfig, dictConfig, businessConfig, detailConfig
+        // 九字段强制拆分：pageConfig, formConfig, tableConfig, searchConfig, actionConfig, apiConfig, dictConfig, businessConfig, detailConfig
         String jsonString = String.format(
-            "{\"pageConfig\":%s,\"formConfig\":%s,\"tableConfig\":%s,\"searchConfig\":%s,\"actionConfig\":%s,\"dictionaryConfig\":%s,\"businessConfig\":%s,\"detailConfig\":%s,\"moduleCode\":\"%s\",\"configName\":\"%s\",\"version\":%d}",
+            "{\"pageConfig\":%s,\"formConfig\":%s,\"tableConfig\":%s,\"searchConfig\":%s,\"actionConfig\":%s,\"apiConfig\":%s,\"dictionaryConfig\":%s,\"businessConfig\":%s,\"detailConfig\":%s,\"moduleCode\":\"%s\",\"configName\":\"%s\",\"version\":%d}",
             config.getPageConfig(),
             config.getFormConfig(),
             config.getTableConfig(),
             config.getSearchConfig(),
             config.getActionConfig(),
+            config.getApiConfig(),
             config.getDictConfig(),
             config.getBusinessConfig(),
             config.getDetailConfig(),
@@ -370,6 +372,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             currentConfig.setPageConfig(targetVersionHistory.getPageConfig());
             currentConfig.setFormConfig(targetVersionHistory.getFormConfig());
             currentConfig.setTableConfig(targetVersionHistory.getTableConfig());
+            currentConfig.setApiConfig(targetVersionHistory.getApiConfig());
             currentConfig.setDictConfig(targetVersionHistory.getDictConfig());
             currentConfig.setBusinessConfig(targetVersionHistory.getBusinessConfig());
             currentConfig.setVersion(currentConfig.getVersion() + 1); // 版本号 +1
@@ -385,10 +388,11 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             rollbackHistory.setModuleCode(currentConfig.getModuleCode());
             rollbackHistory.setConfigType(currentConfig.getConfigType());
             rollbackHistory.setVersion(currentConfig.getVersion());
-            // 🔧 修复：设置 5 个独立的 JSON 字段
+            // 🔧 修复：设置 6 个独立的 JSON 字段
             rollbackHistory.setPageConfig(targetVersionHistory.getPageConfig());
             rollbackHistory.setFormConfig(targetVersionHistory.getFormConfig());
             rollbackHistory.setTableConfig(targetVersionHistory.getTableConfig());
+            rollbackHistory.setApiConfig(targetVersionHistory.getApiConfig());
             rollbackHistory.setDictConfig(targetVersionHistory.getDictConfig());
             rollbackHistory.setBusinessConfig(targetVersionHistory.getBusinessConfig());
             rollbackHistory.setChangeReason(reason != null ? reason : "回滚到版本 v" + targetVersion);
@@ -424,11 +428,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 java.net.URLEncoder.encode(config.getModuleCode() + "_config.json", "UTF-8"));
             
             // 3. 写入 JSON 数据
-            // 🔧 修复：组合 5 个字段为 JSON 对象
+            // 🔧 修复：组合 6 个字段为 JSON 对象
             Map<String, Object> jsonContent = new HashMap<>();
             jsonContent.put("pageConfig", parseJsonString(config.getPageConfig()));
             jsonContent.put("formConfig", parseJsonString(config.getFormConfig()));
             jsonContent.put("tableConfig", parseJsonString(config.getTableConfig()));
+            jsonContent.put("apiConfig", parseJsonString(config.getApiConfig()));
             jsonContent.put("dictionaryConfig", parseJsonString(config.getDictConfig()));
             jsonContent.put("businessConfig", parseJsonString(config.getBusinessConfig()));
             response.getWriter().write(JsonUtils.toJsonString(jsonContent));
@@ -464,13 +469,14 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             bo.setModuleCode(moduleCode);
             bo.setConfigName("导入的配置 - " + System.currentTimeMillis());
             bo.setConfigType("PAGE");
-            // 🔧 修复：解析 JSON 并设置 5 个字段
+            // 🔧 修复：解析 JSON 并设置 6 个字段
             try {
                 if (parsedJson instanceof Map) {
                     Map<String, Object> configMap = (Map<String, Object>) parsedJson;
                     bo.setPageConfig(JsonUtils.toJsonString(configMap.get("pageConfig")));
                     bo.setFormConfig(JsonUtils.toJsonString(configMap.get("formConfig")));
                     bo.setTableConfig(JsonUtils.toJsonString(configMap.get("tableConfig")));
+                    bo.setApiConfig(JsonUtils.toJsonString(configMap.get("apiConfig")));
                     bo.setDictConfig(JsonUtils.toJsonString(configMap.get("dictionaryConfig")));
                     bo.setBusinessConfig(JsonUtils.toJsonString(configMap.get("businessConfig")));
                 }
@@ -510,10 +516,11 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             newConfig.setModuleCode(originalConfig.getModuleCode() + "_copy_" + System.currentTimeMillis());
             newConfig.setConfigName(originalConfig.getConfigName() + " (副本)");
             newConfig.setConfigType(originalConfig.getConfigType());
-            // 🔧 修复：复制 5 个字段
+            // 🔧 修复：复制 6 个字段
             newConfig.setPageConfig(originalConfig.getPageConfig());
             newConfig.setFormConfig(originalConfig.getFormConfig());
             newConfig.setTableConfig(originalConfig.getTableConfig());
+            newConfig.setApiConfig(originalConfig.getApiConfig());
             newConfig.setDictConfig(originalConfig.getDictConfig());
             newConfig.setBusinessConfig(originalConfig.getBusinessConfig());
             newConfig.setStatus("1");

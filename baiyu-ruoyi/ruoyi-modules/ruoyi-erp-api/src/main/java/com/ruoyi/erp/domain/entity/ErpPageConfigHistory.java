@@ -88,6 +88,12 @@ public class ErpPageConfigHistory implements Serializable {
     private String dictConfig;
 
     /**
+     * API 接口配置快照 (api.json)
+     */
+    @TableField("api_config")
+    private String apiConfig;
+
+    /**
      * 业务配置快照 (config.json)
      */
     @TableField("business_config")

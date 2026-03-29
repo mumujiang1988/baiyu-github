@@ -70,6 +70,11 @@ public class ErpPageConfigBo extends BaseEntity {
     private String actionConfig;
 
     /**
+     * API接口配置 (api.json)
+     */
+    private String apiConfig;
+
+    /**
      * 字典数据源配置 (dict.json)
      */
     private String dictConfig;

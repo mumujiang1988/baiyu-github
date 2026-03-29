@@ -71,7 +71,6 @@ class DictionaryBuilder {
       config: config,
       ttl: config.ttl || 5 * 60 * 1000
     })
-    console.log(` 构建动态字典：${name}`)
     return builder
   }
 
@@ -212,7 +211,6 @@ class DictionaryBuilderEngine {
    */
   register(name, builder) {
     this.registry.set(name, builder)
-    console.log(`[字典引擎] 注册字典：${name}, 类型：${builder.type}`)
     return this
   }
 
@@ -317,24 +315,6 @@ class DictionaryBuilderEngine {
     }
 
     const dictionaries = dictionaryConfig.dictionaries || {}
-    console.log('\n========== 后端返回的字典数据 ==========')
-    console.log('字典列表:', Object.keys(dictionaries))
-    
-    // 🔍 只打印每个字典的关键信息
-    for (const [dictName, dictConfig] of Object.entries(dictionaries)) {
-      const { type, data, config } = dictConfig
-      if (type === 'static') {
-        console.log(`${dictName}: 类型=static, 数据量=${data?.length || 0}`)
-        if (data && data.length > 0) {
-          console.log(`  数据示例:`, data[0])
-        }
-      } else {
-        console.log(`${dictName}: 类型=${type}`)
-        // 🔍 打印完整的配置对象，查看后端返回的结构
-        console.log(`  完整配置:`, JSON.stringify(dictConfig, null, 2))
-      }
-    }
-    console.log('========================================\n')
     
     let successCount = 0
     let errorCount = 0
@@ -366,9 +346,6 @@ class DictionaryBuilderEngine {
       }
     }
 
-    console.log(`构建完成：成功=${successCount}, 失败=${errorCount}, 总计=${this.registry.size}`)
-    console.log(`已注册字典:`, Array.from(this.registry.keys()))
-    
     return this
   }
 
@@ -404,10 +381,6 @@ class DictionaryBuilderEngine {
                 ...(result.dictTypeList || []),
                 ...(result.dictDataList || [])
               ]
-              console.log(`${name}: 后端返回数据 ${data.length} 条`)
-            } else if (Array.isArray(response)) {
-              data = response
-              console.log(`${name}: 后端返回数据 ${data.length} 条（旧格式）`)
             }
             
             return data
@@ -419,17 +392,14 @@ class DictionaryBuilderEngine {
         promises.push(promise)
         loadCount++
       } else if (builder.type === 'static') {
-        console.log(`${name}: 静态字典（已缓存）`)
         skipCount++
       } else if (builder.type === 'remote') {
-        console.log(`${name}: 远程搜索（按需加载）`)
         skipCount++
       }
     })
 
     if (promises.length > 0) {
       await Promise.all(promises)
-      console.log(`动态字典加载完成：成功=${loadCount}, 跳过=${skipCount}`)
     }
   }
 }

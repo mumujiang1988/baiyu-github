@@ -76,6 +76,12 @@ public class ErpPageConfig implements Serializable {
     private String actionConfig;
 
     /**
+     * API接口配置 (api.json)
+     */
+    @TableField("api_config")
+    private String apiConfig;
+
+    /**
      * 字典数据源配置 (dict.json)
      */
     @TableField("dict_config")
