@@ -495,6 +495,15 @@ INSERT INTO `erp_page_config` (
           "minKeywordLength": 1,
           "debounce": 300
         }
+      },
+      "currency": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/currency",
+          "useGlobalCache": true,
+          "cacheKey": "currency_dict",
+          "cacheTTL": 86400000
+        }
       }
     },
     "globalCacheSettings": {

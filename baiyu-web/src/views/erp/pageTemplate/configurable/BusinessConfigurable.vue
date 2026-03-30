@@ -168,6 +168,11 @@
                 {{ scope.row[column.prop] }}
               </el-link>
               
+              <!-- 字典文本渲染 (带 dictionary 属性的 text 类型) -->
+              <span v-else-if="column.renderType === 'text' && column.dictionary">
+                {{ getDictLabel(scope.row[column.prop], column.dictionary) }}
+              </span>
+              
               <!-- 货币渲染 -->
               <span v-else-if="column.renderType === 'currency'">
                 {{ formatCurrency(scope.row[column.prop], column.precision) }}
@@ -1105,6 +1110,14 @@ const getTagConfig = (value, dictName) => {
     label: option?.label || value,
     type: tagType
   }
+}
+
+// 根据字典值和字典名称获取对应的标签文本（用于表格列显示）
+const getDictLabel = (value, dictName) => {
+  if (!dictName || !value && value !== 0) return value || '-'
+  const dict = getDictOptions(dictName)
+  const option = dict.find(item => String(item.value) === String(value))
+  return option ? option.label : value
 }
 
 // 处理查询

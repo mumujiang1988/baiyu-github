@@ -9,6 +9,7 @@ import com.ruoyi.common.core.utils.MapstructUtils;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.json.utils.JsonUtils;
 import com.ruoyi.common.redis.utils.CacheUtils;
+import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.erp.domain.bo.ErpPageConfigBo;
 import com.ruoyi.erp.domain.entity.ErpPageConfig;
 import com.ruoyi.erp.domain.entity.ErpPageConfigHistory;
@@ -386,6 +387,10 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         // 版本号 +1
         Integer newVersion = bo.getVersion() + 1;
         config.setVersion(newVersion);
+        
+        // 手动设置更新者（从登录用户获取）
+        String updateBy = StringUtils.substring(LoginHelper.getUsername(), 0, 64);
+        config.setUpdateBy(updateBy != null ? updateBy : "admin");
         
         // 使用 JdbcTemplate 更新
         String sql = """
@@ -984,6 +989,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             // 🔧 修复：解析 JSON 并设置 6 个字段
             try {
                 if (parsedJson instanceof Map) {
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> configMap = (Map<String, Object>) parsedJson;
                     bo.setPageConfig(JsonUtils.toJsonString(configMap.get("pageConfig")));
                     bo.setFormConfig(JsonUtils.toJsonString(configMap.get("formConfig")));

@@ -275,10 +275,11 @@
 
         <div class="config-content">
           <codemirror
-            v-model="currentConfig.configContent"
+            v-model="combinedConfigContent"
             :extensions="[json()]"
             :style="{ height: '45vh' }"
             :readonly="true"
+            placeholder="配置内容为空"
           />
         </div>
       </div>
@@ -351,14 +352,14 @@
             type="info"
             size="small"
             icon="MagicStick"
-            @click="formatJson"
+            @click="formatEditJson"
           >
             格式化 JSON
           </el-button>
         </div>
         <div class="config-content">
           <codemirror
-            v-model="editFormData.configContent"
+            v-model="editCombinedConfigContent"
             :extensions="[json()]"
             :style="{ height: 'calc(100vh - 400px)', minHeight: '400px' }"
             :autofocus="true"
@@ -521,6 +522,91 @@ const loading = ref(false)
 const total = ref(0)
 const configList = ref([])
 
+// 组合配置内容（将分散字段组合为 JSON 用于显示）
+const combinedConfigContent = computed(() => {
+  const configObj = {}
+  if (currentConfig.value.pageConfig) {
+    try { configObj.pageConfig = JSON.parse(currentConfig.value.pageConfig) } catch { configObj.pageConfig = currentConfig.value.pageConfig }
+  }
+  if (currentConfig.value.formConfig) {
+    try { configObj.formConfig = JSON.parse(currentConfig.value.formConfig) } catch { configObj.formConfig = currentConfig.value.formConfig }
+  }
+  if (currentConfig.value.tableConfig) {
+    try { configObj.tableConfig = JSON.parse(currentConfig.value.tableConfig) } catch { configObj.tableConfig = currentConfig.value.tableConfig }
+  }
+  if (currentConfig.value.searchConfig) {
+    try { configObj.searchConfig = JSON.parse(currentConfig.value.searchConfig) } catch { configObj.searchConfig = currentConfig.value.searchConfig }
+  }
+  if (currentConfig.value.actionConfig) {
+    try { configObj.actionConfig = JSON.parse(currentConfig.value.actionConfig) } catch { configObj.actionConfig = currentConfig.value.actionConfig }
+  }
+  if (currentConfig.value.apiConfig) {
+    try { configObj.apiConfig = JSON.parse(currentConfig.value.apiConfig) } catch { configObj.apiConfig = currentConfig.value.apiConfig }
+  }
+  if (currentConfig.value.dictConfig) {
+    try { configObj.dictConfig = JSON.parse(currentConfig.value.dictConfig) } catch { configObj.dictConfig = currentConfig.value.dictConfig }
+  }
+  if (currentConfig.value.businessConfig) {
+    try { configObj.businessConfig = JSON.parse(currentConfig.value.businessConfig) } catch { configObj.businessConfig = currentConfig.value.businessConfig }
+  }
+  if (currentConfig.value.detailConfig) {
+    try { configObj.detailConfig = JSON.parse(currentConfig.value.detailConfig) } catch { configObj.detailConfig = currentConfig.value.detailConfig }
+  }
+  return Object.keys(configObj).length > 0 ? JSON.stringify(configObj, null, 2) : '{}'
+})
+
+// 编辑模式组合配置内容（双向绑定）
+const editCombinedConfigContent = computed({
+  get() {
+    const configObj = {}
+    if (editFormData.pageConfig) {
+      try { configObj.pageConfig = JSON.parse(editFormData.pageConfig) } catch { configObj.pageConfig = editFormData.pageConfig }
+    }
+    if (editFormData.formConfig) {
+      try { configObj.formConfig = JSON.parse(editFormData.formConfig) } catch { configObj.formConfig = editFormData.formConfig }
+    }
+    if (editFormData.tableConfig) {
+      try { configObj.tableConfig = JSON.parse(editFormData.tableConfig) } catch { configObj.tableConfig = editFormData.tableConfig }
+    }
+    if (editFormData.searchConfig) {
+      try { configObj.searchConfig = JSON.parse(editFormData.searchConfig) } catch { configObj.searchConfig = editFormData.searchConfig }
+    }
+    if (editFormData.actionConfig) {
+      try { configObj.actionConfig = JSON.parse(editFormData.actionConfig) } catch { configObj.actionConfig = editFormData.actionConfig }
+    }
+    if (editFormData.apiConfig) {
+      try { configObj.apiConfig = JSON.parse(editFormData.apiConfig) } catch { configObj.apiConfig = editFormData.apiConfig }
+    }
+    if (editFormData.dictConfig) {
+      try { configObj.dictConfig = JSON.parse(editFormData.dictConfig) } catch { configObj.dictConfig = editFormData.dictConfig }
+    }
+    if (editFormData.businessConfig) {
+      try { configObj.businessConfig = JSON.parse(editFormData.businessConfig) } catch { configObj.businessConfig = editFormData.businessConfig }
+    }
+    if (editFormData.detailConfig) {
+      try { configObj.detailConfig = JSON.parse(editFormData.detailConfig) } catch { configObj.detailConfig = editFormData.detailConfig }
+    }
+    return Object.keys(configObj).length > 0 ? JSON.stringify(configObj, null, 2) : '{}'
+  },
+  set(val) {
+    // 解析用户输入的 JSON，并分散到各个字段
+    try {
+      const parsed = JSON.parse(val)
+      editFormData.pageConfig = parsed.pageConfig ? JSON.stringify(parsed.pageConfig) : ''
+      editFormData.formConfig = parsed.formConfig ? JSON.stringify(parsed.formConfig) : ''
+      editFormData.tableConfig = parsed.tableConfig ? JSON.stringify(parsed.tableConfig) : ''
+      editFormData.searchConfig = parsed.searchConfig ? JSON.stringify(parsed.searchConfig) : ''
+      editFormData.actionConfig = parsed.actionConfig ? JSON.stringify(parsed.actionConfig) : ''
+      editFormData.apiConfig = parsed.apiConfig ? JSON.stringify(parsed.apiConfig) : ''
+      editFormData.dictConfig = parsed.dictConfig ? JSON.stringify(parsed.dictConfig) : ''
+      editFormData.businessConfig = parsed.businessConfig ? JSON.stringify(parsed.businessConfig) : ''
+      editFormData.detailConfig = parsed.detailConfig ? JSON.stringify(parsed.detailConfig) : ''
+    } catch (e) {
+      console.error('JSON 解析失败:', e)
+    }
+  }
+})
+
 // 对话框状态
 const viewDialogVisible = ref(false)
 const historyDialogVisible = ref(false)
@@ -541,7 +627,15 @@ const editFormData = reactive({
   moduleCode: '',
   configName: '',
   configType: '',
-  configContent: '',
+  pageConfig: '',
+  formConfig: '',
+  tableConfig: '',
+  searchConfig: '',
+  actionConfig: '',
+  apiConfig: '',
+  dictConfig: '',
+  businessConfig: '',
+  detailConfig: '',
   isPublic: '0',
   remark: '',
   changeReason: ''
@@ -569,8 +663,16 @@ function getList() {
   loading.value = true
   listConfig(queryParams)
     .then(res => {
-      configList.value = res.rows
-      total.value = res.total
+      // 适配 ErpResponse 包装的 TableDataInfo 结构
+      const data = res.data || res
+      configList.value = data.rows || []
+      total.value = data.total !== undefined ? data.total : 0
+    })
+    .catch(error => {
+      console.error('查询配置列表失败:', error)
+      configList.value = []
+      total.value = 0
+      ElMessage.error('加载数据失败')
     })
     .finally(() => {
       loading.value = false
@@ -655,23 +757,27 @@ function enterEditMode() {
 }
 
 /**
- * 格式化 JSON
+ * 格式化 JSON（编辑模式）
  */
-function formatJson() {
-  if (!editFormData.configContent) {
-    ElMessage.warning('配置内容为空')
-    return
-  }
-  
+function formatEditJson() {
+  // 从组合的 JSON 重新解析并分散到各个字段
   try {
-    const parsed = JSON.parse(editFormData.configContent)
-    editFormData.configContent = JSON.stringify(parsed, null, 2)
+    const parsed = JSON.parse(editCombinedConfigContent.value)
+    editFormData.pageConfig = parsed.pageConfig ? JSON.stringify(parsed.pageConfig, null, 2) : ''
+    editFormData.formConfig = parsed.formConfig ? JSON.stringify(parsed.formConfig, null, 2) : ''
+    editFormData.tableConfig = parsed.tableConfig ? JSON.stringify(parsed.tableConfig, null, 2) : ''
+    editFormData.searchConfig = parsed.searchConfig ? JSON.stringify(parsed.searchConfig, null, 2) : ''
+    editFormData.actionConfig = parsed.actionConfig ? JSON.stringify(parsed.actionConfig, null, 2) : ''
+    editFormData.apiConfig = parsed.apiConfig ? JSON.stringify(parsed.apiConfig, null, 2) : ''
+    editFormData.dictConfig = parsed.dictConfig ? JSON.stringify(parsed.dictConfig, null, 2) : ''
+    editFormData.businessConfig = parsed.businessConfig ? JSON.stringify(parsed.businessConfig, null, 2) : ''
+    editFormData.detailConfig = parsed.detailConfig ? JSON.stringify(parsed.detailConfig, null, 2) : ''
     jsonValid.value = true
     jsonError.value = ''
     ElMessage.success('JSON 格式化成功')
   } catch (e) {
     jsonValid.value = false
-    jsonError.value = 'JSON 格式错误：' + e.message
+    jsonError.value = 'JSON 格式无效：' + e.message
     ElMessage.error('JSON 格式无效，无法格式化')
   }
 }
@@ -717,33 +823,21 @@ function loadEditData(configId) {
         throw new Error('配置不存在或已删除')
       }
       
-      //  自动格式化 JSON 内容
-      let configContent = data.configContent || ''
-      console.log('📝 原始配置内容长度:', configContent ? configContent.length : 0)
-      
-      //  如果配置内容为空，给出警告
-      if (!configContent || configContent.trim() === '') {
-        console.warn('⚠️ 配置内容为空，将使用空对象初始化')
-        configContent = '{}'
-      }
-      
-      try {
-        const parsed = JSON.parse(configContent)
-        configContent = JSON.stringify(parsed, null, 2)
-        console.log('✅ JSON 格式化成功')
-      } catch (e) {
-        console.error('❌ JSON 解析失败，保持原始格式:', e.message)
-        console.error('原始内容:', configContent.substring(0, 200))
-        // 解析失败时保持原样，让用户手动处理
-      }
-      
-      //  更新编辑表单数据
+      //  更新编辑表单数据（直接使用后端返回的分散字段）
       Object.assign(editFormData, {
         configId: data.configId,
         moduleCode: data.moduleCode || '',
         configName: data.configName || '',
         configType: data.configType || '',
-        configContent: configContent,
+        pageConfig: data.pageConfig || '',
+        formConfig: data.formConfig || '',
+        tableConfig: data.tableConfig || '',
+        searchConfig: data.searchConfig || '',
+        actionConfig: data.actionConfig || '',
+        apiConfig: data.apiConfig || '',
+        dictConfig: data.dictConfig || '',
+        businessConfig: data.businessConfig || '',
+        detailConfig: data.detailConfig || '',
         isPublic: data.isPublic || '0',
         remark: data.remark || '',
         version: data.version || 1
@@ -801,11 +895,19 @@ function handleEditSubmit() {
     moduleCode: editFormData.moduleCode,
     configName: editFormData.configName,
     configType: editFormData.configType,
-    configContent: editFormData.configContent,
+    pageConfig: editFormData.pageConfig,
+    formConfig: editFormData.formConfig,
+    tableConfig: editFormData.tableConfig,
+    searchConfig: editFormData.searchConfig,
+    actionConfig: editFormData.actionConfig,
+    apiConfig: editFormData.apiConfig,
+    dictConfig: editFormData.dictConfig,
+    businessConfig: editFormData.businessConfig,
+    detailConfig: editFormData.detailConfig,
     isPublic: editFormData.isPublic,
     remark: editFormData.remark,
     changeReason: editFormData.changeReason,
-    version: editFormData.version || 1  //  添加默认版本号，防止后端空指针
+    version: editFormData.version || 1
   }
 
   saveConfig(data)
@@ -828,21 +930,24 @@ function handleEditSubmit() {
 function handleView(row) {
   console.log('\n👁️ [配置管理] 点击查看，configId:', row.configId)
   
+  // 先初始化为列表中的基础数据
   currentConfig.value = { ...row }
-  
-  // 如果是编辑模式，先切换到查看模式
   isEditMode.value = false
+  viewDialogVisible.value = true
   
-  // 加载完整数据
+  // 异步加载完整数据（在对话框打开后更新）
   loadEditData(row.configId)
     .then(() => {
-      console.log('✅ 数据加载成功，打开查看对话框')
-      viewDialogVisible.value = true
+      console.log('✅ 数据加载成功，更新查看对话框')
+      // 数据加载成功后，更新 currentConfig
+      currentConfig.value = { ...editFormData }
     })
     .catch(error => {
-      console.error('❌ 数据加载失败')
-      // 即使加载失败也打开对话框，但显示错误提示
-      viewDialogVisible.value = true
+      console.error('❌ 数据加载失败', error)
+      // 加载失败时，给 configContent 一个默认值避免显示 undefined
+      if (!currentConfig.value.configContent) {
+        currentConfig.value.configContent = '{\n  "error": "配置加载失败，请稍后重试"\n}'
+      }
     })
 }
 

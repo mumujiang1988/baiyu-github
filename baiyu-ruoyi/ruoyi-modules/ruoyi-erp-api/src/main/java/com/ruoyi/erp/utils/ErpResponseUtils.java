@@ -188,7 +188,9 @@ public class ErpResponseUtils {
         if (object == null) {
             return ErpResponse.fail(notFoundMsg);
         }
-        return (ErpResponse<T>) ErpResponse.ok(successMsg, object);
+        @SuppressWarnings("unchecked")
+        ErpResponse<T> response = (ErpResponse<T>) ErpResponse.ok(successMsg, object);
+        return response;
     }
 
     // ==================== 调试辅助方法 ====================

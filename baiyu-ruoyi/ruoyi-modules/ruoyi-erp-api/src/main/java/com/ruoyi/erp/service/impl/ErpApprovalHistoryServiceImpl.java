@@ -3,21 +3,13 @@ package com.ruoyi.erp.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.springframework.stereotype.Service; 
 import java.util.List;
-import java.util.Map;
-
-import com.ruoyi.common.core.utils.StringUtils;
+import java.util.Map; 
 import com.ruoyi.common.core.utils.MapstructUtils;
 import com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo;
 import com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo;
-import com.ruoyi.erp.service.ErpApprovalHistoryService;
-
-import static com.ruoyi.erp.utils.JdbcResultUtils.*;
+import com.ruoyi.erp.service.ErpApprovalHistoryService; 
 
 /**
  * ERP 审批历史记录 Service 业务层实现
