@@ -1,7 +1,7 @@
 package com.ruoyi.erp.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ public interface ISuperDataPermissionService {
      * @param queryConfig 查询配置（包含 conditions, orderBy 等）
      * @return 分页结果
      */
-    Page<Map<String, Object>> selectPageByModuleWithTableName(
+    TableDataInfo<Map<String, Object>> selectPageByModuleWithTableName(
         String moduleCode,
         String tableName,
         PageQuery pageQuery,

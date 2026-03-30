@@ -1,8 +1,8 @@
 package com.ruoyi.erp.controller.erp;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.erp.service.engine.FormValidationEngine;
 import com.ruoyi.erp.service.engine.ApprovalWorkflowEngine;
@@ -121,7 +121,7 @@ public class ErpEngineController {
                         
             //  直接调用 Service 执行查询（完全去除 QueryWrapper）
             log.info("执行查询，moduleCode: {}, tableName: {}", moduleCode, tableName);
-            Page<Map<String, Object>> page = dataPermissionService
+            TableDataInfo<Map<String, Object>> tableDataInfo = dataPermissionService
                 .selectPageByModuleWithTableName(
                     moduleCode, 
                     tableName,
@@ -130,16 +130,16 @@ public class ErpEngineController {
                 );
             
             //  处理数据 (计算字段 + 虚拟字段)
-            List<Map<String, Object>> processedRecords = processData(page.getRecords(), moduleCode);
-            page.setRecords(processedRecords);
+            List<Map<String, Object>> processedRecords = processData(tableDataInfo.getRows(), moduleCode);
+            tableDataInfo.setRows(processedRecords);
             
             // 返回分页结果
             Map<String, Object> result = new java.util.HashMap<>();
-            result.put("rows", page.getRecords());
-            result.put("total", page.getTotal());
+            result.put("rows", tableDataInfo.getRows());
+            result.put("total", tableDataInfo.getTotal());
             result.put("moduleCode", moduleCode);
             
-            log.info("动态查询成功，moduleCode: {}, total: {}", moduleCode, page.getTotal());
+            log.info("动态查询成功，moduleCode: {}, total: {}", moduleCode, tableDataInfo.getTotal());
             
             return R.ok(result);
         } catch (Exception e) {

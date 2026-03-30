@@ -35,11 +35,8 @@ public class ErpPushRelationController extends BaseController {
     @SaCheckPermission("erp:push:list")
     @GetMapping("/list")
     public TableDataInfo<ErpPushRelationVo> list(ErpPushRelationBo bo, PageQuery pageQuery) {
-        Page<ErpPushRelationVo> page = pushRelationService.selectPageList(bo, pageQuery);
-        TableDataInfo<ErpPushRelationVo> info = new TableDataInfo<>();
-        info.setRows(page.getRecords());
-        info.setTotal(page.getTotal());
-        return info;
+        // Service 已返回 TableDataInfo，直接返回
+        return pushRelationService.selectPageList(bo, pageQuery);
     }
 
     /**

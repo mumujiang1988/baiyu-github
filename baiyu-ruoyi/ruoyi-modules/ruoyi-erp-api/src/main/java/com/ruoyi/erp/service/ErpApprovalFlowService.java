@@ -1,6 +1,6 @@
 package com.ruoyi.erp.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.erp.domain.bo.ErpApprovalFlowBo;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
@@ -38,7 +38,7 @@ public interface ErpApprovalFlowService {
      * @param pageQuery 分页参数
      * @return 审批流程分页信息
      */
-    Page<ErpApprovalFlowVo> selectPageList(ErpApprovalFlowBo bo, PageQuery pageQuery);
+    TableDataInfo<ErpApprovalFlowVo> selectPageList(ErpApprovalFlowBo bo, PageQuery pageQuery);
 
     /**
      * 新增审批流程

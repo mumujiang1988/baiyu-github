@@ -1,8 +1,6 @@
 package com.ruoyi.erp.mapper;
 
-import com.ruoyi.common.mybatis.core.mapper.BaseMapperPlus;
-import com.ruoyi.erp.domain.entity.ErpApprovalHistory;
-import com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * ERP 审批历史记录 Mapper 接口
@@ -10,6 +8,7 @@ import com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo;
  * @author JMH
  * @date 2026-03-22
  */
-public interface ErpApprovalHistoryMapper extends BaseMapperPlus<ErpApprovalHistory, ErpApprovalHistoryVo> {
-
+@Mapper
+public interface ErpApprovalHistoryMapper {
+    // 纯标记接口，所有 CRUD 操作使用 JdbcTemplate + SqlBuilder
 }

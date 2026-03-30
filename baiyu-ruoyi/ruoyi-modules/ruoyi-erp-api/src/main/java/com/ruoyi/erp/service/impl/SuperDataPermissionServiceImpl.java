@@ -1,8 +1,8 @@
 package com.ruoyi.erp.service.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
 import com.ruoyi.erp.utils.SqlBuilder;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
 
     // ==================== 分页查询（纯 JDBC 架构） ====================
     @Override
-    public Page<Map<String, Object>> selectPageByModuleWithTableName(
+    public TableDataInfo<Map<String, Object>> selectPageByModuleWithTableName(
             String moduleCode,
             String tableName,
             PageQuery pageQuery,
@@ -96,12 +96,11 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
                 Long.class, 
                 whereResult.getParams().toArray());
             
-            // 7. 封装结果
-            Page<Map<String, Object>> page = new Page<>(pageNum, pageSize, total);
-            page.setRecords(records != null ? records : new ArrayList<>());
+            // 7. 封装结果（使用 RuoYi TableDataInfo）
+            TableDataInfo<Map<String, Object>> tableDataInfo = new TableDataInfo<>(records != null ? records : new ArrayList<>(), total);
             
             log.info("[分页查询成功] module:{}, table:{}, total:{}", moduleCode, tableName, total);
-            return page;
+            return tableDataInfo;
             
         } catch (BadSqlGrammarException e) {
             log.error("[SQL 语法错误] module:{}, sql 异常", moduleCode, e);

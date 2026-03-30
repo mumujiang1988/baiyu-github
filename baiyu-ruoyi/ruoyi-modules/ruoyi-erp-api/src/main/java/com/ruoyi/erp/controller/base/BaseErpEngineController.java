@@ -2,9 +2,9 @@ package com.ruoyi.erp.controller.base;
 
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.erp.domain.response.ErpResponse;
 import com.ruoyi.erp.exception.ErpConfigException;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
@@ -57,7 +57,7 @@ public abstract class BaseErpEngineController {
      * @param pageQuery 分页查询参数
      * @return 分页结果
      */
-    protected ErpResponse<Page<Map<String, Object>>> queryModuleData(PageQuery pageQuery) {
+    protected ErpResponse<TableDataInfo<Map<String, Object>>> queryModuleData(PageQuery pageQuery) {
         return queryModuleData(pageQuery, new java.util.HashMap<>());
     }
     
@@ -68,7 +68,7 @@ public abstract class BaseErpEngineController {
      * @param queryConfig 查询配置（包含 conditions, orderBy 等）
      * @return 分页结果
      */
-    protected ErpResponse<Page<Map<String, Object>>> queryModuleData(
+    protected ErpResponse<TableDataInfo<Map<String, Object>>> queryModuleData(
             PageQuery pageQuery, 
             Map<String, Object> queryConfig) {
         
@@ -92,15 +92,15 @@ public abstract class BaseErpEngineController {
             }
             
             // 3. 查询数据（使用新的 selectPageByModuleWithTableName 方法）
-            Page<Map<String, Object>> page = superDataPermissionService
+            TableDataInfo<Map<String, Object>> tableDataInfo = superDataPermissionService
                 .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, queryConfig);
             
             // 4. 处理数据 (计算字段、虚拟字段等)
-            if (page != null && page.getRecords() != null && !page.getRecords().isEmpty()) {
-                page.setRecords(dataProcessor.process(page.getRecords(), moduleConfig));
+            if (tableDataInfo != null && tableDataInfo.getRows() != null && !tableDataInfo.getRows().isEmpty()) {
+                tableDataInfo.setRows(dataProcessor.process(tableDataInfo.getRows(), moduleConfig));
             }
             
-            return ErpResponse.ok(page);
+            return ErpResponse.ok(tableDataInfo);
             
         } catch (Exception e) {
             log.error("查询数据失败：{}", e.getMessage(), e);

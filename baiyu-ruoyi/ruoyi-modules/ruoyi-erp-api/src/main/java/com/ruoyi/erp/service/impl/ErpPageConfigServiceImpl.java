@@ -1,13 +1,13 @@
 package com.ruoyi.erp.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.core.constant.CacheNames;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.core.utils.MapstructUtils;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.json.utils.JsonUtils;
-import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.redis.utils.CacheUtils;
 import com.ruoyi.erp.domain.bo.ErpPageConfigBo;
 import com.ruoyi.erp.domain.entity.ErpPageConfig;
@@ -15,8 +15,6 @@ import com.ruoyi.erp.domain.entity.ErpPageConfigHistory;
 import com.ruoyi.erp.domain.vo.ErpPageConfigVo;
 import com.ruoyi.erp.domain.vo.ErpPageConfigHistoryVo;
 import com.ruoyi.erp.event.ConfigRefreshEvent;
-import com.ruoyi.erp.mapper.ErpPageConfigMapper;
-import com.ruoyi.erp.mapper.ErpPageConfigHistoryMapper;
 import com.ruoyi.erp.service.ErpPageConfigService;
 import com.ruoyi.erp.utils.SqlBuilder;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,8 +41,6 @@ import java.util.*;
 @Service
 public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
-    private final ErpPageConfigMapper pageConfigMapper;
-    private final ErpPageConfigHistoryMapper historyMapper;
     private final JdbcTemplate jdbcTemplate;
     private final SqlBuilder sqlBuilder;
     
@@ -53,7 +49,23 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
     @Override
     public ErpPageConfigVo selectById(Long configId) {
-        return pageConfigMapper.selectVoById(configId);
+        // 使用 SqlBuilder + JdbcTemplate 查询
+        List<Map<String, Object>> conditions = new ArrayList<>();
+        Map<String, Object> condition = new HashMap<>();
+        condition.put("field", "config_id");
+        condition.put("operator", "eq");
+        condition.put("value", configId);
+        conditions.add(condition);
+        
+        SqlBuilder.SqlResult sqlResult = sqlBuilder.buildWhere(conditions);
+        String sql = "SELECT * FROM erp_page_config" + sqlResult.getSql();
+        List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql, sqlResult.getParams().toArray());
+        
+        if (resultList.isEmpty()) {
+            return null;
+        }
+        
+        return convertMapToVo(resultList.get(0));
     }
 
     @Override
@@ -83,7 +95,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     @Override
-    public Page<ErpPageConfigVo> selectPageList(ErpPageConfigBo bo, PageQuery pageQuery) {
+    public TableDataInfo<ErpPageConfigVo> selectPageList(ErpPageConfigBo bo, PageQuery pageQuery) {
         // 使用 SqlBuilder 构建查询条件
         List<Map<String, Object>> conditions = buildConditionsFromBo(bo);
         SqlBuilder.SqlResult sqlResult = sqlBuilder.buildWhere(conditions);
@@ -111,8 +123,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         String countSql = "SELECT COUNT(*) FROM erp_page_config" + sqlResult.getSql();
         Long total = jdbcTemplate.queryForObject(countSql, Long.class, sqlResult.getParams().toArray());
         
-        // 构建分页结果
-        Page<ErpPageConfigVo> page = new Page<>(pageNum, pageSize, total);
+        // 构建分页结果（使用 RuoYi TableDataInfo）
         List<ErpPageConfigVo> voList = new ArrayList<>();
         for (Map<String, Object> row : resultList) {
             ErpPageConfigVo vo = convertMapToVo(row);
@@ -120,9 +131,8 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 voList.add(vo);
             }
         }
-        page.setRecords(voList);
-        
-        return page;
+        TableDataInfo<ErpPageConfigVo> tableDataInfo = new TableDataInfo<>(voList, total);
+        return tableDataInfo;
     }
 
     /**
@@ -525,7 +535,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             }
             
             String deleteSql = "DELETE FROM erp_page_config WHERE config_id IN (" + inClause + ")";
-            return jdbcTemplate.update(deleteSql, configIds);
+            return jdbcTemplate.update(deleteSql, (Object[]) configIds);
         }
         return 0;
     }
@@ -691,7 +701,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     @Override
-    public Page<ErpPageConfigHistoryVo> selectHistoryPage(Long configId, PageQuery pageQuery) {
+    public TableDataInfo<ErpPageConfigHistoryVo> selectHistoryPage(Long configId, PageQuery pageQuery) {
         log.info("[selectHistoryPage] 查询配置历史，configId: {}", configId);
         
         // 使用 SqlBuilder 构建查询条件
@@ -725,8 +735,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         String countSql = "SELECT COUNT(*) FROM erp_page_config_history" + sqlResult.getSql();
         Long total = jdbcTemplate.queryForObject(countSql, Long.class, sqlResult.getParams().toArray());
         
-        // 转换为 VO
-        Page<ErpPageConfigHistoryVo> voPage = new Page<>(pageNum, pageSize, total);
+        // 转换为 VO（使用 RuoYi TableDataInfo）
         List<ErpPageConfigHistoryVo> voList = new ArrayList<>();
         for (Map<String, Object> row : resultList) {
             ErpPageConfigHistoryVo vo = convertHistoryMapToVo(row);
@@ -734,10 +743,10 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 voList.add(vo);
             }
         }
-        voPage.setRecords(voList);
+        TableDataInfo<ErpPageConfigHistoryVo> tableDataInfo = new TableDataInfo<>(voList, total);
         
         log.info("[selectHistoryPage] 查询成功，total: {}", total);
-        return voPage;
+        return tableDataInfo;
     }
 
     @Override
@@ -1068,27 +1077,40 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         log.info("[updateConfigStatus] 更新配置状态，configId: {}, status: {}", configId, status);
         
         try {
-            // 1. 查询配置
-            ErpPageConfig config = pageConfigMapper.selectById(configId);
-            if (config == null) {
+            // 1. 查询配置（使用 SqlBuilder + JdbcTemplate）
+            List<Map<String, Object>> conditions = new ArrayList<>();
+            Map<String, Object> condition = new HashMap<>();
+            condition.put("field", "config_id");
+            condition.put("operator", "eq");
+            condition.put("value", configId);
+            conditions.add(condition);
+            
+            SqlBuilder.SqlResult sqlResult = sqlBuilder.buildWhere(conditions);
+            String selectSql = "SELECT * FROM erp_page_config" + sqlResult.getSql();
+            List<Map<String, Object>> resultList = jdbcTemplate.queryForList(selectSql, sqlResult.getParams().toArray());
+            
+            if (resultList.isEmpty()) {
                 throw new ServiceException("配置不存在");
             }
+            
+            Map<String, Object> row = resultList.get(0);
+            String moduleCode = getStringValue(row, "module_code");
             
             // 2. 验证状态值
             if (!"0".equals(status) && !"1".equals(status)) {
                 throw new ServiceException("状态值必须为 0 或 1");
             }
             
-            // 3. 更新状态
-            config.setStatus(status);
-            int count = pageConfigMapper.updateById(config);
+            // 3. 更新状态（使用 JdbcTemplate）
+            String updateSql = "UPDATE erp_page_config SET status = ?, update_time = ? WHERE config_id = ?";
+            int count = jdbcTemplate.update(updateSql, status, LocalDateTime.now(), configId);
             
             if (count <= 0) {
                 throw new ServiceException("更新状态失败");
             }
             
             // 4. 清除缓存
-            CacheUtils.evict(CacheNames.ERP_CONFIG, config.getModuleCode());
+            CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
             
             log.info("[updateConfigStatus] 更新成功，newStatus: {}", status);
         } catch (Exception e) {

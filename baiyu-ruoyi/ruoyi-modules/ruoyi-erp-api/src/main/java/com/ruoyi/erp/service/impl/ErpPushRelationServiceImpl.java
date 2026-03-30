@@ -1,16 +1,13 @@
 package com.ruoyi.erp.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ruoyi.common.core.exception.ServiceException;
-import com.ruoyi.common.core.utils.MapstructUtils;
-import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
+import com.ruoyi.common.core.exception.ServiceException;
+import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
-import com.ruoyi.erp.domain.entity.ErpPushRelation;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
-import com.ruoyi.erp.mapper.ErpPushRelationMapper;
 import com.ruoyi.erp.service.ErpPushRelationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,9 +31,7 @@ import java.util.Map;
 @Service
 public class ErpPushRelationServiceImpl implements ErpPushRelationService {
 
-    private final ErpPushRelationMapper pushRelationMapper;
     private final JdbcTemplate jdbcTemplate;
-    private final RedisUtils redisUtils;
 
     @Override
     public ErpPushRelationVo selectById(Long relationId) {
@@ -107,7 +101,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
     }
 
     @Override
-    public Page<ErpPushRelationVo> selectPageList(ErpPushRelationBo bo, PageQuery pageQuery) {
+    public TableDataInfo<ErpPushRelationVo> selectPageList(ErpPushRelationBo bo, PageQuery pageQuery) {
         // 构建查询 SQL（不含排序和分页）
         StringBuilder countSql = new StringBuilder("""
             SELECT COUNT(*) 
@@ -148,7 +142,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
         // 查询总数
         Long total = jdbcTemplate.queryForObject(countSql.toString(), Long.class, params.toArray());
         if (total == null || total == 0) {
-            return new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize(), 0);
+            return new TableDataInfo<>(new ArrayList<>(), 0L);
         }
         
         // 添加排序和分页
@@ -159,10 +153,9 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
         // 查询数据
         List<ErpPushRelationVo> list = queryForVoList(querySql.toString(), params);
         
-        // 构建分页结果
-        Page<ErpPushRelationVo> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize(), total);
-        page.setRecords(list);
-        return page;
+        // 构建分页结果（使用 RuoYi TableDataInfo）
+        TableDataInfo<ErpPushRelationVo> tableDataInfo = new TableDataInfo<>(list, total);
+        return tableDataInfo;
     }
 
 
@@ -323,7 +316,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
             }
             
             String sql = "DELETE FROM erp_push_relation WHERE relation_id IN (" + inClause + ")";
-            return jdbcTemplate.update(sql, relationIds);
+            return jdbcTemplate.update(sql, (Object[]) relationIds);
         }
         return 0;
     }

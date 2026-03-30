@@ -1,16 +1,13 @@
 package com.ruoyi.erp.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ruoyi.common.core.exception.ServiceException;
-import com.ruoyi.common.core.utils.MapstructUtils;
-import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
+import com.ruoyi.common.core.exception.ServiceException;
+import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.erp.domain.bo.ErpApprovalFlowBo;
-import com.ruoyi.erp.domain.entity.ErpApprovalFlow;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
-import com.ruoyi.erp.mapper.ErpApprovalFlowMapper;
 import com.ruoyi.erp.service.ErpApprovalFlowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,9 +31,7 @@ import java.util.Map;
 @Service
 public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
 
-    private final ErpApprovalFlowMapper approvalFlowMapper;
     private final JdbcTemplate jdbcTemplate;
-    private final RedisUtils redisUtils;
 
     @Override
     public ErpApprovalFlowVo selectById(Long flowId) {
@@ -97,7 +91,7 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
     }
 
     @Override
-    public Page<ErpApprovalFlowVo> selectPageList(ErpApprovalFlowBo bo, PageQuery pageQuery) {
+    public TableDataInfo<ErpApprovalFlowVo> selectPageList(ErpApprovalFlowBo bo, PageQuery pageQuery) {
         // 构建查询 SQL（不含排序和分页）
         StringBuilder countSql = new StringBuilder("""
             SELECT COUNT(*) 
@@ -133,7 +127,7 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
         // 查询总数
         Long total = jdbcTemplate.queryForObject(countSql.toString(), Long.class, params.toArray());
         if (total == null || total == 0) {
-            return new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize(), 0);
+            return new TableDataInfo<>(new ArrayList<>(), 0L);
         }
         
         // 添加排序和分页
@@ -144,10 +138,9 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
         // 查询数据
         List<ErpApprovalFlowVo> list = queryForVoList(querySql.toString(), params);
         
-        // 构建分页结果
-        Page<ErpApprovalFlowVo> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize(), total);
-        page.setRecords(list);
-        return page;
+        // 构建分页结果（使用 RuoYi TableDataInfo）
+        TableDataInfo<ErpApprovalFlowVo> tableDataInfo = new TableDataInfo<>(list, total);
+        return tableDataInfo;
     }
 
     /**
@@ -289,7 +282,7 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
             }
             
             String sql = "DELETE FROM erp_approval_flow WHERE flow_id IN (" + inClause + ")";
-            return jdbcTemplate.update(sql, flowIds);
+            return jdbcTemplate.update(sql, (Object[]) flowIds);
         }
         return 0;
     }

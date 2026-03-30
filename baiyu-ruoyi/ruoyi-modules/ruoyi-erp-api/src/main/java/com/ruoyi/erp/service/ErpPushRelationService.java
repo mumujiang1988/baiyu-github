@@ -1,6 +1,6 @@
 package com.ruoyi.erp.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
@@ -38,7 +38,7 @@ public interface ErpPushRelationService {
      * @param pageQuery 分页参数
      * @return 下推关系分页信息
      */
-    Page<ErpPushRelationVo> selectPageList(ErpPushRelationBo bo, PageQuery pageQuery);
+    TableDataInfo<ErpPushRelationVo> selectPageList(ErpPushRelationBo bo, PageQuery pageQuery);
 
     /**
      * 新增下推关系

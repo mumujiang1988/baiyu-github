@@ -1,8 +1,6 @@
 package com.ruoyi.erp.mapper;
 
-import com.ruoyi.common.mybatis.core.mapper.BaseMapperPlus;
-import com.ruoyi.erp.domain.entity.ErpPageConfigHistory;
-import com.ruoyi.erp.domain.vo.ErpPageConfigHistoryVo;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * ERP 配置历史 Mapper 接口
@@ -10,6 +8,7 @@ import com.ruoyi.erp.domain.vo.ErpPageConfigHistoryVo;
  * @author JMH
  * @date 2026-03-22
  */
-public interface ErpPageConfigHistoryMapper extends BaseMapperPlus<ErpPageConfigHistory, ErpPageConfigHistoryVo> {
-
+@Mapper
+public interface ErpPageConfigHistoryMapper {
+    // 纯标记接口，所有 CRUD 操作使用 JdbcTemplate + SqlBuilder
 }

@@ -1,8 +1,6 @@
 package com.ruoyi.erp.mapper;
 
-import com.ruoyi.common.mybatis.core.mapper.BaseMapperPlus;
-import com.ruoyi.erp.domain.entity.ErpApprovalFlow;
-import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * ERP 审批流程配置 Mapper 接口
@@ -10,6 +8,7 @@ import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
  * @author JMH
  * @date 2026-03-22
  */
-public interface ErpApprovalFlowMapper extends BaseMapperPlus<ErpApprovalFlow, ErpApprovalFlowVo> {
-
+@Mapper
+public interface ErpApprovalFlowMapper {
+    // 纯标记接口，所有 CRUD 操作使用 JdbcTemplate + SqlBuilder
 }

@@ -203,13 +203,12 @@ INSERT INTO `erp_page_config` (
         "componentProps": {"placeholder": "请选择本位币", "clearable": true, "filterable": true}
       },
       {
-        "field": "fseller",
+        "field": "FSalerId",
         "label": "销售员",
         "component": "select",
         "span": 6,
         "dictionary": "salespersons",
-        "componentProps": {"placeholder": "请选择销售员", "clearable": true, "filterable": true},
-        "dbField": "FSalerId"
+        "componentProps": {"placeholder": "请选择销售员", "clearable": true, "filterable": true}
       },
       {
         "field": "F_lrl",
@@ -629,7 +628,7 @@ INSERT INTO `erp_page_config` (
   '1',
   '0',
   'admin',
-  '销售订单配置（v6.0 纯净版 - 全链路数据库字段名统一 + 去冗余优化）'
+  '销售订单配置（v8.0 完全体 - 消除所有异常字段映射）'
 );
 
 -- ============================================

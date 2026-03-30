@@ -112,7 +112,7 @@ public interface ErpDictionaryMapper {
      * 
      * ⚠️ **重要说明**:
      * - value: user_id (雪花算法 ID, BIGINT)
-     * - fseller: salesman_id (销售员编码，VARCHAR) ✅ 用于查询和绑定
+     * - FSalerId: salesman_id (销售员编码，VARCHAR) ✅ 使用数据库字段名
      */
     @Select("SELECT " +
             "  CONCAT(u.nick_name, IFNULL(CONCAT('(', d.dept_name, ')'), ''), IFNULL(CONCAT(' - ', e.salesman_id), '')) AS label, " +
@@ -120,7 +120,7 @@ public interface ErpDictionaryMapper {
             "  'salespersons' AS type, " +
             "  u.nick_name AS nickName, " +
             "  d.dept_name AS departmentName, " +
-            "  e.salesman_id AS fseller, " +
+            "  e.salesman_id AS FSalerId, " +  // ✅ 改为数据库字段名
             "  GROUP_CONCAT(DISTINCT sr.role_name ORDER BY sr.role_id) AS roleNames " +
             "FROM sys_user u " +
             "LEFT JOIN sys_dept d ON u.dept_id = d.dept_id " +

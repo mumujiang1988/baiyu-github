@@ -35,11 +35,8 @@ public class ErpApprovalFlowController extends BaseController {
     @SaCheckPermission("erp:approval:list")
     @GetMapping("/list")
     public TableDataInfo<ErpApprovalFlowVo> list(ErpApprovalFlowBo bo, PageQuery pageQuery) {
-        Page<ErpApprovalFlowVo> page = approvalFlowService.selectPageList(bo, pageQuery);
-        TableDataInfo<ErpApprovalFlowVo> info = new TableDataInfo<>();
-        info.setRows(page.getRecords());
-        info.setTotal(page.getTotal());
-        return info;
+        // Service 已返回 TableDataInfo，直接返回
+        return approvalFlowService.selectPageList(bo, pageQuery);
     }
 
     /**

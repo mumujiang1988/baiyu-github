@@ -1,6 +1,6 @@
 package com.ruoyi.erp.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.erp.domain.bo.ErpPageConfigBo;
 import com.ruoyi.erp.domain.entity.ErpPageConfig;
@@ -42,7 +42,7 @@ public interface ErpPageConfigService {
      * @param pageQuery 分页参数
      * @return 配置分页信息
      */
-    Page<ErpPageConfigVo> selectPageList(ErpPageConfigBo bo, PageQuery pageQuery);
+    TableDataInfo<ErpPageConfigVo> selectPageList(ErpPageConfigBo bo, PageQuery pageQuery);
 
     /**
      * 新增配置
@@ -99,7 +99,7 @@ public interface ErpPageConfigService {
      * @param pageQuery 分页参数
      * @return 配置历史分页信息
      */
-    Page<ErpPageConfigHistoryVo> selectHistoryPage(Long configId, PageQuery pageQuery);
+    TableDataInfo<ErpPageConfigHistoryVo> selectHistoryPage(Long configId, PageQuery pageQuery);
 
     /**
      * 获取版本详情
