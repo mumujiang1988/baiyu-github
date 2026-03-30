@@ -11,6 +11,7 @@ import com.ruoyi.erp.service.ErpApprovalFlowService;
 import com.ruoyi.erp.service.ErpPushRelationService;
 import com.ruoyi.erp.service.ISuperDataPermissionService;
 import com.ruoyi.erp.service.ErpDictionaryService;
+import com.ruoyi.erp.service.ErpApprovalHistoryService;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
@@ -43,7 +44,7 @@ public class ErpEngineController {
     private final ErpApprovalFlowService approvalFlowService;
     private final ErpPushRelationService pushRelationService;
     private final ISuperDataPermissionService dataPermissionService;
-    private final com.ruoyi.erp.mapper.ErpApprovalHistoryMapper approvalHistoryMapper;
+    private final ErpApprovalHistoryService approvalHistoryService;
     private final DictionaryBuilderEngine dictionaryBuilderEngine;
     private final ErpDictionaryService dictionaryService;
     
@@ -117,24 +118,15 @@ public class ErpEngineController {
             PageQuery pageQuery = new PageQuery();
             pageQuery.setPageNum(pageNum);
             pageQuery.setPageSize(pageSize);
-            
-            //  使用构建器模式构建查询条件 
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper = 
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-            queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
-            
-            //  从queryConfig中提取查询参数
-            List<Object> queryParams = extractParamsFromQueryConfig(queryConfig);
-            log.info("提取到的查询参数数量: {}, 值: {}", queryParams.size(), queryParams);
-            
-            //  调用通用 Service 执行实际查询
-            Page<Map<String, Object>> page = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) dataPermissionService)
+                        
+            //  直接调用 Service 执行查询（完全去除 QueryWrapper）
+            log.info("执行查询，moduleCode: {}, tableName: {}", moduleCode, tableName);
+            Page<Map<String, Object>> page = dataPermissionService
                 .selectPageByModuleWithTableName(
                     moduleCode, 
                     tableName,
                     pageQuery, 
-                    queryWrapper,
-                    queryParams
+                    queryConfig  // 直接传入 queryConfig
                 );
             
             //  处理数据 (计算字段 + 虚拟字段)
@@ -356,19 +348,19 @@ public class ErpEngineController {
                 approvalEngine.executeApproval(context, workflow, billData);
             
             if (result.isSuccess()) {
-                //  保存审批历史到数据库
-                com.ruoyi.erp.domain.entity.ErpApprovalHistory history = 
-                    new com.ruoyi.erp.domain.entity.ErpApprovalHistory();
-                history.setModuleCode(moduleCode);
-                history.setBillId(Long.parseLong(billId));
-                history.setFlowId(flowConfig.getFlowId());
-                history.setCurrentStep(result.getCurrentStep() != null ? result.getCurrentStep().getStep() : null);
-                history.setApprovalAction(action);
-                history.setApprovalOpinion(opinion);
-                history.setApproverId(userId);
-                history.setApprovalTime(java.time.LocalDateTime.now());
+                //  保存审批历史到数据库（使用 Service）
+                com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo historyBo = 
+                    new com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo();
+                historyBo.setModuleCode(moduleCode);
+                historyBo.setBillId(Long.parseLong(billId));
+                historyBo.setFlowId(flowConfig.getFlowId());
+                historyBo.setCurrentStep(result.getCurrentStep() != null ? result.getCurrentStep().getStep() : null);
+                historyBo.setApprovalAction(action);
+                historyBo.setApprovalOpinion(opinion);
+                historyBo.setApproverId(userId);
+                historyBo.setApprovalTime(java.time.LocalDateTime.now());
                 
-                int saved = approvalHistoryMapper.insert(history);
+                int saved = approvalHistoryService.save(historyBo);
                 if (saved <= 0) {
                     log.warn("保存审批历史记录失败");
                 }
@@ -398,19 +390,13 @@ public class ErpEngineController {
             permissionChecker.checkModulePermission(moduleCode, "query");
             Long billId = (Long) params.get("billId");
             
-            // 直接使用注入的 Mapper 查询
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.ruoyi.erp.domain.entity.ErpApprovalHistory> queryWrapper = 
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-            queryWrapper.eq("module_code", moduleCode)
-                       .eq("bill_id", billId)
-                       .orderByDesc("approval_time");
-            
-            java.util.List<com.ruoyi.erp.domain.entity.ErpApprovalHistory> historyList = 
-                approvalHistoryMapper.selectList(queryWrapper);
+            // 调用 Service 查询审批历史（使用 SqlBuilder + JdbcTemplate）
+            java.util.List<com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo> historyList = 
+                approvalHistoryService.selectByModuleAndBillId(moduleCode, billId);
             
             // 转换为 VO 对象
             java.util.List<Map<String, Object>> result = new ArrayList<>();
-            for (com.ruoyi.erp.domain.entity.ErpApprovalHistory item : historyList) {
+            for (com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo item : historyList) {
                 Map<String, Object> historyItem = new HashMap<>();
                 historyItem.put("historyId", item.getHistoryId());
                 historyItem.put("moduleCode", item.getModuleCode());
@@ -627,19 +613,19 @@ public class ErpEngineController {
                 return R.fail("目标用户不能为空");
             }
             
-            // 4. 保存转审记录到审批历史
-            com.ruoyi.erp.domain.entity.ErpApprovalHistory history = 
-                new com.ruoyi.erp.domain.entity.ErpApprovalHistory();
-            history.setModuleCode(moduleCode);
-            history.setBillId(Long.parseLong(billId));
-            history.setFlowId(flowConfig.getFlowId());
-            history.setCurrentStep(currentStep.getStep());
-            history.setApprovalAction("TRANSFER");
-            history.setApprovalOpinion("转审给 " + targetUserId + (reason != null ? "，原因：" + reason : ""));
-            history.setApproverId(currentUserId);
-            history.setApprovalTime(java.time.LocalDateTime.now());
+            // 4. 保存转审记录到审批历史（使用 Service）
+            com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo historyBo = 
+                new com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo();
+            historyBo.setModuleCode(moduleCode);
+            historyBo.setBillId(Long.parseLong(billId));
+            historyBo.setFlowId(flowConfig.getFlowId());
+            historyBo.setCurrentStep(currentStep.getStep());
+            historyBo.setApprovalAction("TRANSFER");
+            historyBo.setApprovalOpinion("转审给 " + targetUserId + (reason != null ? "，原因：" + reason : ""));
+            historyBo.setApproverId(currentUserId);
+            historyBo.setApprovalTime(java.time.LocalDateTime.now());
             
-            int saved = approvalHistoryMapper.insert(history);
+            int saved = approvalHistoryService.save(historyBo);
             if (saved <= 0) {
                 return R.fail("保存转审记录失败");
             }
@@ -708,19 +694,19 @@ public class ErpEngineController {
                 log.warn("用户 {} 尝试撤回审批，但无审批权限（作为创建人撤回）", userId);
             }
             
-            // 3. 保存撤回记录到审批历史
-            com.ruoyi.erp.domain.entity.ErpApprovalHistory history = 
-                new com.ruoyi.erp.domain.entity.ErpApprovalHistory();
-            history.setModuleCode(moduleCode);
-            history.setBillId(Long.parseLong(billId));
-            history.setFlowId(flowConfig.getFlowId());
-            history.setCurrentStep(currentStep.getStep());
-            history.setApprovalAction("WITHDRAW");
-            history.setApprovalOpinion("撤回审批" + (reason != null ? "，原因：" + reason : ""));
-            history.setApproverId(userId);
-            history.setApprovalTime(java.time.LocalDateTime.now());
+            // 3. 保存撤回记录到审批历史（使用 Service）
+            com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo historyBo = 
+                new com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo();
+            historyBo.setModuleCode(moduleCode);
+            historyBo.setBillId(Long.parseLong(billId));
+            historyBo.setFlowId(flowConfig.getFlowId());
+            historyBo.setCurrentStep(currentStep.getStep());
+            historyBo.setApprovalAction("WITHDRAW");
+            historyBo.setApprovalOpinion("撤回审批" + (reason != null ? "，原因：" + reason : ""));
+            historyBo.setApproverId(userId);
+            historyBo.setApprovalTime(java.time.LocalDateTime.now());
             
-            int saved = approvalHistoryMapper.insert(history);
+            int saved = approvalHistoryService.save(historyBo);
             if (saved <= 0) {
                 return R.fail("保存撤回记录失败");
             }
@@ -1396,187 +1382,8 @@ public class ErpEngineController {
             return dataList;
         }
     }
-
-    /**
-     *  构建器模式：从 queryConfig 构建查询条件 
-     * 
-     * @param queryWrapper 查询包装器
-     * @param queryConfig 配置对象
-     * @return QueryWrapper
-     */
-    @SuppressWarnings("unchecked")
-    private com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> buildQueryFromBuilderMode(
-            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Object> queryWrapper,
-            Map<String, Object> queryConfig) {
-        
-        try {
-            //  1. 解析 conditions 数组
-            List<Map<String, Object>> conditions = (List<Map<String, Object>>) queryConfig.get("conditions");
-            if (conditions != null && !conditions.isEmpty()) {
-                log.info(" 解析构建器条件，共 {} 个", conditions.size());
-                
-                for (Map<String, Object> condition : conditions) {
-                    String field = (String) condition.get("field");
-                    String operator = (String) condition.get("operator");
-                    Object value = condition.get("value");
-                    
-                    log.info("  - 条件：field={}, operator={}, value={}", field, operator, value);
-                    
-                    // 跳过空值字段
-                    if (field == null || field.trim().isEmpty()) {
-                        continue;
-                    }
-                    
-                    // 支持的运算符：eq, ne, gt, ge, lt, le, like, left_like, right_like, in, between, isNull, isNotNull
-                    switch (operator) {
-                        case "eq":
-                            queryWrapper.eq(field, value);
-                            break;
-                        case "ne":
-                            queryWrapper.ne(field, value);
-                            break;
-                        case "gt":
-                            queryWrapper.gt(field, value);
-                            break;
-                        case "ge":
-                            queryWrapper.ge(field, value);
-                            break;
-                        case "lt":
-                            queryWrapper.lt(field, value);
-                            break;
-                        case "le":
-                            queryWrapper.le(field, value);
-                            break;
-                        case "like":
-                            queryWrapper.like(field, escapeLikeSpecialChars(value));
-                            break;
-                        case "left_like":
-                            queryWrapper.likeLeft(field, escapeLikeSpecialChars(value));
-                            break;
-                        case "right_like":
-                            queryWrapper.likeRight(field, escapeLikeSpecialChars(value));
-                            break;
-                        case "in":
-                            if (value instanceof List) {
-                                queryWrapper.in(field, (List<?>) value);
-                            }
-                            break;
-                        case "between":
-                            if (value instanceof List && ((List<?>) value).size() >= 2) {
-                                List<?> values = (List<?>) value;
-                                queryWrapper.between(field, values.get(0), values.get(1));
-                            }
-                            break;
-                        case "isNull":
-                            queryWrapper.isNull(field);
-                            break;
-                        case "isNotNull":
-                            queryWrapper.isNotNull(field);
-                            break;
-                        default:
-                            log.warn(" 未知的操作符：{}, 已跳过", operator);
-                    }
-                }
-            }
-            
-            //  2. 解析 SELECT 字段配置
-            String selectFields = (String) queryConfig.get("select");
-            if (selectFields != null && !selectFields.trim().isEmpty()) {
-                log.info(" 配置 SELECT 字段：{}", selectFields);
-                String[] fields = selectFields.split(",");
-                queryWrapper.select(fields);
-            }
-            
-            //  3. 解析排序配置
-            List<Map<String, Object>> orderBy = (List<Map<String, Object>>) queryConfig.get("orderBy");
-            if (orderBy != null && !orderBy.isEmpty()) {
-                log.info(" 配置排序，共 {} 个", orderBy.size());
-                
-                for (Map<String, Object> order : orderBy) {
-                    String field = (String) order.get("field");
-                    String direction = (String) order.getOrDefault("direction", "asc");
-                    
-                    if ("desc".equalsIgnoreCase(direction)) {
-                        queryWrapper.orderByDesc(field);
-                    } else {
-                        queryWrapper.orderByAsc(field);
-                    }
-                }
-            }
-            
-            //  4. 解析分组配置（可选）
-            List<String> groupBy = (List<String>) queryConfig.get("groupBy");
-            if (groupBy != null && !groupBy.isEmpty()) {
-                log.info(" 配置分组：{}", groupBy);
-                queryWrapper.groupBy(groupBy);
-            }
-            
-            //  5. 解析 HAVING 配置（可选）
-            List<Map<String, Object>> having = (List<Map<String, Object>>) queryConfig.get("having");
-            if (having != null && !having.isEmpty()) {
-                log.info(" 配置 HAVING 条件，共 {} 个", having.size());
-                
-                for (Map<String, Object> h : having) {
-                    String field = (String) h.get("field");
-                    String operator = (String) h.get("operator");
-                    Object value = h.get("value");
-                    
-                    if (field == null || field.trim().isEmpty()) {
-                        continue;
-                    }
-                    
-                    // HAVING 条件支持基本运算符
-                    switch (operator) {
-                        case "eq":
-                            queryWrapper.having(field + " = '" + value + "'");
-                            break;
-                        case "gt":
-                            queryWrapper.having(field + " > " + value);
-                            break;
-                        case "ge":
-                            queryWrapper.having(field + " >= " + value);
-                            break;
-                        case "lt":
-                            queryWrapper.having(field + " < " + value);
-                            break;
-                        case "le":
-                            queryWrapper.having(field + " <= " + value);
-                            break;
-                        case "ne":
-                            queryWrapper.having(field + " <> " + value);
-                            break;
-                        default:
-                            log.warn(" HAVING 不支持的操作符：{}", operator);
-                    }
-                }
-            }
-            
-            log.info(" 构建器模式查询条件构建完成");
-            return queryWrapper;
-            
-        } catch (Exception e) {
-            log.error("构建查询条件失败", e);
-            throw new RuntimeException("构建查询条件失败: " + e.getMessage(), e);
-        }
-    }
+     
     
-    /**
-     * 转义 LIKE 查询的特殊字符
-     * 防止用户通过 % 和 _ 字符操纵查询
-     * 
-     * @param value 原始值
-     * @return 转义后的值
-     */
-    private String escapeLikeSpecialChars(Object value) {
-        if (value == null) {
-            return "";
-        }
-        String strValue = String.valueOf(value);
-        // 转义 SQL LIKE 特殊字符: % 和 _
-        return strValue.replace("%", "\\%")
-                       .replace("_", "\\_");
-    }
-
     /**
      * 从参数中提取模块编码
      * @param params 请求参数
@@ -1592,67 +1399,7 @@ public class ErpEngineController {
         }
         return moduleCode;
     }
-    
-    /**
-     * 从queryConfig中提取查询参数
-     * 按照conditions数组中的顺序提取参数值
-     * 
-     * @param queryConfig 查询配置
-     * @return 参数列表
-     */
-    private List<Object> extractParamsFromQueryConfig(Map<String, Object> queryConfig) {
-        List<Object> params = new ArrayList<>();
-        
-        if (queryConfig == null) {
-            return params;
-        }
-        
-        try {
-            List<Map<String, Object>> conditions = (List<Map<String, Object>>) queryConfig.get("conditions");
-            if (conditions == null || conditions.isEmpty()) {
-                return params;
-            }
-            
-            for (Map<String, Object> condition : conditions) {
-                String operator = (String) condition.get("operator");
-                Object value = condition.get("value");
-                
-                if (value == null) {
-                    continue;
-                }
-                
-                switch (operator) {
-                    case "between":
-                        if (value instanceof List) {
-                            List<?> values = (List<?>) value;
-                            if (values.size() >= 2) {
-                                params.add(values.get(0));
-                                params.add(values.get(1));
-                            }
-                        }
-                        break;
-                    case "in":
-                        if (value instanceof List) {
-                            params.addAll((List<?>) value);
-                        }
-                        break;
-                    case "isNull":
-                    case "isNotNull":
-                        break;
-                    default:
-                        params.add(value);
-                        break;
-                }
-            }
-            
-            log.info("从queryConfig提取参数完成，参数数量: {}", params.size());
-            
-        } catch (Exception e) {
-            log.error("提取查询参数失败", e);
-        }
-        
-        return params;
-    }
+     
 
     /**
      * 更新单据审批状态

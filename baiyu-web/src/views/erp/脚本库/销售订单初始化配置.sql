@@ -69,7 +69,7 @@ INSERT INTO `erp_page_config` (
     "tableName": "t_sale_order"
   }',
   
-  -- form_config: 从 form.json 读取
+  -- form_config: 从 form.json 读取（✨ 已优化：使用数据库字段名）
   '{
     "formConfig": {
       "dialogWidth": "1400px",
@@ -78,7 +78,7 @@ INSERT INTO `erp_page_config` (
     },
     "fields": [
       {
-        "field": "fbillno",
+        "field": "FBillNo",
         "label": "单据编号",
         "component": "input",
         "span": 6,
@@ -87,7 +87,7 @@ INSERT INTO `erp_page_config` (
         "props": {"maxlength": 100, "clearable": true}
       },
       {
-        "field": "fdate",
+        "field": "FDate",
         "label": "销售合同日期",
         "component": "date",
         "span": 6,
@@ -96,7 +96,7 @@ INSERT INTO `erp_page_config` (
         "props": {"placeholder": "选择日期", "valueFormat": "YYYY-MM-DD"}
       },
       {
-        "field": "fcustid",
+        "field": "FCustId",
         "label": "客户编码",
         "component": "select",
         "span": 6,
@@ -105,7 +105,7 @@ INSERT INTO `erp_page_config` (
         "props": {"placeholder": "请选择客户", "filterable": true, "clearable": true}
       },
       {
-        "field": "f_ora_baseproperty",
+        "field": "F_ora_BaseProperty",
         "label": "客户简称",
         "component": "input",
         "span": 6,
@@ -115,21 +115,21 @@ INSERT INTO `erp_page_config` (
         "defaultValue": ""
       },
       {
-        "field": "f_khhth",
+        "field": "F_khhth",
         "label": "客户合同号",
         "component": "input",
         "span": 6,
         "props": {"maxlength": 100, "clearable": true}
       },
       {
-        "field": "f_kglxr",
+        "field": "F_kglxr",
         "label": "客户联系人",
         "component": "input",
         "span": 6,
         "props": {"maxlength": 100, "clearable": true, "readonly": true}
       },
       {
-        "field": "f_cty_baseproperty1",
+        "field": "F_cty_BaseProperty1",
         "label": "客户邮箱",
         "component": "input",
         "span": 6,
@@ -137,7 +137,7 @@ INSERT INTO `erp_page_config` (
         "props": {"maxlength": 100, "clearable": true, "readonly": true}
       },
       {
-        "field": "fsettlecurrid",
+        "field": "FSettleCurrId",
         "label": "结算币别",
         "comment": "用于与金蝶 K3 系统集成的结算币种标识",
         "component": "select",
@@ -147,14 +147,14 @@ INSERT INTO `erp_page_config` (
         "defaultValue": "人民币"
       },
       {
-        "field": "f_tcbl",
+        "field": "F_tcbl",
         "label": "提成比例",
         "component": "input-number",
         "span": 6,
         "componentProps": {"min": 0, "max": 100, "precision": 2, "step": 0.1, "controlsPosition": "right"}
       },
       {
-        "field": "fisincludedtax",
+        "field": "FIsIncludedTax",
         "label": "是否含税",
         "component": "select",
         "span": 6,
@@ -163,7 +163,7 @@ INSERT INTO `erp_page_config` (
         "defaultValue": 1
       },
       {
-        "field": "f_sfbg",
+        "field": "F_sfbg",
         "label": "是否报关",
         "component": "select",
         "span": 6,
@@ -172,7 +172,7 @@ INSERT INTO `erp_page_config` (
         "defaultValue": 1
       },
       {
-        "field": "frecconditionid",
+        "field": "FRecConditionId",
         "label": "收款条件",
         "component": "select",
         "span": 6,
@@ -180,21 +180,21 @@ INSERT INTO `erp_page_config` (
         "componentProps": {"placeholder": "请选择收款条件", "clearable": true, "filterable": true}
       },
       {
-        "field": "fbillamount",
+        "field": "FBillAmount",
         "label": "订单金额",
         "component": "input-number",
         "span": 6,
         "componentProps": {"min": 0, "precision": 2, "step": 0.01, "controlsPosition": "right"}
       },
       {
-        "field": "fbilltaxamount",
+        "field": "FBillTaxAmount",
         "label": "税额",
         "component": "input-number",
         "span": 6,
         "componentProps": {"min": 0, "precision": 2, "step": 0.01, "controlsPosition": "right"}
       },
       {
-        "field": "flocalcurrid",
+        "field": "FLocalCurrId",
         "label": "本位币",
         "comment": "公司内部核算使用的本位货币，区别于结算币别",
         "component": "select",
@@ -203,29 +203,30 @@ INSERT INTO `erp_page_config` (
         "componentProps": {"placeholder": "请选择本位币", "clearable": true, "filterable": true}
       },
       {
-        "field": "fsalerid",
+        "field": "fseller",
         "label": "销售员",
         "component": "select",
         "span": 6,
         "dictionary": "salespersons",
-        "componentProps": {"placeholder": "请选择销售员", "clearable": true, "filterable": true}
+        "componentProps": {"placeholder": "请选择销售员", "clearable": true, "filterable": true},
+        "dbField": "FSalerId"
       },
       {
-        "field": "f_lrl",
+        "field": "F_lrl",
         "label": "毛净利润率",
         "component": "input-number",
         "span": 6,
         "componentProps": {"min": 0, "max": 100, "precision": 2, "step": 0.1, "controlsPosition": "right"}
       },
       {
-        "field": "f_jlrl",
+        "field": "F_jlrl",
         "label": "净利润率",
         "component": "input-number",
         "span": 6,
         "componentProps": {"min": 0, "max": 100, "precision": 2, "step": 0.1, "controlsPosition": "right"}
       },
       {
-        "field": "fstate",
+        "field": "FState",
         "label": "国家",
         "component": "select",
         "span": 6,
@@ -234,7 +235,7 @@ INSERT INTO `erp_page_config` (
         "defaultValue": ""
       },
       {
-        "field": "f_gj",
+        "field": "F_gj",
         "label": "抵运国家",
         "component": "select",
         "span": 6,
@@ -243,14 +244,14 @@ INSERT INTO `erp_page_config` (
         "defaultValue": ""
       },
       {
-        "field": "f_myfs",
+        "field": "F_myfs",
         "label": "贸易方式",
         "component": "select",
         "span": 6,
         "dictionary": "trade_way",
         "componentProps": {"placeholder": "请选择贸易方式", "clearable": true, "filterable": true},
         "defaultValue": "6191b13c997848"
-      }
+      },
     ]
   }',
   
@@ -519,7 +520,7 @@ INSERT INTO `erp_page_config` (
     "drawerTitle": "{entityName}详情 - {billNo}"
   }',
   
-  -- detail_config: 从 detail.json 读取（销售订单明细 + 成本暂估）
+  -- detail_config: 从 detail.json 读取（✨ 已优化：修复 type 为 form + 使用数据库字段名）
   '{
     "detail": {
       "enabled": true,
@@ -540,13 +541,13 @@ INSERT INTO `erp_page_config` (
             "enabled": true,
             "defaultConditions": [
               {
-                "field": "fbillno",
+                "field": "FBillNo",
                 "operator": "eq",
                 "value": "${FBillNo}",
                 "description": "按订单编号查询明细"
               }
             ],
-            "defaultOrderBy": [{"field": "fPlanMaterialId", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "FPlanMaterialId", "direction": "ASC"}]
           },
           "table": {
             "border": true,
@@ -554,19 +555,19 @@ INSERT INTO `erp_page_config` (
             "maxHeight": "500",
             "showOverflowTooltip": true,
             "columns": [
-              {"prop": "fplanmaterialid", "label": "物料编码", "width": 120, "align": "center", "sortable": true},
-              {"prop": "fplanmaterialname", "label": "物料名称", "width": 180, "align": "left", "showOverflowTooltip": true, "sortable": true},
-              {"prop": "fqty", "label": "数量", "width": 100, "align": "right", "renderType": "number", "sortable": true},
-              {"prop": "fprice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
-              {"prop": "ftaxprice", "label": "含税单价", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
-              {"prop": "fallamount", "label": "金额合计", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
-              {"prop": "fdeliqty", "label": "已交付数量", "width": 100, "align": "right", "renderType": "number", "sortable": true},
-              {"prop": "f_mz", "label": "毛重", "width": 80, "align": "right", "renderType": "number"},
-              {"prop": "f_jz", "label": "净重", "width": 80, "align": "right", "renderType": "number"},
-              {"prop": "f_kpdj", "label": "开票单价", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
-              {"prop": "f_ygcb", "label": "预估成本", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
-              {"prop": "f_hsbm", "label": "海关编码", "width": 100, "align": "center"},
-              {"prop": "f_cplb", "label": "产品类别", "width": 100, "align": "center"}
+              {"prop": "FPlanMaterialId", "label": "物料编码", "width": 120, "align": "center", "sortable": true},
+              {"prop": "FPlanMaterialName", "label": "物料名称", "width": 180, "align": "left", "showOverflowTooltip": true, "sortable": true},
+              {"prop": "FQty", "label": "数量", "width": 100, "align": "right", "renderType": "number", "sortable": true, "precision": 4},
+              {"prop": "FPrice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8, "sortable": true},
+              {"prop": "FTaxPrice", "label": "含税单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8, "sortable": true},
+              {"prop": "FAllAmount", "label": "金额合计", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
+              {"prop": "FDeliQty", "label": "已交付数量", "width": 100, "align": "right", "renderType": "number", "sortable": true, "precision": 4},
+              {"prop": "F_mz", "label": "毛重", "width": 80, "align": "right", "renderType": "number", "precision": 2},
+              {"prop": "F_jz", "label": "净重", "width": 80, "align": "right", "renderType": "number", "precision": 2},
+              {"prop": "F_kpdj", "label": "开票单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8},
+              {"prop": "F_ygcb", "label": "预估成本", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
+              {"prop": "F_hsbm", "label": "海关编码", "width": 100, "align": "center"},
+              {"prop": "F_cplb", "label": "产品类别", "width": 100, "align": "center"}
             ]
           }
         },
@@ -574,47 +575,51 @@ INSERT INTO `erp_page_config` (
           "name": "cost",
           "label": "成本暂估",
           "icon": "Money",
-          "type": "descriptions",
+          "type": "form",
           "dataField": "costData",
           "tableName": "t_sale_order_cost",
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [
               {
-                "field": "fbillno",
+                "field": "FBillNo",
                 "operator": "eq",
                 "value": "${FBillNo}",
                 "description": "按订单编号查询成本"
               }
             ],
-            "defaultOrderBy": [{"field": "FID", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "FId", "direction": "ASC"}]
           },
-          "columns": 3,
-          "fields": [
-            {"prop": "F_hyf", "label": "海运费 (外币)", "renderType": "currency", "precision": 2},
-            {"prop": "FBillAllAmount", "label": "价税合计", "renderType": "currency", "precision": 2},
-            {"prop": "FBillAllAmount_LC", "label": "价税合计 (本位币)", "renderType": "currency", "precision": 2},
-            {"prop": "F_bxf", "label": "保险费", "renderType": "currency", "precision": 2},
-            {"prop": "F_gwyhfy", "label": "国外银行费用", "renderType": "currency", "precision": 2},
-            {"prop": "F_qtwbfy", "label": "其他外币费用", "renderType": "currency", "precision": 2},
-            {"prop": "F_mxcbhj", "label": "明细成本合计", "renderType": "currency", "precision": 2},
-            {"prop": "F_mxtshj", "label": "明细退税合计", "renderType": "currency", "precision": 2},
-            {"prop": "F_cbxj", "label": "成本小计 RMB", "renderType": "currency", "precision": 2},
-            {"prop": "F_bzf", "label": "包装费", "renderType": "currency", "precision": 2},
-            {"prop": "F_dlf", "label": "代理费", "renderType": "currency", "precision": 2},
-            {"prop": "F_rzf", "label": "认证费", "renderType": "currency", "precision": 2},
-            {"prop": "F_kdf", "label": "快递费成本", "renderType": "currency", "precision": 2},
-            {"prop": "F_hdf", "label": "货贷费", "renderType": "currency", "precision": 2},
-            {"prop": "F_lyf", "label": "陆运费", "renderType": "currency", "precision": 2},
-            {"prop": "F_qtfy", "label": "其他费用", "renderType": "currency", "precision": 2},
-            {"prop": "F_mjf", "label": "模具费", "renderType": "currency", "precision": 2},
-            {"prop": "F_jcf", "label": "进仓费", "renderType": "currency", "precision": 2},
-            {"prop": "F_fyxj", "label": "费用小计", "renderType": "currency", "precision": 2},
-            {"prop": "F_wbyk", "label": "外币盈亏", "renderType": "currency", "precision": 2},
-            {"prop": "F_jlre", "label": "净利润额", "renderType": "currency", "precision": 2},
-            {"prop": "F_lrl", "label": "毛净利润率%", "renderType": "percent", "precision": 2},
-            {"prop": "F_jlrl", "label": "净利润率%", "renderType": "percent", "precision": 2}
-          ]
+          "form": {
+            "layout": "horizontal",
+            "labelWidth": 140,
+            "columns": 3,
+            "fields": [
+              {"prop": "F_hyf", "label": "海运费 (外币)", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "FBillAllAmount", "label": "价税合计", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "FBillAllAmount_LC", "label": "价税合计 (本位币)", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_bxf", "label": "保险费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_gwyhfy", "label": "国外银行费用", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_qtwbfy", "label": "其他外币费用", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_mxcbhj", "label": "明细成本合计", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_mxtshj", "label": "明细退税合计", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_cbxj", "label": "成本小计 RMB", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_bzf", "label": "包装费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_dlf", "label": "代理费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_rzf", "label": "认证费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_kdf", "label": "快递费成本", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_hdf", "label": "货贷费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_lyf", "label": "陆运费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_qtfy", "label": "其他费用", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_mjf", "label": "模具费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_jcf", "label": "进仓费", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_fyxj", "label": "费用小计", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_wbyk", "label": "外币盈亏", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_jlre", "label": "净利润额", "span": 8, "component": "input-number", "renderType": "currency", "precision": 2, "readonly": true},
+              {"prop": "F_lrl", "label": "毛净利润率%", "span": 8, "component": "input-number", "renderType": "percent", "precision": 2, "readonly": true},
+              {"prop": "F_jlrl", "label": "净利润率%", "span": 8, "component": "input-number", "renderType": "percent", "precision": 2, "readonly": true}
+            ]
+          }
         }
       ]
     }
@@ -624,7 +629,7 @@ INSERT INTO `erp_page_config` (
   '1',
   '0',
   'admin',
-  '销售订单配置（v3.1 字典构建器格式 - 支持 DictionaryBuilder 和 DictionaryLoader）'
+  '销售订单配置（v6.0 纯净版 - 全链路数据库字段名统一 + 去冗余优化）'
 );
 
 -- ============================================

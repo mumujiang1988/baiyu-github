@@ -2,7 +2,6 @@ package com.ruoyi.erp.controller.base;
 
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
@@ -59,34 +58,19 @@ public abstract class BaseErpEngineController {
      * @return 分页结果
      */
     protected ErpResponse<Page<Map<String, Object>>> queryModuleData(PageQuery pageQuery) {
-        return queryModuleData(pageQuery, null);
-    }
-    
-    /**
-     * 查询模块数据 (带条件)
-     * 
-     * @param pageQuery 分页查询参数
-     * @param wrapper 查询条件 (QueryWrapper<Object>)
-     * @return 分页结果
-     */
-    protected ErpResponse<Page<Map<String, Object>>> queryModuleData(
-            PageQuery pageQuery, 
-            QueryWrapper<Object> wrapper) {
-        return queryModuleData(pageQuery, wrapper, null);
+        return queryModuleData(pageQuery, new java.util.HashMap<>());
     }
     
     /**
      * 查询模块数据 (带条件和参数)
      * 
-     * @param pageQuery 分页查询参数
-     * @param wrapper 查询条件 (QueryWrapper<Object>)
-     * @param queryParams 查询参数 (从queryConfig中提取)
+     * @param pageQuery 分页参数
+     * @param queryConfig 查询配置（包含 conditions, orderBy 等）
      * @return 分页结果
      */
     protected ErpResponse<Page<Map<String, Object>>> queryModuleData(
             PageQuery pageQuery, 
-            QueryWrapper<Object> wrapper,
-            List<Object> queryParams) {
+            Map<String, Object> queryConfig) {
         
         String moduleCode = getModuleCode();
         
@@ -108,8 +92,8 @@ public abstract class BaseErpEngineController {
             }
             
             // 3. 查询数据（使用新的 selectPageByModuleWithTableName 方法）
-            Page<Map<String, Object>> page = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) superDataPermissionService)
-                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, wrapper, queryParams);
+            Page<Map<String, Object>> page = superDataPermissionService
+                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, queryConfig);
             
             // 4. 处理数据 (计算字段、虚拟字段等)
             if (page != null && page.getRecords() != null && !page.getRecords().isEmpty()) {

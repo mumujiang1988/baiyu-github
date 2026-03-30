@@ -44,33 +44,22 @@ class DictionaryBuilder {
   }
 
   /**
-   * 构建静态字典
+   * 构建动态字典（仅支持后端加载）
    * @param {string} name - 字典名称
-   * @param {Array} options - 静态选项数据
-   * @returns {DictionaryBuilder}
-   */
-  static buildStatic(name, options) {
-    const builder = new DictionaryBuilder(name, {
-      type: 'static',
-      ttl: Infinity // 静态字典永不过期
-    })
-    builder.cache = new DictionaryCache(options, Infinity)
-    console.log(` 构建静态字典：${name}, 共 ${options.length} 条`)
-    return builder
-  }
-
-  /**
-   * 构建动态字典
-   * @param {string} name - 字典名称
-   * @param {Object} config - 配置对象
+   * @param {Object} config - 配置对象（必须包含 api 字段）
    * @returns {DictionaryBuilder}
    */
   static buildDynamic(name, config) {
+    if (!config || !config.api) {
+      throw new Error(`字典 "${name}" 的配置必须包含 api 字段，用于从后端加载数据`)
+    }
+    
     const builder = new DictionaryBuilder(name, {
       type: 'dynamic',
       config: config,
       ttl: config.ttl || 5 * 60 * 1000
     })
+    console.log(` 构建动态字典：${name}, API: ${config.api}`)
     return builder
   }
 
@@ -303,7 +292,7 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 从 JSON 配置批量构建字典（仅显示关键日志）
+   * 从 JSON 配置批量构建字典（仅支持 dynamic 和 remote 类型）
    * @param {Object} dictionaryConfig - 字典配置对象
    * @param {string} moduleCode - 模块编码
    * @returns {DictionaryBuilderEngine}
@@ -321,17 +310,21 @@ class DictionaryBuilderEngine {
     
     for (const [dictName, dictConfig] of Object.entries(dictionaries)) {
       try {
-        const { type, data, config } = dictConfig
+        const { type, config } = dictConfig
         
-        if (type === 'static' && Array.isArray(data)) {
-          this.register(dictName, DictionaryBuilder.buildStatic(dictName, data))
-          successCount++
-        } else if (type === 'dynamic' || type === 'remote') {
+        // ❌ 不再支持 static 类型
+        if (type === 'static') {
+          console.error(`❌ [字典优化] 检测到已废弃的静态字典 "${dictName}"，请改为使用 dynamic 或 remote 类型。`)
+          errorCount++
+          continue
+        }
+        
+        if (type === 'dynamic' || type === 'remote') {
           const builderConfig = config || {}
           const finalConfig = {
             ...builderConfig,
             type: type === 'remote' ? 'remote' : 'dynamic',
-            // ✅ 优先使用配置的 api，否则使用新接口
+            // ✅ 必须使用后端 API
             api: builderConfig.api || `/erp/engine/dict/union/${dictName}`,
             searchApi: dictName === 'nation'
               ? (builderConfig.searchApi || `/erp/engine/country/search?keyword={keyword}&limit=20`)
@@ -339,11 +332,18 @@ class DictionaryBuilderEngine {
           }
           this.register(dictName, DictionaryBuilder.buildDynamic(dictName, finalConfig))
           successCount++
+        } else {
+          console.error(`❌ [字典优化] 未知的字典类型 "${type}" for "${dictName}"`)
+          errorCount++
         }
       } catch (error) {
         console.error(`构建失败：${dictName}`, error)
         errorCount++
       }
+    }
+
+    if (errorCount > 0) {
+      console.warn(`[字典引擎] 构建完成：成功 ${successCount}, 失败 ${errorCount}（包含废弃的 static 类型）`)
     }
 
     return this

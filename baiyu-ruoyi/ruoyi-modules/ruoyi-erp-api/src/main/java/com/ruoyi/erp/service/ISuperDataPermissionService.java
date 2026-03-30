@@ -1,6 +1,5 @@
 package com.ruoyi.erp.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 
@@ -22,16 +21,14 @@ public interface ISuperDataPermissionService {
      * @param moduleCode 模块编码（如：saleOrder, deliveryOrder 等）
      * @param tableName 表名（必填，来自 JSON 配置）
      * @param pageQuery 分页参数
-     * @param queryWrapper 查询条件包装器
-     * @param queryParams 查询参数（从queryConfig中提取）
+     * @param queryConfig 查询配置（包含 conditions, orderBy 等）
      * @return 分页结果
      */
     Page<Map<String, Object>> selectPageByModuleWithTableName(
         String moduleCode,
         String tableName,
         PageQuery pageQuery,
-        QueryWrapper<Object> queryWrapper,
-        List<Object> queryParams
+        Map<String, Object> queryConfig
     );
     
     /**

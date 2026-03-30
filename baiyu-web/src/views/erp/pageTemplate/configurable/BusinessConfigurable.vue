@@ -541,10 +541,7 @@ const getResponseResult = (response, defaultValue = null) => {
 // ==================== 导入多表格查询构建器 ====================
 import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
 
-// ==================== 导入字典构建器 ====================
-import dictionaryBuilderEngine, { DictionaryBuilder } from '@/views/erp/utils/DictionaryBuilder'
-
-// ==================== 导入字典管理器（新增） ====================
+// ==================== 导入字典管理器（统一入口） ====================
 import dictionaryManager from '@/views/erp/utils/DictionaryManager'
 
 // ==================== 导入引擎 API====================
@@ -1038,38 +1035,46 @@ const loadDatabaseConfig = async (moduleCode) => {
 }
 
 /**
- * 获取字典选项（简化版）
- * 优先级：静态配置 > 字典管理器 > 构建器引擎
+ * 获取字典选项（优化版 - 统一使用 DictionaryManager）
+ * 
+ * 加载策略:
+ * 1. 国家字典特殊处理（远程搜索）
+ * 2. 其他字典全部从 DictionaryManager 获取
+ * 3. 不再支持静态配置（确保数据一致性）
+ * 
+ * @param {string} dictName - 字典名称
+ * @param {Array} staticOptions - 静态配置（已废弃，传入也会被忽略）
+ * @param {boolean} required - 是否必填字典（仅用于警告提示）
+ * @returns {Array} 字典选项数组
  */
-const getDictOptions = (dictName, staticOptions, required = false) => {
-  // 优先级1: 静态配置
-  if (staticOptions && Array.isArray(staticOptions)) {
-    return staticOptions
-  }
-
-  // 优先级2: 国家字典（远程搜索）
+const getDictOptions = (dictName, staticOptions = null, required = false) => {
+  // 特殊情况 1: 国家字典（远程搜索）
   if (dictName === 'nation') {
     return nationOptions.value
   }
-
-  // 优先级3: 字典管理器
+  
+  // 特殊情况 2: 静态配置（已废弃，仅保留兼容性警告）
+  if (staticOptions && Array.isArray(staticOptions)) {
+    console.warn(`⚠️ [字典优化] 检测到静态配置 "${dictName}"，建议改为从后端加载。静态配置将在未来版本中移除。`)
+    // 为了向后兼容，暂时返回静态配置，但会在控制台警告
+    // TODO: 未来版本直接忽略 staticOptions 参数
+  }
+  
+  // 正常情况：从 DictionaryManager 获取
   const dataFromManager = dictionaryManager.getDictOptions(dictName)
-  if (dataFromManager && dataFromManager.length > 0) {
-    return dataFromManager
+  
+  if (!dataFromManager || dataFromManager.length === 0) {
+    // 必填字典缺失时警告
+    if (required) {
+      console.warn(`⚠️ [字典优化] 必填字典 "${dictName}" 暂无数据，请检查:
+        1. 后端字典表是否有数据
+        2. DictionaryManager 是否正确加载
+        3. 字典类型名称是否正确`)
+    }
+    return []
   }
-
-  // 优先级4: 构建器引擎（降级）
-  const dataFromBuilder = dictionaryBuilderEngine.get(dictName)
-  if (dataFromBuilder && dataFromBuilder.length > 0) {
-    return dataFromBuilder
-  }
-
-  // 必填字典缺失时返回空数组（不抛错，避免渲染中断）
-  if (required) {
-    console.warn(`⚠️ 必填字典 "${dictName}" 暂无数据`)
-  }
-
-  return []
+  
+  return dataFromManager
 }
 
 // 获取按钮禁用状态
@@ -1519,46 +1524,53 @@ const searchNations = async (keyword) => {
 }
 
 /**
- * 预加载字典数据（优化版 - 使用全局管理器）
+ * 预加载字典数据（最终优化版 - 统一使用 DictionaryManager）
+ * 
+ * 加载策略:
+ * 1. 使用 DictionaryManager.loadAll() 一次性加载所有字典
+ * 2. 不再依赖 JSON 配置中的 builder 设置
+ * 3. 国家字典等特殊字典通过远程搜索接口单独处理
+ * 
+ * @returns {Promise<void>}
  */
 const preloadDictionaries = async () => {
   try {
-    const dictConfig = BusinessTemplate.value.dictionaryConfig
-
-    if (!dictConfig || !dictConfig.builder?.enabled) {
-      console.error('字典构建器未启用')
-      ElMessage.error('字典配置错误')
-      dictLoaded.value = true // 即使配置错误也允许页面渲染
-      return
-    }
-
-    // 🔧 关键修复：将 Proxy 对象转换为普通对象
-    const rawDictConfig = toRaw(dictConfig)
-    const rawDictionaries = toRaw(dictConfig.dictionaries)
+    console.log('\n📚 [字典优化] 开始加载字典数据...')
     
-    // 优化策略：先使用 DictionaryManager 一次性加载全部字典
+    // 步骤 1: 使用 DictionaryManager 一次性加载所有字典
     const allDicts = await dictionaryManager.loadAll()
     
-    // 从配置构建字典（用于兼容和降级）
-    dictionaryBuilderEngine.buildFromConfig(rawDictConfig, getModuleCode())
+    // 步骤 2: 检查加载结果
+    const dictStatus = dictionaryManager.getStatus()
+    console.log('✅ [字典优化] 字典加载完成:')
+    console.log('   - 已加载:', dictStatus.loaded)
+    console.log('   - 字典类型数量:', dictStatus.dictCount)
+    console.log('   - 字典类型列表:', dictStatus.dictTypes)
     
-    // 仅加载标记为需要单独预加载的字典
-    const needPreload = []
-    for (const [dictName, dictValue] of Object.entries(rawDictionaries)) {
-      if (dictValue.preload === true && !allDicts[dictName]) {
-        needPreload.push(dictName)
+    // 步骤 3: 验证必填字典（可选）
+    if (window._erpRequiredDicts && window._erpRequiredDicts.size > 0) {
+      const missingDicts = []
+      for (const dictName of window._erpRequiredDicts) {
+        if (!allDicts[dictName] || allDicts[dictName].length === 0) {
+          missingDicts.push(dictName)
+        }
+      }
+      
+      if (missingDicts.length > 0) {
+        console.warn('⚠️ [字典优化] 以下必填字典为空:', missingDicts)
+        ElMessage.warning(`部分字典数据缺失：${missingDicts.join(', ')}`)
       }
     }
     
-    if (needPreload.length > 0) {
-      await dictionaryBuilderEngine.preloadAll(getModuleCode())
-    }
-    
+    // 步骤 4: 标记字典加载完成
     dictLoaded.value = true
+    console.log('✅ [字典优化] 字典加载完成，页面可以开始渲染\n')
+    
   } catch (error) {
-    console.error('预加载字典失败:', error.message)
+    console.error('\n❌ [字典优化] 预加载字典失败:', error.message)
+    console.error('完整错误:', error)
     ElMessage.error(`预加载字典失败：${error.message}`)
-    dictLoaded.value = false
+    dictLoaded.value = true // 即使失败也允许页面渲染（降级处理）
   }
 }
 

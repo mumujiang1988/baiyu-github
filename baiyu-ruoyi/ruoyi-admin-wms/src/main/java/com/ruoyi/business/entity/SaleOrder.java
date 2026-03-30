@@ -13,103 +13,103 @@ public class SaleOrder {
     private Long id;
 
     /**单据类型*/
-    private String documentType;
+    private String FDocumentType;
     /**订单状态*/
-    private String orderStatus; //A:未关闭 B:已关闭 C:业务终止手动关闭
+    private String FOrderStatus; //A:未关闭 B:已关闭 C:业务终止手动关闭
     /** 金蝶主键 */
-    private Long fid;
+    private Long FFid;
     /** 单据编号 */
-    private String fBillNo;
+    private String FBillNo;
     /** 销售合同日期 */
-    private Date fDate;
+    private Date FDate;
     /** 客户编码 */
-    private String fCustId;
+    private String FCustId;
     /** 客户简称 */
-    private String fOraBaseProperty;
+    private String F_ora_BaseProperty;
     /** 客户合同号 */
-    private String fKhhth;
+    private String F_khhth;
     /** 客户联系人 */
-    private String fKglxr;
+    private String F_kglxr;
     /** 客户邮箱 */
-    private String fCtyBaseProperty1;
+    private String F_cty_BaseProperty1;
     /** 结算币别 */
-    private String fSettleCurrId;
+    private String FSettleCurrId;
     /** 提成比例% */
-    private BigDecimal fTcbl;
+    private BigDecimal F_tcbl;
     /** 客户首单（非样品） */
-    private Integer fKhsd;
+    private Integer F_khsd;
     /** 是否含税 */
-    private Integer fIsIncludedTax;
+    private Integer FIsIncludedTax;
     /** 是否报关 */
-    private Integer fSfbg;
+    private Integer F_sfbg;
     /** 销售员 */
-    private String fSalerId;
+    private String FSalerId;
     /** 毛净利润率% */
-    private BigDecimal fLrl;
+    private BigDecimal F_lrl;
     /** 净利润率% */
-    private BigDecimal fJlrl;
+    private BigDecimal F_jlrl;
     /**国家*/
-    private String fstate;
+    private String FState;
     /** 抵运国家 */
-    private String fGj;
+    private String F_gj;
     /** 贸易方式 */
-    private String fMyfs;
+    private String F_myfs;
     /** 占用信保 */
-    private Integer fZyxb;
+    private Integer F_zyxb;
     /** 银行账号 */
-    private String fYhzh;
+    private String F_yhzh;
     /** 客户交期 */
-    private Date fCtyDate;
+    private Date F_ctyDate;
     /** 所属公司 */
-    private String fSygs;
+    private String F_sygs;
     /** 收款条件 */
-    private String fRecConditionId;
+    private String FRecConditionId;
     /** 包装方式 */
-    private String fbzfs;
+    private String F_bzfs;
     /** 收货方 */
-    private String fReceiveId;
+    private String FReceiveId;
     /** 结算方 */
-    private String fSettleId;
+    private String FSettleId;
     /** 结算方地址 */
-    private String fSettleAddress;
+    private String FSettleAddress;
     /** 付款方 */
-    private String fChargeId;
+    private String FChargeId;
     /** 锁汇汇率 */
-    private BigDecimal fShhl;
+    private BigDecimal F_shhl;
     /** 锁汇状态 */
-    private Integer fShzt;
+    private Integer F_shzt;
     /** 锁汇金额 */
-    private BigDecimal fShje;
+    private BigDecimal F_shje;
     /** 解汇日期 */
-    private Date fCtyDate1;
+    private Date F_ctyDate1;
     /** 创建人 */
-    private String fCreatorId;
+    private String FCreatorId;
     /** 创建日期 */
-    private Date fCreateDate;
+    private Date FCreateDate;
     /** 最后修改人 */
-    private String fModifierId;
+    private String FModifierId;
     /** 最后修改日期 */
-    private Date fModifyDate;
+    private Date FModifyDate;
     /** 整单折扣额 */
-    private BigDecimal fAllDisCount;
+    private BigDecimal FAllDisCount;
     /** 预收比例% */
-    private BigDecimal fYsbl1;
+    private BigDecimal F_ysbl1;
     /** 税额 */
-    private BigDecimal fBillTaxAmount;
+    private BigDecimal FBillTaxAmount;
     /** 金额 */
-    private BigDecimal fBillAmount;
+    private BigDecimal FBillAmount;
     /** 本位币 */
-    private String fLocalCurrId;
+    private String FLocalCurrId;
     /** 汇率类型 */
-    private String fExchangeTypeId;
+    private String FExchangeTypeId;
     /** 汇率 */
-    private BigDecimal fExchangeRate;
+    private BigDecimal FExchangeRate;
     /** 未收款金额 */
-    private BigDecimal fPlannotRecAmount;
+    private BigDecimal FPlannotRecAmount;
     /** 累计收款金额 */
-    private BigDecimal fPlanAllRecAmount;
+    private BigDecimal FPlanAllRecAmount;
     /** 累计退款金额 */
-    private BigDecimal fPlanRefundAmount;
+    private BigDecimal FPlanRefundAmount;
 
     /**
      * 明细列表*/

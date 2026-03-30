@@ -109,6 +109,10 @@ public interface ErpDictionaryMapper {
     /**
      * 查询销售人员字典数据
      * 包含部门、角色、工号等信息
+     * 
+     * ⚠️ **重要说明**:
+     * - value: user_id (雪花算法 ID, BIGINT)
+     * - fseller: salesman_id (销售员编码，VARCHAR) ✅ 用于查询和绑定
      */
     @Select("SELECT " +
             "  CONCAT(u.nick_name, IFNULL(CONCAT('(', d.dept_name, ')'), ''), IFNULL(CONCAT(' - ', e.salesman_id), '')) AS label, " +

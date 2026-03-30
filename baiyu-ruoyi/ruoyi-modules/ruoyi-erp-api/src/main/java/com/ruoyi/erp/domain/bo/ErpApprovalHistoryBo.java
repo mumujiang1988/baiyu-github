@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 /**
  * ERP 审批历史记录业务对象 erp_approval_history
  *
@@ -60,5 +62,10 @@ public class ErpApprovalHistoryBo extends BaseEntity {
      * 审批意见
      */
     private String approvalOpinion;
+    
+    /**
+     * 审批时间
+     */
+    private LocalDateTime approvalTime;
 
 }

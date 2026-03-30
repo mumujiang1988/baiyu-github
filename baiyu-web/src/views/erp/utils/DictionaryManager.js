@@ -131,18 +131,12 @@ class DictionaryManager {
   }
   
   /**
-   * 获取字典选项（兼容 getDictOptions）
+   * 获取字典选项（统一从后端加载）
    * @param {string} dictName - 字典名称
-   * @param {Array} staticOptions - 静态选项（优先级最高）
    * @returns {Array}
    */
-  getDictOptions(dictName, staticOptions = null) {
-    // 优先使用静态配置
-    if (staticOptions && Array.isArray(staticOptions)) {
-      return staticOptions
-    }
-    
-    // 从全局管理器获取
+  getDictOptions(dictName) {
+    // 统一从后端加载，不再支持静态配置
     return this.getDict(dictName)
   }
   

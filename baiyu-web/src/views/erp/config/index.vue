@@ -618,11 +618,21 @@ function handleAdd() {
  * 编辑按钮操作
  */
 function handleEdit(row) {
-  isEditMode.value = true
+  console.log('\n✏️ [配置管理] 点击编辑，configId:', row.configId)
+  
+  isEditMode.value = false
   currentConfig.value = { ...row }
-  loadEditData(row.configId).then(() => {
-    viewDialogVisible.value = true
-  })
+  
+  // 加载编辑数据并打开对话框
+  loadEditData(row.configId)
+    .then(() => {
+      console.log('✅ 数据加载成功，打开编辑对话框')
+      viewDialogVisible.value = true
+    })
+    .catch(error => {
+      console.error('❌ 数据加载失败，不打开对话框')
+      // 错误已在 loadEditData 中处理，这里不需要再次提示
+    })
 }
 
 /**
@@ -684,43 +694,73 @@ function cancelEditMode() {
  * 加载编辑数据
  */
 function loadEditData(configId) {
-  console.log('开始加载配置数据，configId:', configId)
+  console.log('\n📦 [配置管理] 开始加载配置数据，configId:', configId)
   
   return getConfig(configId)
     .then(res => {
-      console.log('API 响应:', res)
+      console.log('✅ API 响应:', res)
       
-      const data = res.data || res
-      console.log('解析后的数据:', data)
+      //  处理 ErpResponse 包装结构
+      let data
+      if (res.code === 200 || res.code === 0) {
+        // 成功响应，提取 data 字段
+        data = res.data || {}
+        console.log('✅ 从 res.data 中提取数据:', data)
+      } else {
+        // 错误响应
+        throw new Error(res.msg || '加载配置失败')
+      }
+      
+      //  检查必要字段是否为空
+      if (!data.configId) {
+        console.error('❌ 配置 ID 为空')
+        throw new Error('配置不存在或已删除')
+      }
       
       //  自动格式化 JSON 内容
       let configContent = data.configContent || ''
-      console.log('原始配置内容:', configContent)
+      console.log('📝 原始配置内容长度:', configContent ? configContent.length : 0)
+      
+      //  如果配置内容为空，给出警告
+      if (!configContent || configContent.trim() === '') {
+        console.warn('⚠️ 配置内容为空，将使用空对象初始化')
+        configContent = '{}'
+      }
       
       try {
         const parsed = JSON.parse(configContent)
         configContent = JSON.stringify(parsed, null, 2)
-        console.log(' JSON 格式化成功')
+        console.log('✅ JSON 格式化成功')
       } catch (e) {
-        console.warn(' JSON 解析失败，保持原始格式:', e.message)
+        console.error('❌ JSON 解析失败，保持原始格式:', e.message)
+        console.error('原始内容:', configContent.substring(0, 200))
+        // 解析失败时保持原样，让用户手动处理
       }
       
+      //  更新编辑表单数据
       Object.assign(editFormData, {
         configId: data.configId,
-        moduleCode: data.moduleCode,
-        configName: data.configName,
-        configType: data.configType,
+        moduleCode: data.moduleCode || '',
+        configName: data.configName || '',
+        configType: data.configType || '',
         configContent: configContent,
-        isPublic: data.isPublic,
-        remark: data.remark,
-        version: data.version || 1  //  加载版本号
+        isPublic: data.isPublic || '0',
+        remark: data.remark || '',
+        version: data.version || 1
       })
       
-      console.log(' 编辑表单数据已更新:', editFormData)
+      console.log('✅ 编辑表单数据已更新:', editFormData)
+      console.log('=================================\n')
+      
+      return data
     })
     .catch(error => {
-      console.error(' 加载配置数据失败:', error)
+      console.error('\n❌ [配置管理] 加载配置数据失败:', error.message)
+      console.error('完整错误:', error)
+      console.error('=================================\n')
+      
       ElMessage.error('加载配置数据失败：' + (error.message || '未知错误'))
+      throw error // 继续抛出错误，让调用者处理
     })
 }
 
@@ -786,8 +826,24 @@ function handleEditSubmit() {
  * 查看按钮操作
  */
 function handleView(row) {
+  console.log('\n👁️ [配置管理] 点击查看，configId:', row.configId)
+  
   currentConfig.value = { ...row }
-  viewDialogVisible.value = true
+  
+  // 如果是编辑模式，先切换到查看模式
+  isEditMode.value = false
+  
+  // 加载完整数据
+  loadEditData(row.configId)
+    .then(() => {
+      console.log('✅ 数据加载成功，打开查看对话框')
+      viewDialogVisible.value = true
+    })
+    .catch(error => {
+      console.error('❌ 数据加载失败')
+      // 即使加载失败也打开对话框，但显示错误提示
+      viewDialogVisible.value = true
+    })
 }
 
 /**
