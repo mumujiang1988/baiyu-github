@@ -308,7 +308,11 @@ class ERPConfigParser {
           queryConfig: tab.queryConfig || {},
           columns: tab.columns || 3,
           fields: tab.fields || [],
-          table: tab.table || {}
+          // 修复：确保 table.columns 被正确解析
+          table: {
+            ...tab.table,
+            columns: tab.table?.columns || []
+          }
         }))
       }
     }
@@ -323,7 +327,12 @@ class ERPConfigParser {
         tabs: (drawerConfig.tabs || []).map(tab => ({
           ...tab,
           type: tab.type || 'table',
-          columns: tab.columns || 3
+          columns: tab.columns || 3,
+          // 修复：确保 table.columns 被正确解析
+          table: {
+            ...tab.table,
+            columns: tab.table?.columns || []
+          }
         }))
       }
     }

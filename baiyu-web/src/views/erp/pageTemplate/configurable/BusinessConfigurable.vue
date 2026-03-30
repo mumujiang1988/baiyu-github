@@ -452,59 +452,70 @@
             :label="tab.label"
             :name="tab.name"
           >
+            <!-- 调试：检查 parsedConfig.drawer.tabs -->
+            <div v-if="false" style="display:none;">
+              {{ console.log('🔍 [渲染时检查] tab:', JSON.stringify(tab, null, 2)) }}
+            </div>
             <!-- 表格类型页签 -->
             <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
-              <div v-if="!currentDetailRow[tab.dataField] || currentDetailRow[tab.dataField].length === 0" class="tab-empty">
-                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
-              </div>
-              <el-table 
-                v-else
-                :data="currentDetailRow[tab.dataField] || []" 
-                size="small" 
-                border 
-                style="width: 100%" 
-                max-height="500"
-                stripe
-              >
-                <el-table-column
-                  v-for="col in tab.table?.columns || []"
-                  :key="col.prop"
-                  :prop="col.prop"
-                  :label="col.label"
-                  :width="col.width"
-                  :show-overflow-tooltip="col.showOverflowTooltip || false"
-                  :align="col.align || 'center'"
+              <!-- 修复：使用 toRaw 转换 Proxy 为普通对象，确保数据访问正常 -->
+              <template v-for="tabKey in [tab.name]" :key="tabKey">
+                <!-- 🔍 渲染前调试 -->
+                <div v-if="!getTabData(tab) || getTabData(tab).length === 0" class="tab-empty">
+                  <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+                </div>
+                <el-table 
+                  v-else
+                  :data="getTabData(tab)" 
+                  size="small" 
+                  border 
+                  style="width: 100%" 
+                  max-height="500"
+                  stripe
                 >
-                  <template #default="{ row }">
-                    <span v-if="col.renderType === 'currency'">{{ formatAmount(row[col.prop]) }}</span>
-                    <span v-else-if="col.renderType === 'number'">{{ row[col.prop] }}</span>
-                    <span v-else>{{ row[col.prop] }}</span>
-                  </template>
-                </el-table-column>
-              </el-table>
+                  <el-table-column
+                    v-for="col in tab.table?.columns || []"
+                    :key="col.prop"
+                    :prop="col.prop"
+                    :label="col.label"
+                    :width="col.width"
+                    :show-overflow-tooltip="col.showOverflowTooltip || false"
+                    :align="col.align || 'center'"
+                  >
+                    <template #default="{ row }">
+                      <span v-if="col.renderType === 'currency'">{{ formatAmount(getFieldValue(row, col.prop)) }}</span>
+                      <span v-else-if="col.renderType === 'number'">{{ getFieldValue(row, col.prop) }}</span>
+                      <span v-else>{{ getFieldValue(row, col.prop) ?? '-' }}</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </template>
             </div>
             
             <!-- 描述列表类型页签 -->
             <div v-else-if="tab.type === 'descriptions'" class="tab-content">
-              <div v-if="!currentDetailRow[tab.dataField] || Object.keys(currentDetailRow[tab.dataField]).length === 0" class="tab-empty">
-                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
-              </div>
-              <el-descriptions 
-                v-else 
-                :column="tab.columns || 3" 
-                border 
-                size="small"
-              >
-                <el-descriptions-item
-                  v-for="field in tab.fields || []"
-                  :key="field.prop"
-                  :label="field.label"
+              <!-- 修复：使用 getTabData 方法安全获取数据 -->
+              <template v-for="tabKey in [tab.name]" :key="tabKey">
+                <div v-if="!getTabData(tab) || (Array.isArray(getTabData(tab)) ? getTabData(tab).length === 0 : Object.keys(getTabData(tab)).length === 0)" class="tab-empty">
+                  <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+                </div>
+                <el-descriptions 
+                  v-else 
+                  :column="tab.columns || 3" 
+                  border 
+                  size="small"
                 >
-                  <span v-if="field.renderType === 'currency'">{{ formatAmount(currentDetailRow[tab.dataField][field.prop]) }}</span>
-                  <span v-else-if="field.renderType === 'percent'">{{ currentDetailRow[tab.dataField][field.prop] ? (currentDetailRow[tab.dataField][field.prop] + '%') : '-' }}</span>
-                  <span v-else>{{ currentDetailRow[tab.dataField][field.prop] ?? '-' }}</span>
-                </el-descriptions-item>
-              </el-descriptions>
+                  <el-descriptions-item
+                    v-for="field in tab.fields || []"
+                    :key="field.prop"
+                    :label="field.label"
+                  >
+                    <span v-if="field.renderType === 'currency'">{{ formatAmount(getFieldValue(getTabData(tab), field.prop)) }}</span>
+                    <span v-else-if="field.renderType === 'percent'">{{ getFieldValue(getTabData(tab), field.prop) ? (getFieldValue(getTabData(tab), field.prop) + '%') : '-' }}</span>
+                    <span v-else>{{ getFieldValue(getTabData(tab), field.prop) ?? '-' }}</span>
+                  </el-descriptions-item>
+                </el-descriptions>
+              </template>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -823,11 +834,28 @@ const loadSubTablesByBillNo = async (billNo) => {
     // 存储到对应的数据变量中
     if (results.entry) {
       entryList.value = results.entry.data
+      // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 entryList）
+      currentDetailRow.value.entryList = results.entry.data
+      console.log('✅ [明细表] 数据已同步:', {
+        'entryList.length': results.entry.data.length,
+        'currentDetailRow.entryList': currentDetailRow.value.entryList?.length
+      })
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
+      // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 costData）
+      currentDetailRow.value.costData = results.cost.data[0] || {}
+      console.log('✅ [成本表] 数据已同步:', {
+        'costData': costData.value,
+        'currentDetailRow.costData': currentDetailRow.value.costData
+      })
     }
+    
+    console.log('📊 [详情页数据] 当前 currentDetailRow:', {
+      'entryList': currentDetailRow.value.entryList?.length || 0,
+      'costData': currentDetailRow.value.costData ? '有数据' : '无数据'
+    })
   } catch (error) {
     console.error(' 查询子表格失败:', error)
   }
@@ -977,10 +1005,14 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
+    console.log('📋 [配置解析] drawer 配置:', JSON.stringify(parsedConfig.drawer, null, 2))
+    
     // 增强：在解析表单配置时标记必填字典
     markRequiredDictionaries()
     
     //  构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
+    
+    console.log('✅ [配置解析完成] drawer.tabs 数量:', parsedConfig.drawer?.tabs?.length || 0)
   } catch (error) {
     ElMessage.error(`加载配置失败：${error.message}`)
     throw error
@@ -1120,8 +1152,20 @@ const getDictLabel = (value, dictName) => {
   return option ? option.label : value
 }
 
-// 处理查询
+// 处理查询（添加防抖和重复提交控制）
+let queryTimer = null
 const handleQuery = () => {
+  // 如果正在加载中，直接返回
+  if (loading.value) {
+    ElMessage.warning('数据正在处理，请勿重复提交')
+    return
+  }
+  
+  // 清除之前的定时器
+  if (queryTimer) {
+    clearTimeout(queryTimer)
+  }
+  
   console.log('🔍 [搜索] 开始查询...')
   console.log('🔍 [搜索] dateRange:', dateRange.value)
   console.log('🔍 [搜索] queryParams:', queryParams.value)
@@ -1137,8 +1181,11 @@ const handleQuery = () => {
   }
   queryParams.value.pageNum = 1
   
-  console.log('🔍 [搜索] 调用 getList()')
-  getList()
+  // 使用 300ms 防抖
+  queryTimer = setTimeout(() => {
+    console.log('🔍 [搜索] 调用 getList()')
+    getList()
+  }, 300)
 }
 
 // 初始化日期范围
@@ -1153,20 +1200,32 @@ const initDateRange = () => {
   queryParams.value.endDate = dateRange.value[1]
 }
 
-// 重置查询
+// 重置查询（添加重复提交控制）
 const resetQuery = () => {
+  // 如果正在加载中，直接返回
+  if (loading.value) {
+    ElMessage.warning('数据正在处理，请勿重复提交')
+    return
+  }
+  
   queryRef.value?.resetFields()
   initDateRange()
   handleQuery()
 }
 
-// 处理分页
+// 处理分页（添加重复提交控制）
 const handlePageSizeChange = (newSize) => {
+  // 如果正在加载中，直接返回
+  if (loading.value) return
+  
   queryParams.value.pageSize = newSize
   getList()
 }
 
 const handlePageChange = (newPage) => {
+  // 如果正在加载中，直接返回
+  if (loading.value) return
+  
   queryParams.value.pageNum = newPage
   getList()
 }
@@ -1205,6 +1264,7 @@ const handleViewDetail = async (row) => {
   try {
     // 使用新的多表格查询方法
     const billNoValue = row[billNoField] || row.FBillNo
+    
     if (billNoValue) {
       // 查询子表格数据（明细表和成本表）
       await loadSubTablesByBillNo(billNoValue)
@@ -1216,6 +1276,7 @@ const handleViewDetail = async (row) => {
     detailActiveTab.value = hasEntryData ? 'entry' : (hasCostData ? 'cost' : 'entry')
     
   } catch (error) {
+    console.error('❌ [详情页] 加载失败:', error)
     ElMessage.error('加载详情数据失败')
   } finally {
     drawerLoading.value = false
@@ -1226,6 +1287,62 @@ const handleViewDetail = async (row) => {
 const handleDrawerClose = (done) => {
   currentDetailRow.value = {}
   done()
+}
+
+/**
+ * 获取字段值（支持不区分大小写的字段名匹配）
+ * @param {Object} row - 数据行对象
+ * @param {String} fieldName - 字段名（可能为大写）
+ * @returns {Any} 字段值
+ */
+const getFieldValue = (row, fieldName) => {
+  if (!row || !fieldName) return undefined
+  
+  // 1. 先尝试精确匹配
+  if (row.hasOwnProperty(fieldName)) {
+    return row[fieldName]
+  }
+  
+  // 2. 尝试小写匹配（数据库字段名通常为小写）
+  const lowerFieldName = fieldName.toLowerCase()
+  if (row.hasOwnProperty(lowerFieldName)) {
+    return row[lowerFieldName]
+  }
+  
+  // 3. 尝试在 row 的所有 key 中查找（忽略大小写）
+  const rowKeys = Object.keys(row)
+  const matchedKey = rowKeys.find(key => key.toLowerCase() === fieldName.toLowerCase())
+  if (matchedKey) {
+    return row[matchedKey]
+  }
+  
+  return undefined
+}
+
+/**
+ * 获取页签数据（修复 Proxy 访问问题）
+ * @param {Object} tab - 页签配置对象
+ * @returns {Array|Object} 页签对应的数据
+ */
+const getTabData = (tab) => {
+  if (!tab || !tab.dataField) {
+    return null
+  }
+  
+  const data = currentDetailRow.value[tab.dataField]
+  
+  // 如果是数组，直接返回
+  if (Array.isArray(data)) {
+    return data
+  }
+  
+  // 如果是对象（成本表），也返回
+  if (data && typeof data === 'object') {
+    return data
+  }
+  
+  // 其他情况返回空数组
+  return []
 }
 
 // 处理操作
@@ -1590,9 +1707,12 @@ const preloadDictionaries = async () => {
 
 // 初始化 - 简化加载顺序：配置 → 字典 → 渲染
 onMounted(async () => {
+  console.log('🚀 [页面初始化] BusinessConfigurable 组件开始加载...')
   try {
-    // 步骤1: 加载页面配置
+    // 步骤 1: 加载页面配置
+    console.log('⚙️ [初始化] 开始调用 initConfig()...')
     await initConfig()
+    console.log('✅ [初始化] initConfig() 执行完成')
 
     // 步骤2: 加载字典数据（必须完成后才允许渲染）
     await preloadDictionaries()

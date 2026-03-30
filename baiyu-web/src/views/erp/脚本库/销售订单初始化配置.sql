@@ -555,7 +555,7 @@ INSERT INTO `erp_page_config` (
                 "description": "按订单编号查询明细"
               }
             ],
-            "defaultOrderBy": [{"field": "FPlanMaterialId", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "fplanmaterialid", "direction": "ASC"}]
           },
           "table": {
             "border": true,
@@ -563,19 +563,19 @@ INSERT INTO `erp_page_config` (
             "maxHeight": "500",
             "showOverflowTooltip": true,
             "columns": [
-              {"prop": "FPlanMaterialId", "label": "物料编码", "width": 120, "align": "center", "sortable": true},
-              {"prop": "FPlanMaterialName", "label": "物料名称", "width": 180, "align": "left", "showOverflowTooltip": true, "sortable": true},
-              {"prop": "FQty", "label": "数量", "width": 100, "align": "right", "renderType": "number", "sortable": true, "precision": 4},
-              {"prop": "FPrice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8, "sortable": true},
-              {"prop": "FTaxPrice", "label": "含税单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8, "sortable": true},
-              {"prop": "FAllAmount", "label": "金额合计", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
-              {"prop": "FDeliQty", "label": "已交付数量", "width": 100, "align": "right", "renderType": "number", "sortable": true, "precision": 4},
-              {"prop": "F_mz", "label": "毛重", "width": 80, "align": "right", "renderType": "number", "precision": 2},
-              {"prop": "F_jz", "label": "净重", "width": 80, "align": "right", "renderType": "number", "precision": 2},
-              {"prop": "F_kpdj", "label": "开票单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8},
-              {"prop": "F_ygcb", "label": "预估成本", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
-              {"prop": "F_hsbm", "label": "海关编码", "width": 100, "align": "center"},
-              {"prop": "F_cplb", "label": "产品类别", "width": 100, "align": "center"}
+              {"prop": "fplanmaterialid", "label": "物料编码", "width": 120, "align": "center", "sortable": true},
+              {"prop": "fplanmaterialname", "label": "物料名称", "width": 180, "align": "left", "showOverflowTooltip": true, "sortable": true},
+              {"prop": "fqty", "label": "数量", "width": 100, "align": "right", "renderType": "number", "sortable": true, "precision": 4},
+              {"prop": "fprice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8, "sortable": true},
+              {"prop": "ftaxprice", "label": "含税单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8, "sortable": true},
+              {"prop": "fallamount", "label": "金额合计", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
+              {"prop": "fdeliqty", "label": "已交付数量", "width": 100, "align": "right", "renderType": "number", "sortable": true, "precision": 4},
+              {"prop": "f_mz", "label": "毛重", "width": 80, "align": "right", "renderType": "number", "precision": 2},
+              {"prop": "f_jz", "label": "净重", "width": 80, "align": "right", "renderType": "number", "precision": 2},
+              {"prop": "f_kpdj", "label": "开票单价", "width": 100, "align": "right", "renderType": "currency", "precision": 8},
+              {"prop": "f_ygcb", "label": "预估成本", "width": 100, "align": "right", "renderType": "currency", "precision": 2},
+              {"prop": "f_hsbm", "label": "海关编码", "width": 100, "align": "center"},
+              {"prop": "f_cplb", "label": "产品类别", "width": 100, "align": "center"}
             ]
           }
         },
@@ -590,13 +590,13 @@ INSERT INTO `erp_page_config` (
             "enabled": true,
             "defaultConditions": [
               {
-                "field": "FBillNo",
+                "field": "fbillno",
                 "operator": "eq",
                 "value": "${billNo}",
                 "description": "按订单编号查询成本"
               }
             ],
-            "defaultOrderBy": [{"field": "FID", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "fentryid", "direction": "ASC"}]
           },
           "form": {
             "layout": "horizontal",
