@@ -123,13 +123,18 @@ public class ErpEngineController {
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
             queryWrapper = buildQueryFromBuilderMode(queryWrapper, queryConfig);
             
+            //  从queryConfig中提取查询参数
+            List<Object> queryParams = extractParamsFromQueryConfig(queryConfig);
+            log.info("提取到的查询参数数量: {}, 值: {}", queryParams.size(), queryParams);
+            
             //  调用通用 Service 执行实际查询
             Page<Map<String, Object>> page = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) dataPermissionService)
                 .selectPageByModuleWithTableName(
                     moduleCode, 
                     tableName,
                     pageQuery, 
-                    queryWrapper
+                    queryWrapper,
+                    queryParams
                 );
             
             //  处理数据 (计算字段 + 虚拟字段)
@@ -1443,13 +1448,13 @@ public class ErpEngineController {
                             queryWrapper.le(field, value);
                             break;
                         case "like":
-                            queryWrapper.like(field, value);
+                            queryWrapper.like(field, escapeLikeSpecialChars(value));
                             break;
                         case "left_like":
-                            queryWrapper.likeLeft(field, value);
+                            queryWrapper.likeLeft(field, escapeLikeSpecialChars(value));
                             break;
                         case "right_like":
-                            queryWrapper.likeRight(field, value);
+                            queryWrapper.likeRight(field, escapeLikeSpecialChars(value));
                             break;
                         case "in":
                             if (value instanceof List) {
@@ -1550,9 +1555,26 @@ public class ErpEngineController {
             return queryWrapper;
             
         } catch (Exception e) {
-            log.error(" 构建器模式查询条件构建失败", e);
-            throw new RuntimeException("构建器模式查询条件构建失败：" + e.getMessage());
+            log.error("构建查询条件失败", e);
+            throw new RuntimeException("构建查询条件失败: " + e.getMessage(), e);
         }
+    }
+    
+    /**
+     * 转义 LIKE 查询的特殊字符
+     * 防止用户通过 % 和 _ 字符操纵查询
+     * 
+     * @param value 原始值
+     * @return 转义后的值
+     */
+    private String escapeLikeSpecialChars(Object value) {
+        if (value == null) {
+            return "";
+        }
+        String strValue = String.valueOf(value);
+        // 转义 SQL LIKE 特殊字符: % 和 _
+        return strValue.replace("%", "\\%")
+                       .replace("_", "\\_");
     }
 
     /**
@@ -1569,6 +1591,67 @@ public class ErpEngineController {
             throw new IllegalArgumentException("模块编码不能为空");
         }
         return moduleCode;
+    }
+    
+    /**
+     * 从queryConfig中提取查询参数
+     * 按照conditions数组中的顺序提取参数值
+     * 
+     * @param queryConfig 查询配置
+     * @return 参数列表
+     */
+    private List<Object> extractParamsFromQueryConfig(Map<String, Object> queryConfig) {
+        List<Object> params = new ArrayList<>();
+        
+        if (queryConfig == null) {
+            return params;
+        }
+        
+        try {
+            List<Map<String, Object>> conditions = (List<Map<String, Object>>) queryConfig.get("conditions");
+            if (conditions == null || conditions.isEmpty()) {
+                return params;
+            }
+            
+            for (Map<String, Object> condition : conditions) {
+                String operator = (String) condition.get("operator");
+                Object value = condition.get("value");
+                
+                if (value == null) {
+                    continue;
+                }
+                
+                switch (operator) {
+                    case "between":
+                        if (value instanceof List) {
+                            List<?> values = (List<?>) value;
+                            if (values.size() >= 2) {
+                                params.add(values.get(0));
+                                params.add(values.get(1));
+                            }
+                        }
+                        break;
+                    case "in":
+                        if (value instanceof List) {
+                            params.addAll((List<?>) value);
+                        }
+                        break;
+                    case "isNull":
+                    case "isNotNull":
+                        break;
+                    default:
+                        params.add(value);
+                        break;
+                }
+            }
+            
+            log.info("从queryConfig提取参数完成，参数数量: {}", params.size());
+            
+        } catch (Exception e) {
+            log.error("提取查询参数失败", e);
+        }
+        
+        return params;
     }
 
     /**

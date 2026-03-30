@@ -15,6 +15,7 @@ import com.ruoyi.erp.utils.ErpPermissionChecker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,6 +72,21 @@ public abstract class BaseErpEngineController {
     protected ErpResponse<Page<Map<String, Object>>> queryModuleData(
             PageQuery pageQuery, 
             QueryWrapper<Object> wrapper) {
+        return queryModuleData(pageQuery, wrapper, null);
+    }
+    
+    /**
+     * 查询模块数据 (带条件和参数)
+     * 
+     * @param pageQuery 分页查询参数
+     * @param wrapper 查询条件 (QueryWrapper<Object>)
+     * @param queryParams 查询参数 (从queryConfig中提取)
+     * @return 分页结果
+     */
+    protected ErpResponse<Page<Map<String, Object>>> queryModuleData(
+            PageQuery pageQuery, 
+            QueryWrapper<Object> wrapper,
+            List<Object> queryParams) {
         
         String moduleCode = getModuleCode();
         
@@ -93,7 +109,7 @@ public abstract class BaseErpEngineController {
             
             // 3. 查询数据（使用新的 selectPageByModuleWithTableName 方法）
             Page<Map<String, Object>> page = ((com.ruoyi.erp.service.impl.SuperDataPermissionServiceImpl) superDataPermissionService)
-                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, wrapper);
+                .selectPageByModuleWithTableName(moduleCode, tableName, pageQuery, wrapper, queryParams);
             
             // 4. 处理数据 (计算字段、虚拟字段等)
             if (page != null && page.getRecords() != null && !page.getRecords().isEmpty()) {
