@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SalesPriceMapper">
+
+    <resultMap id="SalesPriceMap" type="com.ruoyi.business.entity.SalesPrice">
+        <id column="id" property="id"/>
+        <result column="k3_id" property="fId"/>
+        <result column="f_name" property="fName"/>
+        <result column="f_number" property="fNumber"/>
+        <result column="f_creator_id" property="fCreatorId"/>
+        <result column="f_description" property="fDescription"/>
+        <result column="f_currency_id" property="fCurrencyId"/>
+        <result column="f_effective_date" property="fEffectiveDate"/>
+        <result column="f_expiry_date" property="fExpiryDate"/>
+        <result column="f_price_object" property="fPriceObject"/>
+        <result column="f_limit_customer" property="fLimitCustomer"/>
+        <result column="f_limit_sales_man" property="fLimitSalesMan"/>
+        <result column="f_price_type" property="fPriceType"/>
+        <result column="f_xsy" property="fXsy"/>
+        <result column="f_khjc" property="fKhjc"/>
+        <result column="f_create_date" property="fCreateDate"/>
+        <result column="f_modify_date" property="fModifyDate"/>
+        <result column="f_modifier_id" property="fModifierId"/>
+    </resultMap>
+
+    <select id="selectPriceDetail" resultMap="SalesPriceMap">
+        SELECT
+            t.id,
+            t.k3_id,
+            t.f_name,
+            t.f_number,
+            u1.user_name             AS f_creator_id,
+            t.f_description,
+            d.name                   AS f_currency_id,
+            t.f_effective_date,
+            t.f_expiry_date,
+            t.f_price_object,
+            t.f_limit_customer,
+            t.f_limit_sales_man,
+            t.f_price_type,
+            u2.fname                 AS f_xsy,
+            t.f_khjc,
+            t.f_create_date,
+            t.f_modify_date,
+            u3.user_name             AS f_modifier_id
+        FROM t_sales_price t
+                 LEFT JOIN sys_user u1
+                           ON t.f_creator_id = u1.k3_key
+                 LEFT JOIN sys_employee u2
+                           ON t.f_xsy = u2.fid
+                 LEFT JOIN sys_user u3
+                           ON t.f_modifier_id = u3.k3_key
+                 LEFT JOIN bymaterial_dictionary d
+                           ON t.f_currency_id = d.kingdee
+                               AND d.category_name = '币别'
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="selectByFNumber" resultMap="SalesPriceMap">
+        select * from t_sales_price where f_number = #{fNumber}
+    </select>
+
+    <select id="selectByK3Id" resultMap="SalesPriceMap">
+        select * from t_sales_price where f_id = #{k3Id}
+    </select>
+
+    <select id="selectByFNumbers" resultMap="SalesPriceMap">
+        select id, k3_id, f_name, f_number, f_creator_id, f_description, f_currency_id, f_effective_date, f_expiry_date, f_price_object, f_limit_customer,
+        f_limit_sales_man, f_price_type, f_xsy, f_khjc, f_create_date, f_modify_date, f_modifier_id
+        from t_sales_price where f_number in
+        <foreach collection="list" item="fNumber" open="(" separator="," close=")">
+            #{fNumber}
+        </foreach>
+    </select>
+
+    <insert id="insertSalesPrice" useGeneratedKeys="true" keyProperty="id">
+        insert into t_sales_price(
+            k3_id, f_name, f_number, f_creator_id, f_description, f_currency_id,
+            f_effective_date, f_expiry_date, f_price_object, f_limit_customer, f_limit_sales_man,
+            f_price_type, f_xsy, f_khjc, f_create_date, f_modify_date, f_modifier_id
+        ) values(
+         #{fId}, #{fName}, #{fNumber}, #{fCreatorId}, #{fDescription}, #{fCurrencyId},
+            #{fEffectiveDate}, #{fExpiryDate}, #{fPriceObject}, #{fLimitCustomer}, #{fLimitSalesMan},
+            #{fPriceType}, #{fXsy}, #{fKhjc}, #{fCreateDate}, #{fModifyDate}, #{fModifierId}
+        )
+    </insert>
+
+    <update id="updateSalesPrice">
+        update t_sales_price
+        <set>
+            <if test="fName != null">f_name = #{fName},</if>
+            <if test="fCreatorId != null">f_creator_id = #{fCreatorId},</if>
+            <if test="fDescription != null">f_description = #{fDescription},</if>
+            <if test="fCurrencyId != null">f_currency_id = #{fCurrencyId},</if>
+            <if test="fEffectiveDate != null">f_effective_date = #{fEffectiveDate},</if>
+            <if test="fExpiryDate != null">f_expiry_date = #{fExpiryDate},</if>
+            <if test="fPriceObject != null">f_price_object = #{fPriceObject},</if>
+            <if test="fLimitCustomer != null">f_limit_customer = #{fLimitCustomer},</if>
+            <if test="fLimitSalesMan != null">f_limit_sales_man = #{fLimitSalesMan},</if>
+            <if test="fPriceType != null">f_price_type = #{fPriceType},</if>
+            <if test="fXsy != null">f_xsy = #{fXsy},</if>
+            <if test="fKhjc != null">f_khjc = #{fKhjc},</if>
+            <if test="fCreateDate != null">f_create_date = #{fCreateDate},</if>
+            <if test="fModifyDate != null">f_modify_date = #{fModifyDate},</if>
+            <if test="fModifierId != null">f_modifier_id = #{fModifierId},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 分页查询价目列表 -->
+    <select id="selectByCondition" resultMap="SalesPriceMap">
+        SELECT
+            t.id,
+            t.k3_id,
+            t.f_name,
+            t.f_number,
+            u1.user_name AS f_creator_id,
+            t.f_description,
+            d.name AS f_currency_id,
+            t.f_effective_date,
+            t.f_expiry_date,
+            t.f_price_object,
+            t.f_limit_customer,
+            t.f_limit_sales_man,
+            t.f_price_type,
+            u2.fname AS f_xsy,
+            t.f_khjc,
+            t.f_create_date,
+            t.f_modify_date,
+            u3.user_name AS f_modifier_id
+        FROM t_sales_price t
+        LEFT JOIN sys_user u1 ON t.f_creator_id = u1.k3_key
+        LEFT JOIN sys_employee u2 ON t.f_xsy = u2.fid
+        LEFT JOIN sys_user u3 ON t.f_modifier_id = u3.k3_key
+        LEFT JOIN bymaterial_dictionary d ON t.f_currency_id = d.kingdee AND d.category_name = '币别'
+        <where>
+            <if test="price.fNumber != null and price.fNumber != ''">AND t.f_number = #{price.fNumber}</if>
+            <if test="price.fName != null and price.fName != ''">AND t.f_name LIKE CONCAT('%', #{price.fName}, '%')</if>
+            <if test="price.fKhjc != null and price.fKhjc != ''">AND t.f_khjc LIKE CONCAT('%', #{price.fKhjc}, '%')</if>
+            <if test="price.fPriceType != null and price.fPriceType != ''">AND t.f_price_type = #{price.fPriceType}</if>
+            <if test="price.fCurrencyId != null and price.fCurrencyId != ''">AND t.f_currency_id = #{price.fCurrencyId}</if>
+            <if test="price.fEffectiveDate != null">AND t.f_effective_date = #{price.fEffectiveDate}</if>
+            <if test="price.fExpiryDate != null">AND t.f_expiry_date = #{price.fExpiryDate}</if>
+        </where>
+        ORDER BY t.f_create_date DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 统计价目总数 -->
+    <select id="countByCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM t_sales_price t
+        <where>
+            <if test="price.fNumber != null and price.fNumber != ''">AND t.f_number = #{price.fNumber}</if>
+            <if test="price.fName != null and price.fName != ''">AND t.f_name LIKE CONCAT('%', #{price.fName}, '%')</if>
+            <if test="price.fKhjc != null and price.fKhjc != ''">AND t.f_khjc LIKE CONCAT('%', #{price.fKhjc}, '%')</if>
+            <if test="price.fPriceType != null and price.fPriceType != ''">AND t.f_price_type = #{price.fPriceType}</if>
+            <if test="price.fCurrencyId != null and price.fCurrencyId != ''">AND t.f_currency_id = #{price.fCurrencyId}</if>
+            <if test="price.fEffectiveDate != null">AND t.f_effective_date = #{price.fEffectiveDate}</if>
+            <if test="price.fExpiryDate != null">AND t.f_expiry_date = #{price.fExpiryDate}</if>
+        </where>
+    </select>
+
+</mapper>

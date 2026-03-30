@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SalesPriceItemMapper">
+
+    <resultMap id="ItemMap" type="com.ruoyi.business.entity.SalesPriceItem">
+        <id column="id" property="id"/>
+        <result column="price_id" property="priceId"/>
+        <result column="f_material_id" property="fMaterialId"/>
+        <result column="fMaterialName" property="fMaterialName"/>
+        <result column="fMaterialModel" property="fMaterialModel"/>
+        <result column="f_khhh" property="fKhhh"/>
+        <result column="f_price" property="fPrice"/>
+        <result column="f_bzyq" property="fBzyq"/>
+        <result column="f_bzmx" property="fBzmx"/>
+        <result column="f_ywpm" property="fYwpm"/>
+        <result column="fzxzlxgrq" property="fzxzlxgrq"/>
+        <result column="f_c" property="fC"/>
+        <result column="f_k" property="fK"/>
+        <result column="f_g" property="fG"/>
+        <result column="f_mz" property="fMz"/>
+        <result column="f_jz" property="fJz"/>
+        <result column="fbgrq" property="fbgrq"/>
+        <result column="f_ywbzfs" property="fYwbzfs"/>
+        <result column="f_cptp2" property="fCptp2"/>
+        <result column="f_cptp3" property="fCptp3"/>
+        <result column="f_jgdztp" property="fJgdztp"/>
+        <result column="f_wxtm" property="fWxtm"/>
+        <result column="f_wxzm" property="fWxzm"/>
+        <result column="f_wxcm" property="fWxcm"/>
+        <result column="f_nxzm" property="fNxzm"/>
+        <result column="f_nxcm" property="fNxcm"/>
+        <result column="f_ctt" property="fCtt"/>
+        <result column="f_smst" property="fSmst"/>
+        <result column="f_ctaot" property="fCtaot"/>
+        <result column="f_cht" property="fCht"/>
+        <result column="f_dkczz" property="fDkczz"/>
+        <result column="f_zxczz" property="fZxczz"/>
+        <result column="ftm" property="ftm"/>
+        <result column="f_bzt" property="fBzt"/>
+        <result column="f_gys" property="fGys"/>
+        <result column="packaging_categories" property="packagingCategories"/>
+    </resultMap>
+
+    <select id="selectByPriceId" resultMap="ItemMap">
+        SELECT
+            i.id,
+            i.price_id,
+            m.number          AS f_material_id,
+            m.name          AS fMaterialName,
+            m.specification AS fMaterialModel,
+            i.f_khhh,
+            i.f_price,
+            i.f_bzyq,
+            i.f_bzmx,
+            i.f_ywpm,
+            i.fzxzlxgrq,
+            i.f_c,
+            i.f_k,
+            i.f_g,
+            i.f_mz,
+            i.f_jz,
+            i.fbgrq,
+            i.f_ywbzfs,
+            i.f_cptp2,
+            i.f_cptp3,
+            i.f_jgdztp,
+            i.f_wxtm,
+            i.f_wxzm,
+            i.f_wxcm,
+            i.f_nxzm,
+            i.f_nxcm,
+            i.f_ctt,
+            i.f_smst,
+            i.f_ctaot,
+            i.f_cht,
+            i.f_dkczz,
+            i.f_zxczz,
+            i.f_tm,
+            i.f_bzt,
+            i.packaging_categories,
+            s.name AS f_gys
+        FROM t_sales_price_item i
+                 LEFT JOIN by_material m
+                           ON i.f_material_id = m.k3_id
+                 LEFT JOIN supplier s
+                           ON i.f_gys = s.supplierid
+        WHERE i.price_id = #{priceId}
+    </select>
+
+    <select id="selectByMaterialIds" resultMap="ItemMap">
+        select * from t_sales_price_item where f_material_id in
+        <foreach collection="list" item="materialId" open="(" separator="," close=")">
+            #{materialId}
+        </foreach>
+    </select>
+
+    <select id="selectByPriceIdAndMaterialId" resultMap="ItemMap">
+        select * from t_sales_price_item
+        where price_id = #{priceId} and f_material_id = #{materialId}
+    </select>
+
+    <insert id="insertItem" useGeneratedKeys="true" keyProperty="id">
+        insert into t_sales_price_item(
+            price_id, f_material_id, f_khhh,
+            f_price, f_bzyq, f_bzmx, f_ywpm, fzxzlxgrq,
+            f_c, f_k, f_g, f_mz, f_jz, fbgrq, f_ywbzfs,
+            f_cptp2, f_cptp3, f_jgdztp, f_wxtm, f_wxzm, f_wxcm,
+            f_nxzm, f_nxcm, f_ctt, f_smst, f_ctaot, f_cht,
+            f_dkczz, f_zxczz, f_tm, f_bzt, f_gys, packaging_categories
+        ) values(
+            #{priceId}, #{fMaterialId}, #{fKhhh},
+            #{fPrice}, #{fBzyq}, #{fBzmx}, #{fYwpm}, #{fzxzlxgrq},
+            #{fC}, #{fK}, #{fG}, #{fMz}, #{fJz}, #{fbgrq}, #{fYwbzfs},
+            #{fCptp2}, #{fCptp3}, #{fJgdztp}, #{fWxtm}, #{fWxzm}, #{fWxcm},
+            #{fNxzm}, #{fNxcm}, #{fCtt}, #{fSmst}, #{fCtaot}, #{fCht},
+            #{fDkczz}, #{fZxczz}, #{ftm}, #{fBzt}, #{fGys}, #{packagingCategories}
+        )
+    </insert>
+
+    <update id="updateItem">
+        update t_sales_price_item
+        <set>
+            <if test="priceId != null">price_id = #{priceId},</if>
+            <if test="fMaterialId != null">f_material_id = #{fMaterialId},</if>
+            <if test="fKhhh != null">f_khhh = #{fKhhh},</if>
+            <if test="fPrice != null">f_price = #{fPrice},</if>
+            <if test="fBzyq != null">f_bzyq = #{fBzyq},</if>
+            <if test="fBzmx != null">f_bzmx = #{fBzmx},</if>
+            <if test="fYwpm != null">f_ywpm = #{fYwpm},</if>
+            <if test="fzxzlxgrq != null">fzxzlxgrq = #{fzxzlxgrq},</if>
+            <if test="fC != null">f_c = #{fC},</if>
+            <if test="fK != null">f_k = #{fK},</if>
+            <if test="fG != null">f_g = #{fG},</if>
+            <if test="fMz != null">f_mz = #{fMz},</if>
+            <if test="fJz != null">f_jz = #{fJz},</if>
+            <if test="fbgrq != null">fbgrq = #{fbgrq},</if>
+            <if test="fYwbzfs != null">f_ywbzfs = #{fYwbzfs},</if>
+            <if test="fCptp2 != null">f_cptp2 = #{fCptp2},</if>
+            <if test="fCptp3 != null">f_cptp3 = #{fCptp3},</if>
+            <if test="fJgdztp != null">f_jgdztp = #{fJgdztp},</if>
+            <if test="fWxtm != null">f_wxtm = #{fWxtm},</if>
+            <if test="fWxzm != null">f_wxzm = #{fWxzm},</if>
+            <if test="fWxcm != null">f_wxcm = #{fWxcm},</if>
+            <if test="fNxzm != null">f_nxzm = #{fNxzm},</if>
+            <if test="fNxcm != null">f_nxcm = #{fNxcm},</if>
+            <if test="fCtt != null">f_ctt = #{fCtt},</if>
+            <if test="fSmst != null">f_smst = #{fSmst},</if>
+            <if test="fCtaot != null">f_ctaot = #{fCtaot},</if>
+            <if test="fCht != null">f_cht = #{fCht},</if>
+            <if test="fDkczz != null">f_dkczz = #{fDkczz},</if>
+            <if test="fZxczz != null">f_zxczz = #{fZxczz},</if>
+            <if test="ftm != null">f_tm = #{ftm},</if>
+            <if test="fBzt != null">f_bzt = #{fBzt},</if>
+            <if test="fGys != null">f_gys = #{fGys},</if>
+            <if test="packagingCategories != null">packaging_categories = #{packagingCategories}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <insert id="batchInsertItem">
+        insert into t_sales_price_item(
+            price_id, f_material_id, f_khhh,
+            f_price, f_bzyq, f_bzmx, f_ywpm, fzxzlxgrq,
+            f_c, f_k, f_g, f_mz, f_jz, fbgrq, f_ywbzfs,
+            f_cptp2, f_cptp3, f_jgdztp, f_wxtm, f_wxzm, f_wxcm,
+            f_nxzm, f_nxcm, f_ctt, f_smst, f_ctaot, f_cht,
+            f_dkczz, f_zxczz, f_tm, f_bzt, f_gys, packaging_categories
+        ) values
+        <foreach collection="list" item="i" separator=",">
+            (
+                #{i.priceId}, #{i.fMaterialId}, #{i.fKhhh},
+                #{i.fPrice}, #{i.fBzyq}, #{i.fBzmx}, #{i.fYwpm}, #{i.fzxzlxgrq},
+                #{i.fC}, #{i.fK}, #{i.fG}, #{i.fMz}, #{i.fJz}, #{i.fbgrq}, #{i.fYwbzfs},
+                #{i.fCptp2}, #{i.fCptp3}, #{i.fJgdztp}, #{i.fWxtm}, #{i.fWxzm}, #{i.fWxcm},
+                #{i.fNxzm}, #{i.fNxcm}, #{i.fCtt}, #{i.fSmst}, #{i.fCtaot}, #{i.fCht},
+                #{i.fDkczz}, #{i.fZxczz}, #{i.ftm}, #{i.fBzt}, #{i.fGys}, #{i.packagingCategories}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByPriceId">
+        delete from t_sales_price_item where price_id = #{priceId}
+    </delete>
+
+    <update id="batchUpdateItem">
+        <foreach collection="list" item="i" separator=";">
+            update t_sales_price_item
+            <set>
+                <if test="i.fMaterialId != null">f_material_id = #{i.fMaterialId},</if>
+                <if test="i.priceId != null">price_id = #{i.priceId},</if>
+                <if test="i.fKhhh != null">f_khhh = #{i.fKhhh},</if>
+                <if test="i.fPrice != null">f_price = #{i.fPrice},</if>
+                <if test="i.fBzyq != null">f_bzyq = #{i.fBzyq},</if>
+                <if test="i.fBzmx != null">f_bzmx = #{i.fBzmx},</if>
+                <if test="i.fYwpm != null">f_ywpm = #{i.fYwpm},</if>
+                <if test="i.fzxzlxgrq != null">fzxzlxgrq = #{i.fzxzlxgrq},</if>
+                <if test="i.fC != null">f_c = #{i.fC},</if>
+                <if test="i.fK != null">f_k = #{i.fK},</if>
+                <if test="i.fG != null">f_g = #{i.fG},</if>
+                <if test="i.fMz != null">f_mz = #{i.fMz},</if>
+                <if test="i.fJz != null">f_jz = #{i.fJz},</if>
+                <if test="i.fbgrq != null">fbgrq = #{i.fbgrq},</if>
+                <if test="i.fYwbzfs != null">f_ywbzfs = #{i.fYwbzfs},</if>
+                <if test="i.fCptp2 != null">f_cptp2 = #{i.fCptp2},</if>
+                <if test="i.fCptp3 != null">f_cptp3 = #{i.fCptp3},</if>
+                <if test="i.fJgdztp != null">f_jgdztp = #{i.fJgdztp},</if>
+                <if test="i.fWxtm != null">f_wxtm = #{i.fWxtm},</if>
+                <if test="i.fWxzm != null">f_wxzm = #{i.fWxzm},</if>
+                <if test="i.fWxcm != null">f_wxcm = #{i.fWxcm},</if>
+                <if test="i.fNxzm != null">f_nxzm = #{i.fNxzm},</if>
+                <if test="i.fNxcm != null">f_nxcm = #{i.fNxcm},</if>
+                <if test="i.fCtt != null">f_ctt = #{i.fCtt},</if>
+                <if test="i.fSmst != null">f_smst = #{i.fSmst},</if>
+                <if test="i.fCtaot != null">f_ctaot = #{i.fCtaot},</if>
+                <if test="i.fCht != null">f_cht = #{i.fCht},</if>
+                <if test="i.fDkczz != null">f_dkczz = #{i.fDkczz},</if>
+                <if test="i.fZxczz != null">f_zxczz = #{i.fZxczz},</if>
+                <if test="i.ftm != null">f_tm = #{i.ftm},</if>
+                <if test="i.fBzt != null">f_bzt = #{i.fBzt},</if>
+                <if test="i.fGys != null">f_gys = #{i.fGys},</if>
+                <if test="i.packagingCategories != null">packaging_categories = #{i.packagingCategories}</if>
+            </set>
+            where id = #{i.id}
+        </foreach>
+    </update>
+
+</mapper>

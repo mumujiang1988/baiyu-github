@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.WarehouseLocationMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.business.entity.WarehouseLocation">
+        <id property="id" column="id"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="locationId" column="location_id"/>
+        <result property="locationName" column="location_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 基础查询字段 -->
+    <sql id="selectWarehouseLocationVo">
+        SELECT
+            id,
+            warehouse_id,
+            warehouse_name,
+            location_id,
+            location_name,
+            create_time,
+            update_time
+        FROM
+            warehouse_location
+    </sql>
+
+    <!-- 查询仓库仓位 -->
+    <select id="selectById" parameterType="Long" resultMap="BaseResultMap">
+        <include refid="selectWarehouseLocationVo"/>
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询仓库仓位列表（分页） -->
+    <select id="selectList" resultType="com.ruoyi.business.entity.WarehouseLocation">
+        <include refid="selectWarehouseLocationVo"/>
+        ORDER BY create_time DESC
+        LIMIT #{page}, #{pageSize}
+    </select>
+
+    <!-- 新增仓库仓位 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.WarehouseLocation">
+        INSERT INTO warehouse_location
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">id,</if>
+            <if test="warehouseId != null and warehouseId != ''">warehouse_id,</if>
+            <if test="warehouseName != null and warehouseName != ''">warehouse_name,</if>
+            <if test="warehouseNumber != null and warehouseNumber != ''">warehouse_number,</if>
+            <if test="locationId != null and locationId != ''">location_id,</if>
+            <if test="locationName != null and locationName != ''">location_name,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null and id != ''">#{id},</if>
+            <if test="warehouseId != null and warehouseId != ''">#{warehouseId},</if>
+            <if test="warehouseName != null and warehouseName != ''">#{warehouseName},</if>
+            <if test="warehouseNumber != null and warehouseNumber != ''">#{warehouseNumber},</if>
+            <if test="locationId != null and locationId != ''">#{locationId},</if>
+            <if test="locationName != null and locationName != ''">#{locationName},</if>
+        </trim>
+    </insert>
+
+    <!-- 更新仓库仓位 -->
+    <update id="update" parameterType="com.ruoyi.business.entity.WarehouseLocation">
+        UPDATE warehouse_location
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="warehouseId != null and warehouseId != ''">warehouse_id = #{warehouseId},</if>
+            <if test="warehouseNumber != null and warehouseNumber != ''">warehouse_number = #{warehouseNumber},</if>
+            <if test="locationId != null and locationId != ''">location_id = #{locationId},</if>
+            <if test="locationName != null and locationName != ''">location_name = #{locationName},</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除仓库仓位 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM warehouse_location WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除仓库仓位 -->
+    <delete id="deleteByIds" parameterType="Long">
+        DELETE FROM warehouse_location WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据仓库 ID 和仓位 ID 查询 -->
+    <select id="selectByWarehouseAndLocation" resultMap="BaseResultMap">
+        <include refid="selectWarehouseLocationVo"/>
+        WHERE  location_id = #{locationId}
+    </select>
+</mapper>

@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.core.exception.ServiceException;
+import com.ruoyi.common.core.utils.MapstructUtils;
 import com.ruoyi.common.core.utils.StringUtils;
+import static com.ruoyi.erp.utils.JdbcResultUtils.*;
 import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.erp.domain.bo.ErpPushRelationBo;
 import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
@@ -191,40 +193,8 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
      * Map 转 VO
      */
     private ErpPushRelationVo mapToVo(Map<String, Object> row) {
-        ErpPushRelationVo vo = new ErpPushRelationVo();
-        vo.setRelationId(getLong(row.get("relation_id")));
-        vo.setSourceModule(getString(row.get("source_module")));
-        vo.setTargetModule(getString(row.get("target_module")));
-        vo.setRelationName(getString(row.get("relation_name")));
-        vo.setMappingRules(getString(row.get("mapping_rules")));
-        vo.setTransformationRules(getString(row.get("transformation_rules")));
-        vo.setValidationRules(getString(row.get("validation_rules")));
-        vo.setConcurrencyControl(getString(row.get("concurrency_control")));
-        vo.setTransactionEnabled(getString(row.get("transaction_enabled")));
-        vo.setStatus(getString(row.get("status")));
-        vo.setVersion(getInteger(row.get("version")));
-        return vo;
-    }
-    
-    /**
-     * 安全获取 Long 值
-     */
-    private Long getLong(Object value) {
-        return value != null ? ((Number) value).longValue() : null;
-    }
-    
-    /**
-     * 安全获取 Integer 值
-     */
-    private Integer getInteger(Object value) {
-        return value != null ? ((Number) value).intValue() : null;
-    }
-    
-    /**
-     * 安全获取 String 值
-     */
-    private String getString(Object value) {
-        return value != null ? value.toString() : null;
+        // 使用 RuoYi MapstructUtils 自动转换
+        return MapstructUtils.convert(row, ErpPushRelationVo.class);
     }
 
     @Override

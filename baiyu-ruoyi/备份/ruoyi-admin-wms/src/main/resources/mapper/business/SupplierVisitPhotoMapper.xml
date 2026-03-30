@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.SupplierVisitPhotoMapper">
+
+    <!-- 供应商回访照片结果映射 -->
+    <resultMap id="SupplierVisitPhotoResultMap" type="com.ruoyi.business.entity.SupplierVisitPhoto">
+        <id property="id" column="id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="staffPhoto" column="staff_photo"/>
+        <result property="sampleRoomPhoto" column="sample_room_photo"/>
+        <result property="productionWorkshopPhoto" column="production_workshop_photo"/>
+        <result property="packagingWorkshopPhoto" column="packaging_workshop_photo"/>
+        <result property="inspectionAreaPhoto" column="inspection_area_photo"/>
+        <result property="factoryAreaPhoto" column="factory_area_photo"/>
+        <result property="gatePhoto" column="gate_photo"/>
+        <result property="otherPhoto" column="other_photo"/>
+        <result property="remark" column="remark"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 新增供应商回访照片 -->
+    <insert id="insertSupplierVisitPhoto"
+            parameterType="com.ruoyi.business.entity.SupplierVisitPhoto"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO supplier_visit_photo
+        (
+            supplier_id, staff_photo, sample_room_photo, production_workshop_photo, 
+            packaging_workshop_photo, inspection_area_photo, factory_area_photo, 
+            gate_photo, other_photo, remark, created_by, created_at
+        )
+        VALUES
+        (
+            #{supplierId}, #{staffPhoto}, #{sampleRoomPhoto}, #{productionWorkshopPhoto}, 
+            #{packagingWorkshopPhoto}, #{inspectionAreaPhoto}, #{factoryAreaPhoto}, 
+            #{gatePhoto}, #{otherPhoto}, #{remark}, #{createdBy}, NOW()
+        )
+    </insert>
+
+    <!-- 修改供应商回访照片 -->
+    <update id="updateSupplierVisitPhoto"
+            parameterType="com.ruoyi.business.entity.SupplierVisitPhoto">
+        UPDATE supplier_visit_photo
+        <set>
+            <if test="supplierId != null">supplier_id = #{supplierId},</if>
+            <if test="staffPhoto != null and staffPhoto != ''">staff_photo = #{staffPhoto},</if>
+            <if test="sampleRoomPhoto != null and sampleRoomPhoto != ''">sample_room_photo = #{sampleRoomPhoto},</if>
+            <if test="productionWorkshopPhoto != null and productionWorkshopPhoto != ''">production_workshop_photo = #{productionWorkshopPhoto},</if>
+            <if test="packagingWorkshopPhoto != null and packagingWorkshopPhoto != ''">packaging_workshop_photo = #{packagingWorkshopPhoto},</if>
+            <if test="inspectionAreaPhoto != null and inspectionAreaPhoto != ''">inspection_area_photo = #{inspectionAreaPhoto},</if>
+            <if test="factoryAreaPhoto != null and factoryAreaPhoto != ''">factory_area_photo = #{factoryAreaPhoto},</if>
+            <if test="gatePhoto != null and gatePhoto != ''">gate_photo = #{gatePhoto},</if>
+            <if test="otherPhoto != null and otherPhoto != ''">other_photo = #{otherPhoto},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+            <if test="createdBy != null and createdBy != ''">created_by = #{createdBy},</if>
+            created_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除供应商回访照片 -->
+    <delete id="deleteSupplierVisitPhotoById" parameterType="java.lang.Long">
+        DELETE FROM supplier_visit_photo WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除供应商回访照片 -->
+    <delete id="deleteSupplierVisitPhotoByIds" parameterType="java.lang.Long">
+        DELETE FROM supplier_visit_photo WHERE id IN
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据供应商ID删除回访照片 -->
+    <delete id="deleteSupplierVisitPhotoBySupplierId" parameterType="java.lang.Long">
+        DELETE FROM supplier_visit_photo WHERE supplier_id = #{supplierId}
+    </delete>
+
+    <!-- 查询供应商回访照片 -->
+    <select id="selectSupplierVisitPhotoById" parameterType="java.lang.Long" resultMap="SupplierVisitPhotoResultMap">
+        SELECT
+            id, supplier_id, staff_photo, sample_room_photo, production_workshop_photo, 
+            packaging_workshop_photo, inspection_area_photo, factory_area_photo, 
+            gate_photo, other_photo, remark, created_by, created_at
+        FROM supplier_visit_photo
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询供应商回访照片列表 -->
+    <select id="selectSupplierVisitPhotoList" parameterType="com.ruoyi.business.entity.SupplierVisitPhoto" resultMap="SupplierVisitPhotoResultMap">
+        SELECT
+            id, supplier_id, staff_photo, sample_room_photo, production_workshop_photo, 
+            packaging_workshop_photo, inspection_area_photo, factory_area_photo, 
+            gate_photo, other_photo, remark, created_by, created_at
+        FROM supplier_visit_photo
+        <where>
+            <if test="id != null">AND id = #{id}</if>
+            <if test="supplierId != null">AND supplier_id = #{supplierId}</if>
+            <if test="staffPhoto != null and staffPhoto != ''">AND staff_photo LIKE CONCAT('%', #{staffPhoto}, '%')</if>
+            <if test="sampleRoomPhoto != null and sampleRoomPhoto != ''">AND sample_room_photo LIKE CONCAT('%', #{sampleRoomPhoto}, '%')</if>
+            <if test="productionWorkshopPhoto != null and productionWorkshopPhoto != ''">AND production_workshop_photo LIKE CONCAT('%', #{productionWorkshopPhoto}, '%')</if>
+            <if test="packagingWorkshopPhoto != null and packagingWorkshopPhoto != ''">AND packaging_workshop_photo LIKE CONCAT('%', #{packagingWorkshopPhoto}, '%')</if>
+            <if test="inspectionAreaPhoto != null and inspectionAreaPhoto != ''">AND inspection_area_photo LIKE CONCAT('%', #{inspectionAreaPhoto}, '%')</if>
+            <if test="factoryAreaPhoto != null and factoryAreaPhoto != ''">AND factory_area_photo LIKE CONCAT('%', #{factoryAreaPhoto}, '%')</if>
+            <if test="gatePhoto != null and gatePhoto != ''">AND gate_photo LIKE CONCAT('%', #{gatePhoto}, '%')</if>
+            <if test="otherPhoto != null and otherPhoto != ''">AND other_photo LIKE CONCAT('%', #{otherPhoto}, '%')</if>
+            <if test="remark != null and remark != ''">AND remark LIKE CONCAT('%', #{remark}, '%')</if>
+            <if test="createdBy != null and createdBy != ''">AND created_by LIKE CONCAT('%', #{createdBy}, '%')</if>
+            <if test="createdAt != null">AND created_at = #{createdAt}</if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据供应商ID查询回访照片 -->
+    <select id="selectSupplierVisitPhotoBySupplierId" parameterType="java.lang.Long" resultMap="SupplierVisitPhotoResultMap">
+        SELECT
+            id, supplier_id, staff_photo, sample_room_photo, production_workshop_photo, 
+            packaging_workshop_photo, inspection_area_photo, factory_area_photo, 
+            gate_photo, other_photo, remark, created_by, created_at
+        FROM supplier_visit_photo
+        WHERE supplier_id = #{supplierId}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

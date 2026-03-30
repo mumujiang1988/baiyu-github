@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SalesPriceItemPackageMapper">
+
+    <resultMap id="PackageMap" type="com.ruoyi.business.entity.SalesPriceItemPackage">
+        <id column="id" property="id"/>
+        <result column="price_id" property="priceId"/>
+        <result column="f_bzbm" property="fBzbm"/>
+        <result column="f_bzmc" property="fBzmc"/>
+        <result column="f_bzgg" property="fBzgg"/>
+        <result column="f_dw" property="fDw"/>
+        <result column="f_yl" property="fYl"/>
+        <result column="f_bz" property="fBz"/>
+        <result column="f_tp" property="fTp"/>
+        <result column="f_bcfwgys" property="fBcfwgys"/>
+        <result column="f_cpgys" property="fCpgys"/>
+        <result column="f_cty_base_property" property="fCtyBaseProperty"/>
+    </resultMap>
+
+
+    <select id="selectByPriceId" resultMap="PackageMap">
+        SELECT
+            p.price_id,
+            m.number                  AS f_bzbm,
+            p.f_bzmc,
+            p.f_bzgg,
+            d.name                  AS f_dw,
+            p.f_yl,
+            p.f_bz,
+            p.f_tp,
+            s.name          AS f_bcfwgys,
+            s.name          AS f_cpgys,
+            p.f_cty_base_property
+        FROM t_sales_price_item_package p
+                 LEFT JOIN by_material m
+                           ON p.f_bzbm = m.k3_id
+                 LEFT JOIN bymaterial_dictionary d
+                           ON p.f_dw = d.kingdee
+                               AND d.category_name = '基本单位'
+                 LEFT JOIN supplier s
+                           ON p.f_bcfwgys = s.supplierid
+        WHERE p.price_id = #{priceId};
+
+    </select>
+
+    <select id="selectByPackageCodes" resultMap="PackageMap">
+        select * from t_sales_price_item_package where f_bzbm in
+        <foreach collection="list" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
+    <select id="selectByPriceIdAndPackageCode" resultMap="PackageMap">
+        select * from t_sales_price_item_package
+        where price_id = #{priceId} and f_bzbm = #{packageCode}
+    </select>
+
+    <insert id="insertPackage" useGeneratedKeys="true" keyProperty="id">
+        insert into t_sales_price_item_package(
+            price_id, f_bzbm, f_bzmc, f_bzgg, f_dw,
+            f_yl, f_bz, f_tp, f_bcfwgys, f_cpgys, f_cty_base_property
+        ) values(
+            #{priceId}, #{fBzbm}, #{fBzmc}, #{fBzgg}, #{fDw},
+            #{fYl}, #{fBz}, #{fTp}, #{fBcfwgys}, #{fCpgys}, #{fCtyBaseProperty}
+        )
+    </insert>
+
+    <update id="updatePackage">
+        update t_sales_price_item_package
+        <set>
+            <if test="priceId != null">price_id = #{priceId},</if>
+            <if test="fBzmc != null">f_bzmc = #{fBzmc},</if>
+            <if test="fBzgg != null">f_bzgg = #{fBzgg},</if>
+            <if test="fDw != null">f_dw = #{fDw},</if>
+            <if test="fYl != null">f_yl = #{fYl},</if>
+            <if test="fBz != null">f_bz = #{fBz},</if>
+            <if test="fTp != null">f_tp = #{fTp},</if>
+            <if test="fBcfwgys != null">f_bcfwgys = #{fBcfwgys},</if>
+            <if test="fCpgys != null">f_cpgys = #{fCpgys},</if>
+            <if test="fCtyBaseProperty != null">f_cty_base_property = #{fCtyBaseProperty}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <insert id="batchInsertPackage">
+        insert into t_sales_price_item_package(
+            price_id, f_bzbm, f_bzmc, f_bzgg, f_dw,
+            f_yl, f_bz, f_tp, f_bcfwgys, f_cpgys, f_cty_base_property
+        ) values
+        <foreach collection="list" item="p" separator=",">
+            (
+                #{p.priceId}, #{p.fBzbm}, #{p.fBzmc}, #{p.fBzgg}, #{p.fDw},
+                #{p.fYl}, #{p.fBz}, #{p.fTp}, #{p.fBcfwgys}, #{p.fCpgys}, #{p.fCtyBaseProperty}
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdatePackage">
+        <foreach collection="list" item="p" separator=";">
+            update t_sales_price_item_package
+            <set>
+                <if test="priceId != null">price_id = #{priceId},</if>
+                <if test="p.fBzmc != null">f_bzmc = #{p.fBzmc},</if>
+                <if test="p.fBzgg != null">f_bzgg = #{p.fBzgg},</if>
+                <if test="p.fDw != null">f_dw = #{p.fDw},</if>
+                <if test="p.fYl != null">f_yl = #{p.fYl},</if>
+                <if test="p.fBz != null">f_bz = #{p.fBz},</if>
+                <if test="p.fTp != null">f_tp = #{p.fTp},</if>
+                <if test="p.fBcfwgys != null">f_bcfwgys = #{p.fBcfwgys},</if>
+                <if test="p.fCpgys != null">f_cpgys = #{p.fCpgys},</if>
+                <if test="p.fCtyBaseProperty != null">f_cty_base_property = #{p.fCtyBaseProperty}</if>
+            </set>
+            where id = #{p.id}
+        </foreach>
+    </update>
+
+    <delete id="deleteByPriceId">
+        delete from t_sales_price_item_package where price_id = #{priceId}
+    </delete>
+
+    <delete id="batchDeleteByIds">
+        delete from t_sales_price_item_package
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

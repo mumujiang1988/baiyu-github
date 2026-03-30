@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.CustomerMapper">
+
+    <resultMap id="CustomerResultMap" type="com.ruoyi.business.entity.Customer">
+        <id column="Id" property="id"/>
+        <result column="fcustid" property="fcustid"/>
+        <result column="fnumber" property="fnumber"/>
+        <result column="fname" property="fname"/>
+        <result column="fshort_name" property="fshortName"/>
+        <result column="f_khqc" property="fKhqc"/>
+        <result column="fdocumentStatus" property="fdocumentStatus"/>
+        <result column="fcusttypeid" property="fcustTypeId"/>
+        <result column="fdescription" property="fdescription"/>
+        <result column="fcreate_org_id" property="fcreateOrgId"/>
+        <result column="fcreator_id" property="fcreatorId"/>
+        <result column="fmodifier_id" property="fmodifierId"/>
+        <result column="fseller" property="fseller"/>
+        <result column="f_kfxsy1" property="fKfxsy1"/>
+        <result column="fapperober_date" property="fapperoberDate"/>
+        <result column="fapprover_id" property="fapproverId"/>
+        <result column="f_dygj" property="fdygj"/>
+        <result column="fsal_dept_id" property="fsalDeptId"/>
+        <result column="fsal_group_id" property="fsalGroupId"/>
+        <result column="fcreate_date" property="fcreateDate"/>
+        <result column="fmodify_date" property="fmodifyDate"/>
+        <result column="ffound_date" property="ffoundDate"/>
+        <result column="f_khzrrq" property="fKhzrrq"/>
+        <result column="fcountry" property="fcountry"/>
+        <result column="fprovincial" property="fprovincial"/>
+        <result column="faddress" property="faddress"/>
+        <result column="fregister_address" property="fregisterAddress"/>
+        <result column="ftel" property="ftel"/>
+        <result column="f_khyx" property="fKhyx"/>
+        <result column="fwebsite" property="fwebsite"/>
+        <result column="ftrading_curr_id" property="ftradingCurrId"/>
+        <result column="freceive_curr_id" property="freceiveCurrId"/>
+        <result column="fsettle_type_id" property="fsettleTypeId"/>
+        <result column="frec_condition_id" property="frecConditionId"/>
+        <result column="fprice_list_id" property="fpriceListId"/>
+        <result column="ftax_type" property="ftaxType"/>
+        <result column="ftax_rate" property="ftaxRate"/>
+        <result column="ftax_register_code" property="ftaxRegisterCode"/>
+        <result column="fgroup_id" property="fgroupId"/>
+        <result column="f_khly" property="fKhly"/>
+        <result column="f_ly" property="fLy"/>
+        <result column="f_sylx" property="fSylx"/>
+        <result column="f_khgm" property="fKhgm"/>
+        <result column="f_khzy" property="fKhzy"/>
+        <result column="fis_group" property="fisGroup"/>
+        <result column="fis_def_payer" property="fisDefPayer"/>
+        <result column="flegal_person" property="flegalPerson"/>
+        <result column="finvoice_type" property="finvoiceType"/>
+        <result column="fsupplier_id" property="fsupplierId"/>
+        <result column="f_bzyq" property="fBzyq"/>
+        <result column="fbzfs" property="fBzfs"/>
+        <result column="f_fhyq" property="fFhyq"/>
+        <result column="f_zlbzhjsyq" property="fZlbzhjsyq"/>
+        <result column="f_sfysqs" property="fSfysqs"/>
+        <result column="fsbsq" property="fsbsq"/>
+        <result column="fsfsd" property="fsfsd"/>
+        <result column="fsfts" property="fsfts"/>
+        <result column="f_cty_decimal" property="fCtyDecimal"/>
+        <result column="f_tcfpfa" property="fTcfpfa"/>
+        <result column="fpjskzq" property="fpjskzq"/>
+        <result column="f_mjll" property="fMjll"/>
+        <result column="f_cty_large_text" property="fCtyLargeText"/>
+        <result column="f_khlogo" property="fKhlogo"/>
+        <result column="fcp_admin_code" property="fcpAdminCode"/>
+        <result column="f_youtube" property="fYoutube"/>
+        <result column="f_linkedin" property="fLinkedin"/>
+        <result column="f_facebook" property="fFacebook"/>
+        <result column="f_twitter" property="fTwitter"/>
+        <result column="f_instagram" property="fInstagram"/>
+        <result column="f_vk" property="fVk"/>
+        <result column="f_facebookmess" property="fFacebookmess"/>
+        <result column="f_skype" property="fSkype"/>
+        <result column="f_whatsapp" property="fWhatsapp"/>
+        <result column="fwechat" property="fwechat"/>
+        <result column="f_qq" property="fQq"/>
+        <result column="ftn" property="ftn"/>
+        <result column="f_yolo" property="fYolo"/>
+        <result column="f_hangouts" property="fHangouts"/>
+        <result column="f_viber" property="fViber"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="CustomerResultMap">
+        SELECT
+        bcr.id,bcr.fnumber,bcr.fname,
+        bcr.fshort_name,
+        bcr.f_khqc,
+        bcr.fdescription,
+        bcr.fcreate_org_id,
+        ANY_VALUE(su.user_name) AS fcreator_id,
+        ANY_VALUE(suer.user_name) AS fmodifier_id,
+        ANY_VALUE(sel.fname) AS fseller,
+        bcr.f_kfxsy1,
+        bcr.fsal_dept_id,
+        bcr.fsal_group_id,
+        bcr.fcreate_date,
+        bcr.fmodify_date,
+        bcr.ffound_date,
+        bcr.fdocumentStatus,
+        ANY_VALUE(bydy.name) AS fcustTypeId,
+        bcr.f_khzrrq,
+        ANY_VALUE(cy.name_zh) AS fcountry,
+        ANY_VALUE(cys.name_zh) AS f_dygj,
+        bcr.fprovincial,
+        bcr.faddress,
+        bcr.fregister_address,
+        bcr.ftel,
+        bcr.f_khyx,
+        bcr.fwebsite,
+        ANY_VALUE(bdy.name) AS ftrading_curr_id,
+        bcr.freceive_curr_id,
+        bcr.fsettle_type_id,
+        ANY_VALUE(bldy.name) AS frec_condition_id,
+        bcr.fprice_list_id,
+        bcr.ftax_type,
+        bcr.ftax_rate,
+        bcr.ftax_register_code,
+        ANY_VALUE(byldy.name) AS fgroup_id,
+        ANY_VALUE(bymldy.name) AS f_khly,
+        bcr.f_sylx,
+        bcr.f_khgm,
+        bcr.f_khzy,
+        bcr.fis_group,
+        bcr.fis_def_payer,
+        bcr.flegal_person,
+        bcr.finvoice_type,
+        bcr.f_bzyq,
+        ANY_VALUE(ymate.name) AS fbzfs,
+        bcr.f_fhyq,
+        bcr.fapperober_date,
+        ANY_VALUE(syuer.user_name) AS fapprover_id,
+        ANY_VALUE(se.fname) AS fseller,
+        bcr.f_zlbzhjsyq,
+        bcr.f_sfysqs,
+        bcr.fsbsq,
+        bcr.fcmmttp1,
+        bcr.zmmtwx,
+        bcr.fcmmttp2,
+        bcr.zmmtnx,
+        bcr.fZmmttp1,
+        bcr.fcmmtwx,
+        bcr.fZmmttp2,
+        bcr.fcmmtnx,
+        bcr.fsfsd,
+        bcr.fsfts,
+        bcr.f_cty_decimal,
+        bcr.f_tcfpfa,
+        bcr.fpjskzq,
+        bcr.f_mjll,
+        bcr.f_cty_large_text,
+        bcr.f_khlogo,
+        bcr.fcp_admin_code,
+        bcr.f_youtube,
+        bcr.f_linkedin,
+        bcr.f_facebook,
+        bcr.f_twitter,
+        bcr.f_instagram,
+        bcr.f_vk,
+        bcr.f_facebookmess,
+        bcr.f_skype,
+        bcr.f_whatsapp,
+        bcr.fwechat,
+        bcr.f_qq,
+        bcr.ftn,
+        bcr.f_yolo,
+        bcr.f_hangouts,
+        bcr.f_viber
+        FROM
+        bd_customer bcr
+        LEFT JOIN sys_user su ON bcr.fcreator_id = su.k3_key
+        LEFT JOIN sys_user suer ON bcr.fmodifier_id = suer.k3_key
+        LEFT JOIN sys_user syuer ON bcr.fapprover_id = syuer.k3_key
+        LEFT JOIN sys_employee sel ON bcr.fseller = sel.salesman_id
+        LEFT JOIN country cy ON bcr.fcountry = cy.id
+        LEFT JOIN country cys ON bcr.f_dygj = cys.id
+        LEFT JOIN bymaterial_dictionary bdy ON bcr.ftrading_curr_id = bdy.kingdee AND bdy.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bydy ON bcr.fcustTypeId = bydy.kingdee AND bydy.category = 'customer_category'
+        LEFT JOIN bymaterial_dictionary bldy ON bcr.frec_condition_id = bldy.kingdee AND bldy.category = 'collection_terms'
+        LEFT JOIN bymaterial_dictionary byldy ON bcr.fgroup_id = byldy.kingdee AND byldy.category = 'Customer_grouping'
+        LEFT JOIN bymaterial_dictionary bymldy ON bcr.f_khly = bymldy.kingdee AND bymldy.category = 'customer_source'
+        LEFT JOIN bymaterial_dictionary ymate ON bcr.fbzfs = ymate.kingdee AND ymate.category = 'manner_packing'
+        LEFT JOIN sys_employee se ON bcr.fseller = se.salesman_id
+        WHERE bcr.id = #{id}
+        GROUP BY
+        bcr.id
+    </select>
+
+    <select id="selectByFcustid" resultMap="CustomerResultMap">
+        SELECT * FROM bd_customer WHERE fcustid = #{fcustid}
+    </select>
+
+    <select id="selectByFnumber" resultMap="CustomerResultMap">
+        SELECT * FROM bd_customer WHERE fnumber = #{fnumber}
+    </select>
+
+    <insert id="insert" parameterType="com.ruoyi.business.entity.Customer" useGeneratedKeys="true" keyProperty="Id">
+        INSERT INTO bd_customer (
+            fnumber, fname, fdocumentStatus, fshort_name, f_khqc, fcreate_org_id, fcreator_id,fseller, f_kfxsy1, fsal_dept_id, fsal_group_id,
+            f_dygj, fcountry, faddress, ftel, f_khyx, fwebsite, ftrading_curr_id, frec_condition_id, fgroup_id, f_khly, fbzfs,fsbsq,f_khzy,flegal_person,f_khgm,
+            f_fhyq,f_cty_decimal,f_mjll,f_youtube,f_linkedin,f_facebook,f_twitter,f_instagram,f_vk,fcustTypeId,f_bzyq,fZmmttp1,fZmmttp2,fZmmttpMs,fcmmttp1,fcmmttp2,fCmmttpMs,f_khlogo,f_ly,
+            fsettle_type_id,zmmtwx,zmmtnx,fcmmtwx,fcmmtnx,fcreate_date
+        ) VALUES (
+                     #{fnumber}, #{fname}, #{fdocumentStatus}, #{fshortName}, #{fKhqc}, #{fcreateOrgId}, #{fcreatorId}, #{fseller}, #{fKfxsy1}, #{fsalDeptId}, #{fsalGroupId},
+                     #{fdygj}, #{fcountry}, #{faddress}, #{ftel}, #{fKhyx}, #{fwebsite}, #{ftradingCurrId}, #{frecConditionId}, #{fgroupId}, #{fKhly}, #{fBzfs},#{fsbsq},#{fKhzy},
+                     #{flegalPerson},#{fKhgm},#{fFhyq},#{fCtyDecimal},#{fMjll},#{fYoutube},#{fLinkedin},#{fFacebook},#{fTwitter},#{fInstagram},#{fVk},#{fcustTypeId},#{fBzyq},
+                     #{fZmmttp1},#{fZmmttp2},#{fZmmttpMs},#{fcmmttp1},#{fcmmttp2},#{fCmmttpMs},#{fKhlogo},#{fLy},#{fsettleTypeId},#{zmmtwx},#{zmmtnx},#{fcmmtwx},#{fcmmtnx},#{fcreateDate}
+                 )
+    </insert>
+
+    <update id="updateById" parameterType="com.ruoyi.business.entity.Customer">
+        UPDATE bd_customer
+            SET fname = #{fname},
+            fshort_name = #{fshortName},
+            f_khqc = #{fKhqc},
+            f_khly = #{fKhly},
+            fcountry = #{fcountry},
+            f_dygj = #{fdygj},
+            fsbsq =#{fsbsq},
+            faddress = #{faddress},
+            fwebsite = #{fwebsite},
+            f_khzy = #{fKhzy},
+            flegal_person = #{flegalPerson},
+            f_khgm = #{fKhgm},
+            f_fhyq = #{fFhyq},
+            f_khyx = #{fKhyx},
+            ftel = #{ftel},
+            f_cty_decimal = #{fCtyDecimal},
+            f_mjll = #{fMjll},
+            fcustTypeId = #{fcustTypeId},
+            fgroup_id = #{fgroupId},
+            f_youtube = #{fYoutube},
+            f_linkedin = #{fLinkedin},
+            f_facebook = #{fFacebook},
+            f_twitter = #{fTwitter},
+            f_instagram = #{fInstagram},
+            f_vk = #{fVk},
+            f_khlogo = #{fKhlogo},
+            f_bzyq = #{fBzyq},
+            fbzfs = #{fBzfs},
+            fZmmttp1 = #{fZmmttp1},
+            fZmmttp2 = #{fZmmttp2},
+            fZmmttpMs = #{fZmmttpMs},
+            fcmmttp1 = #{fcmmttp1},
+            fcmmttp2 = #{fcmmttp2},
+            fCmmttpMs = #{fCmmttpMs},
+            ftrading_curr_id = #{ftradingCurrId},
+            fsettle_type_id = #{fsettleTypeId},
+            frec_condition_id = #{frecConditionId},
+            fseller = #{fseller},
+            f_kfxsy1 = #{fKfxsy1},
+            fmodify_date = NOW(),
+            fmodifier_id = #{fmodifierId},
+            zmmtwx = #{zmmtwx},
+            zmmtnx = #{zmmtnx},
+            fcmmtwx = #{fcmmtwx},
+            fcmmtnx = #{fcmmtnx}
+        WHERE Id = #{Id}
+    </update>
+
+    <select id="selectList" resultMap="CustomerResultMap">
+        SELECT
+        bcr.id,bcr.fnumber,bcr.fname,se.fname as fseller,bcr.fshort_name,bcr.f_cty_decimal,
+        bcr.fdocumentStatus,c.name_zh as fcountry,cy.name_en as f_dygj,bcr.fsal_dept_id,d.dept_name as fsal_dept_name,
+        bcr.fcreate_date,sr.user_name as fapprover_id,bcr.fapperober_date,b.name as fgroup_id,
+        bdy.name as f_khly,bds.name as fcustTypeId,bcr.fmodify_date
+        FROM
+        bd_customer bcr
+        LEFT JOIN sys_employee se ON bcr.fseller = se.salesman_id
+        LEFT JOIN country c ON bcr.fcountry = c.id
+        LEFT JOIN country cy ON bcr.f_dygj = cy.id
+        LEFT JOIN sys_user sr ON bcr.fapprover_id = sr.k3_key
+        LEFT JOIN sys_user su ON se.fid = su.staff_id
+        LEFT JOIN sys_dept d ON su.dept_id = d.dept_id
+        LEFT JOIN bymaterial_dictionary b ON bcr.fgroup_id = b.kingdee
+        LEFT JOIN bymaterial_dictionary bdy ON bcr.f_khly = bdy.kingdee
+        LEFT JOIN bymaterial_dictionary bds ON bcr.fcustTypeId = bds.kingdee
+        ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
+    </select>
+
+    <!--  根据条件分页查询用户列表 -->
+    <select id="selectCustomerList" resultMap="CustomerResultMap">
+        SELECT
+        bcr.id,bcr.fnumber,bcr.fname,
+        bcr.fshort_name,
+        bcr.f_khqc,
+        bcr.fdescription,
+        cy.name_zh as fcountry,
+        coy.name_zh as f_dygj,
+        bcr.fcreate_org_id,
+        su.user_name AS fcreator_id,
+        suer.user_name AS fmodifier_id,
+        sel.fname AS fseller,
+        bcr.f_kfxsy1,
+        bcr.fsal_dept_id,
+        bcr.fsal_group_id,
+        bcr.fcreate_date,
+        bcr.fmodify_date,
+        bcr.ffound_date,
+        bcr.fdocumentStatus,
+        bydy.name AS fcustTypeId,
+        bcr.f_khzrrq,
+        cy.name_zh AS name_zh,
+        bcr.fprovincial,
+        bcr.faddress,
+        bcr.fregister_address,
+        bcr.ftel,
+        bcr.f_khyx,
+        bcr.fwebsite,
+        bdy.name AS ftrading_curr_id,
+        bcr.freceive_curr_id,
+        bcr.fsettle_type_id,
+        bldy.name AS frec_condition_id,
+        bcr.fprice_list_id,
+        bcr.ftax_type,
+        bcr.ftax_rate,
+        bcr.ftax_register_code,
+        byldy.name AS fgroup_id,
+        bymldy.name AS f_khly,
+        bcr.f_sylx,
+        bcr.f_khgm,
+        bcr.f_ly,
+        bcr.f_khzy,
+        bcr.fis_group,
+        bcr.fis_def_payer,
+        bcr.flegal_person,
+        bcr.finvoice_type,
+        bcr.f_bzyq,
+        ymate.name AS fbzfs,
+        bcr.f_fhyq,
+        bcr.fapperober_date,
+        syuer.user_name AS fapprover_id,
+        bcr.f_zlbzhjsyq,
+        bcr.f_sfysqs,
+        bcr.fsbsq,
+        bcr.fcmmttp1,
+        bcr.fcmmttp2,
+        bcr.fCmmttpMs,
+        bcr.fZmmttpMs,
+        bcr.fZmmttp1,
+        bcr.fZmmttp2,
+        bcr.fsfsd,
+        bcr.fsfts,
+        bcr.f_cty_decimal,
+        bcr.f_tcfpfa,
+        bcr.fpjskzq,
+        bcr.f_mjll,
+        bcr.f_cty_large_text,
+        bcr.f_khlogo,
+        bcr.fcp_admin_code,
+        bcr.f_youtube,
+        bcr.f_linkedin,
+        bcr.f_facebook,
+        bcr.f_twitter,
+        bcr.f_instagram,
+        bcr.f_vk,
+        bcr.f_facebookmess,
+        bcr.f_skype,
+        bcr.f_whatsapp,
+        bcr.fwechat,
+        bcr.f_qq,
+        bcr.ftn,
+        bcr.f_yolo,
+        bcr.f_hangouts,
+        bcr.f_viber
+        FROM
+        bd_customer bcr
+        LEFT JOIN sys_user su ON bcr.fcreator_id = su.k3_key
+        LEFT JOIN sys_user suer ON bcr.fmodifier_id = suer.k3_key
+        LEFT JOIN sys_user syuer ON bcr.fapprover_id = syuer.k3_key
+        LEFT JOIN sys_employee sel ON bcr.fseller = sel.salesman_id
+        LEFT JOIN country cy ON bcr.fcountry = cy.id
+        LEFT JOIN country coy ON bcr.f_dygj = coy.id
+        LEFT JOIN bymaterial_dictionary bdy ON bcr.ftrading_curr_id = bdy.kingdee AND bdy.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bydy ON bcr.fcustTypeId = bydy.kingdee AND bydy.category = 'customer_category'
+        LEFT JOIN bymaterial_dictionary bldy ON bcr.frec_condition_id = bldy.kingdee AND bldy.category = 'collection_terms'
+        LEFT JOIN bymaterial_dictionary byldy ON bcr.fgroup_id = byldy.kingdee AND byldy.category = 'Customer_grouping'
+        LEFT JOIN bymaterial_dictionary bymldy ON bcr.f_khly = bymldy.kingdee AND bymldy.category = 'customer_source'
+        LEFT JOIN bymaterial_dictionary ymate ON bcr.fbzfs = ymate.kingdee AND ymate.category = 'manner_packing'
+        ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
+    </select>
+
+
+    <!-- 根据条件分查询同统计条数 -->
+    <select id="countByCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM
+        bd_customer bcr
+        LEFT JOIN sys_user su ON bcr.fcreator_id = su.k3_key
+        LEFT JOIN sys_user suer ON bcr.fmodifier_id = suer.k3_key
+        LEFT JOIN sys_user syuer ON bcr.fapprover_id = syuer.k3_key
+        LEFT JOIN sys_employee sel ON bcr.fseller = sel.salesman_id
+        LEFT JOIN country cy ON bcr.fcountry = cy.id
+        LEFT JOIN bymaterial_dictionary bdy ON bcr.ftrading_curr_id = bdy.kingdee AND bdy.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bydy ON bcr.fcustTypeId = bydy.kingdee AND bydy.category = 'customer_category'
+        LEFT JOIN bymaterial_dictionary bldy ON bcr.frec_condition_id = bldy.kingdee AND bldy.category = 'collection_terms'
+        LEFT JOIN bymaterial_dictionary byldy ON bcr.fgroup_id = byldy.kingdee AND byldy.category = 'Customer_grouping'
+        LEFT JOIN bymaterial_dictionary bymldy ON bcr.f_khly = bymldy.kingdee AND bymldy.category = 'customer_source'
+        LEFT JOIN bymaterial_dictionary ymate ON bcr.fbzfs = ymate.kingdee AND ymate.category = 'manner_packing'
+        <where>
+            <if test="customer != null">
+                <!-- 客户名称 -->
+                <if test="customer.fname != null and customer.fname != ''">
+                    AND bcr.fname LIKE CONCAT('%', #{customer.fname}, '%')
+                </if>
+                <!-- 客户编码 -->
+                <if test="customer.fnumber != null and customer.fnumber != ''">
+                    AND bcr.fnumber LIKE CONCAT('%', #{customer.fnumber}, '%')
+                </if>
+                <!-- 简称 -->
+                <if test="customer.fshortName != null and customer.fshortName != ''">
+                    AND bcr.fshort_name LIKE CONCAT('%', #{customer.fshortName}, '%')
+                </if>
+                <!-- 国家 -->
+                <if test="customer.fcountry != null and customer.fcountry != ''">
+                    AND fcountry = #{customer.fcountry}
+                </if>
+                <!-- 地区 -->
+                <if test="customer.fprovincial != null and customer.fprovincial != ''">
+                    AND fprovincial LIKE CONCAT('%', #{customer.fprovincial}, '%')
+                </if>
+                <!-- 销售员 -->
+                <if test="customer.fseller != null">
+                    AND fseller = #{customer.fseller}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectListByCondition" resultMap="CustomerResultMap">
+        SELECT * FROM bd_customer
+        <where>
+            <if test="customer != null">
+                <if test="customer.fname != null and customer.fname != ''">
+                    AND fname LIKE CONCAT('%', #{customer.fname}, '%')
+                </if>
+                <if test="customer.fnumber != null and customer.fnumber != ''">
+                    AND fnumber LIKE CONCAT('%', #{customer.fnumber}, '%')
+                </if>
+                <if test="customer.fshortName != null and customer.fshortName != ''">
+                    AND fshort_name LIKE CONCAT('%', #{customer.fshortName}, '%')
+                </if>
+                <if test="customer.fcountry != null and customer.fcountry != ''">
+                    AND fcountry = #{customer.fcountry}
+                </if>
+                <if test="customer.fprovincial != null and customer.fprovincial != ''">
+                    AND fprovincial LIKE CONCAT('%', #{customer.fprovincial}, '%')
+                </if>
+                <if test="customer.ftel != null and customer.ftel != ''">
+                    AND ftel LIKE CONCAT('%', #{customer.ftel}, '%')
+                </if>
+                <if test="customer.fKhyx != null and customer.fKhyx != ''">
+                    AND f_khyx LIKE CONCAT('%', #{customer.fKhyx}, '%')
+                </if>
+                <if test="customer.fgroupId != null">
+                    AND fgroup_id = #{customer.fgroupId}
+                </if>
+                <if test="customer.fseller != null">
+                    AND fseller = #{customer.fseller}
+                </if>
+            </if>
+        </where>
+        ORDER BY fcreate_date DESC
+    </select>
+
+    <select id="selectListByPage" resultMap="CustomerResultMap">
+        SELECT * FROM bd_customer
+        ORDER BY fcreate_date DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectAllFcustids" resultType="java.lang.Long">
+        SELECT fcustid FROM bd_customer
+    </select>
+
+    <!-- 根据客户id删除 -->
+    <delete id="removeById">
+        DELETE FROM bd_customer
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 根据金蝶ID更新客户 -->
+    <update id="updateByFcustid" parameterType="com.ruoyi.business.entity.Customer">
+        UPDATE bd_customer
+        SET fnumber = #{fnumber},
+            fname = #{fname},
+            fshort_name = #{fshortName},
+            f_khqc = #{fKhqc},
+            fdescription = #{fdescription},
+            fcreate_org_id = #{fcreateOrgId},
+            fmodifier_id = #{fmodifierId},
+            fseller = #{fseller},
+            f_kfxsy1 = #{fKfxsy1},
+            fsal_dept_id = #{fsalDeptId},
+            fsal_group_id = #{fsalGroupId},
+            fmodify_date = #{fmodifyDate},
+            ffound_date = #{ffoundDate},
+            f_khzrrq = #{fKhzrrq},
+            fdocumentstatus = #{fdocumentStatus},
+            fcusttypeid = #{fcustTypeId},
+            f_dygj = #{fdygj},
+            fapperober_date = #{fapperoberDate},
+            fapprover_id = #{fapproverId},
+            fcountry = #{fcountry},
+            fprovincial = #{fprovincial},
+            faddress = #{faddress},
+            fregister_address = #{fregisterAddress},
+            ftel = #{ftel},
+            f_khyx = #{fKhyx},
+            fwebsite = #{fwebsite},
+            ftrading_curr_id = #{ftradingCurrId},
+            freceive_curr_id = #{freceiveCurrId},
+            fsettle_type_id = #{fsettleTypeId},
+            frec_condition_id = #{frecConditionId},
+            fprice_list_id = #{fpriceListId},
+            ftax_type = #{ftaxType},
+            ftax_rate = #{ftaxRate},
+            ftax_register_code = #{ftaxRegisterCode},
+            fgroup_id = #{fgroupId},
+            f_khly = #{fKhly},
+            f_ly = #{fLy},
+            f_sylx = #{fSylx},
+            f_khgm = #{fKhgm},
+            f_khzy = #{fKhzy},
+            fis_group = #{fisGroup},
+            fis_def_payer = #{fisDefPayer},
+            flegal_person = #{flegalPerson},
+            finvoice_type = #{finvoiceType},
+            fsupplier_id = #{fsupplierId},
+            f_bzyq = #{fBzyq},
+            fbzfs = #{fBzfs},
+            f_fhyq = #{fFhyq},
+            f_zlbzhjsyq = #{fZlbzhjsyq},
+            f_sfysqs = #{fSfysqs},
+            fsbsq = #{fsbsq},
+            fsfsd = #{fsfsd},
+            fsfts = #{fsfts},
+            f_cty_decimal = #{fCtyDecimal},
+            f_tcfpfa = #{fTcfpfa},
+            fpjskzq = #{fpjskzq},
+            f_mjll = #{fMjll},
+            f_cty_large_text = #{fCtyLargeText},
+            f_khlogo = #{fKhlogo},
+            fcp_admin_code = #{fcpAdminCode},
+            f_youtube = #{fYoutube},
+            f_linkedin = #{fLinkedin},
+            f_facebook = #{fFacebook},
+            f_twitter = #{fTwitter},
+            f_instagram = #{fInstagram},
+            f_vk = #{fVk},
+            f_facebookmess = #{fFacebookmess},
+            f_skype = #{fSkype},
+            f_whatsapp = #{fWhatsapp},
+            fZmmttp1 = #{fZmmttp1},
+            fZmmttp2 = #{fZmmttp2},
+            fZmmttpMs = #{fZmmttpMs},
+            fcmmttp1 = #{fcmmttp1},
+            fcmmttp2 = #{fcmmttp2},
+            fCmmttpMs = #{fCmmttpMs},
+            fwechat = #{fwechat},
+            f_qq = #{fQq},
+            ftn = #{ftn},
+            f_yolo = #{fYolo},
+            f_hangouts = #{fHangouts},
+            f_viber = #{fViber}
+        WHERE fcustid = #{fcustid}
+    </update>
+
+
+</mapper>

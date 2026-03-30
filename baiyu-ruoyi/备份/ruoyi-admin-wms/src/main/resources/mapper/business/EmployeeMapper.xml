@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.EmployeeMapper">
+
+    <resultMap id="EmployeeResultMap" type="com.ruoyi.business.entity.Employee">
+        <id column="id" property="id"/>
+        <result column="fid" property="fid"/>
+        <result column="fname" property="fname"/>
+        <result column="fdescription" property="fdescription"/>
+        <result column="fcreator_id" property="fcreatorId"/>
+        <result column="fmodifier_id" property="fmodifierId"/>
+        <result column="fcreate_date" property="fcreateDate"/>
+        <result column="fmodify_date" property="fmodifyDate"/>
+        <result column="fstaff_number" property="fstaffNumber"/>
+        <result column="fphoto" property="fphoto"/>
+        <result column="faddress" property="faddress"/>
+        <result column="fmobile" property="fmobile"/>
+        <result column="femail" property="femail"/>
+        <result column="ftel" property="ftel"/>
+        <result column="f_jjlxr" property="fJjlxr"/>
+        <result column="f_jjlxrdh" property="fJjlxrdh"/>
+        <result column="f_sfzh" property="fSfzh"/>
+        <result column="f_ora_date" property="fOraDate"/>
+        <result column="f_ora_text" property="fOraText"/>
+        <result column="f_ora_date1" property="fOraDate1"/>
+        <result column="f_ora_combo" property="fOraCombo"/>
+        <result column="f_ora_text1" property="fOraText1"/>
+        <result column="f_xb" property="fXb"/>
+        <result column="f_cty_date" property="fCtyDate"/>
+        <result column="f_zzrq" property="fZzrq"/>
+        <result column="f_nl" property="fNl"/>
+        <result column="f_bw" property="fBw"/>
+        <result column="f_hkszd" property="fHkszd"/>
+        <result column="f_mz" property="fMz"/>
+        <result column="f_lzrq" property="fLzrq"/>
+        <result column="f_sbrq" property="fSbrq"/>
+        <result column="f_sbje" property="fSbje"/>
+        <result column="f_dkyl" property="fDkyl"/>
+        <result column="f_dkyliao" property="fDkyliao"/>
+        <result column="f_dksy" property="fDksy"/>
+        <result column="f_jsdj" property="fJsdj"/>
+        <result column="f_ldht" property="fLdht"/>
+        <result column="f_bxrq" property="fBxrq"/>
+        <result column="f_jbgz" property="fJbgz"/>
+        <result column="f_gwgz" property="fGwgz"/>
+        <result column="f_jx" property="fJx"/>
+        <result column="f_ywm" property="fYwm"/>
+        <result column="f_jltcd" property="fJltcd"/>
+        <result column="f_mltcd" property="fMltcd"/>
+        <result column="f_ymtcd" property="fYmtcd"/>
+        <result column="f_bmjt" property="fBmjt"/>
+        <result column="f_peuu_imagefileserver_qtr" property="fPeuuImagefileserverQtr"/>
+        <result column="f_peuu_date_83g" property="fPeuuDate83g"/>
+        <result column="f_peuu_imagefileserver_apv" property="fPeuuImagefileserverApv"/>
+        <result column="f_peuu_imagefileserver_tzk" property="fPeuuImagefileserverTzk"/>
+        <result column="f_peuu_imagefileserver_ca9" property="fPeuuImagefileserverCa9"/>
+        <result column="f_peuu_imagefileserver_uky" property="fPeuuImagefileserverUky"/>
+        <result column="f_peuu_imagefileserver_dvn" property="fPeuuImagefileserverDvn"/>
+        <result column="fbaseProperty" property="fbaseProperty"/>
+        <result column="professional_certificate" property="professionalCertificate"/>
+        <result column="f_sfzh_front" property="fSfzhFront"/>
+        <result column="f_sfzh_reverse_side" property="fSfzhReverseSide"/>
+        <result column="salesman_id" property="salesmanId"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="EmployeeResultMap">
+        SELECT * FROM sys_employee WHERE fid = #{fid}
+    </select>
+
+    <select id="selectByStaffNumber" resultMap="EmployeeResultMap">
+        SELECT * FROM sys_employee WHERE fstaff_number = #{fstaffNumber}
+    </select>
+
+    <select id="selectByFName" resultMap="EmployeeResultMap">
+        SELECT * FROM sys_employee WHERE fname = #{fname}
+    </select>
+
+    <select id="selectBySalesmanId" resultMap="EmployeeResultMap">
+        SELECT * FROM sys_employee WHERE salesman_id = #{salesmanId}
+    </select>
+    <select id="selectAllFids" resultType="java.lang.Long">
+        SELECT fid FROM sys_employee
+    </select>
+    <select id="selectByExactStaffNumber" resultMap="EmployeeResultMap">
+        SELECT
+            fid, fname, fdescription, fcreator_id, fmodifier_id, fcreate_date, fmodify_date,
+            fstaff_number, fphoto, faddress, fmobile, femail, ftel, f_jjlxr, f_jjlxrdh, f_sfzh,
+            f_sfzh_front, f_sfzh_reverse_side, f_ora_date, f_ora_text, f_ora_date1, f_ora_combo,
+            f_ora_text1, f_xb, f_cty_date, f_zzrq, f_nl, f_bw, f_hkszd, f_mz, f_lzrq, f_sbrq,
+            f_sbje, f_dkyl, f_dkyliao, f_dksy, f_jsdj, f_ldht, f_bxrq, f_jbgz, f_gwgz, f_jx,
+            f_ywm, f_jltcd, f_mltcd, f_ymtcd, f_bmjt, f_peuu_imagefileserver_qtr, f_peuu_date_83g,
+            f_peuu_imagefileserver_apv, professional_certificate, f_peuu_imagefileserver_tzk,
+            f_peuu_imagefileserver_ca9, f_peuu_imagefileserver_uky, f_peuu_imagefileserver_dvn,
+            fbaseProperty, salesman_id
+        FROM sys_employee WHERE fstaff_number = #{fstaffNumber}
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO sys_employee (
+        fid, fname, fdescription, fcreator_id, fmodifier_id, fcreate_date, fmodify_date,
+        fstaff_number, fphoto, faddress, fmobile, femail, ftel, f_jjlxr, f_jjlxrdh, f_sfzh,
+        f_ora_date, f_ora_text, f_ora_date1, f_ora_combo, f_ora_text1, f_xb, f_cty_date, f_zzrq,
+        f_nl, f_bw, f_hkszd, f_mz, f_lzrq, f_sbrq, f_sbje, f_dkyl, f_dkyliao, f_dksy, f_jsdj,
+        f_ldht, f_bxrq, f_jbgz, f_gwgz, f_jx, f_ywm, f_jltcd, f_mltcd, f_ymtcd, f_bmjt,
+        f_peuu_imagefileserver_qtr, f_peuu_date_83g, f_peuu_imagefileserver_apv,
+        f_peuu_imagefileserver_tzk, f_peuu_imagefileserver_ca9, f_peuu_imagefileserver_uky, f_peuu_imagefileserver_dvn,
+        fbaseProperty, professional_certificate, f_sfzh_front, f_sfzh_reverse_side
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.fid}, #{item.fname}, #{item.fdescription}, #{item.fcreatorId}, #{item.fmodifierId},
+            #{item.fcreateDate}, #{item.fmodifyDate}, #{item.fstaffNumber}, #{item.fphoto}, #{item.faddress},
+            #{item.fmobile}, #{item.femail}, #{item.ftel}, #{item.fJjlxr}, #{item.fJjlxrdh}, #{item.fSfzh},
+            #{item.fOraDate}, #{item.fOraText}, #{item.fOraDate1}, #{item.fOraCombo}, #{item.fOraText1},
+            #{item.fXb}, #{item.fCtyDate}, #{item.fZzrq}, #{item.fNl}, #{item.fBw}, #{item.fHkszd},
+            #{item.fMz}, #{item.fLzrq}, #{item.fSbrq}, #{item.fSbje}, #{item.fDkyl}, #{item.fDkyliao},
+            #{item.fDksy}, #{item.fJsdj}, #{item.fLdht}, #{item.fBxrq}, #{item.fJbgz}, #{item.fGwgz},
+            #{item.fJx}, #{item.fYwm}, #{item.fJltcd}, #{item.fMltcd}, #{item.fYmtcd}, #{item.fBmjt},
+            #{item.fPeuuImagefileserverQtr}, #{item.fPeuuDate83g}, #{item.fPeuuImagefileserverApv},
+            #{item.fPeuuImagefileserverTzk}, #{item.fPeuuImagefileserverCa9}, #{item.fPeuuImagefileserverUky},
+            #{item.fPeuuImagefileserverDvn},
+            #{item.fbaseProperty},
+            #{item.professionalCertificate}, #{item.fSfzhFront}, #{item.fSfzhReverseSide}
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateByFid" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE sys_employee
+            SET
+            fname = #{item.fname},
+            fdescription = #{item.fdescription},
+            fcreator_id = #{item.fcreatorId},
+            fmodifier_id = #{item.fmodifierId},
+            fcreate_date = #{item.fcreateDate},
+            fmodify_date = #{item.fmodifyDate},
+            fstaff_number = #{item.fstaffNumber},
+            faddress = #{item.faddress},
+            fmobile = #{item.fmobile},
+            femail = #{item.femail},
+            ftel = #{item.ftel},
+            f_jjlxr = #{item.fJjlxr},
+            f_jjlxrdh = #{item.fJjlxrdh},
+            f_sfzh = #{item.fSfzh},
+            f_ora_date = #{item.fOraDate},
+            f_ora_text = #{item.fOraText},
+            f_ora_date1 = #{item.fOraDate1},
+            f_ora_combo = #{item.fOraCombo},
+            f_ora_text1 = #{item.fOraText1},
+            f_xb = #{item.fXb},
+            f_cty_date = #{item.fCtyDate},
+            f_zzrq = #{item.fZzrq},
+            f_nl = #{item.fNl},
+            f_bw = #{item.fBw},
+            f_hkszd = #{item.fHkszd},
+            f_mz = #{item.fMz},
+            f_lzrq = #{item.fLzrq},
+            f_sbrq = #{item.fSbrq},
+            f_sbje = #{item.fSbje},
+            f_dkyl = #{item.fDkyl},
+            f_dkyliao = #{item.fDkyliao},
+            f_dksy = #{item.fDksy},
+            f_jsdj = #{item.fJsdj},
+            f_ldht = #{item.fLdht},
+            f_bxrq = #{item.fBxrq},
+            f_jbgz = #{item.fJbgz},
+            f_gwgz = #{item.fGwgz},
+            f_jx = #{item.fJx},
+            f_ywm = #{item.fYwm},
+            f_jltcd = #{item.fJltcd},
+            f_mltcd = #{item.fMltcd},
+            f_ymtcd = #{item.fYmtcd},
+            f_bmjt = #{item.fBmjt},
+            f_peuu_imagefileserver_qtr = #{item.fPeuuImagefileserverQtr},
+            f_peuu_date_83g = #{item.fPeuuDate83g},
+            f_peuu_imagefileserver_apv = #{item.fPeuuImagefileserverApv},
+            f_peuu_imagefileserver_tzk = #{item.fPeuuImagefileserverTzk},
+            f_peuu_imagefileserver_ca9 = #{item.fPeuuImagefileserverCa9},
+            f_peuu_imagefileserver_uky = #{item.fPeuuImagefileserverUky},
+            f_peuu_imagefileserver_dvn = #{item.fPeuuImagefileserverDvn},
+            fbaseProperty = #{item.fbaseProperty},
+            professional_certificate = #{item.professionalCertificate},
+            f_sfzh_front = #{item.fSfzhFront},
+            f_sfzh_reverse_side = #{item.fSfzhReverseSide}
+            WHERE fid = #{item.fid}
+        </foreach>
+    </update>
+</mapper>

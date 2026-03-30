@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.ruoyi.common.core.utils.StringUtils;
+import com.ruoyi.common.core.utils.MapstructUtils;
 import com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo;
 import com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo;
 import com.ruoyi.erp.service.ErpApprovalHistoryService;
+
+import static com.ruoyi.erp.utils.JdbcResultUtils.*;
 
 /**
  * ERP 审批历史记录 Service 业务层实现
@@ -71,43 +74,7 @@ public class ErpApprovalHistoryServiceImpl implements ErpApprovalHistoryService 
      * Map 转 VO
      */
     private ErpApprovalHistoryVo mapToVo(Map<String, Object> row) {
-        ErpApprovalHistoryVo vo = new ErpApprovalHistoryVo();
-        vo.setHistoryId(getLong(row.get("history_id")));
-        vo.setModuleCode(getString(row.get("module_code")));
-        vo.setBillId(getLong(row.get("bill_id")));
-        vo.setFlowId(getLong(row.get("flow_id")));
-        vo.setCurrentStep(getInteger(row.get("current_step")));
-        vo.setApproverId(getString(row.get("approver_id")));
-        vo.setApprovalAction(getString(row.get("approval_action")));
-        vo.setApprovalOpinion(getString(row.get("approval_opinion")));
-        vo.setApprovalTime((LocalDateTime) row.get("approval_time"));
-        return vo;
-    }
-    
-    /**
-     * 安全获取 Long 值
-     */
-    private Long getLong(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof LocalDateTime) {
-            return null;
-        }
-        return ((Number) value).longValue();
-    }
-    
-    /**
-     * 安全获取 Integer 值
-     */
-    private Integer getInteger(Object value) {
-        return value != null ? ((Number) value).intValue() : null;
-    }
-    
-    /**
-     * 安全获取 String 值
-     */
-    private String getString(Object value) {
-        return value != null ? value.toString() : null;
+        // 使用 RuoYi MapstructUtils 自动转换
+        return MapstructUtils.convert(row, ErpApprovalHistoryVo.class);
     }
 }

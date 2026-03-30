@@ -200,15 +200,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             return null;
         }
         
+        // 手动字段映射（避免 Mapstruct 转换异常）
         ErpPageConfigVo vo = new ErpPageConfigVo();
         vo.setConfigId(getLongValue(map, "config_id"));
         vo.setModuleCode(getStringValue(map, "module_code"));
         vo.setConfigName(getStringValue(map, "config_name"));
         vo.setConfigType(getStringValue(map, "config_type"));
-        vo.setStatus(getStringValue(map, "status"));
-        vo.setIsPublic(getStringValue(map, "is_public"));
-        vo.setParentConfigId(getLongValue(map, "parent_config_id"));
-        vo.setVersion(getIntegerValue(map, "version"));
         vo.setPageConfig(getStringValue(map, "page_config"));
         vo.setFormConfig(getStringValue(map, "form_config"));
         vo.setTableConfig(getStringValue(map, "table_config"));
@@ -218,18 +215,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         vo.setDictConfig(getStringValue(map, "dict_config"));
         vo.setBusinessConfig(getStringValue(map, "business_config"));
         vo.setDetailConfig(getStringValue(map, "detail_config"));
+        vo.setVersion(getIntegerValue(map, "version"));
+        vo.setIsPublic(getStringValue(map, "is_public"));
+        vo.setStatus(getStringValue(map, "status"));
         vo.setRemark(getStringValue(map, "remark"));
-        
-        // 处理 LocalDateTime 类型
-        Object createTime = map.get("create_time");
-        if (createTime instanceof java.sql.Timestamp) {
-            vo.setCreateTime(((java.sql.Timestamp) createTime).toLocalDateTime());
-        }
-        
-        Object updateTime = map.get("update_time");
-        if (updateTime instanceof java.sql.Timestamp) {
-            vo.setUpdateTime(((java.sql.Timestamp) updateTime).toLocalDateTime());
-        }
+        vo.setCreateTime(getLocalDateTimeValue(map, "create_time"));
+        vo.setUpdateTime(getLocalDateTimeValue(map, "update_time"));
         
         return vo;
     }
@@ -249,10 +240,19 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         return value != null ? value.toString() : null;
     }
 
-    private Date getDateValue(Map<String, Object> map, String key) {
+    private LocalDateTime getLocalDateTimeValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDateTime) {
+            return (LocalDateTime) value;
+        }
         if (value instanceof java.sql.Timestamp) {
-            return (Date) value;
+            return ((java.sql.Timestamp) value).toLocalDateTime();
+        }
+        if (value instanceof java.util.Date) {
+            return ((java.util.Date) value).toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
         }
         return null;
     }
@@ -305,29 +305,8 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
      * Map 转 History VO
      */
     private ErpPageConfigHistoryVo convertHistoryMapToVo(Map<String, Object> map) {
-        if (map == null || map.isEmpty()) {
-            return null;
-        }
-        
-        ErpPageConfigHistoryVo vo = new ErpPageConfigHistoryVo();
-        vo.setHistoryId(getLongValue(map, "history_id"));
-        vo.setConfigId(getLongValue(map, "config_id"));
-        vo.setModuleCode(getStringValue(map, "module_code"));
-        vo.setConfigType(getStringValue(map, "config_type"));
-        vo.setVersion(getIntegerValue(map, "version"));
-        // History VO 只有 configContent 字段，需要从 entity 获取
-        vo.setConfigContent(getStringValue(map, "config_content"));
-        vo.setChangeReason(getStringValue(map, "change_reason"));
-        vo.setChangeType(getStringValue(map, "change_type"));
-        vo.setCreateBy(getStringValue(map, "create_by"));
-        
-        // 处理 LocalDateTime 类型
-        Object createTime = map.get("create_time");
-        if (createTime instanceof java.sql.Timestamp) {
-            vo.setCreateTime(((java.sql.Timestamp) createTime).toLocalDateTime());
-        }
-        
-        return vo;
+        // 使用 RuoYi MapstructUtils 自动转换
+        return MapstructUtils.convert(map, ErpPageConfigHistoryVo.class);
     }
 
     @Override

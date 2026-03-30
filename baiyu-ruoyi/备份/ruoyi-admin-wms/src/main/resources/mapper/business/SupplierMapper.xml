@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.SupplierMapper">
+
+    <!-- Supplier 结果映射 -->
+    <resultMap id="SupplierResultMap" type="com.ruoyi.business.entity.Supplier">
+        <id property="id" column="id"/>
+        <result property="supplierid" column="supplierid"/>
+        <result property="number" column="number"/>
+        <result property="name" column="name"/>
+        <result property="abbreviation" column="abbreviation"/>
+        <result property="nation" column="nation"/>
+        <result property="region" column="region"/>
+        <result property="address" column="address"/>
+        <result property="legalPerson" column="legalPerson"/>
+        <result property="establishDate" column="establishDate"/>
+        <result property="foreignShare" column="foreignShare"/>
+        <result property="manager" column="manager"/>
+        <result property="supplierCategory" column="supplierCategory"/>
+        <result property="supplyType" column="supplyType"/>
+        <result property="mainProduct" column="mainProduct"/>
+        <result property="businessRegistration" column="businessRegistration"/>
+        <result property="socialCreditCode" column="socialCreditCode"/>
+        <result property="source" column="source"/>
+        <result property="cause" column="cause" />
+        <result property="priorityPayment" column="priorityPayment" />
+        <result property="businessLicense" column="businessLicense"/>
+        <result property="invoiceName" column="invoiceName"/>
+        <result property="customization" column="customization"/>
+        <result property="turnover" column="turnover"/>
+        <result property="factoryPeople" column="factoryPeople"/>
+        <result property="behave" column="behave"/>
+        <result property="contactInfo" column="contactInfo"/>
+        <result property="followUpFeedback" column="followUpFeedback"/>
+        <result property="settlementCurrency" column="settlementCurrency"/>
+        <result property="factoryPositioning" column="factoryPositioning"/>
+        <result property="qualityControl" column="qualityControl"/>
+        <result property="factoryEquipment" column="factoryEquipment"/>
+        <result property="factoryArea" column="factoryArea"/>
+        <result property="factoryCertification" column="factoryCertification"/>
+        <result property="exportMarket" column="exportMarket"/>
+        <result property="settlementMethod" column="settlementMethod"/>
+        <result property="paymentTerms" column="paymentTerms"/>
+        <result property="invoiceType" column="invoiceType"/>
+        <result property="taxCategory" column="taxCategory"/>
+        <result property="settlementParty" column="settlementParty"/>
+        <result property="payee" column="payee"/>
+        <result property="fdefaultContactId" column="fdefaultContactId"/>
+        <result property="defaultTaxRate" column="defaultTaxRate"/>
+        <result property="createdBy" column="createdBy"/>
+        <result property="createdAt" column="createdAt"/>
+        <result property="updatedBy" column="updatedBy"/>
+        <result property="updatedAt" column="updatedAt"/>
+        <result property="auditor" column="auditor"/>
+        <result property="auditTime" column="audit_time"/>
+    </resultMap>
+
+    <!-- 新增供应商 -->
+    <insert id="insertSupplier"
+            parameterType="com.ruoyi.business.entity.Supplier"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO supplier
+        (
+            supplierid,  number, name, abbreviation, nation, region, address, legal_person,priorityPayment,
+            establish_date, foreign_share, manager, supplier_category, supplier_group,fdefaultContactId,
+            supply_type, main_product, business_registration, social_credit_code,
+            source, cause, business_license, invoice_name, customization, turnover, factory_people, behave, contact_info, follow_up_feedback,
+            settlement_currency, factory_positioning, quality_control, factory_equipment, factory_area, factory_certification, export_market, settlement_method, payment_terms, invoice_type,
+            tax_category, settlement_party, payee, default_tax_rate, created_by, created_at, auditor, audit_time,
+            updated_by, updated_at
+        )
+        VALUES
+            (
+                #{supplierid}, #{number}, #{name}, #{abbreviation}, #{nation}, #{region}, #{address}, #{legalPerson},
+                #{priorityPayment},
+                #{establishDate}, #{foreignShare}, #{manager}, #{supplierCategory}, #{supplierGroup},#{fdefaultContactId},
+                #{supplyType}, #{mainProduct}, #{businessRegistration}, #{socialCreditCode},
+                #{source}, #{cause}, #{businessLicense}, #{invoiceName}, #{customization}, #{turnover}, #{factoryPeople}, #{behave}, #{contactInfo}, #{followUpFeedback},
+                #{settlementCurrency}, #{factoryPositioning}, #{qualityControl}, #{factoryEquipment}, #{factoryArea}, #{factoryCertification}, #{exportMarket}, #{settlementMethod}, #{paymentTerms}, #{invoiceType},
+                #{taxCategory}, #{settlementParty}, #{payee}, #{defaultTaxRate}, #{createdBy}, NOW(), #{auditor}, #{auditTime},
+                #{updatedBy}, NOW()
+            )
+    </insert>
+
+
+    <!-- 修改供应商（仅更新非空字段） -->
+    <update id="updateSupplier"
+            parameterType="com.ruoyi.business.entity.Supplier">
+        UPDATE supplier
+        <set>
+            <if test="supplierid != null and supplierid != ''">supplierid = #{supplierid},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="abbreviation != null and abbreviation != ''">abbreviation = #{abbreviation},</if>
+            <if test="nation != null and nation != ''">nation = #{nation},</if>
+            <if test="region != null and region != ''">region = #{region},</if>
+            <if test="address != null and address != ''">address = #{address},</if>
+            <if test="legalPerson != null and legalPerson != ''">legal_person = #{legalPerson},</if>
+            <if test="establishDate != null">establish_date = #{establishDate},</if>
+            <if test="foreignShare != null">foreign_share = #{foreignShare},</if>
+            <if test="manager != null and manager != ''">manager = #{manager},</if>
+            <if test="supplierCategory != null and supplierCategory != ''">supplier_category = #{supplierCategory},</if>
+            <if test="supplyType != null and supplyType != ''">supply_type = #{supplyType},</if>
+            <if test="mainProduct != null and mainProduct != ''">main_product = #{mainProduct},</if>
+            <if test="businessRegistration != null and businessRegistration != ''">business_registration = #{businessRegistration},</if>
+            <if test="socialCreditCode != null and socialCreditCode != ''">social_credit_code = #{socialCreditCode},</if>
+            <if test="source != null and source != ''">source = #{source},</if>
+            <if test="businessLicense != null and businessLicense != ''">business_license = #{businessLicense},</if>
+            <if test="invoiceName != null and invoiceName != ''">invoice_name = #{invoiceName},</if>
+            <if test="customization != null and customization != ''">customization = #{customization},</if>
+            <if test="turnover != null and turnover != ''">turnover = #{turnover},</if>
+            <if test="factoryPeople != null and factoryPeople != ''">factory_people = #{factoryPeople},</if>
+            <if test="behave != null and behave != ''">behave = #{behave},</if>
+            <if test="priorityPayment != null and priorityPayment != ''">priorityPayment = #{priorityPayment},</if>
+            <if test="contactInfo != null and contactInfo != ''">contact_info = #{contactInfo},</if>
+            <if test="followUpFeedback != null and followUpFeedback != ''">follow_up_feedback = #{followUpFeedback},</if>
+            <if test="settlementCurrency != null and settlementCurrency != ''">settlement_currency = #{settlementCurrency},</if>
+            <if test="factoryPositioning != null and factoryPositioning != ''">factory_positioning = #{factoryPositioning},</if>
+            <if test="qualityControl != null and qualityControl != ''">quality_control = #{qualityControl},</if>
+            <if test="factoryEquipment != null and factoryEquipment != ''">factory_equipment = #{factoryEquipment},</if>
+            <if test="factoryArea != null and factoryArea != ''">factory_area = #{factoryArea},</if>
+            <if test="factoryCertification != null and factoryCertification != ''">factory_certification = #{factoryCertification},</if>
+            <if test="exportMarket != null and exportMarket != ''">export_market = #{exportMarket},</if>
+            <if test="settlementMethod != null and settlementMethod != ''">settlement_method = #{settlementMethod},</if>
+            <if test="paymentTerms != null and paymentTerms != ''">payment_terms = #{paymentTerms},</if>
+            <if test="invoiceType != null and invoiceType != ''">invoice_type = #{invoiceType},</if>
+            <if test="taxCategory != null and taxCategory != ''">tax_category = #{taxCategory},</if>
+            <if test="settlementParty != null and settlementParty != ''">settlement_party = #{settlementParty},</if>
+            <if test="payee != null and payee != ''">payee = #{payee},</if>
+            <if test="defaultTaxRate != null">default_tax_rate = #{defaultTaxRate},</if>
+            <if test="updatedBy != null and updatedBy != ''">updated_by = #{updatedBy},</if>
+            <if test="auditor != null and auditor != ''">auditor = #{auditor},</if>
+            <if test="auditTime != null and auditTime != ''">audit_time = #{auditTime},</if>
+            <if test="fdefaultContactId != null and fdefaultContactId != ''">fdefaultContactId = #{fdefaultContactId},</if>
+
+            updated_at = NOW()
+        </set>
+        WHERE number = #{number}
+    </update>
+
+    <!-- 供应商详情 -->
+    <select id="selectById" resultType="com.ruoyi.business.entity.Supplier">
+        SELECT
+        s.id,
+        s.number,
+        s.name,
+        s.abbreviation,
+        s.nation,
+        s.region,
+        s.priorityPayment,
+        s.address,
+        s.legal_person AS legalPerson,
+        s.establish_date AS establishDate,
+        s.foreign_share AS foreignShare,
+        u_manager.fname AS manager,
+        d_supplier_category.name AS supplierCategory,
+        d_supply_type.name AS supplyType,
+        s.main_product AS mainProduct,
+        s.business_registration AS businessRegistration,
+        s.social_credit_code AS socialCreditCode,
+        s.settlement_party as settlementParty,
+        s.payee,
+        d_supplier_source.name AS source,
+        s.cause,
+        s.business_license AS businessLicense,
+        s.invoice_name AS invoiceName,
+        s.customization,
+        s.turnover,
+        s.factory_people AS factoryPeople,
+        u_auditor.user_name AS auditor,
+        s.audit_time AS auditTime,
+        s.behave,
+        s.contact_info AS contactInfo,
+        s.follow_up_feedback AS followUpFeedback,
+        s.factory_positioning AS factoryPositioning,
+        s.quality_control AS qualityControl,
+        s.factory_equipment AS factoryEquipment,
+        s.factory_area AS factoryArea,
+        s.factory_certification AS factoryCertification,
+        s.export_market AS exportMarket,
+        d_currency.name AS settlementCurrency,
+        sm.name AS settlementMethod,
+        d_payment_terms.name AS paymentTerms,
+        d_invoice_type.name AS invoiceType,
+        byd.name AS taxCategory,
+        tar.name AS defaultTaxRate,
+        u_created.user_name AS createdBy,
+        sg.group_name as supplierGroup,
+        s.supplierid,
+        s.created_at AS createdAt,
+        s.updated_by AS updatedBy,
+        s.updated_at AS updatedAt
+        FROM supplier s
+        LEFT JOIN sys_employee u_manager ON s.manager = u_manager.fid
+        LEFT JOIN bymaterial_dictionary d_supplier_category
+        ON s.supplier_category = d_supplier_category.kingdee
+        AND d_supplier_category.category_name = '供应商分类'
+        LEFT JOIN bymaterial_dictionary d_supplier_source
+        ON s.source = d_supplier_source.kingdee
+        AND d_supplier_source.category_name = '供应商来源'
+        LEFT JOIN bymaterial_dictionary d_supply_type
+        ON s.supply_type = d_supply_type.kingdee
+        AND d_supply_type.category_name = '供应类别'
+        LEFT JOIN bymaterial_dictionary d_currency
+        ON s.settlement_currency = d_currency.kingdee
+        AND d_currency.category_name = '币别'
+        LEFT JOIN settlement_method sm
+        ON s.settlement_method = sm.id
+        LEFT JOIN bymaterial_dictionary d_payment_terms
+        ON s.payment_terms = d_payment_terms.kingdee
+        AND d_payment_terms.category_name = '付款条件'
+        LEFT JOIN bymaterial_dictionary d_invoice_type
+        ON s.invoice_type = d_invoice_type.kingdee
+        AND d_invoice_type.category_name = '发票类型'
+        LEFT JOIN bymaterial_dictionary byd
+        ON s.tax_category = byd.kingdee
+        AND byd.category_name = '税分类'
+        LEFT JOIN tax_rate tar ON s.default_tax_rate = tar.k3_code
+        LEFT JOIN sys_user u_created ON s.created_by = u_created.k3_key
+        LEFT JOIN sys_user u_update ON s.updated_by = u_update.k3_key
+        LEFT JOIN sys_user u_auditor ON s.auditor = u_auditor.k3_key
+        LEFT JOIN supplier_groups sg ON s.supplier_group = sg.k3_id
+        WHERE s.id = #{number}
+    </select>
+
+    <select id="selectAll" resultType="com.ruoyi.business.entity.Supplier">
+        SELECT
+        id, number, name, abbreviation, nation, region, address, legal_person AS legalPerson,
+        establish_date AS establishDate, foreign_share AS foreignShare, manager, supplier_category AS supplierCategory,
+        supply_type AS supplyType, supplier_group AS supplierGroup, main_product AS mainProduct, business_registration AS businessRegistration, social_credit_code AS socialCreditCode,
+        source, business_license AS businessLicense, invoice_name AS invoiceName, customization, turnover, factory_people AS factoryPeople, behave, contact_info AS contactInfo, follow_up_feedback AS followUpFeedback,
+        settlement_currency AS settlementCurrency, factory_positioning AS factoryPositioning, quality_control AS qualityControl, factory_equipment AS factoryEquipment, factory_area AS factoryArea, factory_certification AS factoryCertification, export_market AS exportMarket, settlement_method AS settlementMethod, payment_terms AS paymentTerms, invoice_type AS invoiceType,
+        tax_category AS taxCategory, settlement_party AS settlementParty, payee, default_tax_rate AS defaultTaxRate, created_by AS createdBy, created_at AS createdAt,
+        updated_by AS updatedBy, updated_at AS updatedAt, auditor, audit_time AS auditTime
+        FROM supplier
+        <where>
+            <if test="number != null and number != ''">AND number = #{number}</if>
+            <if test="name != null and name != ''">AND name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="abbreviation != null and abbreviation != ''">AND abbreviation LIKE CONCAT('%', #{abbreviation}, '%')</if>
+            <if test="region != null and region != ''">AND region = #{region}</if>
+            <if test="address != null and address != ''">AND address LIKE CONCAT('%', #{address}, '%')</if>
+            <if test="legalPerson != null and legalPerson != ''">AND legal_person = #{legalPerson}</if>
+            <if test="establishDate != null">AND establish_date = #{establishDate}</if>
+            <if test="foreignShare != null and foreignShare != ''">AND foreign_share = #{foreignShare}</if>
+            <if test="manager != null and manager != ''">AND manager = #{manager}</if>
+            <if test="supplierCategory != null and supplierCategory != ''">AND supplier_category = #{supplierCategory}</if>
+            <if test="supplyType != null and supplyType != ''">AND supply_type = #{supplyType}</if>
+            <if test="supplierGroup != null and supplierGroup != ''">AND supplier_group = #{supplierGroup}</if>
+            <if test="mainProduct != null and mainProduct != ''">AND main_product LIKE CONCAT('%', #{mainProduct}, '%')</if>
+            <if test="businessRegistration != null and businessRegistration != ''">AND business_registration = #{businessRegistration}</if>
+            <if test="socialCreditCode != null and socialCreditCode != ''">AND social_credit_code = #{socialCreditCode}</if>
+            <if test="source != null and source != ''">AND source = #{source}</if>
+            <if test="invoiceName != null and invoiceName != ''">AND invoice_name = #{invoiceName}</if>
+            <if test="customization != null and customization != ''">AND customization = #{customization}</if>
+            <if test="turnover != null and turnover != ''">AND turnover = #{turnover}</if>
+            <if test="factoryPeople != null and factoryPeople != ''">AND factory_people = #{factoryPeople}</if>
+            <if test="behave != null and behave != ''">AND behave = #{behave}</if>
+            <if test="contactInfo != null and contactInfo != ''">AND contact_info = #{contactInfo}</if>
+            <if test="followUpFeedback != null and followUpFeedback != ''">AND follow_up_feedback = #{followUpFeedback}</if>
+            <if test="settlementCurrency != null and settlementCurrency != ''">AND settlement_currency = #{settlementCurrency}</if>
+            <if test="factoryPositioning != null and factoryPositioning != ''">AND factory_positioning = #{factoryPositioning}</if>
+            <if test="qualityControl != null and qualityControl != ''">AND quality_control = #{qualityControl}</if>
+            <if test="factoryEquipment != null and factoryEquipment != ''">AND factory_equipment = #{factoryEquipment}</if>
+            <if test="factoryArea != null and factoryArea != ''">AND factory_area = #{factoryArea}</if>
+            <if test="factoryCertification != null and factoryCertification != ''">AND factory_certification = #{factoryCertification}</if>
+            <if test="exportMarket != null and exportMarket != ''">AND export_market = #{exportMarket}</if>
+            <if test="paymentTerms != null and paymentTerms != ''">AND payment_terms = #{paymentTerms}</if>
+            <if test="invoiceType != null and invoiceType != ''">AND invoice_type = #{invoiceType}</if>
+            <if test="taxCategory != null and taxCategory != ''">AND tax_category = #{taxCategory}</if>
+            <if test="settlementParty != null and settlementParty != ''">AND settlement_party = #{settlementParty}</if>
+            <if test="defaultTaxRate != null and defaultTaxRate != ''">AND default_tax_rate = #{defaultTaxRate}</if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="supplierID" resultType="com.ruoyi.business.entity.Supplier">
+        SELECT
+            supplierid, number, name
+        FROM supplier
+        WHERE supplierid = #{supplierid}
+    </select>
+
+    <!-- 通过供应商分组查询最新一条数据 -->
+    <select id="selectBySupplierGroup" resultType="com.ruoyi.business.entity.Supplier">
+        SELECT
+            number
+        FROM supplier
+        WHERE supplier_group = #{supplierGroup}
+        ORDER BY created_at DESC LIMIT 1;
+    </select>
+
+    <!-- 分页查询供应商列表 -->
+    <select id="selectByCondition" resultMap="SupplierResultMap">
+        SELECT
+        s.id,
+        s.number,
+        s.name,
+        s.abbreviation,
+        c.name_zh as nation,
+        s.region,
+        s.priorityPayment,
+        s.address,
+        s.legal_person AS legalPerson,
+        s.establish_date AS establishDate,
+        s.foreign_share AS foreignShare,
+        u_manager.fname AS manager,
+        d_supplier_category.name AS supplierCategory,
+        d_supply_type.name AS supplyType,
+        s.main_product AS mainProduct,
+        s.business_registration AS businessRegistration,
+        s.social_credit_code AS socialCreditCode,
+        s.settlement_party as settlementParty,
+        s.payee,
+        d_supplier_source.name AS source,
+        s.cause,
+        s.business_license AS businessLicense,
+        s.invoice_name AS invoiceName,
+        s.customization,
+        s.turnover,
+        s.factory_people AS factoryPeople,
+        u_auditor.user_name AS auditor,
+        s.audit_time AS auditTime,
+        s.behave,
+        s.contact_info AS contactInfo,
+        s.follow_up_feedback AS followUpFeedback,
+        s.factory_positioning AS factoryPositioning,
+        s.quality_control AS qualityControl,
+        s.factory_equipment AS factoryEquipment,
+        s.factory_area AS factoryArea,
+        s.factory_certification AS factoryCertification,
+        s.export_market AS exportMarket,
+        d_currency.name AS settlementCurrency,
+        sm.name AS settlementMethod,
+        d_payment_terms.name AS paymentTerms,
+        d_invoice_type.name AS invoiceType,
+        byd.name AS taxCategory,
+        GROUP_CONCAT(DISTINCT f.bank_account SEPARATOR ',') AS bankAccount,
+        GROUP_CONCAT(DISTINCT f.receiving_bank SEPARATOR ',') AS receivingBank,
+        tar.name AS defaultTaxRate,
+        u_created.user_name AS createdBy,
+        sg.group_name,
+        s.supplierid,
+        s.created_at AS createdAt,
+        s.updated_by AS updatedBy,
+        s.updated_at AS updatedAt
+        FROM supplier s
+        LEFT JOIN sys_employee u_manager ON s.manager = u_manager.fid
+        LEFT JOIN bymaterial_dictionary d_supplier_category
+        ON s.supplier_category = d_supplier_category.kingdee
+        AND d_supplier_category.category_name = '供应商分类'
+        LEFT JOIN bymaterial_dictionary d_supplier_source
+        ON s.source = d_supplier_source.kingdee
+        AND d_supplier_source.category_name = '供应商来源'
+        LEFT JOIN bymaterial_dictionary d_supply_type
+        ON s.supply_type = d_supply_type.kingdee
+        AND d_supply_type.category_name = '供应类别'
+        LEFT JOIN bymaterial_dictionary d_currency
+        ON s.settlement_currency = d_currency.kingdee
+        AND d_currency.category_name = '币别'
+        LEFT JOIN settlement_method sm ON s.settlement_method = sm.id
+        LEFT JOIN bymaterial_dictionary d_payment_terms
+        ON s.payment_terms = d_payment_terms.kingdee
+        AND d_payment_terms.category_name = '付款条件'
+        LEFT JOIN bymaterial_dictionary d_invoice_type
+        ON s.invoice_type = d_invoice_type.kingdee
+        AND d_invoice_type.category_name = '发票类型'
+        LEFT JOIN bymaterial_dictionary byd
+        ON s.tax_category = byd.kingdee
+        AND byd.category_name = '税分类'
+        LEFT JOIN tax_rate tar ON s.default_tax_rate = tar.k3_code
+        LEFT JOIN sys_user u_created ON s.created_by = u_created.k3_key
+        LEFT JOIN sys_user u_update ON s.updated_by = u_update.k3_key
+        LEFT JOIN sys_user u_auditor ON s.auditor = u_auditor.k3_key
+        LEFT JOIN supplier_groups sg ON s.supplier_group = sg.k3_id
+        LEFT JOIN financial_information f ON s.number = f.supplier_number
+        LEFT JOIN country c on s.nation= c.id
+
+        <where>
+            1=1
+            <!-- 供应商编码 -->
+            <if test="supplier.number != null and supplier.number != ''">AND number LIKE CONCAT('%', #{supplier.number}, '%')</if>
+            <!-- 供应商名称 -->
+            <if test="supplier.name != null and supplier.name != ''">AND s.name LIKE CONCAT('%', #{supplier.name}, '%')</if>
+            <!-- 供应商分组 -->
+            <if test="supplier.groupName != null and supplier.groupName != ''">AND sg.group_name LIKE CONCAT('%', #{supplier.groupName}, '%')</if>
+            <!-- 供应商树形结构查询 -->
+            <if test="supplier.supplierGroup != null and supplier.supplierGroup != ''">AND s.supplier_group = #{supplier.supplierGroup}</if>
+            <!-- 主营产品 -->
+            <if test="supplier.mainProduct != null and supplier.mainProduct != ''">AND s.main_product LIKE CONCAT('%', #{supplier.mainProduct}, '%')</if>
+            <!-- 供应商分类 -->
+            <if test="supplier.supplierCategory != null and supplier.supplierCategory != ''">AND d_supplier_category.name LIKE CONCAT('%', #{supplier.supplierCategory}, '%')</if>
+            <!-- 负责人 -->
+            <if test="supplier.manager != null and supplier.manager != ''">AND u_manager.fname LIKE CONCAT('%', #{supplier.manager}, '%')</if>
+        </where>
+        GROUP BY
+        s.id, s.number, s.name, s.abbreviation, s.nation, s.region,
+        s.priorityPayment, s.address, s.legal_person, s.establish_date,
+        s.foreign_share, u_manager.fname, d_supplier_category.name,
+        d_supply_type.name, s.main_product, s.business_registration,
+        s.social_credit_code, s.settlement_party, s.payee,
+        d_supplier_source.name, s.cause, s.business_license, s.invoice_name,
+        s.customization, s.turnover, s.factory_people, u_auditor.user_name,
+        s.audit_time, s.behave, s.contact_info, s.follow_up_feedback,
+        s.factory_positioning, s.quality_control, s.factory_equipment,
+        s.factory_area, s.factory_certification, s.export_market,
+        d_currency.name, sm.name, d_payment_terms.name, d_invoice_type.name,
+        byd.name, tar.name, u_created.user_name, sg.group_name, s.supplierid,
+        s.created_at, s.updated_by, s.updated_at
+        ORDER BY s.created_at DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 根据金蝶ID查询供应商 -->
+    <select id="getSupplierBySupplierId" resultType="com.ruoyi.business.entity.Supplier">
+        SELECT
+            id, number, name, abbreviation, nation, region, address, legal_person AS legalPerson,auditor,audit_time AS auditTime,
+            establish_date AS establishDate, foreign_share AS foreignShare, manager, supplier_category AS supplierCategory,
+            supply_type AS supplyType, main_product AS mainProduct, business_registration AS businessRegistration, social_credit_code AS socialCreditCode,
+            source, cause, business_license AS businessLicense, supplier_group, invoice_name AS invoiceName, customization, turnover, factory_people AS factoryPeople, behave, contact_info AS contactInfo, follow_up_feedback AS followUpFeedback,
+            settlement_currency AS settlementCurrency, factory_positioning AS factoryPositioning, quality_control AS qualityControl, factory_equipment AS factoryEquipment, factory_area AS factoryArea, factory_certification AS factoryCertification, export_market AS exportMarket, settlement_method AS settlementMethod, payment_terms AS paymentTerms, invoice_type AS invoiceType,
+            tax_category AS taxCategory, settlement_party AS settlementParty, payee, default_tax_rate AS defaultTaxRate, created_by AS createdBy, created_at AS createdAt,
+            updated_by AS updatedBy, updated_at AS updatedAt
+        FROM supplier
+        WHERE supplierid = #{supplierid}
+    </select>
+
+    <!-- 统计供应商总数 -->
+    <select id="countByCondition" resultType="java.lang.Long">
+        SELECT
+        COUNT(*)
+        FROM supplier s
+        LEFT JOIN sys_employee u_manager ON s.manager = u_manager.fid
+        LEFT JOIN bymaterial_dictionary d_supplier_category
+        ON s.supplier_category = d_supplier_category.kingdee
+        AND d_supplier_category.category_name = '供应商分类'
+        LEFT JOIN bymaterial_dictionary d_supplier_source
+        ON s.source = d_supplier_source.kingdee
+        AND d_supplier_source.category_name = '供应商来源'
+        LEFT JOIN bymaterial_dictionary d_supply_type
+        ON s.supply_type = d_supply_type.kingdee
+        AND d_supply_type.category_name = '供应类别'
+        LEFT JOIN bymaterial_dictionary d_currency
+        ON s.settlement_currency = d_currency.kingdee
+        AND d_currency.category_name = '币别'
+        LEFT JOIN settlement_method sm
+        ON s.settlement_method = sm.id
+        LEFT JOIN bymaterial_dictionary d_payment_terms
+        ON s.payment_terms = d_payment_terms.kingdee
+        AND d_payment_terms.category_name = '付款条件'
+        LEFT JOIN bymaterial_dictionary d_invoice_type
+        ON s.invoice_type = d_invoice_type.kingdee
+        AND d_invoice_type.category_name = '发票类型'
+        LEFT JOIN bymaterial_dictionary d_tax_category
+        ON s.tax_category = d_tax_category.kingdee
+        AND d_tax_category.category_name = '税分类'
+        LEFT JOIN sys_user u_created ON s.created_by = u_created.k3_key
+        LEFT JOIN supplier_groups sg ON s.supplier_group = sg.k3_id
+        <where>
+            <!-- 供应商编码 -->
+            <if test="supplier.number != null and supplier.number != ''">AND number LIKE CONCAT('%', #{supplier.number}, '%')</if>
+            <!-- 供应商名称 -->
+            <if test="supplier.name != null and supplier.name != ''">AND s.name LIKE CONCAT('%', #{supplier.name}, '%')</if>
+            <!-- 供应商分组 -->
+            <if test="supplier.groupName != null and supplier.groupName != ''">AND sg.group_name LIKE CONCAT('%', #{supplier.groupName}, '%')</if>
+            <!-- 供应商树形结构查询 -->
+            <if test="supplier.supplierGroup != null and supplier.supplierGroup != ''">AND s.supplier_group = #{supplier.supplierGroup}</if>
+            <!-- 主营产品 -->
+            <if test="supplier.mainProduct != null and supplier.mainProduct != ''">AND s.main_product LIKE CONCAT('%', #{supplier.mainProduct}, '%')</if>
+            <!-- 供应商分类 -->
+            <if test="supplier.supplierCategory != null and supplier.supplierCategory != ''">AND d_supplier_category.name LIKE CONCAT('%', #{supplier.supplierCategory}, '%')</if>
+            <!-- 负责人 -->
+            <if test="supplier.manager != null and supplier.manager != ''">AND u_manager.fname LIKE CONCAT('%', #{supplier.manager}, '%')</if>
+        </where>
+    </select>
+</mapper>

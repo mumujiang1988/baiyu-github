@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.ReceiptNoticeFullMapper">
+
+
+    <!-- 完整检验单数据映射结果 -->
+    <resultMap id="ReceiptNoticeFullResultMap" type="com.ruoyi.business.entity.ReceiptNoticeFull">
+        <!-- 主表字段 -->
+        <id column="fid" property="fid"/>
+        <result column="fbill_no" property="fBillNo"/>
+        <result column="fdocument_status" property="fDocumentStatus"/>
+        <result column="fapprover_id" property="fApproverId"/>
+        <result column="fapprove_date" property="fApproveDate" jdbcType="TIMESTAMP"/>
+        <result column="fmodifier_id" property="fModifierId"/>
+        <result column="fcreate_date" property="fCreateDate" jdbcType="TIMESTAMP"/>
+        <result column="fcreator_id" property="fCreatorId"/>
+        <result column="fmodify_date" property="fModifyDate" jdbcType="TIMESTAMP"/>
+        <result column="fcancel_date" property="fCancelDate" jdbcType="TIMESTAMP"/>
+        <result column="fcanceler" property="fCanceler"/>
+        <result column="fbill_type_id" property="fBillTypeId"/>
+        <result column="fbusiness_type" property="fBusinessType"/>
+        <result column="fdate" property="fDate" jdbcType="DATE"/>
+
+        <!-- 明细表字段 -->
+        <result column="fmaterial_id" property="fMaterialId"/>
+        <result column="fmaterial_name" property="fMaterialName"/>
+        <result column="fmaterial_model" property="fMaterialModel"/>
+        <result column="fqc_scheme_id" property="fQcSchemeId"/>
+        <result column="funit_id" property="fUnitId"/>
+        <result column="fbase_unit_id" property="fBaseUnitId"/>
+        <result column="finspect_qty" property="fInspectQty"/>
+        <result column="fqualified_qty" property="fQualifiedQty"/>
+        <result column="funqualified_qty" property="fUnqualifiedQty"/>
+        <result column="finspect_result" property="fInspectResult"/>
+        <result column="fqc_status" property="fQcStatus"/>
+        <result column="fsupplier_id" property="fSupplierId"/>
+        <result column="fstock_id" property="fStockId"/>
+        <result column="flot" property="fLot"/>
+        <result column="fzxs" property="fzxs"/>
+        <result column="fmz" property="fmz"/>
+        <result column="fjz" property="fjz"/>
+        <result column="fchang" property="fChang"/>
+        <result column="fkuan" property="fKuan"/>
+        <result column="fgao" property="fGao"/>
+        <result column="fzxshu" property="fZxshu"/>
+        <result column="ftj" property="fTj"/>
+        <result column="fdiscount_qty" property="fDiscountQty"/>
+        <result column="fmzh" property="fMzh"/>
+        <result column="fbzyq" property="fbzyq"/>
+        <result column="ftsyq" property="fTsyq"/>
+        <result column="fcptp" property="fcptp"/>
+        <result column="fxsddh" property="fXsddh"/>
+        <result column="fcgddh" property="fCgddh"/>
+        <result column="fkhjc" property="fKhjc"/>
+        <result column="f_cty_picture" property="fCtyPicture"/>
+        <result column="f_cty_picture1" property="fCtyPicture1"/>
+        <result column="f_peuu_attachment_ca9" property="fPeuuAttachmentCa9"/>
+        <result column="fnhc" property="fnhc"/>
+        <result column="fnhk" property="fnhk"/>
+        <result column="fnhg" property="fnhg"/>
+    </resultMap>
+
+    <!-- 查询完整数据详情 -->
+    <select id="selectReceiptNoticeFullById" parameterType="java.lang.Long" resultMap="ReceiptNoticeFullResultMap">
+        SELECT
+            tnf.fbill_no,
+            tnf.fdocument_status,
+            su.user_name as fapprover_id,
+            tnf.fapprove_date,
+            sys.user_name as fmodifier_id,
+            tnf.fcreate_date,
+            sysu.user_name as fcreator_id,
+            tnf.fmodify_date,
+            tnf.fcancel_date,
+            tnf.fcanceler,
+            tnf.fbill_type_id,
+            tnf.fbusiness_type,
+            tnf.fdate,
+            bym.number as fmaterial_id,
+            tnf.fmaterial_name,
+            tnf.fmaterial_model,
+            byd.name as funit_id,
+            bydy.name as fbase_unit_id,
+            tnf.finspect_qty,
+            tnf.fqualified_qty,
+            tnf.funqualified_qty,
+            tnf.finspect_result,
+            tnf.fqc_status,
+            super.name as fsupplier_id,
+            tnf.fstock_id,
+            tnf.flot,
+            tnf.fzxs,
+            tnf.fmz,
+            tnf.fjz,
+            tnf.fchang,
+            tnf.fkuan,
+            tnf.fgao,
+            tnf.fzxshu,
+            tnf.ftj,
+            tnf.fdiscount_qty,
+            tnf.fmzh,
+            tnf.fbzyq,
+            tnf.ftsyq,
+            tnf.fcptp,
+            tnf.fxsddh,
+            tnf.fcgddh,
+            tnf.fkhjc,
+            tnf.f_cty_picture,
+            tnf.f_cty_picture1,
+            tnf.f_peuu_attachment_ca9,
+            tnf.fnhc,
+            tnf.fnhk,
+            tnf.fnhg
+        FROM
+            t_receipt_notice_full tnf
+                LEFT JOIN sys_user su on tnf.fapprover_id=su.k3_key
+                LEFT JOIN sys_user sys on tnf.fmodifier_id=sys.k3_key
+                LEFT JOIN sys_user sysu on tnf.fcreator_id=sysu.k3_key
+                LEFT JOIN supplier super on tnf.fsupplier_id=super.supplierid
+                LEFT JOIN by_material bym on tnf.fmaterial_id=bym.k3_id
+                LEFT JOIN bymaterial_dictionary byd on tnf.funit_id=byd.kingdee and byd.category='unit'
+                LEFT JOIN bymaterial_dictionary bydy on tnf.fbase_unit_id=byd.kingdee and bydy.category='unit'
+            FROM t_receipt_notice_full
+        WHERE id = #{id}
+    </select>
+    <select id="selectReceiptNoticeFullByPage" parameterType="com.ruoyi.business.entity.ReceiptNoticeFull" resultMap="ReceiptNoticeFullResultMap">
+        SELECT
+        tnf.fbill_no,
+        tnf.fdocument_status,
+        su.user_name as fapprover_id,
+        tnf.fapprove_date,
+        sys.user_name as fmodifier_id,
+        tnf.fcreate_date,
+        sysu.user_name as fcreator_id,
+        tnf.fmodify_date,
+        tnf.fcancel_date,
+        tnf.fcanceler,
+        tnf.fbill_type_id,
+        tnf.fbusiness_type,
+        tnf.fdate,
+        bym.number as fmaterial_id,
+        tnf.fmaterial_name,
+        tnf.fmaterial_model,
+        byd.name as funit_id,
+        bydy.name as fbase_unit_id,
+        tnf.finspect_qty,
+        tnf.fqualified_qty,
+        tnf.funqualified_qty,
+        tnf.finspect_result,
+        tnf.fqc_status,
+        super.name as fsupplier_id,
+        tnf.fstock_id,
+        tnf.flot,
+        tnf.fzxs,
+        tnf.fmz,
+        tnf.fjz,
+        tnf.fchang,
+        tnf.fkuan,
+        tnf.fgao,
+        tnf.fzxshu,
+        tnf.ftj,
+        tnf.fdiscount_qty,
+        tnf.fmzh,
+        tnf.fbzyq,
+        tnf.ftsyq,
+        tnf.fcptp,
+        tnf.fxsddh,
+        tnf.fcgddh,
+        tnf.fkhjc,
+        tnf.f_cty_picture,
+        tnf.f_cty_picture1,
+        tnf.f_peuu_attachment_ca9,
+        tnf.fnhc,
+        tnf.fnhk,
+        tnf.fnhg
+        FROM
+        t_receipt_notice_full tnf
+        LEFT JOIN sys_user su on tnf.fapprover_id=su.k3_key
+        LEFT JOIN sys_user sys on tnf.fmodifier_id=sys.k3_key
+        LEFT JOIN sys_user sysu on tnf.fcreator_id=sysu.k3_key
+        LEFT JOIN supplier super on tnf.fsupplier_id=super.supplierid
+        LEFT JOIN by_material bym on tnf.fmaterial_id=bym.k3_id
+        LEFT JOIN bymaterial_dictionary byd on tnf.funit_id=byd.kingdee and byd.category='unit'
+        LEFT JOIN bymaterial_dictionary bydy on tnf.fbase_unit_id=byd.kingdee and bydy.category='unit'
+
+        <where>
+            <if test="receiptNoticeFull != null">
+                <if test="receiptNoticeFull.fBillNo != null and receiptNoticeFull.fBillNo != ''">
+                    AND tnf.fbill_no LIKE CONCAT('%', #{receiptNoticeFull.fBillNo}, '%')
+                </if>
+                <if test="receiptNoticeFull.fDocumentStatus != null and receiptNoticeFull.fDocumentStatus != ''">
+                    AND tnf.fdocument_status = #{receiptNoticeFull.fDocumentStatus}
+                </if>
+                <if test="receiptNoticeFull.fBillTypeId != null and receiptNoticeFull.fBillTypeId != ''">
+                    AND tnf.fbill_type_id = #{receiptNoticeFull.fBillTypeId}
+                </if>
+                <if test="receiptNoticeFull.fBusinessType != null and receiptNoticeFull.fBusinessType != ''">
+                    AND tnf.fbusiness_type = #{receiptNoticeFull.fBusinessType}
+                </if>
+                <if test="receiptNoticeFull.fDate != null">
+                    AND DATE(tnf.fdate) = DATE(#{receiptNoticeFull.fDate})
+                </if>
+                <if test="receiptNoticeFull.fMaterialId != null and receiptNoticeFull.fMaterialId != ''">
+                    AND tnf.fmaterial_id = #{receiptNoticeFull.fMaterialId}
+                </if>
+                <if test="receiptNoticeFull.fSupplierId != null and receiptNoticeFull.fSupplierId != ''">
+                    AND tnf.fsupplier_id = #{receiptNoticeFull.fSupplierId}
+                </if>
+                <if test="receiptNoticeFull.fKhjc != null and receiptNoticeFull.fKhjc != ''">
+                    AND tnf.fkhjc = #{receiptNoticeFull.fKhjc}
+                </if>
+                <if test="receiptNoticeFull.fXsddh != null and receiptNoticeFull.fXsddh != ''">
+                    AND tnf.fxsddh = #{receiptNoticeFull.fXsddh}
+                </if>
+                <if test="receiptNoticeFull.fCgddh != null and receiptNoticeFull.fCgddh != ''">
+                    AND tnf.fcgddh = #{receiptNoticeFull.fCgddh}
+                </if>
+            </if>
+        </where>
+        ORDER BY tnf.fcreate_date DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id="selectReceiptNoticeFullByBillNo" resultType="com.ruoyi.business.entity.ReceiptNoticeFull">
+        SELECT
+            tnf.fbill_no,
+            tnf.fdocument_status,
+            su.user_name as fapprover_id,
+            tnf.fapprove_date,
+            sys.user_name as fmodifier_id,
+            tnf.fcreate_date,
+            sysu.user_name as fcreator_id,
+            tnf.fmodify_date,
+            tnf.fcancel_date,
+            tnf.fcanceler,
+            tnf.fbill_type_id,
+            tnf.fbusiness_type,
+            tnf.fdate,
+            tnf.fmaterial_id,
+            tnf.fmaterial_name,
+            tnf.fmaterial_model,
+            tnf.funit_id,
+            tnf.fbase_unit_id,
+            tnf.finspect_qty,
+            tnf.fqualified_qty,
+            tnf.funqualified_qty,
+            tnf.finspect_result,
+            tnf.fqc_status,
+            tnf.fsupplier_id,
+            tnf.fstock_id,
+            tnf.flot,
+            tnf.fzxs,
+            tnf.fmz,
+            tnf.fjz,
+            tnf.fchang,
+            tnf.fkuan,
+            tnf.fgao,
+            tnf.fzxshu,
+            tnf.ftj,
+            tnf.fdiscount_qty,
+            tnf.fmzh,
+            tnf.fbzyq,
+            tnf.ftsyq,
+            tnf.fcptp,
+            tnf.fxsddh,
+            tnf.fcgddh,
+            tnf.fkhjc,
+            tnf.f_cty_picture,
+            tnf.f_cty_picture1,
+            tnf.f_peuu_attachment_ca9,
+            tnf.fnhc,
+            tnf.fnhk,
+            tnf. fnhg
+        FROM
+            t_receipt_notice_full tnf
+
+                LEFT JOIN sys_user su  on tnf.fapprover_id=su.k3_key
+                LEFT JOIN sys_user sys  on tnf.fmodifier_id=sys.k3_key
+                LEFT JOIN sys_user sysu  on tnf.fcreator_id=sysu.k3_key
+
+            WHERE tnf.fbill_no = #{fBillNo}
+    </select>
+
+
+    <!-- 新增完整检验单数据 -->
+    <insert id="insertReceiptNotice" parameterType="com.ruoyi.business.entity.ReceiptNoticeFull" useGeneratedKeys="true" keyProperty="fid">
+        INSERT INTO t_receipt_notice_full (
+            fbill_no,
+            fdocument_status,
+            fapprover_id,
+            fapprove_date,
+            fmodifier_id,
+            fcreate_date,
+            fcreator_id,
+            fmodify_date,
+            fcancel_date,
+            fcanceler,
+            fbill_type_id,
+            fbusiness_type,
+            fdate,
+            fmaterial_id,
+            fmaterial_name,
+            fmaterial_model,
+            fqc_scheme_id,
+            funit_id,
+            fbase_unit_id,
+            finspect_qty,
+            fqualified_qty,
+            funqualified_qty,
+            finspect_result,
+            fqc_status,
+            fsupplier_id,
+            fstock_id,
+            flot,
+            fzxs,
+            fmz,
+            fjz,
+            fchang,
+            fkuan,
+            fgao,
+            fzxshu,
+            ftj,
+            fdiscount_qty,
+            fmzh,
+            fbzyq,
+            ftsyq,
+            fcptp,
+            fxsddh,
+            fcgddh,
+            fkhjc,
+            f_cty_picture,
+            f_cty_picture1,
+            f_peuu_attachment_ca9,
+            fnhc,
+            fnhk,
+            fnhg
+        ) VALUES (
+            #{fBillNo},
+            #{fDocumentStatus},
+            #{fApproverId},
+            #{fApproveDate},
+            #{fModifierId},
+            #{fCreateDate},
+            #{fCreatorId},
+            #{fModifyDate},
+            #{fCancelDate},
+            #{fCanceler},
+            #{fBillTypeId},
+            #{fBusinessType},
+            #{fDate},
+            #{fMaterialId},
+            #{fMaterialName},
+            #{fMaterialModel},
+            #{fQcSchemeId},
+            #{fUnitId},
+            #{fBaseUnitId},
+            #{fInspectQty},
+            #{fQualifiedQty},
+            #{fUnqualifiedQty},
+            #{fInspectResult},
+            #{fQcStatus},
+            #{fSupplierId},
+            #{fStockId},
+            #{fLot},
+            #{fzxs},
+            #{fmz},
+            #{fjz},
+            #{fChang},
+            #{fKuan},
+            #{fGao},
+            #{fZxshu},
+            #{fTj},
+            #{fDiscountQty},
+            #{fMzh},
+            #{fbzyq},
+            #{fTsyq},
+            #{fcptp},
+            #{fXsddh},
+            #{fCgddh},
+            #{fKhjc},
+            #{fCtyPicture},
+            #{fCtyPicture1},
+            #{fPeuuAttachmentCa9},
+            #{fnhc},
+            #{fnhk},
+            #{fnhg}
+        )
+    </insert>
+
+    <!-- 修改完整检验单数据 -->
+    <update id="updateReceiptNotice" parameterType="com.ruoyi.business.entity.ReceiptNoticeFull">
+        UPDATE t_receipt_notice_full
+        <set>
+            <if test="fBillNo != null and fBillNo != ''">
+                fbill_no = #{fBillNo},
+            </if>
+            <if test="fDocumentStatus != null and fDocumentStatus != ''">
+                fdocument_status = #{fDocumentStatus},
+            </if>
+            <if test="fApproverId != null">
+                fapprover_id = #{fApproverId},
+            </if>
+            <if test="fApproveDate != null">
+                fapprove_date = #{fApproveDate},
+            </if>
+            <if test="fModifierId != null">
+                fmodifier_id = #{fModifierId},
+            </if>
+            <if test="fModifyDate != null">
+                fmodify_date = #{fModifyDate},
+            </if>
+            <if test="fCancelDate != null">
+                fcancel_date = #{fCancelDate},
+            </if>
+            <if test="fCanceler != null and fCanceler != ''">
+                fcanceler = #{fCanceler},
+            </if>
+            <if test="fBillTypeId != null and fBillTypeId != ''">
+                fbill_type_id = #{fBillTypeId},
+            </if>
+            <if test="fBusinessType != null and fBusinessType != ''">
+                fbusiness_type = #{fBusinessType},
+            </if>
+            <if test="fDate != null">
+                fdate = #{fDate},
+            </if>
+            fmodifier_id = #{fModifierId},
+            fmodify_date = #{fModifyDate}
+        </set>
+        WHERE fid = #{fid}
+    </update>
+
+    <!-- 删除完整检验单数据 -->
+    <delete id="deleteReceiptNoticeById" parameterType="java.lang.Long">
+        DELETE FROM t_receipt_notice_full WHERE fid = #{fid}
+    </delete>
+
+    <!-- 批量删除完整检验单数据 -->
+    <delete id="deleteReceiptNoticeBatch" parameterType="java.util.List">
+        DELETE FROM t_receipt_notice_full WHERE fid IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据单据编号删除 -->
+    <delete id="deleteReceiptNoticeByBillNo" parameterType="java.lang.String">
+        DELETE FROM t_receipt_notice_full WHERE fbill_no = #{fBillNo}
+    </delete>
+
+</mapper>

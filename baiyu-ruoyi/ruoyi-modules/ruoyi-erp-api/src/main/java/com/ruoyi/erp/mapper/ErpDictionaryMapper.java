@@ -116,11 +116,11 @@ public interface ErpDictionaryMapper {
      */
     @Select("SELECT " +
             "  CONCAT(u.nick_name, IFNULL(CONCAT('(', d.dept_name, ')'), ''), IFNULL(CONCAT(' - ', e.salesman_id), '')) AS label, " +
-            "  u.user_id AS value, " +
+            "  COALESCE(e.salesman_id, CAST(u.user_id AS CHAR)) AS value, " +  // 优先使用 salesman_id，没有则使用 user_id
             "  'salespersons' AS type, " +
             "  u.nick_name AS nickName, " +
             "  d.dept_name AS departmentName, " +
-            "  e.salesman_id AS FSalerId, " +  // ✅ 改为数据库字段名
+            "  e.salesman_id AS FSalerId, " +  // 销售员编码
             "  GROUP_CONCAT(DISTINCT sr.role_name ORDER BY sr.role_id) AS roleNames " +
             "FROM sys_user u " +
             "LEFT JOIN sys_dept d ON u.dept_id = d.dept_id " +

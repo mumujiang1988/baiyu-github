@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SaleOrderMapper">
+
+    <resultMap id="SaleOrderMap" type="com.ruoyi.business.entity.SaleOrder">
+        <id column="id" property="id"/>
+        <result column="FID" property="fid"/>
+
+        <result column="FBillNo" property="fBillNo"/>
+        <result column="Document_type" property="documentType"/>
+        <result column="FDate" property="fDate"/>
+        <result column="FCustId" property="fCustId"/>
+        <result column="orderStatus" property="orderStatus"/>
+        <result column="F_ora_BaseProperty" property="fOraBaseProperty"/>
+        <result column="F_khhth" property="fKhhth"/>
+        <result column="F_kglxr" property="fKglxr"/>
+        <result column="FCtyBaseProperty1" property="fCtyBaseProperty1"/>
+        <result column="FSettleCurrId" property="fSettleCurrId"/>
+        <result column="FTcbl" property="fTcbl"/>
+        <result column="FKhsd" property="fKhsd"/>
+        <result column="FIsIncludedTax" property="fIsIncludedTax"/>
+        <result column="FSfbg" property="fSfbg"/>
+        <result column="FSalerId" property="fSalerId"/>
+        <result column="FLrl" property="fLrl"/>
+        <result column="FJlrl" property="fJlrl"/>
+        <result column="FGj" property="fGj"/>
+        <result column="fstate" property="fstate"/>
+        <result column="FMyfs" property="fMyfs"/>
+        <result column="FZyxb" property="fZyxb"/>
+        <result column="FYhzh" property="fYhzh"/>
+        <result column="FCtyDate" property="fCtyDate"/>
+        <result column="FSygs" property="fSygs"/>
+        <result column="FRecConditionId" property="fRecConditionId"/>
+        <result column="FBzfs" property="fbzfs"/>
+        <result column="FReceiveId" property="fReceiveId"/>
+        <result column="FSettleId" property="fSettleId"/>
+        <result column="FSettleAddress" property="fSettleAddress"/>
+        <result column="FChargeId" property="fChargeId"/>
+        <result column="FShhl" property="fShhl"/>
+        <result column="FShzt" property="fShzt"/>
+        <result column="FShje" property="fShje"/>
+        <result column="FCtyDate1" property="fCtyDate1"/>
+        <result column="FCreatorId" property="fCreatorId"/>
+        <result column="FCreateDate" property="fCreateDate"/>
+        <result column="FModifierId" property="fModifierId"/>
+        <result column="FModifyDate" property="fModifyDate"/>
+        <result column="FAllDisCount" property="fAllDisCount"/>
+        <result column="FYsbl1" property="fYsbl1"/>
+        <result column="FBillTaxAmount" property="fBillTaxAmount"/>
+        <result column="FBillAmount" property="fBillAmount"/>
+        <result column="FLocalCurrId" property="fLocalCurrId"/>
+        <result column="FExchangeTypeId" property="fExchangeTypeId"/>
+        <result column="FExchangeRate" property="fExchangeRate"/>
+        <result column="FPlannotRecAmount" property="fPlannotRecAmount"/>
+        <result column="FPlanAllRecAmount" property="fPlanAllRecAmount"/>
+        <result column="FPlanRefundAmount" property="fPlanRefundAmount"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="SaleOrderMap">
+        SELECT
+            t.id,
+            t.FID,
+            t.FBillNo,
+            t.orderStatus,
+            t.Document_type,
+            t.FDate,
+            bd.fnumber                          AS FCustId,
+            t.F_ora_BaseProperty,
+            t.F_khhth,
+            sc.contact_name                     AS F_kglxr,
+            t.F_cty_BaseProperty1,
+            byd_settle.name                    AS FSettleCurrId,
+            t.F_tcbl,
+            t.F_KHSD,
+            t.FIsIncludedTax,
+            t.F_sfbg,
+            se.fname                            AS FSalerId,
+            t.F_lrl,
+            t.F_jlrl,
+            t.F_gj,
+            bdy_trade.name                      AS F_myfs,
+            t.F_zyxb,
+            fi.account_name                     AS F_yhzh,
+            t.F_cty_Date,
+            t.F_sygs,
+            bld_rec.name                        AS FRecConditionId,
+            bdc_pack.name                      AS Fbzfs,
+            t.FReceiveId,
+            bc.fname                            AS FSettleId,
+            bc.fname                           AS FSettleAddress,
+            t.FChargeId,
+            t.F_shhl,
+            t.F_shzt,
+            t.F_shje,
+            t.F_cty_Date1,
+            su.user_name                      AS FCreatorId,
+            t.FCreateDate,
+            sur.user_name                    AS FModifierId,
+            t.FModifyDate,
+            t.FAllDisCount,
+            t.F_ysbl1,
+            t.FBillTaxAmount,
+            t.FBillAmount,
+            bdty_local.name                  AS FLocalCurrId,
+            t.FExchangeTypeId,
+            t.FExchangeRate,
+            t.fplannotrecamount,
+            t.fplanallrecamount,
+            t.fplanrefundamount
+        FROM t_sale_order t
+
+                 LEFT JOIN bd_customer bd
+                           ON bd.fcustid = t.FCustId
+                 LEFT JOIN bd_customer bc
+                           ON bc.fcustid = t.FSettleId
+
+                 LEFT JOIN supplier_contact sc
+                           ON sc.customer_number = t.F_kglxr
+
+                 LEFT JOIN sys_employee se
+                           ON se.salesman_id = t.FSalerId
+
+                 LEFT JOIN financial_information fi
+                           ON fi.k3_id = t.F_yhzh
+                 LEFT JOIN bymaterial_dictionary byd_settle
+                           ON byd_settle.kingdee = t.FSettleCurrId
+                               AND byd_settle.category = 'currency'
+
+                 LEFT JOIN bymaterial_dictionary bdy_trade
+                           ON bdy_trade.kingdee = t.F_myfs
+                               AND bdy_trade.category = 'trade_way'
+                 LEFT JOIN bymaterial_dictionary bdty_local
+                           ON bdty_local.kingdee = t.FLocalCurrId
+                               AND bdty_local.category = 'currency'
+
+                 LEFT JOIN bymaterial_dictionary bld_rec
+                           ON bld_rec.kingdee = t.FRecConditionId
+                               AND bld_rec.category = 'collection_terms'
+
+                 LEFT JOIN bymaterial_dictionary bdc_pack
+                           ON bdc_pack.kingdee = t.Fbzfs
+                               AND bdc_pack.category = 'manner_packing'
+
+                 LEFT JOIN sys_user su
+                           ON su.k3_key = t.FCreatorId
+                 LEFT JOIN sys_user sur
+                           ON sur.k3_key = t.FModifierId
+            WHERE t.fid = #{fid}
+    </select>
+
+    <!-- 根据自增主键查询销售订单 -->
+    <select id="selectByAutoId" parameterType="long" resultMap="SaleOrderMap">
+        <![CDATA[
+        SELECT
+        t.id,
+        t.FID,
+        t.orderStatus,
+        t.Document_type,
+        t.FBillNo,
+        t.FDate,
+        bd.fnumber AS FCustId,
+        t.F_ora_BaseProperty,
+        t.F_khhth,
+        CASE
+        WHEN t.F_kglxr = 0 THEN NULL
+        ELSE sc.contact_name
+        END AS F_kglxr,
+        t.F_cty_BaseProperty1,
+        byd_settle.NAME AS FSettleCurrId,
+        t.F_tcbl,
+        t.F_KHSD,
+        t.FIsIncludedTax,
+        t.F_sfbg,
+        se.fname AS FSalerId,
+        t.F_lrl,
+        t.F_jlrl,
+        t.F_gj,
+        bdy_trade.NAME AS F_myfs,
+        t.F_zyxb,
+        fi.account_name AS F_yhzh,
+        t.F_cty_Date,
+        t.F_sygs,
+        bld_rec.NAME AS FRecConditionId,
+        bdc_pack.NAME AS Fbzfs,
+        t.FReceiveId,
+        bc.fname AS FSettleId,
+        bc.fname AS FSettleAddress,
+        t.FChargeId,
+        t.F_shhl,
+        t.F_shzt,
+        t.F_shje,
+        t.F_cty_Date1,
+        su.user_name AS FCreatorId,
+        t.FCreateDate,
+        sur.user_name AS FModifierId,
+        t.FModifyDate,
+        t.FAllDisCount,
+        t.F_ysbl1,
+        t.FBillTaxAmount,
+        t.FBillAmount,
+        bdty_local.NAME AS FLocalCurrId,
+        t.FExchangeTypeId,
+        t.FExchangeRate,
+        t.fplannotrecamount,
+        t.fplanallrecamount,
+        t.fplanrefundamount
+        FROM
+        t_sale_order t
+        LEFT JOIN bd_customer bd ON bd.fcustid = t.FCustId
+        LEFT JOIN bd_customer bc ON bc.fcustid = t.FSettleId
+        LEFT JOIN supplier_contact sc
+        ON sc.k3_id = t.F_kglxr
+        AND t.F_kglxr <> 0
+        LEFT JOIN sys_employee se ON se.salesman_id = t.FSalerId
+        LEFT JOIN financial_information fi ON fi.k3_id = t.F_yhzh
+        LEFT JOIN bymaterial_dictionary byd_settle ON byd_settle.kingdee = t.FSettleCurrId
+        AND byd_settle.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bdy_trade ON bdy_trade.kingdee = t.F_myfs
+        AND bdy_trade.category = 'trade_way'
+        LEFT JOIN bymaterial_dictionary bdty_local ON bdty_local.kingdee = t.FLocalCurrId
+        AND bdty_local.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bld_rec ON bld_rec.kingdee = t.FRecConditionId
+        AND bld_rec.category = 'collection_terms'
+        LEFT JOIN bymaterial_dictionary bdc_pack ON bdc_pack.kingdee = t.Fbzfs
+        AND bdc_pack.category = 'manner_packing'
+        LEFT JOIN sys_user su ON su.k3_key = t.FCreatorId
+        LEFT JOIN sys_user sur ON sur.k3_key = t.FModifierId
+        WHERE
+        t.id = #{id}
+      ]]>
+    </select>
+
+    <!-- 插入销售订单 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.SaleOrder">
+        INSERT INTO t_sale_order (
+            FID, FBillNo,orderStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
+            F_cty_BaseProperty1, FSettleCurrId, F_tcbl, F_KHSD, FIsIncludedTax,
+            F_sfbg, FSalerId, F_lrl, F_jlrl, F_gj,fstate, F_myfs, F_zyxb, F_yhzh,
+            F_cty_Date, F_sygs, FRecConditionId, Fbzfs, FReceiveId,
+            FSettleId, FSettleAddress, FChargeId, F_shhl, F_shzt,
+            F_shje, F_cty_Date1, FCreatorId, FCreateDate,
+            FModifierId, FModifyDate, FAllDisCount, F_ysbl1,
+            FBillTaxAmount, FBillAmount, FLocalCurrId,
+            FExchangeTypeId, FExchangeRate,
+            fplannotrecamount, fplanallrecamount, fplanrefundamount
+        ) VALUES (
+            #{fid}, #{fBillNo},#{orderStatus}, #{documentType}, #{fDate}, #{fCustId}, #{fOraBaseProperty}, #{fKhhth}, #{fKglxr},
+            #{fCtyBaseProperty1}, #{fSettleCurrId}, #{fTcbl}, #{fKhsd}, #{fIsIncludedTax},
+            #{fSfbg}, #{fSalerId}, #{fLrl}, #{fJlrl}, #{fGj},#{fstate}, #{fMyfs}, #{fZyxb}, #{fYhzh},
+            #{fCtyDate}, #{fSygs}, #{fRecConditionId}, #{fbzfs}, #{fReceiveId},
+            #{fSettleId}, #{fSettleAddress}, #{fChargeId}, #{fShhl}, #{fShzt},
+            #{fShje}, #{fCtyDate1}, #{fCreatorId}, #{fCreateDate},
+            #{fModifierId}, #{fModifyDate}, #{fAllDisCount}, #{fYsbl1},
+            #{fBillTaxAmount}, #{fBillAmount}, #{fLocalCurrId},
+            #{fExchangeTypeId}, #{fExchangeRate},
+            #{fPlannotRecAmount}, #{fPlanAllRecAmount}, #{fPlanRefundAmount}
+        )
+    </insert>
+
+    <!-- 根据主键删除销售订单 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM t_sale_order WHERE FID = #{fid}
+    </delete>
+
+    <!-- 批量插入销售订单 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO t_sale_order (
+            FID, FBillNo,orderStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
+            F_cty_BaseProperty1, FSettleCurrId, F_tcbl, F_KHSD, FIsIncludedTax,
+            F_sfbg, FSalerId, F_lrl, F_jlrl, F_gj,fstate, F_myfs, F_zyxb, F_yhzh,
+            F_cty_Date, F_sygs, FRecConditionId, Fbzfs, FReceiveId,
+            FSettleId, FSettleAddress, FChargeId, F_shhl, F_shzt,
+            F_shje, F_cty_Date1, FCreatorId, FCreateDate,
+            FModifierId, FModifyDate, FAllDisCount, F_ysbl1,
+            FBillTaxAmount, FBillAmount, FLocalCurrId,
+            FExchangeTypeId, FExchangeRate,
+            fplannotrecamount, fplanallrecamount, fplanrefundamount
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.fid}, #{item.fBillNo},#{item.orderStatus}, #{item.documentType}, #{item.fDate}, #{item.fCustId}, #{item.fOraBaseProperty}, #{item.fKhhth}, #{item.fKglxr},
+                #{item.fCtyBaseProperty1}, #{item.fSettleCurrId}, #{item.fTcbl}, #{item.fKhsd}, #{item.fIsIncludedTax},
+                #{item.fSfbg}, #{item.fSalerId}, #{item.fLrl}, #{item.fJlrl}, #{item.fGj}, #{item.fstate}, #{item.fMyfs}, #{item.fZyxb}, #{item.fYhzh},
+                #{item.fCtyDate}, #{item.fSygs}, #{item.fRecConditionId}, #{item.fbzfs}, #{item.fReceiveId},
+                #{item.fSettleId}, #{item.fSettleAddress}, #{item.fChargeId}, #{item.fShhl}, #{item.fShzt},
+                #{item.fShje}, #{item.fCtyDate1}, #{item.fCreatorId}, #{item.fCreateDate},
+                #{item.fModifierId}, #{item.fModifyDate}, #{item.fAllDisCount}, #{item.fYsbl1},
+                #{item.fBillTaxAmount}, #{item.fBillAmount}, #{item.fLocalCurrId},
+                #{item.fExchangeTypeId}, #{item.fExchangeRate},
+                #{item.fPlannotRecAmount}, #{item.fPlanAllRecAmount}, #{item.fPlanRefundAmount}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除销售订单 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE FROM t_sale_order
+        WHERE FID IN
+        <foreach collection="list" item="fid" open="(" separator="," close=")">
+            #{fid}
+        </foreach>
+    </delete>
+
+    <!-- 查询已存在的FID列表 -->
+    <select id="selectExistingFids" parameterType="java.util.List" resultType="long">
+        SELECT FID FROM t_sale_order
+        WHERE FID IN
+        <foreach collection="list" item="fid" open="(" separator="," close=")">
+            #{fid}
+        </foreach>
+    </select>
+
+
+    <!-- 根据FID更新销售订单 -->
+    <update id="updateByFid" parameterType="com.ruoyi.business.entity.SaleOrder">
+        UPDATE t_sale_order
+        <set>
+            FBillNo = #{fBillNo},
+            Document_type = #{documentType},
+            orderStatus = #{orderStatus},
+            FDate = #{fDate},
+            FCustId = #{fCustId},
+            F_ora_BaseProperty = #{fOraBaseProperty},
+            F_khhth = #{fKhhth},
+            F_kglxr = #{fKglxr},
+            F_cty_BaseProperty1 = #{fCtyBaseProperty1},
+            FSettleCurrId = #{fSettleCurrId},
+            F_tcbl = #{fTcbl},
+            F_KHSD = #{fKhsd},
+            FIsIncludedTax = #{fIsIncludedTax},
+            F_sfbg = #{fSfbg},
+            FSalerId = #{fSalerId},
+            F_lrl = #{fLrl},
+            F_jlrl = #{fJlrl},
+            F_gj = #{fGj},
+            fstate = #{fstate},
+            F_myfs = #{fMyfs},
+            F_zyxb = #{fZyxb},
+            F_yhzh = #{fYhzh},
+            F_cty_Date = #{fCtyDate},
+            F_sygs = #{fSygs},
+            FRecConditionId = #{fRecConditionId},
+            Fbzfs = #{fbzfs},
+            FReceiveId = #{fReceiveId},
+            FSettleId = #{fSettleId},
+            FSettleAddress = #{fSettleAddress},
+            FChargeId = #{fChargeId},
+            F_shhl = #{fShhl},
+            F_shzt = #{fShzt},
+            F_shje = #{fShje},
+            F_cty_Date1 = #{fCtyDate1},
+            FCreatorId = #{fCreatorId},
+            FCreateDate = #{fCreateDate},
+            FModifierId = #{fModifierId},
+            FModifyDate = #{fModifyDate},
+            FAllDisCount = #{fAllDisCount},
+            F_ysbl1 = #{fYsbl1},
+            FBillTaxAmount = #{fBillTaxAmount},
+            FBillAmount = #{fBillAmount},
+            FLocalCurrId = #{fLocalCurrId},
+            FExchangeTypeId = #{fExchangeTypeId},
+            FExchangeRate = #{fExchangeRate},
+            fplannotrecamount = #{fPlannotRecAmount},
+            fplanallrecamount = #{fPlanAllRecAmount},
+            fplanrefundamount = #{fPlanRefundAmount}
+        </set>
+        WHERE FID = #{fid}
+    </update>
+
+    <!-- 删除所有销售订单数据 -->
+    <delete id="deleteAll">
+        DELETE FROM t_sale_order
+    </delete>
+
+    <!-- 分页查询销售订单 -->
+    <select id="selectPage" resultMap="SaleOrderMap">
+        SELECT
+        t.id,
+        t.FID,
+        t.orderStatus,
+        t.Document_type,
+        t.FBillNo,
+        t.FDate,
+        bd.fnumber                    AS FCustId,
+        t.F_ora_BaseProperty,
+        t.F_khhth,
+        sc.contact_name               AS F_kglxr,
+        t.F_cty_BaseProperty1,
+        byd_settle.name               AS FSettleCurrId,
+        t.F_tcbl,
+        t.F_KHSD,
+        t.FIsIncludedTax,
+        t.F_sfbg,
+        se.fname                      AS FSalerId,
+        t.F_lrl,
+        t.F_jlrl,
+        cy.name_zh                       AS F_gj,
+        bdy_trade.name                AS F_myfs,
+        t.F_zyxb,
+        fi.account_name               AS F_yhzh,
+        t.F_cty_Date,
+        t.F_sygs,
+        bld_rec.name                  AS FRecConditionId,
+        bdc_pack.name                 AS Fbzfs,
+        t.FReceiveId,
+        bc.fname                      AS FSettleId,
+        bc.fname                      AS FSettleAddress,
+        t.FChargeId,
+        t.F_shhl,
+        t.F_shzt,
+        t.F_shje,
+        t.F_cty_Date1,
+        su.user_name                  AS FCreatorId,
+        t.FCreateDate,
+        sur.user_name                 AS FModifierId,
+        t.FModifyDate,
+        t.FAllDisCount,
+        t.F_ysbl1,
+        t.FBillTaxAmount,
+        t.FBillAmount,
+        bdty_local.name               AS FLocalCurrId,
+        t.FExchangeTypeId,
+        t.FExchangeRate,
+        t.fplannotrecamount,
+        t.fplanallrecamount,
+        t.fplanrefundamount
+        FROM t_sale_order t
+
+        JOIN bd_customer bd
+        ON bd.fcustid = t.FCustId
+        <if test="query != null and query.fCustId != null and query.fCustId != ''">
+            AND bd.fnumber = #{query.fCustId}
+        </if>
+
+        LEFT JOIN bd_customer bc
+        ON bc.fcustid = t.FSettleId
+
+        LEFT JOIN (
+        SELECT k3_id, MAX(contact_name) AS contact_name
+        FROM supplier_contact
+        GROUP BY k3_id
+        ) sc ON sc.k3_id = t.F_kglxr
+
+        LEFT JOIN sys_employee se
+        ON se.salesman_id = t.FSalerId
+
+        LEFT JOIN financial_information fi
+        ON fi.k3_id = t.F_yhzh
+
+
+        LEFT JOIN (
+        SELECT kingdee, category, MAX(name) AS name
+        FROM bymaterial_dictionary
+        GROUP BY kingdee, category
+        ) byd_settle
+        ON byd_settle.kingdee = t.FSettleCurrId
+        AND byd_settle.category = 'currency'
+
+        LEFT JOIN (
+        SELECT kingdee, category, MAX(name) AS name
+        FROM bymaterial_dictionary
+        GROUP BY kingdee, category
+        ) bdy_trade
+        ON bdy_trade.kingdee = t.F_myfs
+        AND bdy_trade.category = 'trade_way'
+
+        LEFT JOIN (
+        SELECT kingdee, category, MAX(name) AS name
+        FROM bymaterial_dictionary
+        GROUP BY kingdee, category
+        ) bdty_local
+        ON bdty_local.kingdee = t.FLocalCurrId
+        AND bdty_local.category = 'currency'
+
+        LEFT JOIN (
+        SELECT kingdee, category, MAX(name) AS name
+        FROM bymaterial_dictionary
+        GROUP BY kingdee, category
+        ) bld_rec
+        ON bld_rec.kingdee = t.FRecConditionId
+        AND bld_rec.category = 'collection_terms'
+
+        LEFT JOIN (
+        SELECT kingdee, category, MAX(name) AS name
+        FROM bymaterial_dictionary
+        GROUP BY kingdee, category
+        ) bdc_pack
+        ON bdc_pack.kingdee = t.Fbzfs
+        AND bdc_pack.category = 'manner_packing'
+
+        LEFT JOIN country cy
+        ON cy.id = t.F_gj
+
+        LEFT JOIN sys_user su
+        ON su.k3_key = t.FCreatorId
+        LEFT JOIN sys_user sur
+        ON sur.k3_key = t.FModifierId
+
+        <where>
+            <if test="query != null">
+                <if test="query.fBillNo != null and query.fBillNo != ''">
+                    AND t.FBillNo LIKE CONCAT('%', #{query.fBillNo}, '%')
+                </if>
+                <if test="query.fOraBaseProperty != null and query.fOraBaseProperty != ''">
+                    AND t.F_ora_BaseProperty LIKE CONCAT('%', #{query.fOraBaseProperty}, '%')
+                </if>
+                <if test="query.fSalerId != null and query.fSalerId != ''">
+                    AND se.fname LIKE CONCAT('%', #{query.fSalerId}, '%')
+                </if>
+                <if test="query.fKhhth != null and query.fKhhth != ''">
+                    AND t.F_khhth LIKE CONCAT('%', #{query.fKhhth}, '%')
+                </if>
+                <if test="query.fKglxr != null and query.fKglxr != ''">
+                    AND sc.contact_name LIKE CONCAT('%', #{query.fKglxr}, '%')
+                </if>
+                <if test="query.fSfbg != null">
+                    AND t.F_sfbg = #{query.fSfbg}
+                </if>
+                <if test="query.documentType != null">
+                    AND t.Document_type = #{query.documentType}
+                </if>
+                <if test="query.fShzt != null">
+                    AND t.F_shzt = #{query.fShzt}
+                </if>
+                <if test="query.fDate != null">
+                    AND DATE(t.FDate) = DATE(#{query.fDate})
+                </if>
+            </if>
+        </where>
+
+        ORDER BY t.FID DESC
+    </select>
+
+    <!-- 查询指定月份的销售员订单数量排行榜 -->
+    <select id="selectSalesRankingByMonth" resultType="map">
+        SELECT
+            se.fname AS salerName,
+            COUNT(*) AS orderCount
+        FROM t_sale_order tso
+        LEFT JOIN sys_employee se ON se.salesman_id = tso.FSalerId
+        WHERE tso.FDate IS NOT NULL
+        AND YEAR(tso.FDate) = #{year} AND MONTH(tso.FDate) = #{month}
+        GROUP BY se.fname
+        ORDER BY orderCount DESC
+    </select>
+
+    <!-- 查询指定月份的国家订单分布 -->
+    <select id="selectCountryOrderDistributionByMonth" resultType="map">
+        SELECT
+            cy.name_zh AS countryName,
+            cy.name_en AS countryNameEn,
+            COUNT(*) AS orderCount
+        FROM t_sale_order tso
+        LEFT JOIN country cy ON cy.id = tso.F_gj
+        WHERE tso.FDate IS NOT NULL
+        AND YEAR(tso.FDate) = #{year} AND MONTH(tso.FDate) = #{month}
+        GROUP BY tso.F_gj, cy.name_zh, cy.name_en
+        ORDER BY orderCount DESC
+    </select>
+
+    <!-- 查询指定月份的订单总数量 -->
+    <select id="selectTotalOrderCountByMonth" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*) AS totalOrderCount
+        FROM t_sale_order tso
+        WHERE tso.FDate IS NOT NULL
+        AND YEAR(tso.FDate) = #{year} AND MONTH(tso.FDate) = #{month}
+    </select>
+
+    <!-- 当期订单总数 -->
+    <select id="countCurrentPeriodOrders" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM t_sale_order t
+        WHERE 1 = 1
+    </select>
+
+
+    <!-- 国家订单分布 -->
+    <select id="countOrdersByCountry"
+            resultType="com.ruoyi.business.dto.CountryOrderDistributionDTO">
+        SELECT
+        t.fstate        AS countryName,
+        t.fstate        AS countryNameEn,
+        COUNT(1)        AS orderCount
+        FROM t_sale_order t
+        WHERE t.fstate IS NOT NULL
+        GROUP BY t.fstate
+        ORDER BY orderCount DESC
+    </select>
+
+
+    <!-- 上月订单总数 -->
+    <select id="countLastMonthOrders" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM t_sale_order t
+        WHERE
+        t.FDate >= DATE_SUB(
+        <choose>
+            <when test="month != null">
+                STR_TO_DATE(CONCAT(#{year}, '-', #{month}, '-01'), '%Y-%m-%d')
+            </when>
+            <otherwise>
+                STR_TO_DATE(CONCAT(#{year}, '-01-01'), '%Y-%m-%d')
+            </otherwise>
+        </choose>,
+        INTERVAL 1 MONTH
+        )
+        AND t.FDate
+        <choose>
+            <when test="month != null">
+                STR_TO_DATE(CONCAT(#{year}, '-', #{month}, '-01'), '%Y-%m-%d')
+            </when>
+            <otherwise>
+                STR_TO_DATE(CONCAT(#{year}, '-01-01'), '%Y-%m-%d')
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 根据单据编号查询销售订单 -->
+    <select id="selectByBillNo" parameterType="string" resultMap="SaleOrderMap">
+        SELECT
+        t.id,
+        t.FID,
+        t.orderStatus,
+        t.Document_type,
+        t.FBillNo,
+        t.FDate,
+        bd.fnumber AS FCustId,
+        t.F_ora_BaseProperty,
+        t.F_khhth,
+        CASE
+        WHEN t.F_kglxr = 0 THEN NULL
+        ELSE sc.contact_name
+        END AS F_kglxr,
+        t.F_cty_BaseProperty1,
+        byd_settle.NAME AS FSettleCurrId,
+        t.F_tcbl,
+        t.F_KHSD,
+        t.FIsIncludedTax,
+        t.F_sfbg,
+        se.fname AS FSalerId,
+        t.F_lrl,
+        t.F_jlrl,
+        t.F_gj,
+        bdy_trade.NAME AS F_myfs,
+        t.F_zyxb,
+        fi.account_name AS F_yhzh,
+        t.F_cty_Date,
+        t.F_sygs,
+        bld_rec.NAME AS FRecConditionId,
+        bdc_pack.NAME AS Fbzfs,
+        t.FReceiveId,
+        bc.fname AS FSettleId,
+        bc.fname AS FSettleAddress,
+        t.FChargeId,
+        t.F_shhl,
+        t.F_shzt,
+        t.F_shje,
+        t.F_cty_Date1,
+        su.user_name AS FCreatorId,
+        t.FCreateDate,
+        sur.user_name AS FModifierId,
+        t.FModifyDate,
+        t.FAllDisCount,
+        t.F_ysbl1,
+        t.FBillTaxAmount,
+        t.FBillAmount,
+        bdty_local.NAME AS FLocalCurrId,
+        t.FExchangeTypeId,
+        t.FExchangeRate,
+        t.fplannotrecamount,
+        t.fplanallrecamount,
+        t.fplanrefundamount
+        FROM
+        t_sale_order t
+        LEFT JOIN bd_customer bd ON bd.fcustid = t.FCustId
+        LEFT JOIN bd_customer bc ON bc.fcustid = t.FSettleId
+        LEFT JOIN supplier_contact sc
+        ON sc.k3_id = t.F_kglxr
+        AND t.F_kglxr != 0
+        LEFT JOIN sys_employee se ON se.salesman_id = t.FSalerId
+        LEFT JOIN financial_information fi ON fi.k3_id = t.F_yhzh
+        LEFT JOIN bymaterial_dictionary byd_settle ON byd_settle.kingdee = t.FSettleCurrId
+        AND byd_settle.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bdy_trade ON bdy_trade.kingdee = t.F_myfs
+        AND bdy_trade.category = 'trade_way'
+        LEFT JOIN bymaterial_dictionary bdty_local ON bdty_local.kingdee = t.FLocalCurrId
+        AND bdty_local.category = 'currency'
+        LEFT JOIN bymaterial_dictionary bld_rec ON bld_rec.kingdee = t.FRecConditionId
+        AND bld_rec.category = 'collection_terms'
+        LEFT JOIN bymaterial_dictionary bdc_pack ON bdc_pack.kingdee = t.Fbzfs
+        AND bdc_pack.category = 'manner_packing'
+        LEFT JOIN sys_user su ON su.k3_key = t.FCreatorId
+        LEFT JOIN sys_user sur ON sur.k3_key = t.FModifierId
+        WHERE
+        t.FBillNo = #{billNo}
+    </select>
+</mapper>

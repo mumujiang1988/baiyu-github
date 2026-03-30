@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.TaxRateMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TaxRateMap" type="com.ruoyi.business.entity.TaxRate">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="k3Code" column="k3_code"/>
+        <result property="taxRate" column="tax_rate"/>
+        <result property="taxSystem" column="tax_system"/>
+        <result property="taxCategory" column="tax_category"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="baseColumns">
+        id, code, name, k3_code, tax_rate, tax_system, tax_category, create_time
+    </sql>
+
+    <!-- 根据编码查询 -->
+    <select id="selectByCode" resultMap="TaxRateMap">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM tax_rate
+        WHERE code = #{code}
+    </select>
+
+    <!-- 根据金蝶编码查询 -->
+    <select id="selectByK3Code" resultMap="TaxRateMap">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM tax_rate
+        WHERE k3_code = #{k3Code}
+    </select>
+
+    <!-- 根据税种查询 -->
+    <select id="selectByTaxCategory" resultMap="TaxRateMap">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM tax_rate
+        WHERE tax_category = #{taxCategory}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="TaxRateMap">
+        SELECT
+        code,
+        name
+        FROM tax_rate
+    </select>
+
+    <resultMap id="TaxRateResultMap" type="com.ruoyi.business.entity.TaxRate">
+        <result column="k3_code" property="k3Code"/>
+        <result column="name" property="name"/>
+    </resultMap>
+
+    <select id="selectByK3Codes" parameterType="list" resultType="map">
+        SELECT
+        k3_code,
+        name
+        FROM tax_rate
+        WHERE k3_code IN
+        <foreach collection="codes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
+    <select id="selectK3Cod" resultType="com.ruoyi.business.entity.TaxRate">
+        SELECT
+        name
+        FROM tax_rate
+        WHERE k3_code = #{k3Code}
+
+    </select>
+
+</mapper>

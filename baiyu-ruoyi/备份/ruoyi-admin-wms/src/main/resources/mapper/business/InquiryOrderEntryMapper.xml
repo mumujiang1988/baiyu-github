@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.InquiryOrderEntryMapper">
+
+    <resultMap id="InquiryOrderEntryResult" type="com.ruoyi.business.entity.InquiryOrderEntry">
+        <id property="fid" column="fid"/>
+        <result property="fbillno" column="fbillno"/>
+        <result property="fCplb" column="f_cplb"/>
+        <result property="fJqfx" column="f_jqfx"/>
+        <result property="fWldm" column="f_wldm"/>
+        <result property="fHsdj" column="f_hsdj"/>
+        <result property="fYwpm" column="f_ywpm"/>
+        <result property="fCtyBaseproperty2" column="f_cty_baseproperty2"/>
+        <result property="fCbhj" column="f_cbhj"/>
+        <result property="fCtyBaseproperty3" column="f_cty_baseproperty3"/>
+        <result property="fXsddgls" column="f_xsddgls"/>
+        <result property="fXsddxtzt" column="f_xsddxtzt"/>
+        <result property="fCtyBaseproperty5" column="f_cty_baseproperty5"/>
+        <result property="fKhbzyq" column="f_khbzyq"/>
+        <result property="fXdl" column="f_xdl"/>
+        <result property="fHscgj" column="f_hscgj"/>
+        <result property="fCgxpms" column="f_cgxpms"/>
+        <result property="fCgbzfs" column="f_cgbzfs"/>
+        <result property="fQdl" column="f_qdl"/>
+        <result property="fJshj" column="f_jshj"/>
+        <result property="fCptp1" column="f_cptp1"/>
+        <result property="fTp" column="f_tp"/>
+        <result property="fCgtp1" column="f_cgtp1"/>
+        <result property="fCgtp2" column="f_cgtp2"/>
+        <result property="fJgsxrq" column="f_jgsxrq"/>
+        <result property="fYjjq" column="f_yjjq"/>
+        <result property="fZxs" column="f_zxs"/>
+        <result property="fMz" column="f_mz"/>
+        <result property="fJz" column="f_jz"/>
+        <result property="fC" column="f_c"/>
+        <result property="fK" column="f_k"/>
+        <result property="fG" column="f_g"/>
+        <result property="fGlsl" column="f_glsl"/>
+        <result property="fGctp" column="f_gctp"/>
+        <result property="fgcywms" column="fgcywms"/>
+        <result property="fgccshys" column="fgccshys"/>
+        <result property="fbzcc" column="fbzcc"/>
+        <result property="fkhhh" column="fkhhh"/>
+        <result property="fzjxdhsj" column="fzjxdhsj"/>
+        <result property="fzjxdsl" column="fzjxdsl"/>
+        <result property="fmrcghsj" column="fmrcghsj"/>
+        <result property="fxsj" column="fxsj"/>
+        <result property="fgys" column="fgys"/>
+        <result property="ftpr" column="ftpr"/>
+        <result property="fTp3" column="f_tp3"/>
+        <result property="fbjr" column="fbjr"/>
+        <result property="fcpys" column="fcpys"/>
+        <result property="fYwms" column="f_ywms"/>
+    </resultMap>
+
+    <sql id="selectInquiryOrderEntryVo">
+        SELECT
+            ioen.fid,
+            ioen.fbillno,
+            ioen.f_cplb,
+            ioen.f_jqfx,
+            bm.name as f_wldm,
+            ioen.f_hsdj,
+            ioen.f_ywpm,
+            ioen.f_cty_baseproperty2,
+            ioen.f_cbhj,
+            ioen.f_cty_baseproperty3,
+            ioen.f_xsddgls,
+            ioen.f_xsddxtzt,
+            ioen.f_cty_baseproperty5,
+            ioen.f_khbzyq,
+            ioen.f_xdl,
+            ioen.f_hscgj,
+            ioen.f_cgxpms,
+            ioen.f_cgbzfs,
+            ioen.f_qdl,
+            ioen.f_jshj,
+            ioen.f_cptp1,
+            ioen.f_tp,
+            ioen.f_cgtp1,
+            ioen.f_cgtp2,
+            ioen.f_jgsxrq,
+            ioen.f_yjjq,
+            ioen.f_zxs,
+            ioen.f_mz,
+            ioen.f_jz,
+            ioen.f_c,
+            ioen.f_k,
+            ioen.f_g,
+            ioen.f_glsl,
+            ioen.f_gctp,
+            ioen.fgcywms,
+            ioen.fgccshys,
+            ioen.fbzcc,
+            ioen.fkhhh,
+            ioen.fzjxdhsj,
+            ioen.fzjxdsl,
+            ioen.fmrcghsj,
+            ioen.fxsj,
+            se.name as fgys,
+            ioen.ftpr,
+            ioen.f_tp3,
+            sue.user_name as fbjr,
+            ioen.fcpys,
+            ioen.f_ywms
+        FROM
+            inquiry_order_entry  ioen
+
+                LEFT JOIN by_material bm on ioen.f_wldm=bm.k3_id
+                LEFT JOIN supplier se on ioen.fgys=se.supplierid
+                LEFT JOIN sys_user sue on ioen.fbjr=sue.k3_key
+    </sql>
+
+    <select id="selectByParentId" parameterType="string" resultMap="InquiryOrderEntryResult">
+        <include refid="selectInquiryOrderEntryVo"/>
+        where fid = #{fid}
+    </select>
+
+    <select id="selectByProductCode" parameterType="string" resultMap="InquiryOrderEntryResult">
+        <include refid="selectInquiryOrderEntryVo"/>
+        where fbillno = #{fbillno}
+    </select>
+
+    <insert id="batchInsert">
+        insert into inquiry_order_entry (
+            fid, fbillno, f_cplb, f_jqfx, f_wldm, f_hsdj, f_ywpm, f_cty_baseproperty2,
+            f_cbhj, f_cty_baseproperty3, f_xsddgls, f_xsddxtzt, f_cty_baseproperty5,
+            f_khbzyq, f_xdl, f_hscgj, f_cgxpms, f_cgbzfs, f_qdl, f_jshj, f_cptp1, f_tp,
+            f_cgtp1, f_cgtp2, f_jgsxrq, f_yjjq, f_zxs, f_mz, f_jz, f_c, f_k, f_g, f_glsl,
+            f_gctp, fgcywms, fgccshys, fbzcc, fkhhh, fzjxdhsj, fzjxdsl, fmrcghsj, fxsj,
+            fgys, ftpr, f_tp3, fbjr, fcpys, f_ywms
+        ) values
+        <foreach collection="entries" item="item" separator=",">
+            (
+                #{item.fid}, #{item.fbillno}, #{item.fCplb}, #{item.fJqfx}, #{item.fWldm},
+                #{item.fHsdj}, #{item.fYwpm}, #{item.fCtyBaseproperty2}, #{item.fCbhj},
+                #{item.fCtyBaseproperty3}, #{item.fXsddgls}, #{item.fXsddxtzt}, #{item.fCtyBaseproperty5},
+                #{item.fKhbzyq}, #{item.fXdl}, #{item.fHscgj}, #{item.fCgxpms}, #{item.fCgbzfs},
+                #{item.fQdl}, #{item.fJshj}, #{item.fCptp1}, #{item.fTp}, #{item.fCgtp1},
+                #{item.fCgtp2}, #{item.fJgsxrq}, #{item.fYjjq}, #{item.fZxs}, #{item.fMz},
+                #{item.fJz}, #{item.fC}, #{item.fK}, #{item.fG}, #{item.fGlsl}, #{item.fGctp},
+                #{item.fgcywms}, #{item.fgccshys}, #{item.fbzcc}, #{item.fkhhh}, #{item.fzjxdhsj},
+                #{item.fzjxdsl}, #{item.fmrcghsj}, #{item.fxsj}, #{item.fgys}, #{item.ftpr},
+                #{item.fTp3}, #{item.fbjr}, #{item.fcpys}, #{item.fYwms}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="save" parameterType="com.ruoyi.business.entity.InquiryOrderEntry">
+        insert into inquiry_order_entry (
+            fid, fbillno, f_cplb, f_jqfx, f_wldm, f_hsdj, f_ywpm, f_cty_baseproperty2,
+            f_cbhj, f_cty_baseproperty3, f_xsddgls, f_xsddxtzt, f_cty_baseproperty5,
+            f_khbzyq, f_xdl, f_hscgj, f_cgxpms, f_cgbzfs, f_qdl, f_jshj, f_cptp1, f_tp,
+            f_cgtp1, f_cgtp2, f_jgsxrq, f_yjjq, f_zxs, f_mz, f_jz, f_c, f_k, f_g, f_glsl,
+            f_gctp, fgcywms, fgccshys, fbzcc, fkhhh, fzjxdhsj, fzjxdsl, fmrcghsj, fxsj,
+            fgys, ftpr, f_tp3, fbjr, fcpys, f_ywms
+        ) values (
+            #{fid}, #{fbillno}, #{fCplb}, #{fJqfx}, #{fWldm}, #{fHsdj}, #{fYwpm}, #{fCtyBaseproperty2},
+            #{fCbhj}, #{fCtyBaseproperty3}, #{fXsddgls}, #{fXsddxtzt}, #{fCtyBaseproperty5},
+            #{fKhbzyq}, #{fXdl}, #{fHscgj}, #{fCgxpms}, #{fCgbzfs}, #{fQdl}, #{fJshj}, #{fCptp1}, #{fTp},
+            #{fCgtp1}, #{fCgtp2}, #{fJgsxrq}, #{fYjjq}, #{fZxs}, #{fMz}, #{fJz}, #{fC}, #{fK}, #{fG}, #{fGlsl},
+            #{fGctp}, #{fgcywms}, #{fgccshys}, #{fbzcc}, #{fkhhh}, #{fzjxdhsj}, #{fzjxdsl}, #{fmrcghsj}, #{fxsj},
+            #{fgys}, #{ftpr}, #{fTp3}, #{fbjr}, #{fcpys}, #{fYwms}
+        )
+    </insert>
+
+    <delete id="deleteByParentId" parameterType="string">
+        delete from inquiry_order_entry where fid = #{fid}
+    </delete>
+
+    <select id="selectByInquiryId" resultMap="InquiryOrderEntryResult">
+        select * from inquiry_order_entry where fbillno = #{inquiryId}
+
+    </select>
+</mapper>

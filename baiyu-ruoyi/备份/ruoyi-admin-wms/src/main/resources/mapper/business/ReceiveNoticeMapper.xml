@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.ReceiveNoticeMapper">
+
+    <resultMap id="ReceiveNoticeResultMap" type="com.ruoyi.business.entity.ReceiveNotice">
+        <id column="FID" property="fid"/>
+        <result column="FBillNo" property="fBillNo"/>
+        <result column="FDocumentStatus" property="fDocumentStatus"/>
+        <result column="FBillTypeID" property="fBillTypeID"/>
+        <result column="FDate" property="fDate"/>
+        <result column="FReceiveDeptId" property="fReceiveDeptId"/>
+        <result column="FPurOrgId" property="fPurOrgId"/>
+        <result column="FReceiverId" property="fReceiverId"/>
+        <result column="F_jcf" property="fjcf"/>
+        <result column="FSupplierId" property="fSupplierId"/>
+        <result column="F_gcbz" property="fgcbz"/>
+        <result column="F_shdz" property="fshdz"/>
+        <result column="F_DATE_jz" property="fDATEjz"/>
+        <result column="F_djtjcf" property="fdjtjcf"/>
+        <result column="FSupplyId" property="fSupplyId"/>
+        <result column="FProviderContactId" property="fProviderContactId"/>
+        <result column="FSupplyAddress" property="fSupplyAddress"/>
+        <result column="FSettleId" property="fSettleId"/>
+        <result column="FChargeId" property="fChargeId"/>
+        <result column="FSettleModeId" property="fSettleModeId"/>
+        <result column="FPayConditionId" property="fPayConditionId"/>
+        <result column="FSettleCurrId" property="fSettleCurrId"/>
+        <result column="FAllDisCount" property="fAllDisCount"/>
+        <result column="FCreatorId" property="fCreatorId"/>
+        <result column="FCreateDate" property="fCreateDate"/>
+        <result column="FModifierId" property="fModifierId"/>
+        <result column="FModifyDate" property="fModifyDate"/>
+        <result column="FApproveDate" property="fApproveDate"/>
+        <result column="FApproverId" property="fApproverId"/>
+        <result column="F_cty_Date" property="fctyDate"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="ReceiveNoticeResultMap">
+        SELECT * FROM receive_notice WHERE FID = #{fid}
+    </select>
+
+    <select id="selectByBillNo" resultMap="ReceiveNoticeResultMap">
+        SELECT FID, FBillNo, FDocumentStatus, FBillTypeID, FDate, FReceiveDeptId, FPurOrgId, FReceiverId,
+               F_jcf, FSupplierId, F_gcbz, F_shdz, F_DATE_jz, F_djtjcf, FSupplyId, FProviderContactId,
+               FSupplyAddress, FSettleId, FChargeId, FSettleModeId, FPayConditionId, FSettleCurrId,
+               FAllDisCount, FCreatorId, FCreateDate, FModifierId, FModifyDate, FApproveDate, FApproverId, F_cty_Date
+        FROM receive_notice WHERE FBillNo = #{billNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ruoyi.business.entity.ReceiveNotice" useGeneratedKeys="true" keyProperty="fid">
+        INSERT INTO receive_notice (
+            FID, FBillNo, FDocumentStatus, FBillTypeID, FDate, FReceiveDeptId, FPurOrgId, FReceiverId,
+            F_jcf, FSupplierId, F_gcbz, F_shdz, F_DATE_jz, F_djtjcf, FSupplyId, FProviderContactId,
+            FSupplyAddress, FSettleId, FChargeId, FSettleModeId, FPayConditionId, FSettleCurrId,
+            FAllDisCount, FCreatorId, FCreateDate, FModifierId, FModifyDate, FApproveDate, FApproverId, F_cty_Date
+        ) VALUES (
+            #{fid}, #{fBillNo}, #{fDocumentStatus}, #{fBillTypeID}, #{fDate}, #{fReceiveDeptId}, #{fPurOrgId}, #{fReceiverId},
+            #{fjcf}, #{fSupplierId}, #{fgcbz}, #{fshdz}, #{fDATEjz}, #{fdjtjcf}, #{fSupplyId}, #{fProviderContactId},
+            #{fSupplyAddress}, #{fSettleId}, #{fChargeId}, #{fSettleModeId}, #{fPayConditionId}, #{fSettleCurrId},
+            #{fAllDisCount}, #{fCreatorId}, #{fCreateDate}, #{fModifierId}, #{fModifyDate}, #{fApproveDate}, #{fApproverId}, #{fctyDate}
+        )
+    </insert>
+
+    <update id="updateById" parameterType="com.ruoyi.business.entity.ReceiveNotice">
+        UPDATE receive_notice
+        <set>
+            <if test="fBillNo != null">FBillNo = #{fBillNo},</if>
+            <if test="fDocumentStatus != null">FDocumentStatus = #{fDocumentStatus},</if>
+            <if test="fBillTypeID != null">FBillTypeID = #{fBillTypeID},</if>
+            <if test="fDate != null">FDate = #{fDate},</if>
+            <if test="fReceiveDeptId != null">FReceiveDeptId = #{fReceiveDeptId},</if>
+            <if test="fPurOrgId != null">FPurOrgId = #{fPurOrgId},</if>
+            <if test="fReceiverId != null">FReceiverId = #{fReceiverId},</if>
+            <if test="fjcf != null">F_jcf = #{fjcf},</if>
+            <if test="fSupplierId != null">FSupplierId = #{fSupplierId},</if>
+            <if test="fgcbz != null">F_gcbz = #{fgcbz},</if>
+            <if test="fshdz != null">F_shdz = #{fshdz},</if>
+            <if test="fDATEjz != null">F_DATE_jz = #{fDATEjz},</if>
+            <if test="fdjtjcf != null">F_djtjcf = #{fdjtjcf},</if>
+            <if test="fSupplyId != null">FSupplyId = #{fSupplyId},</if>
+            <if test="fProviderContactId != null">FProviderContactId = #{fProviderContactId},</if>
+            <if test="fSupplyAddress != null">FSupplyAddress = #{fSupplyAddress},</if>
+            <if test="fSettleId != null">FSettleId = #{fSettleId},</if>
+            <if test="fChargeId != null">FChargeId = #{fChargeId},</if>
+            <if test="fSettleModeId != null">FSettleModeId = #{fSettleModeId},</if>
+            <if test="fPayConditionId != null">FPayConditionId = #{fPayConditionId},</if>
+            <if test="fSettleCurrId != null">FSettleCurrId = #{fSettleCurrId},</if>
+            <if test="fAllDisCount != null">FAllDisCount = #{fAllDisCount},</if>
+            <if test="fCreatorId != null">FCreatorId = #{fCreatorId},</if>
+            <if test="fCreateDate != null">FCreateDate = #{fCreateDate},</if>
+            <if test="fModifierId != null">FModifierId = #{fModifierId},</if>
+            <if test="fModifyDate != null">FModifyDate = #{fModifyDate},</if>
+            <if test="fApproveDate != null">FApproveDate = #{fApproveDate},</if>
+            <if test="fApproverId != null">FApproverId = #{fApproverId},</if>
+            <if test="fctyDate != null">F_cty_Date = #{fctyDate},</if>
+        </set>
+        WHERE FID = #{fid}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM receive_notice WHERE FID = #{fid}
+    </delete>
+
+    <select id="selectList" resultMap="ReceiveNoticeResultMap">
+        SELECT * FROM receive_notice
+        ORDER BY FDate DESC
+    </select>
+
+
+
+    <select id="selectListByPage" resultMap="ReceiveNoticeResultMap">
+        SELECT
+            re.FID,
+            re.FBillNo,
+            re.FDocumentStatus,
+            re.FBillTypeID,
+            re.FDate,
+            re.FReceiveDeptId,
+            re.FPurOrgId,
+            re.FReceiverId,
+            re.F_jcf,
+            sur.name as FSupplierId,
+            re.F_gcbz,
+            re.F_shdz,
+            re.F_DATE_jz,
+            re.F_djtjcf,
+            sup.name as FSupplyId,
+            re.FProviderContactId,
+            re.FSupplyAddress,
+            supl.name as FSettleId,
+            suple.name as FChargeId,
+            re.FSettleModeId,
+            re.FPayConditionId,
+            bdy.name as FSettleCurrId,
+            re.FAllDisCount,
+            sue.user_name as FCreatorId,
+            re.FCreateDate,
+            se.user_name as FModifierId,
+            re.FModifyDate,
+            re.FApproveDate,
+            sye.user_name as FApproverId,
+            re.F_cty_Date
+        FROM
+            receive_notice  re
+                LEFT JOIN sys_user sue on  re.FCreatorId=sue.k3_key
+                LEFT JOIN sys_user se on  re.FModifierId=se.k3_key
+                LEFT JOIN sys_user sye on  re.FApproverId=sye.k3_key
+                LEFT JOIN supplier sur on  re.FSupplierId=sur.supplierid
+                LEFT JOIN supplier sup on  re.FSupplyId=sup.supplierid
+                LEFT JOIN supplier supl on  re.FSettleId=supl.supplierid
+                LEFT JOIN supplier suple on  re.FChargeId=suple.supplierid
+                LEFT JOIN bymaterial_dictionary bdy on  re.FSettleCurrId=bdy.kingdee and bdy.category='currency'
+        ORDER BY FDate DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectListByConditionPage" resultMap="ReceiveNoticeResultMap">
+
+        SELECT
+        re.FID,
+        re.FBillNo,
+        re.FDocumentStatus,
+        re.FBillTypeID,
+        re.FDate,
+        re.FReceiveDeptId,
+        re.FPurOrgId,
+        re.FReceiverId,
+        re.F_jcf,
+        sur.name as FSupplierId,
+        re.F_gcbz,
+        re.F_shdz,
+        re.F_DATE_jz,
+        re.F_djtjcf,
+        sup.name as FSupplyId,
+        re.FProviderContactId,
+        re.FSupplyAddress,
+        supl.name as FSettleId,
+        suple.name as FChargeId,
+        re.FSettleModeId,
+        re.FPayConditionId,
+        bdy.name as FSettleCurrId,
+        re.FAllDisCount,
+        sue.user_name as FCreatorId,
+        re.FCreateDate,
+        se.user_name as FModifierId,
+        re.FModifyDate,
+        re.FApproveDate,
+        sye.user_name as FApproverId,
+        re.F_cty_Date
+        FROM
+        receive_notice  re
+        LEFT JOIN sys_user sue on  re.FCreatorId=sue.k3_key
+        LEFT JOIN sys_user se on  re.FModifierId=se.k3_key
+        LEFT JOIN sys_user sye on  re.FApproverId=sye.k3_key
+        LEFT JOIN supplier sur on  re.FSupplierId=sur.supplierid
+        LEFT JOIN supplier sup on  re.FSupplyId=sup.supplierid
+        LEFT JOIN supplier supl on  re.FSettleId=supl.supplierid
+        LEFT JOIN supplier suple on  re.FChargeId=suple.supplierid
+        LEFT JOIN bymaterial_dictionary bdy on  re.FSettleCurrId=bdy.kingdee and bdy.category='currency'
+        <where>
+            <if test="receiveNotice != null">
+                <if test="receiveNotice.fBillNo != null and receiveNotice.fBillNo != ''">
+                    AND FBillNo LIKE CONCAT('%', #{receiveNotice.fBillNo}, '%')
+                </if>
+                <if test="receiveNotice.fDocumentStatus != null and receiveNotice.fDocumentStatus != ''">
+                    AND FDocumentStatus = #{receiveNotice.fDocumentStatus}
+                </if>
+                <if test="receiveNotice.fPurOrgId != null">
+                    AND FPurOrgId = #{receiveNotice.fPurOrgId}
+                </if>
+                <if test="receiveNotice.fSupplierId != null">
+                    AND FSupplierId = #{receiveNotice.fSupplierId}
+                </if>
+                <if test="receiveNotice.fDate != null">
+                    AND FDate = #{receiveNotice.fDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY FDate DESC
+        LIMIT #{pageSize} OFFSET #{pageNum}
+    </select>
+    <select id="selectPage" resultType="com.ruoyi.business.entity.ReceiveNotice">
+
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO receive_notice (
+            FID, FBillNo, FDocumentStatus, FBillTypeID, FDate, FReceiveDeptId, FPurOrgId, FReceiverId,
+            F_jcf, FSupplierId, F_gcbz, F_shdz, F_DATE_jz, F_djtjcf, FSupplyId, FProviderContactId,
+            FSupplyAddress, FSettleId, FChargeId, FSettleModeId, FPayConditionId, FSettleCurrId,
+            FAllDisCount, FCreatorId, FCreateDate, FModifierId, FModifyDate, FApproveDate, FApproverId, F_cty_Date
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.fid}, #{item.fBillNo}, #{item.fDocumentStatus}, #{item.fBillTypeID}, #{item.fDate}, #{item.fReceiveDeptId}, #{item.fPurOrgId}, #{item.fReceiverId},
+                #{item.fjcf}, #{item.fSupplierId}, #{item.fgcbz}, #{item.fshdz}, #{item.fDATEjz}, #{item.fdjtjcf}, #{item.fSupplyId}, #{item.fProviderContactId},
+                #{item.fSupplyAddress}, #{item.fSettleId}, #{item.fChargeId}, #{item.fSettleModeId}, #{item.fPayConditionId}, #{item.fSettleCurrId},
+                #{item.fAllDisCount}, #{item.fCreatorId}, #{item.fCreateDate}, #{item.fModifierId}, #{item.fModifyDate}, #{item.fApproveDate}, #{item.fApproverId}, #{item.fctyDate}
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateById" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE receive_notice
+            <set>
+                <if test="item.fBillNo != null">FBillNo = #{item.fBillNo},</if>
+                <if test="item.fDocumentStatus != null">FDocumentStatus = #{item.fDocumentStatus},</if>
+                <if test="item.fBillTypeID != null">FBillTypeID = #{item.fBillTypeID},</if>
+                <if test="item.fDate != null">FDate = #{item.fDate},</if>
+                <if test="item.fReceiveDeptId != null">FReceiveDeptId = #{item.fReceiveDeptId},</if>
+                <if test="item.fPurOrgId != null">FPurOrgId = #{item.fPurOrgId},</if>
+                <if test="item.fReceiverId != null">FReceiverId = #{item.fReceiverId},</if>
+                <if test="item.fjcf != null">F_jcf = #{item.fjcf},</if>
+                <if test="item.fSupplierId != null">FSupplierId = #{item.fSupplierId},</if>
+                <if test="item.fgcbz != null">F_gcbz = #{item.fgcbz},</if>
+                <if test="item.fshdz != null">F_shdz = #{item.fshdz},</if>
+                <if test="item.fDATEjz != null">F_DATE_jz = #{item.fDATEjz},</if>
+                <if test="item.fdjtjcf != null">F_djtjcf = #{item.fdjtjcf},</if>
+                <if test="item.fSupplyId != null">FSupplyId = #{item.fSupplyId},</if>
+                <if test="item.fProviderContactId != null">FProviderContactId = #{item.fProviderContactId},</if>
+                <if test="item.fSupplyAddress != null">FSupplyAddress = #{item.fSupplyAddress},</if>
+                <if test="item.fSettleId != null">FSettleId = #{item.fSettleId},</if>
+                <if test="item.fChargeId != null">FChargeId = #{item.fChargeId},</if>
+                <if test="item.fSettleModeId != null">FSettleModeId = #{item.fSettleModeId},</if>
+                <if test="item.fPayConditionId != null">FPayConditionId = #{item.fPayConditionId},</if>
+                <if test="item.fSettleCurrId != null">FSettleCurrId = #{item.fSettleCurrId},</if>
+                <if test="item.fAllDisCount != null">FAllDisCount = #{item.fAllDisCount},</if>
+                <if test="item.fCreatorId != null">FCreatorId = #{item.fCreatorId},</if>
+                <if test="item.fCreateDate != null">FCreateDate = #{item.fCreateDate},</if>
+                <if test="item.fModifierId != null">FModifierId = #{item.fModifierId},</if>
+                <if test="item.fModifyDate != null">FModifyDate = #{item.fModifyDate},</if>
+                <if test="item.fApproveDate != null">FApproveDate = #{item.fApproveDate},</if>
+                <if test="item.fApproverId != null">FApproverId = #{item.fApproverId},</if>
+                <if test="item.fctyDate != null">F_cty_Date = #{item.fctyDate},</if>
+            </set>
+            WHERE FID = #{item.fid}
+        </foreach>
+    </update>
+
+</mapper>

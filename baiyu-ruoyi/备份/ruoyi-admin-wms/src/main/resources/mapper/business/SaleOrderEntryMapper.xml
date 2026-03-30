@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SaleOrderEntryMapper">
+
+    <resultMap id="SaleOrderEntryMap" type="com.ruoyi.business.entity.SaleOrderEntry">
+        <id column="fentryid" property="fEntryId"/>
+        <result column="fbillno" property="fbillNo"/>
+        <result column="fbcykc" property="fBcykc"/>
+        <result column="f_sfxp" property="fSfxp"/>
+        <result column="f_jqhx" property="fJqhx"/>
+        <result column="fplanmaterialid" property="fPlanMaterialId"/>
+        <result column="fplanmaterialname" property="fPlanMaterialName"/>
+        <result column="fplanunitid" property="fPlanUnitId"/>
+        <result column="fqty" property="fQty"/>
+        <result column="fmaterialpriceunitqty" property="fMaterialPriceUnitQty"/>
+        <result column="fmaterialpriceunitid" property="fMaterialPriceUnitID"/>
+        <result column="fprice" property="fPrice"/>
+        <result column="ftaxprice" property="fTaxPrice"/>
+        <result column="fentrytaxrate" property="fEntryTaxRate"/>
+        <result column="fentrytaxamount" property="fEntryTaxAmount"/>
+        <result column="fallamount" property="fAllAmount"/>
+        <result column="fbasecanoutqty" property="fBaseCanOutQty"/>
+        <result column="fdeliqty" property="fDeliQty"/>
+        <result column="fstockbasecanoutqty" property="fStockBaseCanOutQty"/>
+        <result column="f_ora_text1" property="fOraText1"/>
+        <result column="f_ora_date3" property="fOraDate3"/>
+        <result column="f_fzr" property="fFzr"/>
+        <result column="f_ora_text" property="fOraText"/>
+        <result column="f_ora_date1" property="fOraDate1"/>
+        <result column="f_ora_date2" property="fOraDate2"/>
+        <result column="fpurjoinqty" property="fPurJoinQty"/>
+        <result column="f_ora_base1" property="fOraBase1"/>
+        <result column="f_ycjjfa" property="fYcjjfa"/>
+        <result column="f_ora_decimal" property="fOraDecimal"/>
+        <result column="f_ora_date4" property="fOraDate4"/>
+        <result column="f_ora_decimal1" property="fOraDecimal1"/>
+        <result column="f_ora_integer2" property="fOraInteger2"/>
+        <result column="f_ora_date5" property="fOraDate5"/>
+        <result column="f_ora_integer3" property="fOraInteger3"/>
+        <result column="f_bzjdtwo" property="fBzjdTwo"/>
+        <result column="f_ora_base" property="fOraBase"/>
+        <result column="f_ora_integer" property="fOraInteger"/>
+        <result column="f_ora_date" property="fOraDate"/>
+        <result column="f_mz" property="fmz"/>
+        <result column="f_jz" property="fjz"/>
+        <result column="f_mzz" property="fmzz"/>
+        <result column="f_zxs" property="fzxs"/>
+        <result column="f_xs" property="fxs"/>
+        <result column="f_gdtp1" property="fGdtp1"/>
+        <result column="f_gdtp2" property="fGdtp2"/>
+        <result column="f_xdgjjdtwo" property="fXdgjjdTwo"/>
+        <result column="f_bzfs" property="fBzfs"/>
+        <result column="f_tsyq" property="fTsyq"/>
+        <result column="f_ljrksl" property="fljrksl"/>
+        <result column="fysbz" property="fYsbz"/>
+        <result column="f_bgrq" property="fBgrq"/>
+        <result column="f_ctt" property="fCtt"/>
+        <result column="f_cptp" property="fCptp"/>
+        <result column="f_gcbz" property="fGcbz"/>
+        <result column="fhhwrk" property="fHhwrk"/>
+        <result column="f_kpdj" property="fKpdj"/>
+        <result column="f_bzxdzt" property="fBzxdzt"/>
+        <result column="f_gxzt" property="fGxzt"/>
+        <result column="f_cht" property="fCht"/>
+        <result column="f_jgt" property="fjgt"/>
+        <result column="f_smsfj" property="fSmsfj"/>
+        <result column="f_bchqzt" property="fBchqzt"/>
+        <result column="f_tsl" property="fTsl"/>
+        <result column="f_bgywpm" property="fBgywpm"/>
+        <result column="f_bgdw" property="fBgdw"/>
+        <result column="f_ygcb" property="fYgcb"/>
+        <result column="f_hsbm" property="fHsbm"/>
+        <result column="f_sbys" property="fSbys"/>
+        <result column="f_bcfynew" property="fBcfyNew"/>
+        <result column="f_glbcfynew" property="fGlbcfyNew"/>
+        <result column="fbzcc" property="fbzcc"/>
+        <result column="fbzgctg" property="fbzgctg"/>
+        <result column="frkshrq" property="frkshrq"/>
+        <result column="fbjr" property="fBjr"/>
+        <result column="ftpr" property="fTpr"/>
+        <result column="f_cty_baseproperty4" property="fCtyBaseProperty4"/>
+        <result column="fkhywms" property="fKhywms"/>
+        <result column="f_cty_baseproperty6" property="fCtyBaseProperty6"/>
+        <result column="f_ygcbdj" property="fYgcbdj"/>
+        <result column="f_ygcbdj1" property="fYgcbdj1"/>
+        <result column="f_ygcb1" property="fYgcb1"/>
+        <result column="f_peuu_attachment_83g" property="fPeuuAttachment83g"/>
+        <result column="fcgddshrq" property="fCgddshrq"/>
+        <result column="fyjsj" property="fYjsj"/>
+        <result column="fslshrq" property="fSlshrq"/>
+        <result column="f_xlcp" property="fXlcp"/>
+        <result column="f_cplb" property="fCplb"/>
+        <result column="f_ckrq" property="fCkrq"/>
+        <result column="f_cty_baseproperty7" property="fCtyBaseProperty7"/>
+        <result column="f_cty_baseproperty8" property="fCtyBaseProperty8"/>
+    </resultMap>
+
+    <select id="selectByOrderId" resultMap="SaleOrderEntryMap">
+
+
+
+        SELECT
+            t.fentryid,
+            t.fbillno,
+            t.fbcykc,
+            bd.name AS f_sfxp,
+            t.f_jqhx,
+            bm.number AS fplanmaterialid,
+            t.fplanmaterialname,
+
+            bdy.name AS fplanunitid,
+            t.fqty,
+            t.fmaterialpriceunitqty,
+            t.fmaterialpriceunitid,
+            t.fprice,
+            t.ftaxprice,
+            t.fentrytaxrate,
+            t.fentrytaxamount,
+            t.fallamount,
+            t.fbasecanoutqty,
+            t.fdeliqty,
+            t.fstockbasecanoutqty,
+            t.f_ora_text1,
+            t.f_ora_date3,
+            t.f_fzr,
+            t.f_ora_text,
+            t.f_ora_date1,
+            t.f_ora_date2,
+            t.fpurjoinqty,
+            t.f_ora_base1,
+            t.f_ycjjfa,
+            t.f_ora_decimal,
+            t.f_ora_date4,
+            t.f_ora_decimal1,
+            t.f_ora_integer2,
+            t.f_ora_date5,
+            t.f_ora_integer3,
+            t.f_bzjdtwo,
+            sp.number AS f_ora_base,
+            t.f_ora_integer,
+            t.f_ora_date,
+            t.f_mz,
+            t.f_jz,
+            t.f_mzz,
+            t.f_zxs,
+            t.f_xs,
+            t.f_gdtp1,
+            t.f_gdtp2,
+            t.f_xdgjjdtwo,
+            t.f_bzfs,
+            t.f_tsyq,
+            t.f_ljrksl,
+            t.fysbz,
+            t.f_bgrq,
+            t.f_ctt,
+            t.f_cptp,
+            t.f_gcbz,
+            t.fhhwrk,
+            t.f_kpdj,
+            t.f_bzxdzt,
+            t.f_gxzt,
+            t.f_cht,
+            t.f_jgt,
+            t.f_smsfj,
+            t.f_bchqzt,
+            t.f_tsl,
+            t.f_bgywpm,
+            t.f_bgdw,
+            t.f_ygcb,
+            t.f_hsbm,
+            t.f_sbys,
+            t.f_bcfynew,
+            t.f_glbcfynew,
+            t.fbzcc,
+            t.fbzgctg,
+            t.frkshrq,
+            t.fbjr,
+            t.ftpr,
+            t.f_cty_baseproperty4,
+            t.fkhywms,
+            t.f_cty_baseproperty6,
+            t.f_ygcbdj,
+            t.f_ygcbdj1,
+            t.f_ygcb1,
+            t.f_peuu_attachment_83g,
+            t.fcgddshrq,
+            t.fyjsj,
+            t.fslshrq,
+            t.f_xlcp,
+            bly.name AS f_cplb,
+            t.f_ckrq,
+            t.f_cty_baseproperty8
+        FROM t_sale_order_entry t
+                 LEFT JOIN bymaterial_dictionary bd
+                           ON bd.kingdee = t.f_sfxp
+                               AND bd.category = 'Order_product_category'
+                 LEFT JOIN bymaterial_dictionary bdy
+                           ON bdy.kingdee = t.fplanunitid
+                               AND bdy.category = 'unit'
+                 LEFT JOIN bymaterial_dictionary bly
+                           ON bly.kingdee = t.f_cplb
+                               AND bly.category = 'product_category'
+                 LEFT JOIN by_material bm
+                           ON bm.k3_id = t.fplanmaterialid
+                 LEFT JOIN supplier sp
+                           ON sp.supplierid = t.f_ora_base
+
+        WHERE fbillno = #{fbillNo}
+    </select>
+
+    <!-- 插入销售订单明细 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.SaleOrderEntry">
+        INSERT INTO t_sale_order_entry (
+            fbillno, fbcykc, f_sfxp, f_jqhx, fplanmaterialid, fplanmaterialname,
+            fplanunitid, fqty, fmaterialpriceunitqty, fmaterialpriceunitid, fprice,
+            ftaxprice, fentrytaxrate, fentrytaxamount, fallamount, fbasecanoutqty, fdeliqty,
+            fstockbasecanoutqty, f_ora_text1, f_ora_date3, f_fzr, f_ora_text, f_ora_date1,
+            f_ora_date2, fpurjoinqty, f_ora_base1, f_ycjjfa, f_ora_decimal, f_ora_date4,
+            f_ora_decimal1, f_ora_integer2, f_ora_date5, f_ora_integer3, f_bzjdtwo,
+            f_ora_base, f_ora_integer, f_ora_date, f_mz, f_jz, f_mzz, f_zxs, f_xs,
+            f_gdtp1, f_gdtp2, f_xdgjjdtwo, f_bzfs, f_tsyq, f_ljrksl, fysbz, f_bgrq,
+            f_ctt, f_cptp, f_gcbz, fhhwrk, f_kpdj, f_bzxdzt, f_gxzt, f_cht, f_jgt,
+            f_smsfj, f_bchqzt, f_tsl, f_bgywpm, f_bgdw, f_ygcb, f_hsbm, f_sbys,
+            f_bcfynew, f_glbcfynew, fbzcc, fbzgctg, frkshrq, fbjr, ftpr,
+            f_cty_baseproperty4, fkhywms, f_cty_baseproperty6, f_ygcbdj, f_ygcbdj1, f_ygcb1,
+            f_peuu_attachment_83g, fcgddshrq, fyjsj, fslshrq, f_xlcp, f_cplb, f_ckrq,
+            f_cty_baseproperty7, f_cty_baseproperty8
+        ) VALUES (
+                     #{fbillNo}, #{fBcykc}, #{fSfxp}, #{fJqhx}, #{fPlanMaterialId}, #{fPlanMaterialName},
+                     #{fPlanUnitId}, #{fQty}, #{fMaterialPriceUnitQty}, #{fMaterialPriceUnitID}, #{fPrice},
+                     #{fTaxPrice}, #{fEntryTaxRate}, #{fEntryTaxAmount}, #{fAllAmount}, #{fBaseCanOutQty}, #{fDeliQty},
+                     #{fStockBaseCanOutQty}, #{fOraText1}, #{fOraDate3}, #{fFzr}, #{fOraText}, #{fOraDate1},
+                     #{fOraDate2}, #{fPurJoinQty}, #{fOraBase1}, #{fYcjjfa}, #{fOraDecimal}, #{fOraDate4},
+                     #{fOraDecimal1}, #{fOraInteger2}, #{fOraDate5}, #{fOraInteger3}, #{fBzjdTwo},
+                     #{fOraBase}, #{fOraInteger}, #{fOraDate}, #{fmz}, #{fjz}, #{fmzz}, #{fzxs}, #{fxs},
+                     #{fGdtp1}, #{fGdtp2}, #{fXdgjjdTwo}, #{fBzfs}, #{fTsyq}, #{fljrksl}, #{fYsbz}, #{fBgrq},
+                     #{fCtt}, #{fCptp}, #{fGcbz}, #{fHhwrk}, #{fKpdj}, #{fBzxdzt}, #{fGxzt}, #{fCht}, #{fjgt},
+                     #{fSmsfj}, #{fBchqzt}, #{fTsl}, #{fBgywpm}, #{fBgdw}, #{fYgcb}, #{fHsbm}, #{fSbys},
+                     #{fBcfyNew}, #{fGlbcfyNew}, #{fbzcc}, #{fbzgctg}, #{frkshrq}, #{fBjr}, #{fTpr},
+                     #{fCtyBaseProperty4}, #{fKhywms}, #{fCtyBaseProperty6}, #{fYgcbdj}, #{fYgcbdj1}, #{fYgcb1},
+                     #{fPeuuAttachment83g}, #{fCgddshrq}, #{fYjsj}, #{fSlshrq}, #{fXlcp}, #{fCplb}, #{fCkrq},
+                     #{fCtyBaseProperty7}, #{fCtyBaseProperty8}
+                 )
+    </insert>
+
+    <!-- 根据订单ID删除销售订单明细 -->
+    <delete id="deleteByOrderId" parameterType="long">
+        DELETE FROM t_sale_order_entry WHERE FBillNo = #{fbillNo}
+    </delete>
+
+    <!-- 批量插入销售订单明细 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO t_sale_order_entry (
+        fbillno, fbcykc, f_sfxp, f_jqhx, fplanmaterialid, fplanmaterialname,
+        fplanunitid, fqty, fmaterialpriceunitqty, fmaterialpriceunitid, fprice,
+        ftaxprice, fentrytaxrate, fentrytaxamount, fallamount, fbasecanoutqty, fdeliqty,
+        fstockbasecanoutqty, f_ora_text1, f_ora_date3, f_fzr, f_ora_text, f_ora_date1,
+        f_ora_date2, fpurjoinqty, f_ora_base1, f_ycjjfa, f_ora_decimal, f_ora_date4,
+        f_ora_decimal1, f_ora_integer2, f_ora_date5, f_ora_integer3, f_bzjdtwo,
+        f_ora_base, f_ora_integer, f_ora_date, f_mz, f_jz, f_mzz, f_zxs, f_xs,
+        f_gdtp1, f_gdtp2, f_xdgjjdtwo, f_bzfs, f_tsyq, f_ljrksl, fysbz, f_bgrq,
+        f_ctt, f_cptp, f_gcbz, fhhwrk, f_kpdj, f_bzxdzt, f_gxzt, f_cht, f_jgt,
+        f_smsfj, f_bchqzt, f_tsl, f_bgywpm, f_bgdw, f_ygcb, f_hsbm, f_sbys,
+        f_bcfynew, f_glbcfynew, fbzcc, fbzgctg, frkshrq, fbjr, ftpr,
+        f_cty_baseproperty4, fkhywms, f_cty_baseproperty6, f_ygcbdj, f_ygcbdj1, f_ygcb1,
+        f_peuu_attachment_83g, fcgddshrq, fyjsj, fslshrq, f_xlcp, f_cplb, f_ckrq,
+        f_cty_baseproperty7, f_cty_baseproperty8
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.fbillNo}, #{item.fBcykc}, #{item.fSfxp}, #{item.fJqhx}, #{item.fPlanMaterialId}, #{item.fPlanMaterialName},
+            #{item.fPlanUnitId}, #{item.fQty}, #{item.fMaterialPriceUnitQty}, #{item.fMaterialPriceUnitID}, #{item.fPrice},
+            #{item.fTaxPrice}, #{item.fEntryTaxRate}, #{item.fEntryTaxAmount}, #{item.fAllAmount}, #{item.fBaseCanOutQty}, #{item.fDeliQty},
+            #{item.fStockBaseCanOutQty}, #{item.fOraText1}, #{item.fOraDate3}, #{item.fFzr}, #{item.fOraText}, #{item.fOraDate1},
+            #{item.fOraDate2}, #{item.fPurJoinQty}, #{item.fOraBase1}, #{item.fYcjjfa}, #{item.fOraDecimal}, #{item.fOraDate4},
+            #{item.fOraDecimal1}, #{item.fOraInteger2}, #{item.fOraDate5}, #{item.fOraInteger3}, #{item.fBzjdTwo},
+            #{item.fOraBase}, #{item.fOraInteger}, #{item.fOraDate}, #{item.fmz}, #{item.fjz}, #{item.fmzz}, #{item.fzxs}, #{item.fxs},
+            #{item.fGdtp1}, #{item.fGdtp2}, #{item.fXdgjjdTwo}, #{item.fBzfs}, #{item.fTsyq}, #{item.fljrksl}, #{item.fYsbz}, #{item.fBgrq},
+            #{item.fCtt}, #{item.fCptp}, #{item.fGcbz}, #{item.fHhwrk}, #{item.fKpdj}, #{item.fBzxdzt}, #{item.fGxzt}, #{item.fCht}, #{item.fjgt},
+            #{item.fSmsfj}, #{item.fBchqzt}, #{item.fTsl}, #{item.fBgywpm}, #{item.fBgdw}, #{item.fYgcb}, #{item.fHsbm}, #{item.fSbys},
+            #{item.fBcfyNew}, #{item.fGlbcfyNew}, #{item.fbzcc}, #{item.fbzgctg}, #{item.frkshrq}, #{item.fBjr}, #{item.fTpr},
+            #{item.fCtyBaseProperty4}, #{item.fKhywms}, #{item.fCtyBaseProperty6}, #{item.fYgcbdj}, #{item.fYgcbdj1}, #{item.fYgcb1},
+            #{item.fPeuuAttachment83g}, #{item.fCgddshrq}, #{item.fYjsj}, #{item.fSlshrq}, #{item.fXlcp}, #{item.fCplb}, #{item.fCkrq},
+            #{item.fCtyBaseProperty7}, #{item.fCtyBaseProperty8}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByFids">
+        DELETE FROM t_sale_order_entry
+        WHERE fbillno IN
+        <foreach collection="fbillNos" item="fbillno" open="(" close=")" separator=",">
+            #{fbillno}
+        </foreach>
+    </delete>
+
+</mapper>

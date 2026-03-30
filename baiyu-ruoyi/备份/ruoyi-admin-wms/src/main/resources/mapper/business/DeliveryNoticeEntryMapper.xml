@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.DeliveryNoticeEntryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="DeliveryNoticeEntryResult" type="com.ruoyi.business.entity.DeliveryNoticeEntry">
+        <id property="id" column="id"/>
+        <result property="deliveryNoticeId" column="delivery_notice_id"/>
+        <result property="deliveryNoticeNo" column="delivery_notice_no"/>
+        <result property="FID" column="FID"/>
+        <result property="FEntryID" column="FEntryID"/>
+        <result property="FMaterialID" column="FMaterialID"/>
+        <result property="FMaterialName" column="FMaterialName"/>
+        <result property="FMateriaModel" column="FMateriaModel"/>
+        <result property="FMateriaType" column="FMateriaType"/>
+        <result property="FUnitID" column="FUnitID"/>
+        <result property="FQty" column="FQty"/>
+        <result property="FStockID" column="FStockID"/>
+        <result property="FNoteEntry" column="FNoteEntry"/>
+        <result property="FBaseUnitID" column="FBaseUnitID"/>
+        <result property="FBaseUnitQty" column="FBaseUnitQty"/>
+        <result property="FDeliveryLoc" column="FDeliveryLoc"/>
+        <result property="FDeliveryLAddress" column="FDeliveryLAddress"/>
+        <result property="FOrderNo" column="FOrderNo"/>
+        <result property="FOrderSeq" column="FOrderSeq"/>
+        <result property="FCustMatID" column="FCustMatID"/>
+        <result property="FLot" column="FLot"/>
+        <result property="FIsFree" column="FIsFree"/>
+        <result property="FCustMatName" column="FCustMatName"/>
+        <result property="FRemainOutQty" column="FRemainOutQty"/>
+        <result property="FStockStatusId" column="FStockStatusId"/>
+        <result property="FPriceUnitQty" column="FPriceUnitQty"/>
+        <result property="FPrice" column="FPrice"/>
+        <result property="FTaxPrice" column="FTaxPrice"/>
+        <result property="FTaxCombination" column="FTaxCombination"/>
+        <result property="FEntryTaxRate" column="FEntryTaxRate"/>
+        <result property="FPriceCoefficient" column="FPriceCoefficient"/>
+        <result property="FSysPrice" column="FSysPrice"/>
+        <result property="FLimitDownPrice" column="FLimitDownPrice"/>
+        <result property="FBefDisAmt" column="FBefDisAmt"/>
+        <result property="FBefDisAllAmt" column="FBefDisAllAmt"/>
+        <result property="FDiscountRate" column="FDiscountRate"/>
+        <result property="F_ora_Decimal" column="F_ora_Decimal"/>
+        <result property="F_ora_Decimal1" column="F_ora_Decimal1"/>
+        <result property="F_c" column="F_c"/>
+        <result property="F_k" column="F_k"/>
+        <result property="F_g" column="F_g"/>
+        <result property="F_tj" column="F_tj"/>
+        <result property="F_mz" column="F_mz"/>
+        <result property="F_jz" column="F_jz"/>
+        <result property="F_mzz" column="F_mzz"/>
+        <result property="F_xs" column="F_xs"/>
+        <result property="F_zxs" column="F_zxs"/>
+        <result property="F_cgzj" column="F_cgzj"/>
+        <result property="F_zjzj" column="F_zjzj"/>
+        <result property="F_kpdj" column="F_kpdj"/>
+        <result property="F_kpzj" column="F_kpzj"/>
+        <result property="F_zwbgpm" column="F_zwbgpm"/>
+        <result property="F_ywbgpm" column="F_ywbgpm"/>
+        <result property="F_jzz" column="F_jzz"/>
+        <result property="F_jcsj" column="F_jcsj"/>
+        <result property="F_khhh" column="F_khhh"/>
+        <result property="F_sfbg" column="F_sfbg"/>
+        <result property="F_ddhsdj" column="F_ddhsdj"/>
+        <result property="F_tsl" column="F_tsl"/>
+        <result property="F_bgdw" column="F_bgdw"/>
+        <result property="F_tcblNEW" column="F_tcblNEW"/>
+        <result property="F_BCFYNEW" column="F_BCFYNEW"/>
+        <result property="F_GLBCFY" column="F_GLBCFY"/>
+        <result property="F_ffyq" column="F_ffyq"/>
+        <result property="Fddshrq" column="Fddshrq"/>
+        <result property="Fxsddh" column="Fxsddh"/>
+        <result property="Fxsddhh" column="Fxsddhh"/>
+        <result property="Fbzgctg" column="Fbzgctg"/>
+        <result property="Fypd" column="Fypd"/>
+        <result property="Fykc" column="Fykc"/>
+        <result property="F_cty_BaseProperty" column="F_cty_BaseProperty"/>
+        <result property="Frkshrq" column="Frkshrq"/>
+        <result property="Fckshrq" column="Fckshrq"/>
+        <result property="F_BZFS" column="F_BZFS"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 插入发货通知单明细 -->
+    <insert id="insertEntry" parameterType="com.ruoyi.business.entity.DeliveryNoticeEntry" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO delivery_notice_entry (
+            delivery_notice_id,
+            delivery_notice_no,
+            FID,
+            FEntryID,
+            FMaterialID,
+            FMaterialName,
+            FMateriaModel,
+            FMateriaType,
+            FUnitID,
+            FQty,
+            FStockID,
+            FNoteEntry,
+            FBaseUnitID,
+            FBaseUnitQty,
+            FDeliveryLoc,
+            FDeliveryLAddress,
+            FOrderNo,
+            FOrderSeq,
+            FCustMatID,
+            FLot,
+            FIsFree,
+            FCustMatName,
+            FRemainOutQty,
+            FStockStatusId,
+            FPriceUnitQty,
+            FPrice,
+            FTaxPrice,
+            FTaxCombination,
+            FEntryTaxRate,
+            FPriceCoefficient,
+            FSysPrice,
+            FLimitDownPrice,
+            FBefDisAmt,
+            FBefDisAllAmt,
+            FDiscountRate,
+            F_ora_Decimal,
+            F_ora_Decimal1,
+            F_c,
+            F_k,
+            F_g,
+            F_tj,
+            F_mz,
+            F_jz,
+            F_mzz,
+            F_xs,
+            F_zxs,
+            F_cgzj,
+            F_zjzj,
+            F_kpdj,
+            F_kpzj,
+            F_zwbgpm,
+            F_ywbgpm,
+            F_jzz,
+            F_jcsj,
+            F_khhh,
+            F_sfbg,
+            F_ddhsdj,
+            F_tsl,
+            F_bgdw,
+            F_tcblNEW,
+            F_BCFYNEW,
+            F_GLBCFY,
+            F_ffyq,
+            Fddshrq,
+            Fxsddh,
+            Fxsddhh,
+            Fbzgctg,
+            Fypd,
+            Fykc,
+            F_cty_BaseProperty,
+            Frkshrq,
+            Fckshrq,
+            F_BZFS,
+            created_by,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{deliveryNoticeId},
+            #{deliveryNoticeNo},
+            #{FID},
+            #{FEntryID},
+            #{FMaterialID},
+            #{FMaterialName},
+            #{FMateriaModel},
+            #{FMateriaType},
+            #{FUnitID},
+            #{FQty},
+            #{FStockID},
+            #{FNoteEntry},
+            #{FBaseUnitID},
+            #{FBaseUnitQty},
+            #{FDeliveryLoc},
+            #{FDeliveryLAddress},
+            #{FOrderNo},
+            #{FOrderSeq},
+            #{FCustMatID},
+            #{FLot},
+            #{FIsFree},
+            #{FCustMatName},
+            #{FRemainOutQty},
+            #{FStockStatusId},
+            #{FPriceUnitQty},
+            #{FPrice},
+            #{FTaxPrice},
+            #{FTaxCombination},
+            #{FEntryTaxRate},
+            #{FPriceCoefficient},
+            #{FSysPrice},
+            #{FLimitDownPrice},
+            #{FBefDisAmt},
+            #{FBefDisAllAmt},
+            #{FDiscountRate},
+            #{F_ora_Decimal},
+            #{F_ora_Decimal1},
+            #{F_c},
+            #{F_k},
+            #{F_g},
+            #{F_tj},
+            #{F_mz},
+            #{F_jz},
+            #{F_mzz},
+            #{F_xs},
+            #{F_zxs},
+            #{F_cgzj},
+            #{F_zjzj},
+            #{F_kpdj},
+            #{F_kpzj},
+            #{F_zwbgpm},
+            #{F_ywbgpm},
+            #{F_jzz},
+            #{F_jcsj},
+            #{F_khhh},
+            #{F_sfbg},
+            #{F_ddhsdj},
+            #{F_tsl},
+            #{F_bgdw},
+            #{F_tcblNEW},
+            #{F_BCFYNEW},
+            #{F_GLBCFY},
+            #{F_ffyq},
+            #{Fddshrq},
+            #{Fxsddh},
+            #{Fxsddhh},
+            #{Fbzgctg},
+            #{Fypd},
+            #{Fykc},
+            #{F_cty_BaseProperty},
+            #{Frkshrq},
+            #{Fckshrq},
+            #{F_BZFS},
+            #{createdBy},
+            #{createdAt},
+            #{updatedAt}
+        )
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO delivery_notice_entry (
+            delivery_notice_id,
+            delivery_notice_no,
+            FEntryID,
+            FMaterialID,
+            FMaterialName,
+            FMateriaModel,
+            FMateriaType,
+            FUnitID,
+            FQty,
+            FStockID,
+            FNoteEntry,
+            FBaseUnitID,
+            FBaseUnitQty,
+            FDeliveryLoc,
+            FDeliveryLAddress,
+            FOrderNo,
+            FOrderSeq,
+            FCustMatID,
+            FLot,
+            FIsFree,
+            FCustMatName,
+            FRemainOutQty,
+            FStockStatusId,
+            FPriceUnitQty,
+            FPrice,
+            FTaxPrice,
+            FTaxCombination,
+            FEntryTaxRate,
+            FPriceCoefficient,
+            FSysPrice,
+            FLimitDownPrice,
+            FBefDisAmt,
+            FBefDisAllAmt,
+            FDiscountRate,
+            F_ora_Decimal,
+            F_ora_Decimal1,
+            F_c,
+            F_k,
+            F_g,
+            F_tj,
+            F_mz,
+            F_jz,
+            F_mzz,
+            F_xs,
+            F_zxs,
+            F_cgzj,
+            F_zjzj,
+            F_kpdj,
+            F_kpzj,
+            F_zwbgpm,
+            F_ywbgpm,
+            F_jzz,
+            F_jcsj,
+            F_khhh,
+            F_sfbg,
+            F_ddhsdj,
+            F_tsl,
+            F_bgdw,
+            F_tcblNEW,
+            F_BCFYNEW,
+            F_GLBCFY,
+            F_ffyq,
+            Fddshrq,
+            Fxsddh,
+            Fxsddhh,
+            Fbzgctg,
+            Fypd,
+            Fykc,
+            F_cty_BaseProperty,
+            Frkshrq,
+            Fckshrq,
+            F_BZFS,
+            created_by,
+            created_at,
+            updated_at
+        ) VALUES
+        <foreach collection="entries" item="entry" separator=",">
+            (
+                #{entry.deliveryNoticeId},
+                #{entry.deliveryNoticeNo},
+                #{entry.FEntryID},
+                #{entry.FMaterialID},
+                #{entry.FMaterialName},
+                #{entry.FMateriaModel},
+                #{entry.FMateriaType},
+                #{entry.FUnitID},
+                #{entry.FQty},
+                #{entry.FStockID},
+                #{entry.FNoteEntry},
+                #{entry.FBaseUnitID},
+                #{entry.FBaseUnitQty},
+                #{entry.FDeliveryLoc},
+                #{entry.FDeliveryLAddress},
+                #{entry.FOrderNo},
+                #{entry.FOrderSeq},
+                #{entry.FCustMatID},
+                #{entry.FLot},
+                #{entry.FIsFree},
+                #{entry.FCustMatName},
+                #{entry.FRemainOutQty},
+                #{entry.FStockStatusId},
+                #{entry.FPriceUnitQty},
+                #{entry.FPrice},
+                #{entry.FTaxPrice},
+                #{entry.FTaxCombination},
+                #{entry.FEntryTaxRate},
+                #{entry.FPriceCoefficient},
+                #{entry.FSysPrice},
+                #{entry.FLimitDownPrice},
+                #{entry.FBefDisAmt},
+                #{entry.FBefDisAllAmt},
+                #{entry.FDiscountRate},
+                #{entry.F_ora_Decimal},
+                #{entry.F_ora_Decimal1},
+                #{entry.F_c},
+                #{entry.F_k},
+                #{entry.F_g},
+                #{entry.F_tj},
+                #{entry.F_mz},
+                #{entry.F_jz},
+                #{entry.F_mzz},
+                #{entry.F_xs},
+                #{entry.F_zxs},
+                #{entry.F_cgzj},
+                #{entry.F_zjzj},
+                #{entry.F_kpdj},
+                #{entry.F_kpzj},
+                #{entry.F_zwbgpm},
+                #{entry.F_ywbgpm},
+                #{entry.F_jzz},
+                #{entry.F_jcsj},
+                #{entry.F_khhh},
+                #{entry.F_sfbg},
+                #{entry.F_ddhsdj},
+                #{entry.F_tsl},
+                #{entry.F_bgdw},
+                #{entry.F_tcblNEW},
+                #{entry.F_BCFYNEW},
+                #{entry.F_GLBCFY},
+                #{entry.F_ffyq},
+                #{entry.Fddshrq},
+                #{entry.Fxsddh},
+                #{entry.Fxsddhh},
+                #{entry.Fbzgctg},
+                #{entry.Fypd},
+                #{entry.Fykc},
+                #{entry.F_cty_BaseProperty},
+                #{entry.Frkshrq},
+                #{entry.Fckshrq},
+                #{entry.F_BZFS},
+                #{entry.createdBy},
+                #{entry.createdAt},
+                #{entry.updatedAt}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据主表 ID 查询明细 -->
+    <select id="selectByDeliveryNoticeId" resultMap="DeliveryNoticeEntryResult">
+        SELECT * FROM delivery_notice_entry WHERE delivery_notice_id = #{deliveryNoticeId} ORDER BY FEntryID
+    </select>
+
+    <!-- 根据主表单据编号查询明细 -->
+    <select id="selectByDeliveryNoticeNo" resultMap="DeliveryNoticeEntryResult">
+        SELECT * FROM delivery_notice_entry WHERE delivery_notice_no = #{deliveryNoticeNo} ORDER BY FEntryID
+    </select>
+
+    <!-- 根据主表 ID 删除明细 -->
+    <delete id="deleteByDeliveryNoticeId" parameterType="Long">
+        DELETE FROM delivery_notice_entry WHERE delivery_notice_id = #{deliveryNoticeId}
+    </delete>
+
+    <!-- 根据主表单据编号删除明细 -->
+    <delete id="deleteByDeliveryNoticeNo" parameterType="String">
+        DELETE FROM delivery_notice_entry WHERE delivery_notice_no = #{deliveryNoticeNo}
+    </delete>
+
+    <!-- 更新明细 -->
+    <update id="updateEntry" parameterType="com.ruoyi.business.entity.DeliveryNoticeEntry">
+        UPDATE delivery_notice_entry
+        <set>
+            <if test="FMaterialID != null">FMaterialID = #{FMaterialID},</if>
+            <if test="FMaterialName != null">FMaterialName = #{FMaterialName},</if>
+            <if test="FMateriaModel != null">FMateriaModel = #{FMateriaModel},</if>
+            <if test="FUnitID != null">FUnitID = #{FUnitID},</if>
+            <if test="FQty != null">FQty = #{FQty},</if>
+            <if test="FStockID != null">FStockID = #{FStockID},</if>
+            <if test="FBaseUnitID != null">FBaseUnitID = #{FBaseUnitID},</if>
+            <if test="FBaseUnitQty != null">FBaseUnitQty = #{FBaseUnitQty},</if>
+            <if test="FPrice != null">FPrice = #{FPrice},</if>
+            <if test="FTaxPrice != null">FTaxPrice = #{FTaxPrice},</if>
+            <if test="FEntryTaxRate != null">FEntryTaxRate = #{FEntryTaxRate},</if>
+            <if test="FDiscountRate != null">FDiscountRate = #{FDiscountRate},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据物料编码查询 -->
+    <select id="selectByMaterialId" resultMap="DeliveryNoticeEntryResult">
+        SELECT * FROM delivery_notice_entry WHERE FMaterialID = #{materialId} LIMIT 1
+    </select>
+
+</mapper>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.InquiryOrderMapper">
+
+    <resultMap id="InquiryOrderResult" type="com.ruoyi.business.entity.InquiryOrder">
+        <id property="fid" column="fid"/>
+        <result property="fbillno" column="fbillno"/>
+        <result property="fdocumentstatus" column="fdocumentstatus"/>
+        <result property="fcreatorid" column="fcreatorid"/>
+        <result property="fcreatedate" column="fcreatedate"/>
+        <result property="fshr" column="fshr"/>
+        <result property="fdateSh" column="fdate_sh"/>
+        <result property="fdate" column="fdate"/>
+        <result property="fCkgj" column="f_ckgj"/>
+        <result property="fKhly" column="f_khly"/>
+
+        <result property="fGdhl" column="f_gdhl"/>
+        <result property="fBjbb" column="f_bjbb"/>
+        <result property="fMll" column="f_mll"/>
+        <result property="fKhbm" column="f_khbm"/>
+        <result property="fCtyBaseproperty" column="f_cty_baseproperty"/>
+        <result property="fCtyBaseproperty1" column="f_cty_baseproperty1"/>
+        <result property="fXsy1" column="f_xsy1"/>
+        <result property="fYwy" column="f_ywy"/>
+        <result property="fkhxq" column="fkhxq"/>
+        <result property="fQyd" column="f_qyd"/>
+        <result property="fFkfs" column="f_fkfs"/>
+        <result property="fCtyBaseproperty4" column="f_cty_baseproperty4"/>
+        <result property="fBtjshj" column="f_btjshj"/>
+        <result property="fJshjbwb" column="f_jshjbwb"/>
+        <result property="fBtcbhj" column="f_btcbhj"/>
+        <result property="fEmail" column="f_email"/>
+        <result property="fMob" column="f_mob"/>
+        <result property="fTel" column="f_tel"/>
+        <result property="fFax" column="f_fax"/>
+        <result property="fmjlr" column="fmjlr"/>
+        <result property="fCgbjrq" column="f_cgbjrq"/>
+        <result property="fBzf" column="f_bzf"/>
+        <result property="fHdf" column="f_hdf"/>
+        <result property="fLyf" column="f_lyf"/>
+        <result property="fQtfy" column="f_qtfy"/>
+        <result property="fFyxj" column="f_fyxj"/>
+        <result property="fHqbjfk" column="f_hqbjfk"/>
+    </resultMap>
+
+    <sql id="selectInquiryOrderVo">
+        SELECT
+            iqde.fid,
+            iqde.fbillno,
+            iqde.fdocumentstatus,
+            su.user_name as fcreatorid,
+            iqde.fcreatedate,
+            sue.user_name as fshr,
+            iqde.fdate_sh,
+            iqde.fdate,
+            cy.name_zh as f_ckgj,
+            bld.name as f_khly,
+
+            iqde.f_gdhl,
+            bd. name as f_bjbb,
+            iqde.f_mll,
+            bc.fnumber as f_khbm,
+            iqde.f_cty_baseproperty,
+            iqde.f_cty_baseproperty1,
+            se.fname as f_xsy1,
+            iqde.f_ywy,
+            iqde.fkhxq,
+            iqde.f_qyd,
+            iqde.f_fkfs,
+            iqde.f_cty_baseproperty4,
+            iqde.f_btjshj,
+            iqde.f_jshjbwb,
+            iqde.f_btcbhj,
+            iqde.f_email,
+            iqde.f_mob,
+            iqde.f_tel,
+            iqde.f_fax,
+            iqde.fmjlr,
+            iqde.f_cgbjrq,
+            iqde.f_bzf,
+            iqde.f_hdf,
+            iqde.f_lyf,
+            iqde.f_qtfy,
+            iqde.f_fyxj,
+            iqde.f_hqbjfk
+        FROM
+            inquiry_order  iqde
+                LEFT JOIN  sys_user su on iqde.fcreatorid=su.k3_key
+                LEFT JOIN  sys_user sue on iqde.fshr=sue.k3_key
+                LEFT JOIN  sys_employee se on iqde.f_xsy1=se.salesman_id
+                LEFT JOIN  bd_customer bc on iqde.f_khbm=bc.fcustid
+                LEFT JOIN  country cy on iqde.f_ckgj=cy.id
+                LEFT JOIN  bymaterial_dictionary bld on iqde.f_khly=bld.kingdee and  bld.category='customer_source'
+                LEFT JOIN  bymaterial_dictionary bd on iqde.f_bjbb=bd.kingdee and  bd.category='currency'
+    </sql>
+
+    <select id="selectList" parameterType="com.ruoyi.business.entity.InquiryOrder" resultMap="InquiryOrderResult">
+        <include refid="selectInquiryOrderVo"/>
+        <where>
+            <if test="fbillno != null and fbillno != ''">
+                AND fbillno like concat('%', #{fbillno}, '%')
+            </if>
+            <if test="fKhbm != null and fKhbm != ''">
+                AND f_khbm = #{fKhbm}
+            </if>
+            <if test="fdocumentstatus != null and fdocumentstatus != ''">
+                AND fdocumentstatus = #{fdocumentstatus}
+            </if>
+            <if test="fdate != null">
+                AND fdate = #{fdate}
+            </if>
+        </where>
+        order by fcreatedate desc
+    </select>
+
+    <select id="selectByBillNo" parameterType="string" resultMap="InquiryOrderResult">
+        SELECT
+            iqde.fid,
+            iqde.fbillno,
+            iqde.fdocumentstatus,
+            su.user_name as fcreatorid,
+            iqde.fcreatedate,
+            sue.user_name as fshr,
+            iqde.fdate_sh,
+            iqde.fdate,
+            cy.name_zh as f_ckgj,
+            bld.name as f_khly,
+
+            iqde.f_gdhl,
+            bd. name as f_bjbb,
+            iqde.f_mll,
+            bc.fnumber as f_khbm,
+            iqde.f_cty_baseproperty,
+            iqde.f_cty_baseproperty1,
+            se.fname as f_xsy1,
+            iqde.f_ywy,
+            iqde.fkhxq,
+            iqde.f_qyd,
+            iqde.f_fkfs,
+            iqde.f_cty_baseproperty4,
+            iqde.f_btjshj,
+            iqde.f_jshjbwb,
+            iqde.f_btcbhj,
+            iqde.f_email,
+            iqde.f_mob,
+            iqde.f_tel,
+            iqde.f_fax,
+            iqde.fmjlr,
+            iqde.f_cgbjrq,
+            iqde.f_bzf,
+            iqde.f_hdf,
+            iqde.f_lyf,
+            iqde.f_qtfy,
+            iqde.f_fyxj,
+            iqde.f_hqbjfk
+        FROM
+            inquiry_order  iqde
+                LEFT JOIN  sys_user su on iqde.fcreatorid=su.k3_key
+                LEFT JOIN  sys_user sue on iqde.fshr=sue.k3_key
+                LEFT JOIN  sys_employee se on iqde.f_xsy1=se.salesman_id
+                LEFT JOIN  bd_customer bc on iqde.f_khbm=bc.fcustid
+                LEFT JOIN  country cy on iqde.f_ckgj=cy.id
+                LEFT JOIN  bymaterial_dictionary bld on iqde.f_khly=bld.kingdee and  bld.category='customer_source'
+                LEFT JOIN  bymaterial_dictionary bd on iqde.f_bjbb=bd.kingdee and  bd.category='currency'
+        where iqde.fid = #{fid}
+    </select>
+
+    <select id="selectByBillNoForUpdate" resultMap="InquiryOrderResult">
+        select fid, fbillno, fdocumentstatus, fcreatorid, fcreatedate, fshr, fdate_sh, fdate,
+               f_ckgj, f_khly, f_gdhl, f_bjbb, f_mll, f_khbm, f_cty_baseproperty,
+               f_cty_baseproperty1, f_xsy1, f_ywy, fkhxq, f_qyd, f_fkfs, f_cty_baseproperty4,
+               f_btjshj, f_jshjbwb, f_btcbhj, f_email, f_mob, f_tel, f_fax, fmjlr, f_cgbjrq,
+               f_bzf, f_hdf, f_lyf, f_qtfy, f_fyxj, f_hqbjfk from inquiry_order
+        where fbillno = #{billNo} and fid != #{excludeFid}
+    </select>
+
+    <select id="selectByCustomerCode" parameterType="string" resultMap="InquiryOrderResult">
+        <include refid="selectInquiryOrderVo"/>
+        where f_khbm = #{customerCode}
+    </select>
+
+    <select id="selectById" resultMap="InquiryOrderResult">
+        SELECT
+            iqde.fid,
+            iqde.fbillno,
+            iqde.fdocumentstatus,
+            su.user_name as fcreatorid,
+            iqde.fcreatedate,
+            sue.user_name as fshr,
+            iqde.fdate_sh,
+            iqde.fdate,
+            cy.name_zh as f_ckgj,
+            bld.name as f_khly,
+            iqde.f_gdhl,
+            bd. name as f_bjbb,
+            iqde.f_mll,
+            bc.fnumber as f_khbm,
+            iqde.f_cty_baseproperty,
+            iqde.f_cty_baseproperty1,
+            se.fname as f_xsy1,
+            iqde.f_ywy,
+            iqde.fkhxq,
+            iqde.f_qyd,
+            iqde.f_fkfs,
+            iqde.f_cty_baseproperty4,
+            iqde.f_btjshj,
+            iqde.f_jshjbwb,
+            iqde.f_btcbhj,
+            iqde.f_email,
+            iqde.f_mob,
+            iqde.f_tel,
+            iqde.f_fax,
+            iqde.fmjlr,
+            iqde.f_cgbjrq,
+            iqde.f_bzf,
+            iqde.f_hdf,
+            iqde.f_lyf,
+            iqde.f_qtfy,
+            iqde.f_fyxj,
+            iqde.f_hqbjfk
+        FROM
+            inquiry_order  iqde
+                LEFT JOIN  sys_user su on iqde.fcreatorid=su.k3_key
+                LEFT JOIN  sys_user sue on iqde.fshr=sue.k3_key
+                LEFT JOIN  sys_employee se on iqde.f_xsy1=se.salesman_id
+                LEFT JOIN  bd_customer bc on iqde.f_khbm=bc.fcustid
+                LEFT JOIN  country cy on iqde.f_ckgj=cy.id
+                LEFT JOIN  bymaterial_dictionary bld on iqde.f_khly=bld.kingdee and  bld.category='customer_source'
+                LEFT JOIN  bymaterial_dictionary bd on iqde.f_bjbb=bd.kingdee and  bd.category='currency'
+        WHERE iqde.id = #{id}
+    </select>
+</mapper>

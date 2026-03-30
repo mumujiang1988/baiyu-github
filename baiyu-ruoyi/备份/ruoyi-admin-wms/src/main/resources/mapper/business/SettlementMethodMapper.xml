@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.SettlementMethodMapper">
+
+    <resultMap id="SettlementMethodResultMap" type="com.ruoyi.business.entity.SettlementMethod">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="category" column="category"/>
+        <result property="businessType" column="business_type"/>
+        <result property="supportFee" column="support_fee"/>
+        <result property="undertaker" column="undertaker"/>
+        <result property="paymentMethod" column="payment_method"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="SettlementMethodResultMap">
+        SELECT * FROM settlement_method WHERE id = #{id}
+    </select>
+
+    <select id="selectByTlementMethod" resultMap="SettlementMethodResultMap">
+        SELECT * FROM settlement_method
+        <where>
+            1=1
+            <if test="tlementMethod != null">
+                <if test="tlementMethod.id != null and tlementMethod.id != ''">
+                    AND id = #{tlementMethod.id}
+                </if>
+                <if test="tlementMethod.name != null and tlementMethod.name != ''">
+                    AND name = #{tlementMethod.name}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="SettlementMethodResultMap">
+        SELECT id, code,name FROM settlement_method
+    </select>
+
+    <!-- 根据编码查询 -->
+    <select id="selectByCode" resultMap="SettlementMethodResultMap">
+        SELECT * FROM settlement_method WHERE code = #{code}
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.SettlementMethod" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO settlement_method
+        (code, name, category, business_type, support_fee, undertaker, payment_method, create_time)
+        VALUES
+            (#{code}, #{name}, #{category}, #{businessType}, #{supportFee}, #{undertaker}, #{paymentMethod}, #{createTime})
+    </insert>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.ruoyi.business.entity.SettlementMethod">
+        UPDATE settlement_method
+        SET
+            code = #{code},
+            name = #{name},
+            category = #{category},
+            business_type = #{businessType},
+            support_fee = #{supportFee},
+            undertaker = #{undertaker},
+            payment_method = #{paymentMethod},
+            create_time = #{createTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <delete id="deleteById">
+        DELETE FROM settlement_method WHERE id = #{id}
+    </delete>
+
+    <select id="selectBySupplierNumbers" resultType="com.ruoyi.business.entity.SettlementMethod" parameterType="java.util.List">
+        SELECT
+        code,
+
+        name
+        FROM settlement_method
+        WHERE code IN
+        <foreach item="code" collection="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
+
+
+</mapper>

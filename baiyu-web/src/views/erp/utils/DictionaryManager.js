@@ -66,20 +66,11 @@ class DictionaryManager {
         // 按类型分组存储
         const groupedDicts = {}
         
-        // 先放入字典类型
-        dictTypeList.forEach(item => {
-          const type = item.type
-          if (!groupedDicts[type]) {
-            groupedDicts[type] = []
-          }
-          // 避免重复
-          const exists = groupedDicts[type].some(d => d.value === item.value)
-          if (!exists) {
-            groupedDicts[type].push(item)
-          }
-        })
+        // ⚠️ 不再将 dictTypeList 放入结果中，仅使用 dictDataList
+        // 原因：dictTypeList 是字典类型定义，不是实际的字典数据
+        // 例如：{ label: '销售人员', value: 'salespersons', type: 'salespersons' } 不应该出现在下拉选项中
         
-        // 再放入字典数据
+        // 只处理字典数据列表
         dictDataList.forEach(item => {
           const type = item.type
           if (!groupedDicts[type]) {

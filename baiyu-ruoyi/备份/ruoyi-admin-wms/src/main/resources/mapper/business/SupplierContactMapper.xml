@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.SupplierContactMapper">
+
+    <!-- 通用查询结果映射 -->
+    <resultMap id="SupplierContactMap" type="com.ruoyi.business.entity.SupplierContactBase">
+        <result property="id" column="id"/>
+        <result property="k3id" column="k3_id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="locationName" column="location_name"/>
+        <result property="contactName" column="contact_name"/>
+        <result property="position" column="position"/>
+        <result property="phone" column="phone"/>
+        <result property="mobile" column="mobile"/>
+        <result property="email" column="email"/>
+        <result property="qq" column="qq"/>
+        <result property="address" column="address"/>
+        <result property="gender" column="gender"/>
+        <result property="remark" column="remark"/>
+        <result property="type" column="type"/>
+        <result property="vx" column="vx"/>
+        <result property="customerNumber" column="customer_number"/>
+        <result property="creator" column="creator"/>
+        <result property="creationDate" column="creation_date"/>
+    </resultMap>
+
+    <!-- 根据供应商编码查询联系人 -->
+    <select id="selectByContractBse" parameterType="string" resultMap="SupplierContactMap">
+        SELECT
+            id,
+            k3_id,
+            supplier_code,
+            contact_name,
+            gender,
+            position,
+            phone,
+            mobile,
+            email,
+            qq,
+            location_name,
+            address,
+            remark,
+            type,
+            vx,
+            customer_number,
+            creator,
+            creation_date
+        FROM supplier_contact
+        WHERE customer_number = #{contractBse}
+    </select>
+
+    <!-- 根据客户编码查询 -->
+    <select id="selectByinformationList" parameterType="string" resultMap="SupplierContactMap">
+        SELECT
+        id,
+        k3_id,
+        supplier_code,
+        contact_name,
+        gender,
+        position,
+        phone,
+        mobile,
+        email,
+        qq,
+        location_name,
+        address,
+        remark,
+        type,
+        vx,
+        customer_number,
+        creator,
+        creation_date
+        FROM supplier_contact
+        WHERE customer_number = #{customerNumber}
+    </select>
+
+
+    <!-- 根据供应商编码和联系人姓名查询联系人 -->
+    <select id="selectByContractBseAndContactName" resultMap="SupplierContactMap">
+        SELECT
+            id,
+            k3_id,
+            supplier_code,
+            contact_name,
+            gender,
+            position,
+            phone,
+            mobile,
+            email,
+            qq,
+            location_name,
+            address,
+            remark,
+            type,
+            vx,
+            customer_number,
+            creator,
+            creation_date
+        FROM supplier_contact
+        WHERE supplier_code = #{supplierCode} AND contact_name = #{contactName}
+    </select>
+
+    <!-- 根据客户编码和联系人姓名查询联系人 -->
+    <select id="selectByCustomerNumberAndContactName" resultMap="SupplierContactMap">
+        SELECT
+            id,
+            k3_id,
+            supplier_code,
+            contact_name,
+            gender,
+            position,
+            phone,
+            mobile,
+            email,
+            qq,
+            location_name,
+            address,
+            remark,
+            type,
+            vx,
+            customer_number,
+            creator,
+            creation_date
+        FROM supplier_contact
+        WHERE customer_number = #{customerNumber} AND contact_name = #{contactName}
+    </select>
+
+
+    <!-- 根据供应商编码查询联系人列表 -->
+    <select id="selectByContractBseList" parameterType="java.util.List" resultType="com.ruoyi.business.entity.SupplierContactBase">
+        SELECT
+        id,
+        k3_id AS k3id,
+        supplier_code AS supplierCode,
+        contact_name AS contactName,
+        gender,
+        position,
+        phone,
+        qq,
+        mobile,
+        email,
+        location_name,
+        address,
+        remark,
+        type,
+        vx,
+        customer_number AS customerNumber,
+        creator,
+        creation_date AS creationDate
+        FROM supplier_contact
+        WHERE supplier_code IN
+        <foreach item="code" collection="supplierNumbers" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
+
+
+    <!-- 新增联系人 -->
+    <insert id="insertSupplierContact" parameterType="com.ruoyi.business.entity.SupplierContactBase" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO supplier_contact
+        (k3_id, supplier_code, contact_name, gender, position, phone, qq, mobile, email, location_name, address,defaultContact,
+        remark, type, vx, customer_number, creator, creation_date)
+        VALUES
+            (#{k3id}, #{supplierCode}, #{contactName}, #{gender}, #{position}, #{phone}, #{qq},
+             #{mobile}, #{email}, #{locationName}, #{address},#{defaultContact},
+             #{remark}, #{type}, #{vx}, #{customerNumber}, #{creator}, #{creationDate})
+    </insert>
+
+
+    <!-- 修改联系人 -->
+    <update id="updateSupplierContact" parameterType="com.ruoyi.business.entity.SupplierContactBase">
+        UPDATE supplier_contact
+        <set>
+            <if test="contactName != null and contactName != ''" >
+                contact_name = #{contactName},
+            </if>
+            <if test="locationName != null  and locationName != ''">
+                location_name = #{locationName},
+            </if>
+            <if test="position != null  and position != ''">
+                position = #{position},
+            </if>
+            <if test="phone != null  and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="defaultContact != null  and defaultContact != ''">
+                defaultContact = #{defaultContact},
+            </if>
+            <if test="mobile != null  and mobile != ''">
+                mobile = #{mobile},
+            </if>
+            <if test="email != null  and email != ''">
+                email = #{email},
+            </if>
+            <if test="qq != null  and qq != ''">
+                qq = #{qq},
+            </if>
+            <if test="address != null  and address != ''">
+                address = #{address},
+            </if>
+            <if test="gender != null  and gender != ''">
+                gender = #{gender},
+            </if>
+            <if test="k3id != null">
+                k3_id = #{k3id},
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''" >
+                supplier_code = #{supplierCode},
+            </if>
+            <if test="remark != null  and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="type != null  and type != ''">
+                type = #{type},
+            </if>
+            <if test="vx != null  and vx != ''">
+                vx = #{vx},
+            </if>
+            <if test="customerNumber != null  and customerNumber != ''">
+                customer_number = #{customerNumber},
+            </if>
+            <if test="creator != null  and creator != ''">
+                creator = #{creator},
+            </if>
+            <if test="creationDate != null">
+                creation_date = #{creationDate},
+            </if>
+        </set>
+        WHERE k3_id = #{k3id}
+    </update>
+
+    <delete id="deleteSupplierContact">
+        DELETE FROM supplier_contact
+        WHERE supplier_code = #{contactBase}
+    </delete>
+
+    <!--  根据客户编码删除联系人 -->
+    <delete id="deleteByCustomerNumber">
+        DELETE FROM supplier_contact
+        WHERE customer_number = #{customerNumber}
+    </delete>
+
+    <select id="selectById" resultMap="SupplierContactMap">
+        SELECT
+            id,
+            k3_id AS k3id,
+            supplier_code AS supplierCode,
+            contact_name AS contactName,
+            gender,
+            position,
+            phone,
+            qq,
+            mobile,
+            email,
+            location_name,
+            address,
+            remark,
+            type,
+            vx,
+            customer_number AS customerNumber,
+            creator,
+            creation_date AS creationDate
+        FROM supplier_contact
+        WHERE id = #{id}
+    </select>
+
+
+</mapper>

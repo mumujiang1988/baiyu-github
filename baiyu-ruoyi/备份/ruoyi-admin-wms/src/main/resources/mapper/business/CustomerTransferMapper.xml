@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.CustomerTransferMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CustomerTransferMap" type="com.ruoyi.business.entity.CustomerTransfer">
+        <id column="customer_code" property="customerCode"/>
+        <result column="f_zrr" property="fZrr"/>
+        <result column="f_jsr" property="fJsr"/>
+        <result column="f_zrrq" property="fZrrq"/>
+        <result column="f_tcbl" property="fTcbl"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.ruoyi.business.entity.CustomerTransfer">
+        INSERT INTO customer_transfer
+            (customer_code, f_zrr, f_jsr, f_zrrq, f_tcbl)
+        VALUES
+            (#{customerCode}, #{fZrr}, #{fJsr}, #{fZrrq}, #{fTcbl})
+    </insert>
+
+    <!-- 更新（按客户编码） -->
+    <update id="update" parameterType="com.ruoyi.business.entity.CustomerTransfer">
+        UPDATE customer_transfer
+        SET
+            f_zrr = #{fZrr},
+            f_jsr = #{fJsr},
+            f_zrrq = #{fZrrq},
+            f_tcbl = #{fTcbl},
+            update_time = CURRENT_TIMESTAMP
+        WHERE customer_code = #{customerCode}
+    </update>
+
+    <!-- 根据客户编码查询 -->
+    <select id="selectByCustomerCode" resultMap="CustomerTransferMap">
+        SELECT *
+        FROM customer_transfer
+        WHERE customer_code = #{customerCode}
+    </select>
+
+    <!-- 列表查询（支持条件） -->
+    <select id="selectList" resultMap="CustomerTransferMap">
+        SELECT *
+        FROM customer_transfer
+        <where>
+            <if test="customerCode != null and customerCode != ''">
+                AND customer_code = #{customerCode}
+            </if>
+            <if test="fZrr != null and fZrr != ''">
+                AND f_zrr = #{fZrr}
+            </if>
+            <if test="fJsr != null and fJsr != ''">
+                AND f_jsr = #{fJsr}
+            </if>
+        </where>
+        ORDER BY f_zrrq DESC
+    </select>
+
+    <!-- 查询所有客户转让编码 -->
+    <select id="selectAllCustomerCodes" resultType="java.lang.String">
+        SELECT customer_code
+        FROM customer_transfer
+        WHERE customer_code IS NOT NULL
+    </select>
+
+    <!-- 客户转让 -->
+    <select id="selectByCustomerCodeList" resultType="com.ruoyi.business.entity.CustomerTransfer">
+        SELECT *
+        FROM customer_transfer
+        WHERE customer_code = #{customerCode}
+    </select>
+
+    <!-- 根据客户编码删除客户转让 -->
+    <delete id="deleteCustomerTransfer">
+        DELETE FROM customer_transfer
+        WHERE customer_code = #{customerCode}
+    </delete>
+
+
+</mapper>

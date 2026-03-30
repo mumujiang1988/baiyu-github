@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.DeliveryNoticeMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="DeliveryNoticeResult" type="com.ruoyi.business.entity.DeliveryNotice">
+        <id property="id" column="id"/>
+        <result property="FID" column="FID"/>
+        <result property="FBillNo" column="FBillNo"/>
+        <result property="FDocumentStatus" column="FDocumentStatus"/>
+        <result property="FDate" column="FDate"/>
+        <result property="FCustomerID" column="FCustomerID"/>
+        <result property="FSalesManID" column="FSalesManID"/>
+        <result property="FCarrierID" column="FCarrierID"/>
+        <result property="FReceiverID" column="FReceiverID"/>
+        <result property="FSettleID" column="FSettleID"/>
+        <result property="FPayerID" column="FPayerID"/>
+        <result property="FCreatorId" column="FCreatorId"/>
+        <result property="FCreateDate" column="FCreateDate"/>
+        <result property="FModifyDate" column="FModifyDate"/>
+        <result property="FApproveDate" column="FApproveDate"/>
+        <result property="FCancelDate" column="FCancelDate"/>
+        <result property="FModifierId" column="FModifierId"/>
+        <result property="FBillTypeID" column="FBillTypeID"/>
+        <result property="FApproverID" column="FApproverID"/>
+        <result property="FCancellerID" column="FCancellerID"/>
+        <result property="FCancelStatus" column="FCancelStatus"/>
+        <result property="FOwnerIdHead" column="FOwnerIdHead"/>
+        <result property="FRECEIPTCONDITIONID" column="FRECEIPTCONDITIONID"/>
+        <result property="FHeadDeliveryWay" column="FHeadDeliveryWay"/>
+        <result property="FReceiveAddress" column="FReceiveAddress"/>
+        <result property="FHeadLocId" column="FHeadLocId"/>
+        <result property="FLocalCurrID" column="FLocalCurrID"/>
+        <result property="FExchangeTypeID" column="FExchangeTypeID"/>
+        <result property="FExchangeRate" column="FExchangeRate"/>
+        <result property="FSettleTypeID" column="FSettleTypeID"/>
+        <result property="FSettleCurrID" column="FSettleCurrID"/>
+        <result property="FBillTaxAmount" column="FBillTaxAmount"/>
+        <result property="FBillAmount" column="FBillAmount"/>
+        <result property="FBillAllAmount" column="FBillAllAmount"/>
+        <result property="FIsIncludedTax" column="FIsIncludedTax"/>
+        <result property="FAllDisCount" column="FAllDisCount"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 插入发货通知单 -->
+    <insert id="insertDeliveryNotice" parameterType="com.ruoyi.business.entity.DeliveryNotice" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO delivery_notice (
+            FID,
+            FBillNo,
+            FDocumentStatus,
+            FDate,
+            FCustomerID,
+            FSalesManID,
+            FCarrierID,
+            FReceiverID,
+            FSettleID,
+            FPayerID,
+            FCreatorId,
+            FCreateDate,
+            FModifyDate,
+            FApproveDate,
+            FCancelDate,
+            FModifierId,
+            FBillTypeID,
+            FApproverID,
+            FCancellerID,
+            FCancelStatus,
+            FOwnerIdHead,
+            FRECEIPTCONDITIONID,
+            FHeadDeliveryWay,
+            FReceiveAddress,
+            FHeadLocId,
+            FLocalCurrID,
+            FExchangeTypeID,
+            FExchangeRate,
+            FSettleTypeID,
+            FSettleCurrID,
+            FBillTaxAmount,
+            FBillAmount,
+            FBillAllAmount,
+            FIsIncludedTax,
+            FAllDisCount,
+            created_by,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{FID},
+            #{FBillNo},
+            #{FDocumentStatus},
+            #{FDate},
+            #{FCustomerID},
+            #{FSalesManID},
+            #{FCarrierID},
+            #{FReceiverID},
+            #{FSettleID},
+            #{FPayerID},
+            #{FCreatorId},
+            #{FCreateDate},
+            #{FModifyDate},
+            #{FApproveDate},
+            #{FCancelDate},
+            #{FModifierId},
+            #{FBillTypeID},
+            #{FApproverID},
+            #{FCancellerID},
+            #{FCancelStatus},
+            #{FOwnerIdHead},
+            #{FRECEIPTCONDITIONID},
+            #{FHeadDeliveryWay},
+            #{FReceiveAddress},
+            #{FHeadLocId},
+            #{FLocalCurrID},
+            #{FExchangeTypeID},
+            #{FExchangeRate},
+            #{FSettleTypeID},
+            #{FSettleCurrID},
+            #{FBillTaxAmount},
+            #{FBillAmount},
+            #{FBillAllAmount},
+            #{FIsIncludedTax},
+            #{FAllDisCount},
+            #{createdBy},
+            #{createdAt},
+            #{updatedAt}
+        )
+    </insert>
+
+    <!-- 根据 ID 查询 -->
+    <select id="selectById" resultMap="DeliveryNoticeResult">
+        SELECT * FROM delivery_notice WHERE id = #{id}
+    </select>
+
+    <!-- 根据单据编号查询 -->
+    <select id="selectByBillNo" resultMap="DeliveryNoticeResult">
+        SELECT * FROM delivery_notice WHERE FBillNo = #{billNo}
+    </select>
+
+    <!-- 更新发货通知单 -->
+    <update id="updateDeliveryNotice" parameterType="com.ruoyi.business.entity.DeliveryNotice">
+        UPDATE delivery_notice
+        <set>
+            <if test="FID != null">FID = #{FID},</if>
+            <if test="FBillNo != null">FBillNo = #{FBillNo},</if>
+            <if test="FDocumentStatus != null">FDocumentStatus = #{FDocumentStatus},</if>
+            <if test="FDate != null">FDate = #{FDate},</if>
+            <if test="FCustomerID != null">FCustomerID = #{FCustomerID},</if>
+            <if test="FSalesManID != null">FSalesManID = #{FSalesManID},</if>
+            <if test="FCarrierID != null">FCarrierID = #{FCarrierID},</if>
+            <if test="FReceiverID != null">FReceiverID = #{FReceiverID},</if>
+            <if test="FSettleID != null">FSettleID = #{FSettleID},</if>
+            <if test="FPayerID != null">FPayerID = #{FPayerID},</if>
+            <if test="FModifierId != null">FModifierId = #{FModifierId},</if>
+            <if test="FModifyDate != null">FModifyDate = #{FModifyDate},</if>
+            <if test="FApproveDate != null">FApproveDate = #{FApproveDate},</if>
+            <if test="FCancelDate != null">FCancelDate = #{FCancelDate},</if>
+            <if test="FBillTypeID != null">FBillTypeID = #{FBillTypeID},</if>
+            <if test="FApproverID != null">FApproverID = #{FApproverID},</if>
+            <if test="FCancellerID != null">FCancellerID = #{FCancellerID},</if>
+            <if test="FCancelStatus != null">FCancelStatus = #{FCancelStatus},</if>
+            <if test="FOwnerIdHead != null">FOwnerIdHead = #{FOwnerIdHead},</if>
+            <if test="FRECEIPTCONDITIONID != null">FRECEIPTCONDITIONID = #{FRECEIPTCONDITIONID},</if>
+            <if test="FHeadDeliveryWay != null">FHeadDeliveryWay = #{FHeadDeliveryWay},</if>
+            <if test="FReceiveAddress != null">FReceiveAddress = #{FReceiveAddress},</if>
+            <if test="FHeadLocId != null">FHeadLocId = #{FHeadLocId},</if>
+            <if test="FLocalCurrID != null">FLocalCurrID = #{FLocalCurrID},</if>
+            <if test="FExchangeTypeID != null">FExchangeTypeID = #{FExchangeTypeID},</if>
+            <if test="FExchangeRate != null">FExchangeRate = #{FExchangeRate},</if>
+            <if test="FSettleTypeID != null">FSettleTypeID = #{FSettleTypeID},</if>
+            <if test="FSettleCurrID != null">FSettleCurrID = #{FSettleCurrID},</if>
+            <if test="FBillTaxAmount != null">FBillTaxAmount = #{FBillTaxAmount},</if>
+            <if test="FBillAmount != null">FBillAmount = #{FBillAmount},</if>
+            <if test="FBillAllAmount != null">FBillAllAmount = #{FBillAllAmount},</if>
+            <if test="FIsIncludedTax != null">FIsIncludedTax = #{FIsIncludedTax},</if>
+            <if test="FAllDisCount != null">FAllDisCount = #{FAllDisCount},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据 ID 删除 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM delivery_notice WHERE id = #{id}
+    </delete>
+
+    <!-- 根据单据编号删除 -->
+    <delete id="deleteByBillNo" parameterType="String">
+        DELETE FROM delivery_notice WHERE FBillNo = #{billNo}
+    </delete>
+
+    <!-- 分页查询 -->
+    <select id="selectPage" resultMap="DeliveryNoticeResult">
+        SELECT * FROM delivery_notice
+        <where>
+            <if test="deliveryNotice.FBillNo != null and deliveryNotice.FBillNo != ''">
+                AND FBillNo LIKE CONCAT('%', #{deliveryNotice.FBillNo}, '%')
+            </if>
+            <if test="deliveryNotice.FCustomerID != null and deliveryNotice.FCustomerID != ''">
+                AND FCustomerID = #{deliveryNotice.FCustomerID}
+            </if>
+            <if test="deliveryNotice.FDocumentStatus != null and deliveryNotice.FDocumentStatus != ''">
+                AND FDocumentStatus = #{deliveryNotice.FDocumentStatus}
+            </if>
+            <if test="deliveryNotice.FBillTypeID != null and deliveryNotice.FBillTypeID != ''">
+                AND FBillTypeID = #{deliveryNotice.FBillTypeID}
+            </if>
+            <if test="deliveryNotice.FDate != null">
+                AND FDate &gt;= #{deliveryNotice.FDate}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据客户 ID 查询 -->
+    <select id="selectByCustomerId" resultMap="DeliveryNoticeResult">
+        SELECT * FROM delivery_notice WHERE FCustomerID = #{customerId} ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据单据状态查询 -->
+    <select id="selectByStatus" resultMap="DeliveryNoticeResult">
+        SELECT * FROM delivery_notice WHERE FDocumentStatus = #{status} ORDER BY created_at DESC
+    </select>
+
+</mapper>

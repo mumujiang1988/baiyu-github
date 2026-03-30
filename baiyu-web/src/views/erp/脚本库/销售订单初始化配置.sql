@@ -250,7 +250,7 @@ INSERT INTO `erp_page_config` (
         "dictionary": "trade_way",
         "componentProps": {"placeholder": "请选择贸易方式", "clearable": true, "filterable": true},
         "defaultValue": "6191b13c997848"
-      },
+      }
     ]
   }',
   
@@ -540,9 +540,9 @@ INSERT INTO `erp_page_config` (
             "enabled": true,
             "defaultConditions": [
               {
-                "field": "FBillNo",
+                "field": "fbillno",
                 "operator": "eq",
-                "value": "${FBillNo}",
+                "value": "${billNo}",
                 "description": "按订单编号查询明细"
               }
             ],
@@ -583,11 +583,11 @@ INSERT INTO `erp_page_config` (
               {
                 "field": "FBillNo",
                 "operator": "eq",
-                "value": "${FBillNo}",
+                "value": "${billNo}",
                 "description": "按订单编号查询成本"
               }
             ],
-            "defaultOrderBy": [{"field": "FId", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "FID", "direction": "ASC"}]
           },
           "form": {
             "layout": "horizontal",

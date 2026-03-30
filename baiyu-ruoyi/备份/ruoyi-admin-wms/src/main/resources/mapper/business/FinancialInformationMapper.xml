@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.FinancialInformationMapper">
+
+    <!-- 映射数据库字段与实体类属性 -->
+    <resultMap id="FinancialInformationMap" type="com.ruoyi.business.entity.FinancialInformation">
+        <id property="id" column="id"/>
+        <result property="k3Id" column="k3_id"/>
+        <result property="supplierNumber" column="supplier_number"/>
+        <result property="nation" column="nation"/>
+        <result property="bankAccount" column="bank_account"/>
+        <result property="accountName" column="account_name"/>
+        <result property="receivingBank" column="receiving_bank"/>
+        <result property="bankAddress" column="bank_address"/>
+        <result property="openingBank" column="opening_bank"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 根据供应商/客户编码查询 -->
+    <select id="selectBySupplierNumber" parameterType="string" resultMap="FinancialInformationMap">
+        SELECT
+        fi.id,
+        k3_id,
+        supplier_number,
+        ANY_VALUE(cy.name_zh) AS nation,
+        bank_account,
+        account_name,
+        receiving_bank,
+        bank_address,
+        opening_bank,
+        created_at,
+        updated_at
+        FROM financial_information fi
+        LEFT JOIN country cy ON fi.nation = cy.id
+        WHERE supplier_number = #{supplierNumber}
+    </select>
+
+    <!-- 根据供应商编码查询 银行信息表 -->
+    <select id="selectByContractBse" parameterType="string" resultMap="FinancialInformationMap">
+        SELECT
+            id,
+            k3_id,
+            supplier_number,
+            nation,
+            bank_account,
+            account_name,
+            receiving_bank,
+            bank_address,
+            opening_bank,
+            created_at,
+            updated_at
+        FROM financial_information
+        WHERE supplier_number = #{supplierNumber}
+    </select>
+
+    <select id="selectBySupplierNumbers" resultMap="FinancialInformationMap" parameterType="java.util.List">
+        SELECT
+        id,
+        k3_id,
+        supplier_number,
+        nation,
+        bank_account,
+        account_name,
+        receiving_bank,
+        bank_address,
+        opening_bank,
+        created_at,
+        updated_at
+        FROM financial_information
+        WHERE supplier_number IN
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <!-- 新增供应商付款信息 -->
+    <insert id="insertSupplierContact" parameterType="com.ruoyi.business.entity.FinancialInformation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO financial_information (
+            k3_id,
+            supplier_number,
+            nation,
+            bank_account,
+            account_name,
+            receiving_bank,
+            bank_address,
+            opening_bank,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{k3Id},
+            #{supplierNumber},
+            #{nation},
+            #{bankAccount},
+            #{accountName},
+            #{receivingBank},
+            #{bankAddress},
+            #{openingBank},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <!-- 更新供应商付款信息 -->
+    <update id="updateSupplierContact" parameterType="map">
+        UPDATE financial_information
+        <set>
+            <if test="contactBase.nation != null and contactBase.nation != ''">
+                nation = #{contactBase.nation},
+            </if>
+            <if test="contactBase.bankAccount != null and contactBase.bankAccount != ''">
+                bank_account = #{contactBase.bankAccount},
+            </if>
+            <if test="contactBase.accountName != null and contactBase.accountName != ''">
+                account_name = #{contactBase.accountName},
+            </if>
+            <if test="contactBase.receivingBank != null and contactBase.receivingBank != ''">
+                receiving_bank = #{contactBase.receivingBank},
+            </if>
+            <if test="contactBase.bankAddress != null and contactBase.bankAddress != ''">
+                bank_address = #{contactBase.bankAddress},
+            </if>
+            <if test="contactBase.openingBank != null and contactBase.openingBank != ''">
+                opening_bank = #{contactBase.openingBank},
+            </if>
+
+        </set>
+        WHERE id = #{contactBase.id}
+    </update>
+
+    <delete id="deleteSupplierContact">
+        DELETE FROM financial_information
+        WHERE supplier_number = #{supplierNumber}
+    </delete>
+
+    <select id="selectById" resultMap="FinancialInformationMap">
+        SELECT
+            id,
+            k3_id,
+            supplier_number,
+            nation,
+            bank_account,
+            account_name,
+            receiving_bank,
+            bank_address,
+            opening_bank,
+            created_at,
+            updated_at
+        FROM financial_information
+        WHERE id = #{id}
+    </select>
+    <select id="selectListByQuery" resultMap="FinancialInformationMap">
+        SELECT
+        id,
+        k3_id,
+        supplier_number,
+        nation,
+        bank_account,
+        account_name,
+        receiving_bank,
+        bank_address,
+        opening_bank,
+        created_at,
+        updated_at
+        FROM financial_information
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+    <select id="selectAllSupplierNumbers" resultType="java.lang.String">
+        SELECT supplier_number FROM financial_information WHERE supplier_number IS NOT NULL
+    </select>
+
+    <insert id="batchInsertEmployeeBank" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO financial_information (
+            supplier_number, nation, bank_account, account_name, receiving_bank, bank_address, opening_bank, created_at, updated_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.supplierNumber}, #{item.nation}, #{item.bankAccount}, #{item.accountName},
+                #{item.receivingBank}, #{item.bankAddress}, #{item.openingBank}, NOW(), NOW()
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateEmployeeBank" parameterType="java.util.List">
+        UPDATE financial_information
+        <set>
+            k3_id = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.k3Id}
+            </foreach>
+            ELSE k3_id END,
+            nation = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.nation}
+            </foreach>
+            ELSE nation END,
+            bank_account = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.bankAccount}
+            </foreach>
+            ELSE bank_account END,
+            account_name = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.accountName}
+            </foreach>
+            ELSE account_name END,
+            receiving_bank = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.receivingBank}
+            </foreach>
+            ELSE receiving_bank END,
+            bank_address = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.bankAddress}
+            </foreach>
+            ELSE bank_address END,
+            opening_bank = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN #{item.openingBank}
+            </foreach>
+            ELSE opening_bank END,
+            updated_at = CASE supplier_number
+            <foreach collection="list" item="item">
+                WHEN #{item.supplierNumber} THEN NOW()
+            </foreach>
+            ELSE updated_at END
+        </set>
+        WHERE supplier_number IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item.supplierNumber}
+        </foreach>
+    </update>
+</mapper>

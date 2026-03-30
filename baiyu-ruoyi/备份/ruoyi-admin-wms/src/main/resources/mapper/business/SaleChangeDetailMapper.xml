@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.SaleChangeDetailMapper">
+
+    <resultMap id="SaleChangeDetailMap" type="com.ruoyi.business.entity.SaleChangeDetail">
+        <id column="id" property="id"/>
+        <result column="source_bill_no" property="sourceBillNo"/>
+        <result column="source_bill_type" property="sourceBillType"/>
+        <result column="product_code" property="productCode"/>
+        <result column="product_name" property="productName"/>
+        <result column="spec_model" property="specModel"/>
+        <result column="old_supplier" property="oldSupplier"/>
+        <result column="new_supplier" property="newSupplier"/>
+        <result column="change_reason" property="changeReason"/>
+        <result column="old_package_req" property="oldPackageReq"/>
+        <result column="old_gross_weight" property="oldGrossWeight"/>
+        <result column="old_net_weight" property="oldNetWeight"/>
+        <result column="old_length" property="oldLength"/>
+        <result column="old_width" property="oldWidth"/>
+        <result column="old_height" property="oldHeight"/>
+        <result column="old_box_qty" property="oldBoxQty"/>
+        <result column="new_package_req" property="newPackageReq"/>
+        <result column="new_gross_weight" property="newGrossWeight"/>
+        <result column="new_net_weight" property="newNetWeight"/>
+        <result column="new_length" property="newLength"/>
+        <result column="new_width" property="newWidth"/>
+        <result column="new_height" property="newHeight"/>
+        <result column="new_box_qty" property="newBoxQty"/>
+        <result column="create_time" property="createTime"/>
+
+    </resultMap>
+
+    <select id="selectBySourceBillNo" resultMap="SaleChangeDetailMap">
+        SELECT
+            d.id,
+            d.source_bill_no,
+            d.source_bill_type,
+            m.name AS product_code,
+            d.old_supplier,
+            os.name AS spec_model,
+            ns.name AS new_supplier,
+            d.change_reason,
+            d.old_package_req,
+            d.old_gross_weight,
+            d.old_net_weight,
+            d.old_length,
+            d.old_width,
+            d.old_height,
+            d.old_box_qty,
+            d.new_package_req,
+            d.new_gross_weight,
+            d.new_net_weight,
+            d.new_length,
+            d.new_width,
+            d.new_height,
+            d.new_box_qty
+        FROM sale_change_detail d
+                 LEFT JOIN by_material m ON d.product_code = m.k3_id
+                 LEFT JOIN supplier os ON d.old_supplier = os.supplierid
+                 LEFT JOIN supplier ns ON d.new_supplier = ns.supplierid
+        WHERE d.source_bill_no = #{sourceBillNo};
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO sale_change_detail (
+            source_bill_no, source_bill_type, product_code, product_name, spec_model,
+            old_supplier, new_supplier, change_reason,
+            old_package_req, old_gross_weight, old_net_weight, old_length, old_width, old_height, old_box_qty,
+            new_package_req, new_gross_weight, new_net_weight, new_length, new_width, new_height, new_box_qty
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.sourceBillNo}, #{item.sourceBillType}, #{item.productCode}, 
+                #{item.productName}, #{item.specModel},
+                #{item.oldSupplier}, #{item.newSupplier}, #{item.changeReason},
+                #{item.oldPackageReq}, #{item.oldGrossWeight}, #{item.oldNetWeight}, 
+                #{item.oldLength}, #{item.oldWidth}, #{item.oldHeight}, #{item.oldBoxQty},
+                #{item.newPackageReq}, #{item.newGrossWeight}, #{item.newNetWeight}, 
+                #{item.newLength}, #{item.newWidth}, #{item.newHeight}, #{item.newBoxQty}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteBySourceBillNo">
+        DELETE FROM sale_change_detail WHERE source_bill_no = #{sourceBillNo}
+    </delete>
+
+</mapper>

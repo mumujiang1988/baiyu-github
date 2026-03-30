@@ -44,9 +44,9 @@ public class ErpPageConfigController extends BaseController {
      */
     @SaCheckPermission("erp:config:list")
     @GetMapping("/list")
-    public TableDataInfo<ErpPageConfigVo> list(ErpPageConfigBo bo, PageQuery pageQuery) {
-        // Service 已返回 TableDataInfo，直接返回
-        return pageConfigService.selectPageList(bo, pageQuery);
+    public ErpResponse<TableDataInfo<ErpPageConfigVo>> list(ErpPageConfigBo bo, PageQuery pageQuery) {
+        // Service 已返回 TableDataInfo，使用 ErpResponse.ok() 包装后返回
+        return ErpResponse.ok(pageConfigService.selectPageList(bo, pageQuery));
     }
 
     /**

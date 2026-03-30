@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.AIConversationMapper">
+
+    <resultMap id="AIConversationMap" type="com.ruoyi.business.entity.AIConversation">
+        <result property="userId" column="user_id"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="modelName" column="model_name"/>
+        <result property="businessType" column="business_type"/>
+        <result property="knowledgeBaseName" column="knowledge_base_name"/>
+        <result property="userQuestion" column="user_question"/>
+        <result property="aiResponse" column="ai_response"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ruoyi.business.entity.AIConversation">
+        INSERT INTO tb_ai_conversation
+        (user_id, session_id, model_name, business_type, knowledge_base_name, user_question, ai_response, created, modified)
+        VALUES
+            (#{userId}, #{sessionId}, #{modelName}, #{businessType}, #{knowledgeBaseName}, #{userQuestion}, #{aiResponse}, NOW(), NOW())
+    </insert>
+
+    <select id="selectBySessionId" resultMap="AIConversationMap" parameterType="String">
+        SELECT * FROM tb_ai_conversation
+        WHERE session_id = #{sessionId}
+        ORDER BY created ASC
+    </select>
+
+    <select id="selectByUserId" resultMap="AIConversationMap" parameterType="String">
+        SELECT * FROM tb_ai_conversation
+        WHERE user_id = #{userId}
+        ORDER BY created ASC
+    </select>
+
+    <update id="updateBySessionId" parameterType="com.ruoyi.business.entity.AIConversation">
+        UPDATE tb_ai_conversation
+        SET
+            user_id = #{userId},
+            model_name = #{modelName},
+            business_type = #{businessType},
+            knowledge_base_name = #{knowledgeBaseName},
+            user_question = #{userQuestion},
+            ai_response = #{aiResponse},
+            modified = NOW()
+        WHERE session_id = #{sessionId}
+    </update>
+
+    <delete id="deleteBySessionId" parameterType="String">
+        DELETE FROM tb_ai_conversation
+        WHERE session_id = #{sessionId}
+    </delete>
+
+</mapper>

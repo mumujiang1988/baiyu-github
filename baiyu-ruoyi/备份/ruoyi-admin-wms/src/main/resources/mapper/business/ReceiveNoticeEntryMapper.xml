@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.ReceiveNoticeEntryMapper">
+
+    <resultMap id="ReceiveNoticeEntryResultMap" type="com.ruoyi.business.entity.ReceiveNoticeEntry">
+        <id column="ID" property="id"/>
+        <result column="FBillNo" property="fBillNo"/>
+        <result column="F_bzbz" property="fbzbz"/>
+        <result column="F_hxjq" property="fhxjq"/>
+        <result column="F_cplb" property="fcplb"/>
+        <result column="FMaterialId" property="fMaterialId"/>
+        <result column="FMaterialName" property="fMaterialName"/>
+        <result column="FActReceiveQty" property="fActReceiveQty"/>
+        <result column="FPreDeliveryDate" property="fPreDeliveryDate"/>
+        <result column="FPriceUnitId" property="fPriceUnitId"/>
+        <result column="FPriceUnitQty" property="fPriceUnitQty"/>
+        <result column="FStockStatusId" property="fStockStatusId"/>
+        <result column="FLot" property="fLot"/>
+        <result column="FRejectQty" property="fRejectQty"/>
+        <result column="FRejectReason" property="fRejectReason"/>
+        <result column="FGiveAway" property="fGiveAway"/>
+        <result column="FTaxPrice" property="fTaxPrice"/>
+        <result column="FStockUnitID" property="fStockUnitID"/>
+        <result column="FStockQty" property="fStockQty"/>
+        <result column="F_WBZC" property="fWBZC"/>
+        <result column="F_WBZK" property="fWBZK"/>
+        <result column="F_WBZG" property="fWBZG"/>
+        <result column="F_WBZTJ" property="fWBZTJ"/>
+        <result column="F_MZ" property="fmz"/>
+        <result column="F_JZ" property="fjz"/>
+        <result column="F_LXZ" property="flxz"/>
+        <result column="F_xsdd" property="fxsdd"/>
+        <result column="F_lxs" property="flxs"/>
+        <result column="F_ztj" property="fztj"/>
+        <result column="F_mzz" property="fmzz"/>
+        <result column="FIsReconciliationing" property="fIsReconciliationing"/>
+        <result column="FRejectsDiscountAmount" property="fRejectsDiscountAmount"/>
+        <result column="FJoinRejectsDiscountAmount" property="fJoinRejectsDiscountAmount"/>
+        <result column="FReconciliationBillNo" property="fReconciliationBillNo"/>
+        <result column="FAllReconciliationBillNo" property="fAllReconciliationBillNo"/>
+        <result column="F_KHHH" property="fKHHH"/>
+        <result column="F_khjc" property="fkhjc"/>
+        <result column="F_kh1" property="fkh1"/>
+        <result column="F_XSY" property="fxsy"/>
+        <result column="F_gdy1" property="fgdy1"/>
+        <result column="F_bzyq" property="fbzyq"/>
+        <result column="F_tsyq" property="ftsyq"/>
+        <result column="F_CTt" property="fCTt"/>
+        <result column="F_jgdz" property="fjgdz"/>
+        <result column="F_bcjsd" property="fbcjsd"/>
+        <result column="F_bcjsr" property="fbcjsr"/>
+        <result column="F_bcjsrdh" property="fbcjsrdh"/>
+        <result column="F_Ckj" property="fCkj"/>
+        <result column="F_jgtzyy" property="fjgtzyy"/>
+        <result column="Fddshrq" property="fddshrq"/>
+        <result column="Fxsddh" property="fxsddh"/>
+        <result column="Fxsddhh" property="fxsddhh"/>
+        <result column="Fcgddh" property="fcgddh"/>
+        <result column="Fxsbm" property="fxsbm"/>
+        <result column="Frkshrq" property="frkshrq"/>
+        <result column="Fzlbzjjsyq" property="fzlbzjjsyq"/>
+        <result column="Fbzbzjyq" property="fbzbzjyq"/>
+        <result column="Fkhywms" property="fkhywms"/>
+        <result column="F_PEUU_Attachment_ap" property="fPEUUAttachmentap"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="ReceiveNoticeEntryResultMap">
+        SELECT * FROM receive_notice_entry WHERE FBillNo = #{fbillno} and FMaterialId = #{fMaterialId}
+    </select>
+
+    <select id="selectByBillNo" resultMap="ReceiveNoticeEntryResultMap">
+        SELECT
+            rene.FBillNo,
+            rene.F_bzbz,
+            rene.F_hxjq,
+            rene.F_cplb,
+            byml.number as FMaterialId,
+            rene.FMaterialName,
+            rene.FActReceiveQty,
+            rene.FPreDeliveryDate,
+            bd.name as FPriceUnitId,
+            rene.FPriceUnitQty,
+            bd.name as FStockStatusId,
+            rene.FLot,
+            rene.FRejectQty,
+            rene.FRejectReason,
+            rene.FGiveAway,
+            rene.FTaxPrice,
+            bydy.name as FStockUnitID,
+            rene.FStockQty,
+            rene.F_WBZC,
+            rene.F_WBZK,
+            rene.F_WBZG,
+            rene.F_WBZTJ,
+            rene. F_MZ,
+            rene.F_JZ,
+            rene.F_LXZ,
+            rene.F_xsdd,
+            rene.F_lxs,
+            rene.F_ztj,
+            rene.F_mzz,
+            rene.FIsReconciliationing,
+            rene.FRejectsDiscountAmount,
+            rene.FJoinRejectsDiscountAmount,
+            rene.FReconciliationBillNo,
+            rene.FAllReconciliationBillNo,
+            rene.F_KHHH,
+            rene.F_khjc,
+            rene.F_kh1,
+            rene.F_XSY,
+            rene.F_gdy1,
+            rene.F_bzyq,
+            rene.F_tsyq,
+            rene.F_CTt,
+            rene.F_jgdz,
+            rene.F_bcjsd,
+            rene.F_bcjsr,
+            rene.F_bcjsrdh,
+            rene. F_Ckj,
+            rene. F_jgtzyy,
+            rene.Fddshrq,
+            rene.Fxsddh,
+            rene.Fxsddhh,
+            rene.Fcgddh,
+            rene.Fxsbm,
+            rene.Frkshrq,
+            rene.Fzlbzjjsyq,
+            rene.Fbzbzjyq,
+            rene.Fkhywms,
+            rene.F_PEUU_Attachment_ap
+        FROM
+            receive_notice_entry  rene
+                LEFT JOIN by_material byml on rene.FMaterialId=byml.k3_id
+                LEFT JOIN bymaterial_dictionary bd on rene.FPriceUnitId=bd.kingdee and bd.category='unit'
+                LEFT JOIN bymaterial_dictionary byd on rene.FStockStatusId=bd.kingdee and byd.category='inventory_status'
+                LEFT JOIN bymaterial_dictionary bydy on rene.FStockUnitID=bydy.kingdee and bydy.category='unit'
+        WHERE FBillNo = #{billNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ruoyi.business.entity.ReceiveNoticeEntry" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO receive_notice_entry (
+            FBillNo, F_bzbz, F_hxjq, F_cplb, FMaterialId, FMaterialName, FActReceiveQty,
+            FPreDeliveryDate, FPriceUnitId, FPriceUnitQty, FStockStatusId, FLot, FRejectQty,
+            FRejectReason, FGiveAway, FTaxPrice, FStockUnitID, FStockQty, F_WBZC, F_WBZK,
+            F_WBZG, F_WBZTJ, F_MZ, F_JZ, F_LXZ, F_xsdd, F_lxs, F_ztj, F_mzz,
+            FIsReconciliationing, FRejectsDiscountAmount, FJoinRejectsDiscountAmount,
+            FReconciliationBillNo, FAllReconciliationBillNo, F_KHHH, F_khjc, F_kh1, F_XSY,
+            F_gdy1, F_bzyq, F_tsyq, F_CTt, F_jgdz, F_bcjsd, F_bcjsr, F_bcjsrdh, F_Ckj,
+            F_jgtzyy, Fddshrq, Fxsddh, Fxsddhh, Fcgddh, Fxsbm, Frkshrq, Fzlbzjjsyq,
+            Fbzbzjyq, Fkhywms, F_PEUU_Attachment_ap
+        ) VALUES (
+            #{fBillNo}, #{fbzbz}, #{fhxjq}, #{fcplb}, #{fMaterialId}, #{fMaterialName}, #{fActReceiveQty},
+            #{fPreDeliveryDate}, #{fPriceUnitId}, #{fPriceUnitQty}, #{fStockStatusId}, #{fLot}, #{fRejectQty},
+            #{fRejectReason}, #{fGiveAway}, #{fTaxPrice}, #{fStockUnitID}, #{fStockQty}, #{fWBZC}, #{fWBZK},
+            #{fWBZG}, #{fWBZTJ}, #{fmz}, #{fjz}, #{flxz}, #{fxsdd}, #{flxs}, #{fztj}, #{fmzz},
+            #{fIsReconciliationing}, #{fRejectsDiscountAmount}, #{fJoinRejectsDiscountAmount},
+            #{fReconciliationBillNo}, #{fAllReconciliationBillNo}, #{fKHHH}, #{fkhjc}, #{fkh1}, #{fxsy},
+            #{fgdy1}, #{fbzyq}, #{ftsyq}, #{fCTt}, #{fjgdz}, #{fbcjsd}, #{fbcjsr}, #{fbcjsrdh}, #{fCkj},
+            #{fjgtzyy}, #{fddshrq}, #{fxsddh}, #{fxsddh}, #{fcgddh}, #{fxsbm}, #{frkshrq}, #{fzlbzjjsyq},
+            #{fbzbzjyq}, #{fkhywms}, #{fPEUUAttachmentap}
+        )
+    </insert>
+
+    <update id="updateById" parameterType="com.ruoyi.business.entity.ReceiveNoticeEntry">
+        UPDATE receive_notice_entry
+        <set>
+            <if test="fBillNo != null">FBillNo = #{fBillNo},</if>
+            <if test="fbzbz != null">F_bzbz = #{fbzbz},</if>
+            <if test="fhxjq != null">F_hxjq = #{fhxjq},</if>
+            <if test="fcplb != null">F_cplb = #{fcplb},</if>
+            <if test="fMaterialId != null">FMaterialId = #{fMaterialId},</if>
+            <if test="fMaterialName != null">FMaterialName = #{fMaterialName},</if>
+            <if test="fActReceiveQty != null">FActReceiveQty = #{fActReceiveQty},</if>
+            <if test="fPreDeliveryDate != null">FPreDeliveryDate = #{fPreDeliveryDate},</if>
+            <if test="fPriceUnitId != null">FPriceUnitId = #{fPriceUnitId},</if>
+            <if test="fPriceUnitQty != null">FPriceUnitQty = #{fPriceUnitQty},</if>
+            <if test="fStockStatusId != null">FStockStatusId = #{fStockStatusId},</if>
+            <if test="fLot != null">FLot = #{fLot},</if>
+            <if test="fRejectQty != null">FRejectQty = #{fRejectQty},</if>
+            <if test="fRejectReason != null">FRejectReason = #{fRejectReason},</if>
+            <if test="fGiveAway != null">FGiveAway = #{fGiveAway},</if>
+            <if test="fTaxPrice != null">FTaxPrice = #{fTaxPrice},</if>
+            <if test="fStockUnitID != null">FStockUnitID = #{fStockUnitID},</if>
+            <if test="fStockQty != null">FStockQty = #{fStockQty},</if>
+            <if test="fWBZC != null">F_WBZC = #{fWBZC},</if>
+            <if test="fWBZK != null">F_WBZK = #{fWBZK},</if>
+            <if test="fWBZG != null">F_WBZG = #{fWBZG},</if>
+            <if test="fWBZTJ != null">F_WBZTJ = #{fWBZTJ},</if>
+            <if test="fmz != null">F_MZ = #{fmz},</if>
+            <if test="fjz != null">F_JZ = #{fjz},</if>
+            <if test="flxz != null">F_LXZ = #{flxz},</if>
+            <if test="fxsdd != null">F_xsdd = #{fxsdd},</if>
+            <if test="flxs != null">F_lxs = #{flxs},</if>
+            <if test="fztj != null">F_ztj = #{fztj},</if>
+            <if test="fmzz != null">F_mzz = #{fmzz},</if>
+            <if test="fIsReconciliationing != null">FIsReconciliationing = #{fIsReconciliationing},</if>
+            <if test="fRejectsDiscountAmount != null">FRejectsDiscountAmount = #{fRejectsDiscountAmount},</if>
+            <if test="fJoinRejectsDiscountAmount != null">FJoinRejectsDiscountAmount = #{fJoinRejectsDiscountAmount},</if>
+            <if test="fReconciliationBillNo != null">FReconciliationBillNo = #{fReconciliationBillNo},</if>
+            <if test="fAllReconciliationBillNo != null">FAllReconciliationBillNo = #{fAllReconciliationBillNo},</if>
+            <if test="fKHHH != null">F_KHHH = #{fKHHH},</if>
+            <if test="fkhjc != null">F_khjc = #{fkhjc},</if>
+            <if test="fkh1 != null">F_kh1 = #{fkh1},</if>
+            <if test="fxsy != null">F_XSY = #{fxsy},</if>
+            <if test="fgdy1 != null">F_gdy1 = #{fgdy1},</if>
+            <if test="fbzyq != null">F_bzyq = #{fbzyq},</if>
+            <if test="ftsyq != null">F_tsyq = #{ftsyq},</if>
+            <if test="fCTt != null">F_CTt = #{fCTt},</if>
+            <if test="fjgdz != null">F_jgdz = #{fjgdz},</if>
+            <if test="fbcjsd != null">F_bcjsd = #{fbcjsd},</if>
+            <if test="fbcjsr != null">F_bcjsr = #{fbcjsr},</if>
+            <if test="fbcjsrdh != null">F_bcjsrdh = #{fbcjsrdh},</if>
+            <if test="fCkj != null">F_Ckj = #{fCkj},</if>
+            <if test="fjgtzyy != null">F_jgtzyy = #{fjgtzyy},</if>
+            <if test="fddshrq != null">Fddshrq = #{fddshrq},</if>
+            <if test="fxsddh != null">Fxsddh = #{fxsddh},</if>
+            <if test="fxsddh != null">Fxsddhh = #{fxsddhh},</if>
+            <if test="fcgddh != null">Fcgddh = #{fcgddh},</if>
+            <if test="fxsbm != null">Fxsbm = #{fxsbm},</if>
+            <if test="frkshrq != null">Frkshrq = #{frkshrq},</if>
+            <if test="fzlbzjjsyq != null">Fzlbzjjsyq = #{fzlbzjjsyq},</if>
+            <if test="fbzbzjyq != null">Fbzbzjyq = #{fbzbzjyq},</if>
+            <if test="fkhywms != null">Fkhywms = #{fkhywms},</if>
+            <if test="fPEUUAttachmentap != null">F_PEUU_Attachment_ap = #{fPEUUAttachmentap},</if>
+        </set>
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM receive_notice_entry WHERE ID = #{id}
+    </delete>
+
+    <delete id="deleteByBillNo" parameterType="java.lang.String">
+        DELETE FROM receive_notice_entry WHERE FBillNo = #{billNo}
+    </delete>
+
+    <select id="selectList" resultMap="ReceiveNoticeEntryResultMap">
+        SELECT * FROM receive_notice_entry
+        ORDER BY ID DESC
+    </select>
+
+    <select id="selectListByCondition" resultMap="ReceiveNoticeEntryResultMap">
+        SELECT * FROM receive_notice_entry
+        <where>
+            <if test="entry != null">
+                <if test="entry.fBillNo != null and entry.fBillNo != ''">
+                    AND FBillNo = #{entry.fBillNo}
+                </if>
+                <if test="entry.fMaterialId != null">
+                    AND FMaterialId = #{entry.fMaterialId}
+                </if>
+                <if test="entry.fMaterialName != null and entry.fMaterialName != ''">
+                    AND FMaterialName LIKE CONCAT('%', #{entry.fMaterialName}, '%')
+                </if>
+                <if test="entry.fxsddh != null and entry.fxsddh != ''">
+                    AND Fxsddh = #{entry.fxsddh}
+                </if>
+            </if>
+        </where>
+        ORDER BY ID DESC
+    </select>
+
+    <select id="selectListByPage" resultMap="ReceiveNoticeEntryResultMap">
+        SELECT * FROM receive_notice_entry
+        ORDER BY ID DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO receive_notice_entry (
+            FBillNo, F_bzbz, F_hxjq, F_cplb, FMaterialId, FMaterialName, FActReceiveQty,
+            FPreDeliveryDate, FPriceUnitId, FPriceUnitQty, FStockStatusId, FLot, FRejectQty,
+            FRejectReason, FGiveAway, FTaxPrice, FStockUnitID, FStockQty, F_WBZC, F_WBZK,
+            F_WBZG, F_WBZTJ, F_MZ, F_JZ, F_LXZ, F_xsdd, F_lxs, F_ztj, F_mzz,
+            FIsReconciliationing, FRejectsDiscountAmount, FJoinRejectsDiscountAmount,
+            FReconciliationBillNo, FAllReconciliationBillNo, F_KHHH, F_khjc, F_kh1, F_XSY,
+            F_gdy1, F_bzyq, F_tsyq, F_CTt, F_jgdz, F_bcjsd, F_bcjsr, F_bcjsrdh, F_Ckj,
+            F_jgtzyy, Fddshrq, Fxsddh, Fxsddhh, Fcgddh, Fxsbm, Frkshrq, Fzlbzjjsyq,
+            Fbzbzjyq, Fkhywms, F_PEUU_Attachment_ap
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.fBillNo}, #{item.fbzbz}, #{item.fhxjq}, #{item.fcplb}, #{item.fMaterialId}, #{item.fMaterialName}, #{item.fActReceiveQty},
+                #{item.fPreDeliveryDate}, #{item.fPriceUnitId}, #{item.fPriceUnitQty}, #{item.fStockStatusId}, #{item.fLot}, #{item.fRejectQty},
+                #{item.fRejectReason}, #{item.fGiveAway}, #{item.fTaxPrice}, #{item.fStockUnitID}, #{item.fStockQty}, #{item.fWBZC}, #{item.fWBZK},
+                #{item.fWBZG}, #{item.fWBZTJ}, #{item.fmz}, #{item.fjz}, #{item.flxz}, #{item.fxsdd}, #{item.flxs}, #{item.fztj}, #{item.fmzz},
+                #{item.fIsReconciliationing}, #{item.fRejectsDiscountAmount}, #{item.fJoinRejectsDiscountAmount},
+                #{item.fReconciliationBillNo}, #{item.fAllReconciliationBillNo}, #{item.fKHHH}, #{item.fkhjc}, #{item.fkh1}, #{item.fxsy},
+                #{item.fgdy1}, #{item.fbzyq}, #{item.ftsyq}, #{item.fCTt}, #{item.fjgdz}, #{item.fbcjsd}, #{item.fbcjsr}, #{item.fbcjsrdh}, #{item.fCkj},
+                #{item.fjgtzyy}, #{item.fddshrq}, #{item.fxsddh}, #{item.fxsddh}, #{item.fcgddh}, #{item.fxsbm}, #{item.frkshrq}, #{item.fzlbzjjsyq},
+                #{item.fbzbzjyq}, #{item.fkhywms}, #{item.fPEUUAttachmentap}
+            )
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateById" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE receive_notice_entry
+            <set>
+                <if test="item.fBillNo != null">FBillNo = #{item.fBillNo},</if>
+                <if test="item.fbzbz != null">F_bzbz = #{item.fbzbz},</if>
+                <if test="item.fhxjq != null">F_hxjq = #{item.fhxjq},</if>
+                <if test="item.fcplb != null">F_cplb = #{item.fcplb},</if>
+                <if test="item.fMaterialId != null">FMaterialId = #{item.fMaterialId},</if>
+                <if test="item.fMaterialName != null">FMaterialName = #{item.fMaterialName},</if>
+                <if test="item.fActReceiveQty != null">FActReceiveQty = #{item.fActReceiveQty},</if>
+                <if test="item.fPreDeliveryDate != null">FPreDeliveryDate = #{item.fPreDeliveryDate},</if>
+                <if test="item.fPriceUnitId != null">FPriceUnitId = #{item.fPriceUnitId},</if>
+                <if test="item.fPriceUnitQty != null">FPriceUnitQty = #{item.fPriceUnitQty},</if>
+                <if test="item.fStockStatusId != null">FStockStatusId = #{item.fStockStatusId},</if>
+                <if test="item.fLot != null">FLot = #{item.fLot},</if>
+                <if test="item.fRejectQty != null">FRejectQty = #{item.fRejectQty},</if>
+                <if test="item.fRejectReason != null">FRejectReason = #{item.fRejectReason},</if>
+                <if test="item.fGiveAway != null">FGiveAway = #{item.fGiveAway},</if>
+                <if test="item.fTaxPrice != null">FTaxPrice = #{item.fTaxPrice},</if>
+                <if test="item.fStockUnitID != null">FStockUnitID = #{item.fStockUnitID},</if>
+                <if test="item.fStockQty != null">FStockQty = #{item.fStockQty},</if>
+                <if test="item.fWBZC != null">F_WBZC = #{item.fWBZC},</if>
+                <if test="item.fWBZK != null">F_WBZK = #{item.fWBZK},</if>
+                <if test="item.fWBZG != null">F_WBZG = #{item.fWBZG},</if>
+                <if test="item.fWBZTJ != null">F_WBZTJ = #{item.fWBZTJ},</if>
+                <if test="item.fmz != null">F_MZ = #{item.fmz},</if>
+                <if test="item.fjz != null">F_JZ = #{item.fjz},</if>
+                <if test="item.flxz != null">F_LXZ = #{item.flxz},</if>
+                <if test="item.fxsdd != null">F_xsdd = #{item.fxsdd},</if>
+                <if test="item.flxs != null">F_lxs = #{item.flxs},</if>
+                <if test="item.fztj != null">F_ztj = #{item.fztj},</if>
+                <if test="item.fmzz != null">F_mzz = #{item.fmzz},</if>
+                <if test="item.fIsReconciliationing != null">FIsReconciliationing = #{item.fIsReconciliationing},</if>
+                <if test="item.fRejectsDiscountAmount != null">FRejectsDiscountAmount = #{item.fRejectsDiscountAmount},</if>
+                <if test="item.fJoinRejectsDiscountAmount != null">FJoinRejectsDiscountAmount = #{item.fJoinRejectsDiscountAmount},</if>
+                <if test="item.fReconciliationBillNo != null">FReconciliationBillNo = #{item.fReconciliationBillNo},</if>
+                <if test="item.fAllReconciliationBillNo != null">FAllReconciliationBillNo = #{item.fAllReconciliationBillNo},</if>
+                <if test="item.fKHHH != null">F_KHHH = #{item.fKHHH},</if>
+                <if test="item.fkhjc != null">F_khjc = #{item.fkhjc},</if>
+                <if test="item.fkh1 != null">F_kh1 = #{item.fkh1},</if>
+                <if test="item.fxsy != null">F_XSY = #{item.fxsy},</if>
+                <if test="item.fgdy1 != null">F_gdy1 = #{item.fgdy1},</if>
+                <if test="item.fbzyq != null">F_bzyq = #{item.fbzyq},</if>
+                <if test="item.ftsyq != null">F_tsyq = #{item.ftsyq},</if>
+                <if test="item.fCTt != null">F_CTt = #{item.fCTt},</if>
+                <if test="item.fjgdz != null">F_jgdz = #{item.fjgdz},</if>
+                <if test="item.fbcjsd != null">F_bcjsd = #{item.fbcjsd},</if>
+                <if test="item.fbcjsr != null">F_bcjsr = #{item.fbcjsr},</if>
+                <if test="item.fbcjsrdh != null">F_bcjsrdh = #{item.fbcjsrdh},</if>
+                <if test="item.fCkj != null">F_Ckj = #{item.fCkj},</if>
+                <if test="item.fjgtzyy != null">F_jgtzyy = #{item.fjgtzyy},</if>
+                <if test="item.fddshrq != null">Fddshrq = #{item.fddshrq},</if>
+                <if test="item.fxsddh != null">Fxsddh = #{item.fxsddh},</if>
+                <if test="item.fxsddh != null">Fxsddhh = #{item.fxsddh},</if>
+                <if test="item.fcgddh != null">Fcgddh = #{item.fcgddh},</if>
+                <if test="item.fxsbm != null">Fxsbm = #{item.fxsbm},</if>
+                <if test="item.frkshrq != null">Frkshrq = #{item.frkshrq},</if>
+                <if test="item.fzlbzjjsyq != null">Fzlbzjjsyq = #{item.fzlbzjjsyq},</if>
+                <if test="item.fbzbzjyq != null">Fbzbzjyq = #{item.fbzbzjyq},</if>
+                <if test="item.fkhywms != null">Fkhywms = #{item.fkhywms},</if>
+                <if test="item.fPEUUAttachmentap != null">F_PEUU_Attachment_ap = #{item.fPEUUAttachmentap},</if>
+            </set>
+            WHERE ID = #{item.id}
+        </foreach>
+    </update>
+
+</mapper>

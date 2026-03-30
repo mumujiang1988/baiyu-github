@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.core.exception.ServiceException;
+import com.ruoyi.common.core.utils.MapstructUtils;
 import com.ruoyi.common.core.utils.StringUtils;
+import static com.ruoyi.erp.utils.JdbcResultUtils.*;
 import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.erp.domain.bo.ErpApprovalFlowBo;
 import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
@@ -172,35 +174,8 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
      * Map 转 VO
      */
     private ErpApprovalFlowVo mapToVo(Map<String, Object> row) {
-        ErpApprovalFlowVo vo = new ErpApprovalFlowVo();
-        vo.setFlowId(getLong(row.get("flow_id")));
-        vo.setModuleCode(getString(row.get("module_code")));
-        vo.setFlowName(getString(row.get("flow_name")));
-        vo.setFlowDefinition(getString(row.get("flow_definition")));
-        vo.setCurrentVersion(getInteger(row.get("current_version")));
-        vo.setIsActive(getString(row.get("is_active")));
-        return vo;
-    }
-    
-    /**
-     * 安全获取 Long 值
-     */
-    private Long getLong(Object value) {
-        return value != null ? ((Number) value).longValue() : null;
-    }
-    
-    /**
-     * 安全获取 Integer 值
-     */
-    private Integer getInteger(Object value) {
-        return value != null ? ((Number) value).intValue() : null;
-    }
-    
-    /**
-     * 安全获取 String 值
-     */
-    private String getString(Object value) {
-        return value != null ? value.toString() : null;
+        // 使用 RuoYi MapstructUtils 自动转换
+        return MapstructUtils.convert(row, ErpApprovalFlowVo.class);
     }
 
     @Override

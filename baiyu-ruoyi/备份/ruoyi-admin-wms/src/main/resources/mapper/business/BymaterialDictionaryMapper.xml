@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.BymaterialDictionaryMapper">
+    <!-- 结果映射 -->
+    <resultMap id="BymaterialDictionaryMap" type="com.ruoyi.business.entity.BymaterialDictionary">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="category" column="category"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="baseColumns">
+        id, code, name, category, category_name, create_time, update_time
+    </sql>
+
+    <select id="selectBymaterialDictionary" resultType="java.lang.String">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM bymaterial_dictionary
+        WHERE kingdee = #{kingdee}
+    </select>
+
+    <select id="selectByKeys" parameterType="java.util.List" resultType="map">
+        SELECT kingdee, name
+        FROM bymaterial_dictionary
+        WHERE kingdee IN
+        <foreach item="item" collection="keys" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+        <select id="selectByKingdees" resultType="com.ruoyi.business.entity.BymaterialDictionary" parameterType="java.util.List">
+            SELECT id, kingdee, name, category
+            FROM bymaterial_dictionary
+            WHERE kingdee IN
+            <foreach item="item" collection="codes" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </select>
+
+    <select id="selectByCategoryAndNames" resultMap="BymaterialDictionaryMap">
+        SELECT
+        kingdee,
+        name
+        FROM bymaterial_dictionary
+        <where>
+            1=1
+            <if test="bymaterialDictionary != null">
+                <!-- 名称 -->
+                <if test="bymaterialDictionary.name != null and bymaterialDictionary.name != ''">
+                    AND name = #{bymaterialDictionary.name}
+                </if>
+                <if test="bymaterialDictionary.code != null and bymaterialDictionary.code != ''">
+                    AND code = #{bymaterialDictionary.code}
+                </if>
+                <if test="bymaterialDictionary.kingdee != null and bymaterialDictionary.kingdee != ''">
+                    AND kingdee = #{bymaterialDictionary.kingdee}
+                </if>
+                <if test="bymaterialDictionary.category != null and bymaterialDictionary.category != ''">
+                    AND category = #{bymaterialDictionary.category}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByName" resultMap="BymaterialDictionaryMap">
+        SELECT
+        kingdee,
+        name
+        FROM bymaterial_dictionary
+        <where>
+            1=1
+            <if test="bymaterialDictionary != null">
+                <!-- 名称 -->
+                <if test="bymaterialDictionary.name != null and bymaterialDictionary.name != ''">
+                    AND name = #{bymaterialDictionary.name}
+                </if>
+                <if test="bymaterialDictionary.category != null and bymaterialDictionary.category != ''">
+                    AND category = #{bymaterialDictionary.category}
+                </if>
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

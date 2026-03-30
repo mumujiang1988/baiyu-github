@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.PurchaseQuotationMapper">
+
+    <resultMap id="PurchaseQuotationMap" type="com.ruoyi.business.entity.PurchaseQuotation">
+        <id column="fid" property="fid"/>
+        <result column="fbillno" property="fbillno"/>
+        <result column="fdocumentstatus" property="fdocumentstatus"/>
+        <result column="fcreatorid" property="fcreatorid"/>
+        <result column="fcreatedate" property="fcreatedate"/>
+        <result column="fshr" property="fshr"/>
+        <result column="fdate_sh" property="fdateSh"/>
+        <result column="fdate" property="fdate"/>
+        <result column="f_xsy" property="fxSy"/>
+        <result column="f_khjc" property="fKhjc"/>
+        <result column="f_kh" property="fKh"/>
+        <result column="f_khmc" property="fKhmc"/>
+        <result column="f_ckgj" property="fCkgj"/>
+        <result column="f_khlx" property="fKhlx"/>
+        <result column="f_email" property="fEmail"/>
+        <result column="f_mob" property="fMob"/>
+        <result column="f_tel" property="fTel"/>
+        <result column="f_fax" property="fFax"/>
+        <result column="f_qyd" property="fQyd"/>
+        <result column="f_fktj" property="fFktj"/>
+    </resultMap>
+
+    <!-- 根据单据编号查询 -->
+    <select id="selectByBillNo" parameterType="string" resultMap="PurchaseQuotationMap">
+        SELECT
+            fid,
+            fbillno,
+            fdocumentstatus,
+            fcreatorid,
+            fcreatedate,
+            fshr,
+            fdate_sh,
+            fdate,
+            f_xsy,
+            f_khjc,
+            f_kh,
+            f_khmc,
+            f_ckgj,
+            f_khlx,
+            f_email,
+            f_mob,
+            f_tel,
+            f_fax,
+            f_qyd,
+            f_fktj
+        FROM purchase_quotation
+        WHERE fbillno = #{billNo}
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="string" resultMap="PurchaseQuotationMap">
+        SELECT
+            pq.fid,
+            pq.fbillno,
+            pq.fdocumentstatus,
+            su.user_name as fcreatorid,
+            pq.fcreatedate,
+            su.user_name as fshr,
+            pq.fdate_sh,
+            pq.fdate,
+            se.fname as f_xsy,
+            pq.f_khjc,
+            bc.fnumber as f_kh,
+            pq.f_khmc,
+            pq.f_ckgj,
+            pq. f_khlx,
+            pq.f_email,
+            pq.f_mob,
+            pq.f_tel,
+            pq.f_fax,
+            pq.f_qyd,
+            pq.f_fktj
+        FROM purchase_quotation pq
+
+                 LEFT JOIN sys_user su on pq.fcreatorid=su.k3_key
+                 LEFT JOIN sys_user sy on pq.fshr=sy.k3_key
+                 LEFT JOIN sys_employee se on pq.f_xsy=se.salesman_id
+                 LEFT JOIN bd_customer bc on pq.f_kh=bc.fcustid
+        WHERE pq.id = #{id}
+    </select>
+
+    <!-- 根据单据编号查询（用于更新时排除自身） -->
+    <select id="selectByBillNoForUpdate" resultMap="PurchaseQuotationMap">
+        SELECT
+            pq.fid,
+            pq.fbillno,
+            pq.fdocumentstatus,
+            su.user_name as fcreatorid,
+            pq.fcreatedate,
+            su.user_name as fshr,
+            pq.fdate_sh,
+            pq.fdate,
+            se.fname as f_xsy,
+            pq.f_khjc,
+            bc.fnumber as f_kh,
+            pq.f_khmc,
+            pq.f_ckgj,
+            pq. f_khlx,
+            pq.f_email,
+            pq.f_mob,
+            pq.f_tel,
+            pq.f_fax,
+            pq.f_qyd,
+            pq.f_fktj
+        FROM purchase_quotation pq
+
+                 LEFT JOIN sys_user su on pq.fcreatorid=su.k3_key
+                 LEFT JOIN sys_user sy on pq.fshr=sy.k3_key
+                 LEFT JOIN sys_employee se on pq.f_xsy=se.salesman_id
+                 LEFT JOIN bd_customer bc on pq.f_kh=bc.fcustid
+        WHERE pq.fbillno = #{billNo}
+          AND pq.fid != #{excludeFid}
+    </select>
+
+    <!-- 采购报价单列表查询 -->
+    <select id="selectList" parameterType="com.ruoyi.business.entity.PurchaseQuotation" resultMap="PurchaseQuotationMap">
+        SELECT
+        pq.fid,
+        pq.fbillno,
+        pq.fdocumentstatus,
+        su.user_name as fcreatorid,
+        pq.fcreatedate,
+        su.user_name as fshr,
+        pq.fdate_sh,
+        pq.fdate,
+        se.fname as f_xsy,
+        pq.f_khjc,
+        bc.fnumber as f_kh,
+        pq.f_khmc,
+        pq.f_ckgj,
+        pq. f_khlx,
+        pq.f_email,
+        pq.f_mob,
+        pq.f_tel,
+        pq.f_fax,
+        pq.f_qyd,
+        pq.f_fktj
+        FROM purchase_quotation pq
+
+        LEFT JOIN sys_user su on pq.fcreatorid=su.k3_key
+        LEFT JOIN sys_user sy on pq.fshr=sy.k3_key
+        LEFT JOIN sys_employee se on pq.f_xsy=se.salesman_id
+        LEFT JOIN bd_customer bc on pq.f_kh=bc.fcustid
+        <where>
+            <if test="purchaseQuotation.fbillno != null and purchaseQuotation.fbillno != ''">
+                AND fbillno LIKE CONCAT('%', #{purchaseQuotation.fbillno}, '%')
+            </if>
+            <if test="purchaseQuotation.fdocumentstatus != null and purchaseQuotation.fdocumentstatus != ''">
+                AND fdocumentstatus = #{purchaseQuotation.fdocumentstatus}
+            </if>
+            <if test="purchaseQuotation.fxSy != null and purchaseQuotation.fxSy != ''">
+                AND f_xsy = #{purchaseQuotation.fxSy}
+            </if>
+            <if test="purchaseQuotation.fKhjc != null and purchaseQuotation.fKhjc != ''">
+                AND f_khjc LIKE CONCAT('%', #{purchaseQuotation.fKhjc}, '%')
+            </if>
+        </where>
+        ORDER BY fcreatedate DESC
+    </select>
+
+    <!-- 新增采购报价单 -->
+    <insert id="insertPurchaseQuotation" parameterType="com.ruoyi.business.entity.PurchaseQuotation">
+        INSERT INTO purchase_quotation (
+            fid,
+            fbillno,
+            fdocumentstatus,
+            fcreatorid,
+            fcreatedate,
+            fshr,
+            fdate_sh,
+            fdate,
+            f_xsy,
+            f_khjc,
+            f_kh,
+            f_khmc,
+            f_ckgj,
+            f_khlx,
+            f_email,
+            f_mob,
+            f_tel,
+            f_fax,
+            f_qyd,
+            f_fktj
+        ) VALUES (
+            #{purchaseQuotation.fid},
+            #{purchaseQuotation.fbillno},
+            #{purchaseQuotation.fdocumentstatus},
+            #{purchaseQuotation.fcreatorid},
+            #{purchaseQuotation.fcreatedate},
+            #{purchaseQuotation.fshr},
+            #{purchaseQuotation.fdateSh},
+            #{purchaseQuotation.fdate},
+            #{purchaseQuotation.fxSy},
+            #{purchaseQuotation.fKhjc},
+            #{purchaseQuotation.fKh},
+            #{purchaseQuotation.fKhmc},
+            #{purchaseQuotation.fCkgj},
+            #{purchaseQuotation.fKhlx},
+            #{purchaseQuotation.fEmail},
+            #{purchaseQuotation.fMob},
+            #{purchaseQuotation.fTel},
+            #{purchaseQuotation.fFax},
+            #{purchaseQuotation.fQyd},
+            #{purchaseQuotation.fFktj}
+        )
+    </insert>
+
+    <!-- 更新采购报价单 -->
+    <update id="updatePurchaseQuotation" parameterType="com.ruoyi.business.entity.PurchaseQuotation">
+        UPDATE purchase_quotation
+        <set>
+            <if test="purchaseQuotation.fbillno != null">fbillno = #{purchaseQuotation.fbillno},</if>
+            <if test="purchaseQuotation.fdocumentstatus != null">fdocumentstatus = #{purchaseQuotation.fdocumentstatus},</if>
+            <if test="purchaseQuotation.fcreatorid != null">fcreatorid = #{purchaseQuotation.fcreatorid},</if>
+            <if test="purchaseQuotation.fcreatedate != null">fcreatedate = #{purchaseQuotation.fcreatedate},</if>
+            <if test="purchaseQuotation.fshr != null">fshr = #{purchaseQuotation.fshr},</if>
+            <if test="purchaseQuotation.fdateSh != null">fdate_sh = #{purchaseQuotation.fdateSh},</if>
+            <if test="purchaseQuotation.fdate != null">fdate = #{purchaseQuotation.fdate},</if>
+            <if test="purchaseQuotation.fxSy != null">f_xsy = #{purchaseQuotation.fxSy},</if>
+            <if test="purchaseQuotation.fKhjc != null">f_khjc = #{purchaseQuotation.fKhjc},</if>
+            <if test="purchaseQuotation.fKh != null">f_kh = #{purchaseQuotation.fKh},</if>
+            <if test="purchaseQuotation.fKhmc != null">f_khmc = #{purchaseQuotation.fKhmc},</if>
+            <if test="purchaseQuotation.fCkgj != null">f_ckgj = #{purchaseQuotation.fCkgj},</if>
+            <if test="purchaseQuotation.fKhlx != null">f_khlx = #{purchaseQuotation.fKhlx},</if>
+            <if test="purchaseQuotation.fEmail != null">f_email = #{purchaseQuotation.fEmail},</if>
+            <if test="purchaseQuotation.fMob != null">f_mob = #{purchaseQuotation.fMob},</if>
+            <if test="purchaseQuotation.fTel != null">f_tel = #{purchaseQuotation.fTel},</if>
+            <if test="purchaseQuotation.fFax != null">f_fax = #{purchaseQuotation.fFax},</if>
+            <if test="purchaseQuotation.fQyd != null">f_qyd = #{purchaseQuotation.fQyd},</if>
+            <if test="purchaseQuotation.fFktj != null">f_fktj = #{purchaseQuotation.fFktj}</if>
+        </set>
+        WHERE fid = #{purchaseQuotation.fid}
+    </update>
+
+    <!-- 根据ID删除采购报价单 -->
+    <delete id="deleteById" parameterType="string">
+        DELETE FROM purchase_quotation WHERE id = #{id}
+    </delete>
+
+    <!-- 分页查询采购报价单 -->
+    <select id="selectPage" resultMap="PurchaseQuotationMap">
+        SELECT
+            pq.fid,
+            pq.fbillno,
+            pq.fdocumentstatus,
+            su.user_name as fcreatorid,
+            pq.fcreatedate,
+            su.user_name as fshr,
+            pq.fdate_sh,
+            pq.fdate,
+            se.fname as f_xsy,
+            pq.f_khjc,
+            bc.fnumber as f_kh,
+            pq.f_khmc,
+            pq.f_ckgj,
+            pq.f_khlx,
+            pq.f_email,
+            pq.f_mob,
+            pq.f_tel,
+            pq.f_fax,
+            pq.f_qyd,
+            pq.f_fktj
+        FROM purchase_quotation pq
+        LEFT JOIN sys_user su on pq.fcreatorid=su.k3_key
+        LEFT JOIN sys_user sy on pq.fshr=sy.k3_key
+        LEFT JOIN sys_employee se on pq.f_xsy=se.salesman_id
+        LEFT JOIN bd_customer bc on pq.f_kh=bc.fcustid
+        <where>
+            <if test="purchaseQuotation.fbillno != null and purchaseQuotation.fbillno != ''">
+                AND pq.fbillno LIKE CONCAT('%', #{purchaseQuotation.fbillno}, '%')
+            </if>
+            <if test="purchaseQuotation.fdocumentstatus != null and purchaseQuotation.fdocumentstatus != ''">
+                AND pq.fdocumentstatus = #{purchaseQuotation.fdocumentstatus}
+            </if>
+            <if test="purchaseQuotation.fxSy != null and purchaseQuotation.fxSy != ''">
+                AND pq.f_xsy = #{purchaseQuotation.fxSy}
+            </if>
+            <if test="purchaseQuotation.fKhjc != null and purchaseQuotation.fKhjc != ''">
+                AND pq.f_khjc LIKE CONCAT('%', #{purchaseQuotation.fKhjc}, '%')
+            </if>
+            <if test="purchaseQuotation.fCkgj != null and purchaseQuotation.fCkgj != ''">
+                AND pq.f_ckgj LIKE CONCAT('%', #{purchaseQuotation.fCkgj}, '%')
+            </if>
+            <if test="purchaseQuotation.fKhlx != null and purchaseQuotation.fKhlx != ''">
+                AND pq.f_khlx LIKE CONCAT('%', #{purchaseQuotation.fKhlx}, '%')
+            </if>
+        </where>
+        ORDER BY pq.fcreatedate DESC
+    </select>
+
+</mapper>
