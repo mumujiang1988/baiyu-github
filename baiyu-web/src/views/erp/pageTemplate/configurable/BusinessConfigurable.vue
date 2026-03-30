@@ -49,6 +49,18 @@
               @change="handleQuery"
             />
             
+            <!-- 单个日期选择器 -->
+            <el-date-picker
+              v-else-if="field.component === 'date'"
+              v-model="queryParams[field.field]"
+              :type="field.component"
+              :placeholder="field.props.placeholder"
+              :value-format="field.props.valueFormat"
+              :style="field.props.style"
+              :clearable="field.props.clearable"
+              @change="handleQuery"
+            />
+            
             <!-- 普通输入框 -->
             <el-input
               v-else-if="field.component === 'input'"
@@ -452,10 +464,6 @@
             :label="tab.label"
             :name="tab.name"
           >
-            <!-- 调试：检查 parsedConfig.drawer.tabs -->
-            <div v-if="false" style="display:none;">
-              {{ console.log('🔍 [渲染时检查] tab:', JSON.stringify(tab, null, 2)) }}
-            </div>
             <!-- 表格类型页签 -->
             <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
               <!-- 修复：使用 toRaw 转换 Proxy 为普通对象，确保数据访问正常 -->
@@ -602,18 +610,16 @@ const getApiMethod = async (methodType) => {
   const apiConfig = currentConfig.value?.apiConfig
   
   if (!apiConfig || !apiConfig.methods) {
-    console.warn('API配置未找到')
     return null
   }
   
   const methodConfig = apiConfig.methods[methodType]
   
   if (!methodConfig) {
-    console.warn(`API方法 [${methodType}] 未配置`)
     return null
   }
   
-  // 如果配置的是字符串URL,构建简单的请求方法
+  // 如果配置的是字符串 URL，构建简单的请求方法
   if (typeof methodConfig === 'string') {
     return (data) => request({
       url: methodConfig,
@@ -623,7 +629,7 @@ const getApiMethod = async (methodType) => {
     })
   }
   
-  // 如果配置的是对象,包含url和method
+  // 如果配置的是对象，包含 url 和 method
   if (typeof methodConfig === 'object' && methodConfig.url) {
     return (data) => request({
       url: methodConfig.url,
@@ -633,7 +639,6 @@ const getApiMethod = async (methodType) => {
     })
   }
   
-  console.warn(`API方法 [${methodType}] 配置格式错误`)
   return null
 }
 
@@ -668,12 +673,10 @@ const BusinessTemplate = computed(() => ({
  */
 const getList = async () => {
   loading.value = true
-  console.log('🔍 [getList] 开始查询主表格...')
   
   try {
     // 构建主表格的 queryConfig 配置
     const mainQueryConfig = buildMainQueryConfig()
-    console.log('🔍 [getList] 查询配置:', JSON.stringify(mainQueryConfig, null, 2))
     
     // 获取主表表名
     const tableName = getTableNameFromConfig()
@@ -686,7 +689,6 @@ const getList = async () => {
     }
     
     // 使用通用引擎查询接口（构建器模式）
-    console.log('🔍 [getList] 发送查询请求到后端...')
     const response = await request({
       url: '/erp/engine/query/execute',
       method: 'post',
@@ -699,19 +701,14 @@ const getList = async () => {
       }
     })
     
-    console.log('✅ [getList] 查询成功，返回数据:', response.data)
-    
     // 后端返回的是 R.ok(result),所以数据在 response.data 中
     tableData.value = response.data?.rows || []
     total.value = response.data?.total || 0
-    
-    console.log(`✅ [getList] 渲染数据：${tableData.value.length} 条，总计：${total.value}`)
     
     // 并行查询所有子表格数据
     await loadSubTablesData()
     
   } catch (error) {
-    console.error(' 主表格查询失败:', error)
     ElMessage.error(businessConfig.value.messages?.error?.load || '查询列表失败')
   } finally {
     loading.value = false
@@ -801,7 +798,7 @@ const loadSubTablesData = async () => {
     
     // 暂时不查询子表格，等待展开行或详情页时再查询
   } catch (error) {
-    console.warn(' 加载子表格配置失败:', error.message)
+    // 忽略错误，继续执行
   }
 }
 
@@ -821,8 +818,12 @@ const loadSubTablesByBillNo = async (billNo) => {
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     
     if (subTableConfigs.length === 0) {
+      console.error('[成本暂估页签] ⚠️ 警告：未解析到子表格配置')
       return
     }
+    
+    console.error('[成本暂估页签] 🚀 开始查询子表格，billNo:', billNo)
+    console.error('[成本暂估页签] 📋 子表格配置:', JSON.stringify(subTableConfigs, null, 2))
     
     // 并行查询所有子表格
     const results = await multiTableQueryBuilder.queryAllSubTables(
@@ -831,33 +832,30 @@ const loadSubTablesByBillNo = async (billNo) => {
       { billNo } // 上下文数据，用于替换 ${billNo}
     )
     
+    console.error('[成本暂估页签] ✅ 查询完成，结果:', JSON.stringify(results, null, 2))
+    
     // 存储到对应的数据变量中
     if (results.entry) {
       entryList.value = results.entry.data
       // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 entryList）
       currentDetailRow.value.entryList = results.entry.data
-      console.log('✅ [明细表] 数据已同步:', {
-        'entryList.length': results.entry.data.length,
-        'currentDetailRow.entryList': currentDetailRow.value.entryList?.length
-      })
+      console.error('[成本暂估页签] 📊 明细表数据已加载:', results.entry.data.length, '条')
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
       // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 costData）
       currentDetailRow.value.costData = results.cost.data[0] || {}
-      console.log('✅ [成本表] 数据已同步:', {
-        'costData': costData.value,
-        'currentDetailRow.costData': currentDetailRow.value.costData
-      })
+      console.error('[成本暂估页签] 💰 成本表数据已加载:', results.cost.data[0] ? '有数据' : '空数据')
+      console.error('[成本暂估页签] 💰 成本数据详情:', JSON.stringify(results.cost.data[0], null, 2))
+    } else {
+      console.error('[成本暂估页签] ⚠️ 警告：查询结果中没有 cost 数据')
     }
     
-    console.log('📊 [详情页数据] 当前 currentDetailRow:', {
-      'entryList': currentDetailRow.value.entryList?.length || 0,
-      'costData': currentDetailRow.value.costData ? '有数据' : '无数据'
-    })
+    console.error('[成本暂估页签] 🎉 全部数据处理完成')
   } catch (error) {
-    console.error(' 查询子表格失败:', error)
+    console.error('[成本暂估页签] ❌ 查询失败:', error.message)
+    console.error('[成本暂估页签] 错误堆栈:', error.stack)
   }
 }
 
@@ -871,7 +869,6 @@ const getTableNameFromConfig = () => {
   
   if (!tableName) {
     const moduleCode = getModuleCode()
-    console.error(`模块 [${moduleCode}] 的配置中缺少 pageConfig.tableName 字段`)
     throw new Error(`配置错误：请在 JSON 配置的 pageConfig.tableName 中指定表名`)
   }
   
@@ -1005,14 +1002,10 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
-    console.log('📋 [配置解析] drawer 配置:', JSON.stringify(parsedConfig.drawer, null, 2))
-    
     // 增强：在解析表单配置时标记必填字典
     markRequiredDictionaries()
     
     //  构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
-    
-    console.log('✅ [配置解析完成] drawer.tabs 数量:', parsedConfig.drawer?.tabs?.length || 0)
   } catch (error) {
     ElMessage.error(`加载配置失败：${error.message}`)
     throw error
@@ -1092,7 +1085,6 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   
   // 特殊情况 2: 静态配置（已废弃，仅保留兼容性警告）
   if (staticOptions && Array.isArray(staticOptions)) {
-    console.warn(`⚠️ [字典优化] 检测到静态配置 "${dictName}"，建议改为从后端加载。静态配置将在未来版本中移除。`)
     // 为了向后兼容，暂时返回静态配置，但会在控制台警告
     // TODO: 未来版本直接忽略 staticOptions 参数
   }
@@ -1103,12 +1095,25 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   if (!dataFromManager || dataFromManager.length === 0) {
     // 必填字典缺失时警告
     if (required) {
-      console.warn(`⚠️ [字典优化] 必填字典 "${dictName}" 暂无数据，请检查:
-        1. 后端字典表是否有数据
-        2. DictionaryManager 是否正确加载
-        3. 字典类型名称是否正确`)
+      // 不在控制台输出警告，避免干扰用户
     }
     return []
+  }
+  
+  // 销售人员字典特殊处理：在前端组合人名和部门
+  if (dictName === 'salespersons') {
+    return dataFromManager.map(option => {
+      const nickName = option.label || ''  // label 就是人名
+      const departmentName = option.departmentName || ''
+      
+      // 组合显示标签：人名 (部门)
+      const label = departmentName ? `${nickName}(${departmentName})` : nickName
+      
+      return {
+        ...option,
+        label: label
+      }
+    })
   }
   
   return dataFromManager
@@ -1166,38 +1171,122 @@ const handleQuery = () => {
     clearTimeout(queryTimer)
   }
   
-  console.log('🔍 [搜索] 开始查询...')
-  console.log('🔍 [搜索] dateRange:', dateRange.value)
-  console.log('🔍 [搜索] queryParams:', queryParams.value)
-  
   if (dateRange.value && dateRange.value.length === 2) {
     queryParams.value.beginDate = dateRange.value[0]
     queryParams.value.endDate = dateRange.value[1]
-    console.log('✅ [搜索] 已设置日期范围:', queryParams.value.beginDate, 'to', queryParams.value.endDate)
   } else {
     queryParams.value.beginDate = undefined
     queryParams.value.endDate = undefined
-    console.log('⚠️ [搜索] 日期范围为空')
   }
   queryParams.value.pageNum = 1
   
   // 使用 300ms 防抖
   queryTimer = setTimeout(() => {
-    console.log('🔍 [搜索] 调用 getList()')
     getList()
   }, 300)
 }
 
-// 初始化日期范围
+// 初始化日期范围（支持配置中的 defaultValue）
 const initDateRange = () => {
-  const now = new Date()
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  dateRange.value = [
-    dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
-    dayjs(now).format('YYYY-MM-DD')
-  ]
+  console.error('[日期初始化] 开始执行 initDateRange')
+  
+  const searchFields = parsedConfig.search?.fields || []
+  console.error('[日期初始化] searchFields:', JSON.stringify(searchFields, null, 2))
+  
+  // 查找 beginDate 和 endDate 字段
+  const beginDateField = searchFields.find(f => f.field === 'beginDate')
+  const endDateField = searchFields.find(f => f.field === 'endDate')
+  
+  console.error('[日期初始化] beginDateField:', beginDateField)
+  console.error('[日期初始化] endDateField:', endDateField)
+  
+  let beginDateValue = null
+  let endDateValue = null
+  
+  // 处理开始日期
+  if (beginDateField && beginDateField.defaultValue) {
+    console.error('[日期初始化] 解析 beginDate.defaultValue:', beginDateField.defaultValue)
+    beginDateValue = parseDynamicDate(beginDateField.defaultValue)
+    console.error('[日期初始化] beginDateValue 结果:', beginDateValue)
+  }
+  
+  // 处理结束日期
+  if (endDateField && endDateField.defaultValue) {
+    console.error('[日期初始化] 解析 endDate.defaultValue:', endDateField.defaultValue)
+    endDateValue = parseDynamicDate(endDateField.defaultValue)
+    console.error('[日期初始化] endDateValue 结果:', endDateValue)
+  }
+  
+  // 如果配置了默认值，使用配置的值；否则使用默认的"本月 1 号到今天"
+  if (beginDateValue && endDateValue) {
+    console.error('[日期初始化] ✅ 使用配置的默认值:', beginDateValue, 'to', endDateValue)
+    dateRange.value = [beginDateValue, endDateValue]
+  } else {
+    console.error('[日期初始化] ⚠️ 未找到配置，使用降级处理：本月 1 号到今天')
+    // 降级处理：本月 1 号到今天
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    dateRange.value = [
+      dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
+      dayjs(now).format('YYYY-MM-DD')
+    ]
+  }
+  
   queryParams.value.beginDate = dateRange.value[0]
   queryParams.value.endDate = dateRange.value[1]
+  
+  console.error('[日期初始化] 最终 dateRange:', dateRange.value)
+  console.error('[日期初始化] 最终 queryParams.beginDate:', queryParams.value.beginDate)
+  console.error('[日期初始化] 最终 queryParams.endDate:', queryParams.value.endDate)
+}
+
+/**
+ * 解析动态日期值
+ * @param {string} value - 日期值，可以是：固定日期 "2010-01-01"、动态值 "today"、"yesterday"、"monthStart" 等
+ * @returns {string|null} - 格式化后的日期字符串 YYYY-MM-DD
+ */
+const parseDynamicDate = (value) => {
+  if (!value) return null
+  
+  const today = new Date()
+  
+  // 动态值：today
+  if (value === 'today') {
+    return dayjs(today).format('YYYY-MM-DD')
+  }
+  
+  // 动态值：yesterday
+  if (value === 'yesterday') {
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    return dayjs(yesterday).format('YYYY-MM-DD')
+  }
+  
+  // 动态值：monthStart (本月 1 号)
+  if (value === 'monthStart') {
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+    return dayjs(monthStart).format('YYYY-MM-DD')
+  }
+  
+  // 动态值：yearStart (本年 1 月 1 日)
+  if (value === 'yearStart') {
+    const yearStart = new Date(today.getFullYear(), 0, 1)
+    return dayjs(yearStart).format('YYYY-MM-DD')
+  }
+  
+  // 固定日期：尝试解析为 YYYY-MM-DD 格式
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+  if (dateRegex.test(value)) {
+    return value
+  }
+  
+  // 其他情况，尝试直接返回（可能是 dayjs 可解析的格式）
+  const parsed = dayjs(value)
+  if (parsed.isValid()) {
+    return parsed.format('YYYY-MM-DD')
+  }
+  
+  return null
 }
 
 // 重置查询（添加重复提交控制）
@@ -1261,22 +1350,29 @@ const handleViewDetail = async (row) => {
   drawerLoading.value = true
   currentDetailRow.value = { ...row }
   
+  console.error('[成本暂估页签 - handleViewDetail] 开始加载详情页，billNo:', row[billNoField] || row.FBillNo)
+  
   try {
     // 使用新的多表格查询方法
     const billNoValue = row[billNoField] || row.FBillNo
     
+    console.error('[成本暂估页签 - handleViewDetail] billNoValue:', billNoValue)
+    
     if (billNoValue) {
       // 查询子表格数据（明细表和成本表）
+      console.error('[成本暂估页签 - handleViewDetail] 调用 loadSubTablesByBillNo')
       await loadSubTablesByBillNo(billNoValue)
+    } else {
+      console.error('[成本暂估页签 - handleViewDetail] ⚠️ 警告：billNoValue 为空')
     }
     
     // 设置默认激活的标签
     const hasEntryData = entryList.value && entryList.value.length > 0
     const hasCostData = costData.value && Object.keys(costData.value).length > 0
+    console.error('[成本暂估页签 - handleViewDetail] 数据检查 - hasEntryData:', hasEntryData, 'hasCostData:', hasCostData)
     detailActiveTab.value = hasEntryData ? 'entry' : (hasCostData ? 'cost' : 'entry')
     
   } catch (error) {
-    console.error('❌ [详情页] 加载失败:', error)
     ElMessage.error('加载详情数据失败')
   } finally {
     drawerLoading.value = false
@@ -1330,6 +1426,11 @@ const getTabData = (tab) => {
   }
   
   const data = currentDetailRow.value[tab.dataField]
+  
+  // 成本表特殊处理，添加调试日志
+  if (tab.name === 'cost') {
+    console.error('[成本暂估页签 - getTabData] tab:', tab.name, 'dataField:', tab.dataField, 'data:', JSON.stringify(data, null, 2))
+  }
   
   // 如果是数组，直接返回
   if (Array.isArray(data)) {
@@ -1646,7 +1747,6 @@ const searchNations = async (keyword) => {
       nationOptions.value = []
     }
   } catch (error) {
-    console.warn('搜索国家失败:', error.message)
     nationOptions.value = []
   } finally {
     nationSearchLoading.value = false
@@ -1665,17 +1765,11 @@ const searchNations = async (keyword) => {
  */
 const preloadDictionaries = async () => {
   try {
-    console.log('\n📚 [字典优化] 开始加载字典数据...')
-    
     // 步骤 1: 使用 DictionaryManager 一次性加载所有字典
     const allDicts = await dictionaryManager.loadAll()
     
     // 步骤 2: 检查加载结果
     const dictStatus = dictionaryManager.getStatus()
-    console.log('✅ [字典优化] 字典加载完成:')
-    console.log('   - 已加载:', dictStatus.loaded)
-    console.log('   - 字典类型数量:', dictStatus.dictCount)
-    console.log('   - 字典类型列表:', dictStatus.dictTypes)
     
     // 步骤 3: 验证必填字典（可选）
     if (window._erpRequiredDicts && window._erpRequiredDicts.size > 0) {
@@ -1687,18 +1781,14 @@ const preloadDictionaries = async () => {
       }
       
       if (missingDicts.length > 0) {
-        console.warn('⚠️ [字典优化] 以下必填字典为空:', missingDicts)
         ElMessage.warning(`部分字典数据缺失：${missingDicts.join(', ')}`)
       }
     }
     
     // 步骤 4: 标记字典加载完成
     dictLoaded.value = true
-    console.log('✅ [字典优化] 字典加载完成，页面可以开始渲染\n')
     
   } catch (error) {
-    console.error('\n❌ [字典优化] 预加载字典失败:', error.message)
-    console.error('完整错误:', error)
     ElMessage.error(`预加载字典失败：${error.message}`)
     dictLoaded.value = true // 即使失败也允许页面渲染（降级处理）
   }
@@ -1707,12 +1797,9 @@ const preloadDictionaries = async () => {
 
 // 初始化 - 简化加载顺序：配置 → 字典 → 渲染
 onMounted(async () => {
-  console.log('🚀 [页面初始化] BusinessConfigurable 组件开始加载...')
   try {
     // 步骤 1: 加载页面配置
-    console.log('⚙️ [初始化] 开始调用 initConfig()...')
     await initConfig()
-    console.log('✅ [初始化] initConfig() 执行完成')
 
     // 步骤2: 加载字典数据（必须完成后才允许渲染）
     await preloadDictionaries()
@@ -1723,10 +1810,9 @@ onMounted(async () => {
     // 步骤4: 设置默认日期区间
     initDateRange()
 
-    // 步骤5: 加载列表数据
+    // 步骤 5: 加载列表数据
     getList()
   } catch (error) {
-    console.error('页面初始化失败:', error)
     ElMessage.error(`页面初始化失败：${error.message}`)
   }
 })

@@ -20,9 +20,9 @@ class ERPConfigParser {
   static async loadFromDatabase(moduleCode) {
     const cacheKey = `erp_config_${moduleCode}`
     
-    // 检查缓存
+    // 检查缓存（开发环境禁用缓存）
     const cached = configCache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL && process.env.NODE_ENV !== 'development') {
       console.log('命中缓存配置:', moduleCode)
       return cached.config
     }
@@ -136,18 +136,23 @@ class ERPConfigParser {
    */
   parseSearchForm() {
     const { searchConfig } = this.config
+    console.error('[ERPConfigParser] 原始 searchConfig:', JSON.stringify(searchConfig, null, 2))
+    
     if (!searchConfig) return { showSearch: false, fields: [] }
   
     // 兼容两种格式：fields 数组或 sections 数组
     const hasFields = Array.isArray(searchConfig.fields)
     const hasSections = Array.isArray(searchConfig.sections)
       
+    console.error('[ERPConfigParser] hasFields:', hasFields, 'hasSections:', hasSections)
+    console.error('[ERPConfigParser] searchConfig.fields:', searchConfig.fields)
+    
     if (!hasFields && !hasSections) {
       console.warn('searchConfig 缺少 fields 或 sections 数组')
       return { showSearch: false, fields: [] }
     }
   
-    return {
+    const result = {
       showSearch: searchConfig.showSearch !== false,
       defaultExpand: searchConfig.defaultExpand !== false,
       fields: (hasFields ? searchConfig.fields : 
@@ -159,6 +164,10 @@ class ERPConfigParser {
         queryOperator: field.queryOperator || 'eq' // 新增：查询运算符配置
       }))
     }
+    
+    console.error('[ERPConfigParser] 解析后的 search fields:', JSON.stringify(result.fields, null, 2))
+    
+    return result
   }
 
   /**

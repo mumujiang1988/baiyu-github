@@ -27,11 +27,9 @@ export const queryMainTable = async (params) => {
       }
     })
     
-    console.log(' 主表格查询结果:', response)
     // 注意：后端返回的是 R.ok(result),所以数据在 response.data 中
     return response.data || {}
   } catch (error) {
-    console.error(' 主表格查询失败:', error)
     throw error
   }
 }
@@ -57,11 +55,23 @@ export const querySubTable = async (params) => {
       }
     })
     
-    console.log(` 子表格 [${tableName}] 查询结果:`, response)
+    // 成本表异常日志
+    if (tableName === 't_sale_order_cost') {
+      console.error('[成本表查询] 请求参数:', JSON.stringify({ moduleCode, tableName, queryConfig, pageNum, pageSize }, null, 2))
+      console.error('[成本表查询] 响应数据:', JSON.stringify(response.data, null, 2))
+      if (!response.data || !response.data.rows || response.data.rows.length === 0) {
+        console.error('[成本表查询] ⚠️ 警告：返回数据为空')
+      }
+    }
+    
     // 注意：后端返回的是 R.ok(result),所以数据在 response.data 中
     return response.data || {}
   } catch (error) {
-    console.error(` 子表格 [${tableName}] 查询失败:`, error)
+    // 成本表异常日志
+    if (tableName === 't_sale_order_cost') {
+      console.error('[成本表查询] ❌ 查询失败:', error.message)
+      console.error('[成本表查询] 错误堆栈:', error.stack)
+    }
     throw error
   }
 }
@@ -115,7 +125,14 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
       }
     })
     
-    console.log(' 所有子表格查询完成:', resultMap)
+    // 成本表异常日志
+    if (resultMap.cost) {
+      console.error('[成本表汇总] 最终结果:', JSON.stringify(resultMap.cost, null, 2))
+      if (!resultMap.cost.data || resultMap.cost.data.length === 0) {
+        console.error('[成本表汇总] ⚠️ 警告：成本表数据为空')
+      }
+    }
+    
     return resultMap
   } catch (error) {
     console.error(' 批量查询子表格失败:', error)
@@ -173,7 +190,8 @@ export const parseSubTableConfigs = (pageConfig) => {
     const tabs = pageConfig.detailConfig.detail.tabs || []
     
     for (const tab of tabs) {
-      if (tab.type === 'table' || tab.type === 'descriptions') {
+      // 支持表格、描述列表和表单（成本表）类型
+      if (tab.type === 'table' || tab.type === 'descriptions' || tab.type === 'form') {
         configs.push({
           key: tab.name,
           tableName: tab.tableName,
@@ -232,14 +250,14 @@ export const queryEntryByBillNo = async (moduleCode, billNo) => {
   const queryConfig = {
     conditions: [
       {
-        field: 'order_id',
+        field: 'FBillNo',
         operator: 'eq',
         value: billNo
       }
     ],
     orderBy: [
       {
-        field: 'fPlanMaterialId',
+        field: 'FPlanMaterialId',
         direction: 'ASC'
       }
     ]
@@ -258,7 +276,7 @@ export const queryEntryByBillNo = async (moduleCode, billNo) => {
 }
 
 /**
- * 根据单据编号查询成本表（专用方法）
+ * 根据单据编号查询成本表 (专用方法)
  * @param {String} moduleCode - 模块编码
  * @param {String} billNo - 单据编号
  * @returns {Promise<Object>} - 成本数据
@@ -267,14 +285,14 @@ export const queryCostByBillNo = async (moduleCode, billNo) => {
   const queryConfig = {
     conditions: [
       {
-        field: 'order_id',
+        field: 'FBillNo',
         operator: 'eq',
         value: billNo
       }
     ],
     orderBy: [
       {
-        field: 'id',
+        field: 'FID',
         direction: 'ASC'
       }
     ]

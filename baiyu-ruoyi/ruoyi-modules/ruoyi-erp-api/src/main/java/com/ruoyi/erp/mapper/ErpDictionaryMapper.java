@@ -115,13 +115,12 @@ public interface ErpDictionaryMapper {
      * - FSalerId: salesman_id (销售员编码，VARCHAR) ✅ 使用数据库字段名
      */
     @Select("SELECT " +
-            "  CONCAT(u.nick_name, IFNULL(CONCAT('(', d.dept_name, ')'), ''), IFNULL(CONCAT(' - ', e.salesman_id), '')) AS label, " +
+            "  u.nick_name AS label, " +  // 显示标签（人名）
             "  COALESCE(e.salesman_id, CAST(u.user_id AS CHAR)) AS value, " +  // 优先使用 salesman_id，没有则使用 user_id
             "  'salespersons' AS type, " +
-            "  u.nick_name AS nickName, " +
-            "  d.dept_name AS departmentName, " +
+            "  d.dept_name AS departmentName, " +  // 部门名称
             "  e.salesman_id AS FSalerId, " +  // 销售员编码
-            "  GROUP_CONCAT(DISTINCT sr.role_name ORDER BY sr.role_id) AS roleNames " +
+            "  GROUP_CONCAT(DISTINCT sr.role_name ORDER BY sr.role_id) AS roleNames " +  // 角色名称
             "FROM sys_user u " +
             "LEFT JOIN sys_dept d ON u.dept_id = d.dept_id " +
             "LEFT JOIN sys_user_role ur ON u.user_id = ur.user_id " +

@@ -53,9 +53,7 @@ export const preloadDictionaries = async (dictionaryConfig, moduleCode) => {
           }))
           
           dictionaries.set(key, mappedData)
-          console.log(` 字典 "${key}" 预加载成功，共 ${mappedData.length} 条`)
         } catch (error) {
-          console.warn(` 字典 "${key}" 预加载失败:`, error.message)
           dictionaries.set(key, [])
         }
       }
@@ -65,7 +63,7 @@ export const preloadDictionaries = async (dictionaryConfig, moduleCode) => {
     await Promise.all(promises)
     
   } catch (error) {
-    console.warn(' 预加载字典失败:', error.message)
+    // 忽略错误，返回已加载的字典
   }
   
   return dictionaries
@@ -169,7 +167,6 @@ export const loadSalespersons = async (moduleCode) => {
     
     return []
   } catch (error) {
-    console.warn(' 加载销售人员失败:', error.message)
     return []
   }
 }
@@ -207,7 +204,6 @@ export const searchNations = async (keyword, moduleCode) => {
     
     return []
   } catch (error) {
-    console.warn(' 搜索国家失败:', error.message)
     return []
   }
 }
@@ -260,7 +256,6 @@ export const getSupportedOperators = async () => {
     
     return ['eq', 'ne', 'gt', 'ge', 'lt', 'le', 'like', 'left_like', 'right_like', 'in', 'between', 'isNull', 'isNotNull']
   } catch (error) {
-    console.warn(' 获取运算符列表失败:', error.message)
     return ['eq', 'ne', 'gt', 'ge', 'lt', 'le', 'like', 'left_like', 'right_like', 'in', 'between', 'isNull', 'isNotNull']
   }
 }
