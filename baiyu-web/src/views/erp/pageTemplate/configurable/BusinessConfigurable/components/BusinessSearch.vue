@@ -1,6 +1,7 @@
 <template>
   <el-card shadow="never" class="search-card">
-      <!-- Header -->
+    <!-- Header -->
+    <div class="page-header">
       <el-icon :size="20" v-if="pageConfig?.icon">
         <component :is="pageConfig.icon" />
       </el-icon>
@@ -8,6 +9,7 @@
     </div>
     
     <!-- Toolbar -->
+    <div class="toolbar-row">
       <el-space wrap>
         <el-button
           v-for="action in toolbarActions"
@@ -171,7 +173,8 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   
   if (!dataFromManager || dataFromManager.length === 0) {
     if (required) {
-      console.warn(`[BusinessSearch] Required dictionary ${dictName} data is empty`)
+      // ✅ 记录到日志而不是警告
+      console.log(`[BusinessSearch] ℹ️ Required dictionary '${dictName}' data is empty - this may affect form functionality`)
     }
     return []
   }

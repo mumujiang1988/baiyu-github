@@ -1070,8 +1070,46 @@ const handleQuery = () => {
 }
 
 const initDateRange = () => {
-  const searchFields = parsedConfig.search?.fields || []
+  console.log('🔍 [initDateRange] ========== 开始初始化日期范围 ==========')
   
+  const searchFields = parsedConfig.search?.fields || []
+  console.log('📋 [initDateRange] searchFields:', searchFields)
+  
+  // ✅ 方案 1：处理 daterange 类型的单个字段（如 FDate）
+  const dateRangeField = searchFields.find(f => f.component === 'daterange' && f.defaultValue)
+  console.log('🔍 [initDateRange] dateRangeField found:', dateRangeField)
+  
+  if (dateRangeField) {
+    console.log('✅ [initDateRange] 找到 daterange 字段:', dateRangeField.field)
+    console.log('📦 [initDateRange] defaultValue:', dateRangeField.defaultValue)
+    console.log('📦 [initDateRange] defaultValue isArray:', Array.isArray(dateRangeField.defaultValue))
+    console.log('📦 [initDateRange] defaultValue length:', dateRangeField.defaultValue?.length)
+  }
+  
+  if (dateRangeField && Array.isArray(dateRangeField.defaultValue) && dateRangeField.defaultValue.length === 2) {
+    console.log('⏰ [initDateRange] 解析开始日期:', dateRangeField.defaultValue[0])
+    const startDate = parseDynamicDate(dateRangeField.defaultValue[0])
+    console.log('⏰ [initDateRange] 开始日期结果:', startDate)
+    
+    console.log('⏰ [initDateRange] 解析结束日期:', dateRangeField.defaultValue[1])
+    const endDate = parseDynamicDate(dateRangeField.defaultValue[1])
+    console.log('⏰ [initDateRange] 结束日期结果:', endDate)
+    
+    if (startDate && endDate) {
+      console.log('✅ [initDateRange] 设置日期范围:', [startDate, endDate])
+      dateRange.value = [startDate, endDate]
+      queryParams.value.beginDate = startDate
+      queryParams.value.endDate = endDate
+      console.log('✅ [initDateRange] ========== 日期初始化完成 ==========')
+      return
+    } else {
+      console.warn('❌ [initDateRange] 日期解析失败，startDate 或 endDate 为 null')
+    }
+  } else {
+    console.log('⚠️ [initDateRange] 不满足 daterange 条件，尝试方案 2')
+  }
+  
+  // 方案 2：处理 beginDate + endDate 两个独立字段（兼容旧逻辑）
   const beginDateField = searchFields.find(f => f.field === 'beginDate')
   const endDateField = searchFields.find(f => f.field === 'endDate')
   
@@ -1090,19 +1128,28 @@ const initDateRange = () => {
   
   // Use configured default values if available, otherwise use "current month 1st to today"
   if (beginDateValue && endDateValue) {
+    console.log('✅ [方案 2] 使用配置的 beginDate + endDate:', [beginDateValue, endDateValue])
     dateRange.value = [beginDateValue, endDateValue]
   } else {
+    console.warn('⚠️ [方案 2] beginDate 或 endDate 为空，执行 fallback 逻辑')
+    console.warn('📋 [fallback] beginDateValue:', beginDateValue)
+    console.warn('📋 [fallback] endDateValue:', endDateValue)
     // Fallback: 1st of current month to today
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const fallbackStart = dayjs(firstDayOfMonth).format('YYYY-MM-DD')
+    const fallbackEnd = dayjs(now).format('YYYY-MM-DD')
+    console.warn(`❌ [fallback] 使用默认值：[${fallbackStart}, ${fallbackEnd}]`)
     dateRange.value = [
-      dayjs(firstDayOfMonth).format('YYYY-MM-DD'),
-      dayjs(now).format('YYYY-MM-DD')
+      fallbackStart,
+      fallbackEnd
     ]
   }
   
-  queryParams.value.beginDate = dateRange.value[0]
-  queryParams.value.endDate = dateRange.value[1]
+  console.log('📋 [initDateRange] 最终 dateRange.value:', dateRange.value)
+  console.log('📋 [initDateRange] 最终 queryParams.beginDate:', queryParams.value.beginDate)
+  console.log('📋 [initDateRange] 最终 queryParams.endDate:', queryParams.value.endDate)
+  console.log('✅ [initDateRange] ========== 日期初始化完成 ==========')
 }
 
 /**
@@ -1111,46 +1158,63 @@ const initDateRange = () => {
  * @returns {string|null} - Formatted date string YYYY-MM-DD
  */
 const parseDynamicDate = (value) => {
-  if (!value) return null
+  console.log(`🕒 [parseDynamicDate] 输入值：${value}`)
+  
+  if (!value) {
+    console.log('❌ [parseDynamicDate] 值为空，返回 null')
+    return null
+  }
   
   const today = new Date()
   
   // Dynamic value: today
   if (value === 'today') {
-    return dayjs(today).format('YYYY-MM-DD')
+    const result = dayjs(today).format('YYYY-MM-DD')
+    console.log(`✅ [parseDynamicDate] 'today' -> ${result}`)
+    return result
   }
   
   // Dynamic value: yesterday
   if (value === 'yesterday') {
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-    return dayjs(yesterday).format('YYYY-MM-DD')
+    const result = dayjs(yesterday).format('YYYY-MM-DD')
+    console.log(`✅ [parseDynamicDate] 'yesterday' -> ${result}`)
+    return result
   }
   
   // Dynamic value: monthStart (1st of current month)
   if (value === 'monthStart') {
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-    return dayjs(monthStart).format('YYYY-MM-DD')
+    const result = dayjs(monthStart).format('YYYY-MM-DD')
+    console.log(`✅ [parseDynamicDate] 'monthStart' -> ${result}`)
+    return result
   }
   
   // Dynamic value: yearStart (Jan 1st of current year)
   if (value === 'yearStart') {
     const yearStart = new Date(today.getFullYear(), 0, 1)
-    return dayjs(yearStart).format('YYYY-MM-DD')
+    const result = dayjs(yearStart).format('YYYY-MM-DD')
+    console.log(`✅ [parseDynamicDate] 'yearStart' -> ${result}`)
+    return result
   }
   
   // Fixed date: try to parse as YYYY-MM-DD format
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/
   if (dateRegex.test(value)) {
+    console.log(`✅ [parseDynamicDate] 固定日期格式 '${value}' -> ${value}`)
     return value
   }
   
   // Other cases, try to parse directly (may be a dayjs-parseable format)
   const parsed = dayjs(value)
   if (parsed.isValid()) {
-    return parsed.format('YYYY-MM-DD')
+    const result = parsed.format('YYYY-MM-DD')
+    console.log(`✅ [parseDynamicDate] 解析成功 '${value}' -> ${result}`)
+    return result
   }
   
+  console.warn(`❌ [parseDynamicDate] 无法解析的值：${value}`)
   return null
 }
 
@@ -1327,7 +1391,7 @@ const validateDrawerTabs = () => {
  * Debug tab config (called in template)
  */
 const debugTabConfig = (tab) => {
-  console.error('📑 [Drawer - Tab Config]', {
+  console.error('[Drawer - Tab Config]', {
     name: tab.name,
     label: tab.label,
     type: tab.type,
@@ -1344,7 +1408,7 @@ const debugTabConfig = (tab) => {
  */
 const debugFormTabConfig = (tab) => {
   const formFields = getFormFields(tab)
-  console.error('💰 [Cost Tab - Field Check]', {
+  console.error('字段检查', {
     tabName: tab.name,
     hasFieldsProp: !!tab.fields,
     hasForm: !!tab.form,
@@ -1695,7 +1759,7 @@ const preloadDictionaries = async () => {
     // 步骤 2: 检查加载结果
     const dictStatus = dictionaryManager.getStatus()
     
-    // 步骤 3: 验证必填字典（可选）
+    // 步骤 3: 验证必填字典（可选）- 仅记录日志，不显示警告
     if (window._erpRequiredDicts && window._erpRequiredDicts.size > 0) {
       const missingDicts = []
       for (const dictName of window._erpRequiredDicts) {
@@ -1705,7 +1769,8 @@ const preloadDictionaries = async () => {
       }
       
       if (missingDicts.length > 0) {
-        ElMessage.warning(`部分字典数据缺失：${missingDicts.join(', ')}`)
+        // 使用 console.warn 记录警告到浏览器控制台，不显示 UI 提示
+        console.warn('[字典预加载] 部分字典数据缺失:', missingDicts.join(', '))
       }
     }
     

@@ -295,7 +295,8 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   
   if (!dataFromManager || dataFromManager.length === 0) {
     if (required) {
-      console.warn(`[BusinessForm] Required dictionary ${dictName} data is empty`)
+      // ✅ 记录到日志而不是警告
+      console.log(`[BusinessForm] ℹ️ Required dictionary '${dictName}' data is empty - this may affect form functionality`)
     }
     return []
   }

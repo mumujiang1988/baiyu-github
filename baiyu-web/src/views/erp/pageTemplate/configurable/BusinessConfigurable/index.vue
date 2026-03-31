@@ -214,6 +214,7 @@ const preloadDictionaries = async () => {
     const allDicts = await dictionaryManager.loadAll()
     const dictStatus = dictionaryManager.getStatus()
     
+    // 验证必填字典 - 仅记录日志，不显示 UI 警告
     if (window._erpRequiredDicts && window._erpRequiredDicts.size > 0) {
       const missingDicts = []
       for (const dictName of window._erpRequiredDicts) {
@@ -223,7 +224,8 @@ const preloadDictionaries = async () => {
       }
       
       if (missingDicts.length > 0) {
-        ElMessage.warning(`部分字典数据缺失：${missingDicts.join(', ')}`)
+        // 使用 console.warn 记录警告到浏览器控制台，不干扰用户体验
+        console.warn('[字典预加载] 部分字典数据缺失:', missingDicts.join(', '))
       }
     }
     
@@ -981,6 +983,28 @@ const getApiMethod = async (methodType) => {
 // ==================== Data initialization ====================
 const initDateRange = () => {
   const searchFields = parsedConfig.search?.fields || []
+  
+  // ✅ 优先处理 daterange 类型的单个字段（如 FDate）
+  const dateRangeField = searchFields.find(f => 
+    f.component === 'daterange' && 
+    f.defaultValue && 
+    Array.isArray(f.defaultValue) && 
+    f.defaultValue.length === 2
+  )
+  
+  if (dateRangeField) {
+    const startDate = parseDynamicDate(dateRangeField.defaultValue[0])
+    const endDate = parseDynamicDate(dateRangeField.defaultValue[1])
+    
+    if (startDate && endDate) {
+      dateRange.value = [startDate, endDate]
+      queryParams.value.beginDate = startDate
+      queryParams.value.endDate = endDate
+      return  // ✅ 提前返回，不再执行后面的 beginDate/endDate 逻辑
+    }
+  }
+  
+  // === 原有逻辑保持不变（兼容旧格式）===
   const beginDateField = searchFields.find(f => f.field === 'beginDate')
   const endDateField = searchFields.find(f => f.field === 'endDate')
   
@@ -998,6 +1022,7 @@ const initDateRange = () => {
   if (beginDateValue && endDateValue) {
     dateRange.value = [beginDateValue, endDateValue]
   } else {
+    // Fallback: 本月 1 号到今天
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     dateRange.value = [

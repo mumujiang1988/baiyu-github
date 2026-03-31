@@ -38,7 +38,7 @@
                 icon="View"
                 @click.stop="handleViewDetail(scope.row)"
               >
-                View
+                查看
               </el-button>
             </template>
           </el-table-column>

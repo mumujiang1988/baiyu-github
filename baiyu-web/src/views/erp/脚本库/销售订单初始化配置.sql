@@ -84,11 +84,11 @@ INSERT INTO `erp_page_config` (
       },
       {
         "field": "FDate",
-        "label": "销售合同日期",
+        "label": "新增日期",
         "component": "date",
         "span": 6,
         "required": true,
-        "rules": [{"required": true, "message": "销售合同日期不能为空", "trigger": "change"}],
+        "rules": [{"required": true, "message": "日期不能为空", "trigger": "change"}],
         "props": {"placeholder": "选择日期", "valueFormat": "YYYY-MM-DD"}
       },
       {
@@ -259,13 +259,13 @@ INSERT INTO `erp_page_config` (
       {"prop": "F_ora_BaseProperty", "label": "客户简称", "width": 150, "fixed": "left", "align": "left", "visible": true, "resizable": true},
       {"prop": "orderStatus", "label": "订单状态", "width": 120, "align": "center", "visible": true, "renderType": "tag", "dictionary": "order_status"},
       {"prop": "FDocumentStatus", "label": "单据状态", "width": 140, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
-      {"prop": "FDate", "label": "销售合同日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
+      {"prop": "FDate", "label": "日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
       {"prop": "FSalerId", "label": "销售员", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "salespersons"},
       {"prop": "FBillAmount", "label": "订单金额", "width": 140, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "FBillTaxAmount", "label": "税额", "width": 100, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "FSettleCurrId", "label": "结算币别", "width": 140, "align": "center", "visible": true, "renderType": "text", "dictionary": "currency"},
       {"prop": "FCreateDate", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "FCreatorId", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {"prop": "FCreatorId", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -278,13 +278,13 @@ INSERT INTO `erp_page_config` (
     "fields": [
       {
         "field": "FDate",
-        "label": "销售合同日期",
+        "label": "订单日期",
         "component": "daterange",
         "props": {
           "startPlaceholder": "开始日期",
           "endPlaceholder": "结束日期",
           "valueFormat": "YYYY-MM-DD",
-          "style": {"width": "240px"}
+          "style": {"width": "220px"}
         },
         "defaultValue": ["2010-01-01", "today"],
         "queryOperator": "between"
@@ -435,39 +435,21 @@ INSERT INTO `erp_page_config` (
         }
       },
       "customers": {
-        "type": "dynamic",
-        "table": "bd_customer",
-        "conditions": [
-          {"field": "deleted", "operator": "isNull"}
-        ],
-        "orderBy": [
-          {"field": "fname", "direction": "ASC"}
-        ],
-        "fieldMapping": {
-          "valueField": "fnumber",
-          "labelField": "fname"
-        },
+        "type": "api",
         "config": {
           "api": "/erp/engine/dict/union/customers",
-          "useGlobalCache": true
+          "useGlobalCache": true,
+          "cacheKey": "customers_dict",
+          "cacheTTL": 86400000
         }
       },
       "materials": {
-        "type": "dynamic",
-        "table": "by_material",
-        "conditions": [
-          {"field": "deleted", "operator": "isNull"}
-        ],
-        "orderBy": [
-          {"field": "name", "direction": "ASC"}
-        ],
-        "fieldMapping": {
-          "valueField": "materialId",
-          "labelField": "name"
-        },
+        "type": "api",
         "config": {
           "api": "/erp/engine/dict/union/materials",
-          "useGlobalCache": true
+          "useGlobalCache": true,
+          "cacheKey": "materials_dict",
+          "cacheTTL": 86400000
         }
       },
       "nation": {

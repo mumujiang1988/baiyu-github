@@ -396,7 +396,8 @@ class ERPConfigParser {
 
     //  强制使用新构建器模式
     if (!dictionaryConfig.builder?.enabled) {
-      console.warn(' 未启用字典构建器，请设置 dictionaryConfig.builder.enabled = true')
+      // ✅ 记录到日志而不是警告
+      console.log('ℹ️ Dictionary builder not enabled - please set dictionaryConfig.builder.enabled = true')
       return
     }
 

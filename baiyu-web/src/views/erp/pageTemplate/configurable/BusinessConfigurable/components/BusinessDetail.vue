@@ -1,5 +1,5 @@
 <template>
-    <!-- Drawer loading -->
+  <el-drawer
     :model-value="visible"
     :title="drawerTitle"
     direction="rtl"
@@ -14,6 +14,7 @@
     </div>
     
     <!-- Drawer content -->
+    <div class="drawer-content">
       <el-tabs v-model="detailActiveTab" stretch>
         <el-tab-pane
           v-for="tab in tabs"
