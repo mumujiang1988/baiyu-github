@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * ERP 公共配置 Service 业务层接口
+ * ERP Page Config Service Business Layer Interface
  * 
  * @author JMH
  * @date 2026-03-22
@@ -20,141 +20,141 @@ import java.util.List;
 public interface ErpPageConfigService {
 
     /**
-     * 根据 ID 查询配置
+     * Query config by ID
      *
-     * @param configId 配置 ID
-     * @return 配置信息
+     * @param configId Config ID
+     * @return Config info
      */
     ErpPageConfigVo selectById(Long configId);
 
     /**
-     * 查询配置列表
+     * Query config list
      *
-     * @param bo 配置参数
-     * @return 配置集合
+     * @param bo Config params
+     * @return Config collection
      */
     List<ErpPageConfigVo> selectList(ErpPageConfigBo bo);
 
     /**
-     * 分页查询配置列表
+     * Page query config list
      *
-     * @param bo 配置参数
-     * @param pageQuery 分页参数
-     * @return 配置分页信息
+     * @param bo Config params
+     * @param pageQuery Page params
+     * @return Config page info
      */
     TableDataInfo<ErpPageConfigVo> selectPageList(ErpPageConfigBo bo, PageQuery pageQuery);
 
     /**
-     * 新增配置
+     * Insert config
      *
-     * @param bo 配置信息
-     * @return 结果
+     * @param bo Config info
+     * @return Result
      */
     int insertByBo(ErpPageConfigBo bo);
 
     /**
-     * 修改配置
+     * Update config
      *
-     * @param bo 配置信息
-     * @return 结果
+     * @param bo Config info
+     * @return Result
      */
     int updateByBo(ErpPageConfigBo bo);
 
     /**
-     * 批量删除配置
+     * Batch delete configs
      *
-     * @param configIds 需要删除的配置 ID 数组
-     * @return 结果
+     * @param configIds Config ID array
+     * @return Result
      */
     int deleteByIds(Long[] configIds);
 
     /**
-     * 删除配置
+     * Delete config
      *
-     * @param configId 配置 ID
-     * @return 结果
+     * @param configId Config ID
+     * @return Result
      */
     int deleteById(Long configId);
 
     /**
-     * 保存配置 (包含版本管理)
+     * Save config (with version management)
      *
-     * @param bo 配置信息
-     * @return 结果
+     * @param bo Config info
+     * @return Result
      */
     int saveWithVersion(ErpPageConfigBo bo);
 
     /**
-     * 获取页面配置 (带缓存)
+     * Get page config (with cache)
      *
-     * @param moduleCode 模块编码
-     * @return JSON 配置内容
+     * @param moduleCode Module code
+     * @return JSON config content
      */
     String getPageConfig(String moduleCode);
 
     /**
-     * 分页查询配置历史
+     * Page query config history
      *
-     * @param configId 配置 ID
-     * @param pageQuery 分页参数
-     * @return 配置历史分页信息
+     * @param configId Config ID
+     * @param pageQuery Page params
+     * @return Config history page info
      */
     TableDataInfo<ErpPageConfigHistoryVo> selectHistoryPage(Long configId, PageQuery pageQuery);
 
     /**
-     * 获取版本详情
+     * Get version detail
      *
-     * @param configId 配置 ID
-     * @param version 版本号
-     * @return 版本详情
+     * @param configId Config ID
+     * @param version Version number
+     * @return Version detail
      */
     ErpPageConfigHistoryVo getVersionDetail(Long configId, Integer version);
 
     /**
-     * 回滚到指定版本
+     * Rollback to specified version
      *
-     * @param configId 配置 ID
-     * @param targetVersion 目标版本号
-     * @param reason 回滚原因
+     * @param configId Config ID
+     * @param targetVersion Target version number
+     * @param reason Rollback reason
      */
     void rollbackToVersion(Long configId, Integer targetVersion, String reason);
 
     /**
-     * 导出配置
+     * Export config
      *
-     * @param configId 配置 ID
-     * @param response HTTP 响应对象
+     * @param configId Config ID
+     * @param response HTTP response object
      */
     void exportConfig(Long configId, HttpServletResponse response);
 
     /**
-     * 导入配置
+     * Import config
      *
-     * @param file 上传的文件
+     * @param file Uploaded file
      */
     void importConfig(MultipartFile file);
 
     /**
-     * 复制配置
+     * Copy config
      *
-     * @param configId 配置 ID
-     * @return 复制后的配置信息
+     * @param configId Config ID
+     * @return Copied config info
      */
     ErpPageConfigVo copyConfig(Long configId);
 
     /**
-     * 根据模块编码获取配置
+     * Get config by module code
      *
-     * @param moduleCode 模块编码
-     * @return 配置实体
+     * @param moduleCode Module code
+     * @return Config entity
      */
     ErpPageConfig getByModuleCode(String moduleCode);
 
     /**
-     * 更新配置状态
+     * Update config status
      *
-     * @param configId 配置 ID
-     * @param status 新状态（0-停用，1-启用）
+     * @param configId Config ID
+     * @param status New status (0-disabled, 1-enabled)
      */
     void updateConfigStatus(Long configId, String status);
 }

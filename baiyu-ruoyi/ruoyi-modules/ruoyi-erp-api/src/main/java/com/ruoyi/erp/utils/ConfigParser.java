@@ -14,7 +14,6 @@ import com.ruoyi.erp.service.engine.VirtualFieldConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -22,15 +21,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 配置解析器
+ * Configuration Parser
  * 
- * 提供统一的配置解析功能:
- * - JSON 配置解析
- * - 表格列配置解析
- * - 表单字段配置解析
- * - 计算字段配置解析
- * - 虚拟字段配置解析
- * - 字典配置解析
+ * Provides unified configuration parsing for JSON, table columns,
+ * form fields, computed fields, virtual fields, and dictionary configs.
  * 
  * @author JMH
  * @date 2026-03-24
@@ -43,17 +37,17 @@ public class ConfigParser {
     private final ErpPageConfigService erpPageConfigService;
     
     /**
-     * 获取配置 JSON
+     * Get configuration JSON
      * 
-     * @param moduleCode 模块编码
-     * @return 配置 JSON 对象
+     * @param moduleCode Module code
+     * @return Configuration JSON object
      */
     public JSONObject getConfig(String moduleCode) {
         ErpPageConfig config = erpPageConfigService.getByModuleCode(moduleCode);
         if (config == null) {
-            throw new ErpConfigException(moduleCode, "CONFIG_NOT_FOUND", "配置不存在");
+            throw new ErpConfigException(moduleCode, "CONFIG_NOT_FOUND", "Config not found");
         }
-        // 🔧 修复：组合 5 个 JSON 字段为一个对象
+        // Fix: Combine 5 JSON fields into one object
         JSONObject result = new JSONObject();
         result.put("pageConfig", parseJson(config.getPageConfig()));
         result.put("formConfig", parseJson(config.getFormConfig()));
@@ -67,9 +61,9 @@ public class ConfigParser {
     }
     
     /**
-     * 解析 JSON 字符串为对象
-     * @param jsonStr JSON 字符串
-     * @return 解析后的对象，如果为空则返回 null
+     * Parse JSON string to object
+     * @param jsonStr JSON string
+     * @return Parsed object, null if empty
      */
     private Object parseJson(String jsonStr) {
         if (jsonStr == null || jsonStr.trim().isEmpty()) {
@@ -78,20 +72,20 @@ public class ConfigParser {
         try {
             return JSON.parse(jsonStr);
         } catch (Exception e) {
-            log.error("[parseJson] JSON 解析失败：{}", jsonStr, e);
+            log.error("[parseJson] JSON parsing failed: {}", jsonStr, e);
             return null;
         }
     }
     
     /**
-     * 解析配置列表 (通用方法)
+     * Parse configuration list (generic)
      * 
-     * @param configJson 配置 JSON
-     * @param configKey 配置项名称 (如 tableConfig、formConfig)
-     * @param arrayKey 数组键名 (如 columns、fields)
-     * @param clazz 目标类型
-     * @param <T> 泛型
-     * @return 配置列表
+     * @param configJson Configuration JSON
+     * @param configKey Config item name (e.g., tableConfig, formConfig)
+     * @param arrayKey Array key (e.g., columns, fields)
+     * @param clazz Target type
+     * @param <T> Generic type
+     * @return Configuration list
      */
     public <T> List<T> parseConfigList(
             JSONObject configJson,
@@ -101,13 +95,11 @@ public class ConfigParser {
         
         JSONObject config = configJson.getJSONObject(configKey);
         if (config == null) {
-            log.debug("配置不存在：configKey={}", configKey);
             return Collections.emptyList();
         }
         
         JSONArray array = config.getJSONArray(arrayKey);
         if (array == null || array.isEmpty()) {
-            log.debug("配置数组为空：configKey={}, arrayKey={}", configKey, arrayKey);
             return Collections.emptyList();
         }
         
@@ -117,50 +109,45 @@ public class ConfigParser {
     }
     
     /**
-     * 解析表格列配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 表格列配置列表
+     * Parse table column configuration
+     * @param configJson Configuration JSON
+     * @return Table column configuration list
      */
     public List<TableColumnConfig> parseTableColumns(JSONObject configJson) {
         return parseConfigList(configJson, "tableConfig", "columns", TableColumnConfig.class);
     }
     
     /**
-     * 解析表单字段配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 表单字段配置列表
+     * Parse form field configuration
+     * @param configJson Configuration JSON
+     * @return Form field configuration list
      */
     public List<FormConfig> parseFormFields(JSONObject configJson) {
         return parseConfigList(configJson, "formConfig", "fields", FormConfig.class);
     }
     
     /**
-     * 解析计算字段配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 计算字段配置列表
+     * Parse computed field configuration
+     * @param configJson Configuration JSON
+     * @return Computed field configuration list
      */
     public List<ComputedFieldConfig> parseComputedFields(JSONObject configJson) {
         return parseConfigList(configJson, "computedFieldConfig", "fields", ComputedFieldConfig.class);
     }
     
     /**
-     * 解析虚拟字段配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 虚拟字段配置列表
+     * Parse virtual field configuration
+     * @param configJson Configuration JSON
+     * @return Virtual field configuration list
      */
     public List<VirtualFieldConfig> parseVirtualFields(JSONObject configJson) {
         return parseConfigList(configJson, "virtualFieldConfig", "fields", VirtualFieldConfig.class);
     }
     
     /**
-     * 解析字典配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 字典配置 Map
+     * Parse dictionary configuration
+     * @param configJson Configuration JSON
+     * @return Dictionary configuration map
      */
     public Map<String, DictionaryConfig> parseDictionaryConfig(JSONObject configJson) {
         JSONObject dictConfig = configJson.getJSONObject("dictionaryConfig");
@@ -176,40 +163,36 @@ public class ConfigParser {
     }
     
     /**
-     * 获取表格配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 表格配置 JSON
+     * Get table configuration
+     * @param configJson Configuration JSON
+     * @return Table configuration JSON
      */
     public JSONObject getTableConfig(JSONObject configJson) {
         return configJson.getJSONObject("tableConfig");
     }
     
     /**
-     * 获取表单配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 表单配置 JSON
+     * Get form configuration
+     * @param configJson Configuration JSON
+     * @return Form configuration JSON
      */
     public JSONObject getFormConfig(JSONObject configJson) {
         return configJson.getJSONObject("formConfig");
     }
     
     /**
-     * 获取计算字段配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 计算字段配置 JSON
+     * Get computed field configuration
+     * @param configJson Configuration JSON
+     * @return Computed field configuration JSON
      */
     public JSONObject getComputedFieldConfig(JSONObject configJson) {
         return configJson.getJSONObject("computedFieldConfig");
     }
     
     /**
-     * 获取虚拟字段配置
-     * 
-     * @param configJson 配置 JSON
-     * @return 虚拟字段配置 JSON
+     * Get virtual field configuration
+     * @param configJson Configuration JSON
+     * @return Virtual field configuration JSON
      */
     public JSONObject getVirtualFieldConfig(JSONObject configJson) {
         return configJson.getJSONObject("virtualFieldConfig");

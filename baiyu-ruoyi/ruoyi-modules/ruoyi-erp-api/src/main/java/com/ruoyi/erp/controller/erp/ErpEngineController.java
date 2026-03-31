@@ -1,5 +1,4 @@
 package com.ruoyi.erp.controller.erp;
-
 import cn.dev33.satoken.stp.StpUtil;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
@@ -150,7 +149,6 @@ public class ErpEngineController {
             List<Map<String, Object>> processedRecords = processData(tableDataInfo.getRows(), moduleCode);
             tableDataInfo.setRows(processedRecords);
             
-            // 返回分页结果
             Map<String, Object> result = new java.util.HashMap<>();
             result.put("rows", tableDataInfo.getRows());
             result.put("total", tableDataInfo.getTotal());
@@ -165,39 +163,21 @@ public class ErpEngineController {
         }
     }
 
-    /**
-     *  获取构建器模式支持的运算符
-     */
     @GetMapping("/query/operators")
     public R<?> getAvailableOperators(@RequestParam(required = false) String moduleCode) {
-        //  如果有 moduleCode 则检查权限
         if (moduleCode != null && !moduleCode.isEmpty()) {
             permissionChecker.checkModulePermission(moduleCode, "query");
         }
-        // 返回构建器模式支持的所有运算符
         List<String> operators = java.util.Arrays.asList(
-            "eq",      // 等于
-            "ne",      // 不等于
-            "gt",      // 大于
-            "ge",      // 大于等于
-            "lt",      // 小于
-            "le",      // 小于等于
-            "like",    // 模糊匹配（%值%）
-            "left_like",   // 左模糊匹配（%值）
-            "right_like",  // 右模糊匹配（值%）
-            "in",      // IN 条件
-            "between", // BETWEEN 条件
-            "isNull",  // IS NULL
-            "isNotNull" // IS NOT NULL
+            "eq", "ne", "gt", "ge", "lt", "le",
+            "like", "left_like", "right_like",
+            "in", "between", "isNull", "isNotNull"
         );
         return R.ok(operators);
     }
 
     // ==================== 表单验证引擎接口 ====================
 
-    /**
-     * 执行表单验证
-     */
     @PostMapping("/validation/execute")
     public R<?> executeValidation(@RequestBody Map<String, Object> params) {
         try {
@@ -213,9 +193,6 @@ public class ErpEngineController {
         }
     }
 
-    /**
-     * 批量验证
-     */
     @PostMapping("/validation/batch")
     public R<?> batchValidate(@RequestBody Map<String, Object> params) {
         try {
@@ -224,7 +201,6 @@ public class ErpEngineController {
             Object formDataListObj = params.get("formDataList");
             Map<String, Object> validationConfig = (Map<String, Object>) params.get("validationConfig");
             
-            // 批量验证多个表单数据
             List<Map<String, Object>> formDataList = (List<Map<String, Object>>) formDataListObj;
             List<FormValidationEngine.ValidationResult> results = new java.util.ArrayList<>();
             
@@ -238,24 +214,16 @@ public class ErpEngineController {
         }
     }
 
-    /**
-     * 获取可用的验证规则
-     */
     @GetMapping("/validation/rules")
     public R<?> getAvailableValidationRules(@RequestParam(required = false) String moduleCode) {
-        //  如果有 moduleCode 则检查权限
         if (moduleCode != null && !moduleCode.isEmpty()) {
             permissionChecker.checkModulePermission(moduleCode, "query");
         }
-        // 返回支持的验证规则列表
         List<String> rules = java.util.Arrays.asList("required", "email", "phone", "number", "integer", 
             "min", "max", "minLength", "maxLength", "pattern", "range");
         return R.ok(rules);
     }
 
-    /**
-     * 验证单个字段
-     */
     @PostMapping("/validation/field")
     public R<?> validateField(@RequestBody Map<String, Object> params) {
         try {
@@ -265,7 +233,6 @@ public class ErpEngineController {
             Object value = params.get("value");
             Map<String, Object> rule = (Map<String, Object>) params.get("rule");
             
-            // 创建临时的表单数据进行验证
             Map<String, Object> formData = new java.util.HashMap<>();
             formData.put(field, value);
             
@@ -283,9 +250,6 @@ public class ErpEngineController {
 
     // ==================== 审批流程引擎接口 ====================
 
-    /**
-     * 获取当前审批步骤
-     */
     @PostMapping("/approval/current-step")
     public R<?> getCurrentApprovalStep(@RequestBody Map<String, Object> params) {
         try {
@@ -293,13 +257,11 @@ public class ErpEngineController {
             permissionChecker.checkModulePermission(moduleCode, "query");
             Map<String, Object> billData = (Map<String, Object>) params.get("billData");
             
-            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
             }
             
-            //  解析 JSON 配置并获取当前审批步骤
             List<Map<String, Object>> workflow = parseWorkflow(flowConfig.getFlowDefinition());
             ApprovalWorkflowEngine.ApprovalStep currentStep = 
                 approvalEngine.getCurrentStep(workflow, billData);
@@ -311,7 +273,6 @@ public class ErpEngineController {
                 return R.ok(result);
             }
             
-            //  构建返回结果
             Map<String, Object> result = new java.util.HashMap<>();
             result.put("hasCurrentStep", true);
             result.put("currentStep", currentStep);
@@ -327,31 +288,25 @@ public class ErpEngineController {
         }
     }
 
-    /**
-     * 执行审批操作
-     */
     @PostMapping("/approval/execute")
     public R<?> executeApproval(@RequestBody Map<String, Object> params) {
         try {
             String moduleCode = (String) params.get("moduleCode");
                         permissionChecker.checkModulePermission(moduleCode, "audit");
             String billId = (String) params.get("billId");
-            String action = (String) params.get("action"); // APPROVE/AUDIT/REJECT
+            String action = (String) params.get("action");
             String opinion = (String) params.get("opinion");
             String userId = (String) params.get("userId");
             List<String> userRoles = (List<String>) params.get("userRoles");
             
-            //  从数据库获取 workflow 配置
             ErpApprovalFlowVo flowConfig = approvalFlowService.getApprovalFlow(moduleCode);
             if (flowConfig == null) {
                 return R.fail("未找到模块 [" + moduleCode + "] 的审批流程配置");
             }
             
-            // 解析 JSON 配置
             List<Map<String, Object>> workflow = parseWorkflow(flowConfig.getFlowDefinition());
             Map<String, Object> billData = (Map<String, Object>) params.get("billData");
             
-            // 构建审批上下文
             ApprovalWorkflowEngine.ApprovalContext context = new ApprovalWorkflowEngine.ApprovalContext();
             context.setModuleCode(moduleCode);
             context.setBillId(billId);
@@ -360,12 +315,10 @@ public class ErpEngineController {
             context.setAction(action);
             context.setOpinion(opinion);
             
-            //  执行审批
             ApprovalWorkflowEngine.ApprovalResult result = 
                 approvalEngine.executeApproval(context, workflow, billData);
             
             if (result.isSuccess()) {
-                //  保存审批历史到数据库（使用 Service）
                 com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo historyBo = 
                     new com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo();
                 historyBo.setModuleCode(moduleCode);

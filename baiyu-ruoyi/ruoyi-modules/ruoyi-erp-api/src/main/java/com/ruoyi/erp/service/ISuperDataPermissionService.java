@@ -4,8 +4,8 @@ import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import java.util.Map;
 
 /**
- * 通用数据权限查询服务接口
- * 用于支持配置化页面的动态查询需求
+ * Common data permission query service interface
+ * Support dynamic query requirements for configurable pages
  * 
  * @author JMH
  * @date 2026-03-23
@@ -13,13 +13,13 @@ import java.util.Map;
 public interface ISuperDataPermissionService {
 
     /**
-     * 根据模块编码、表名和查询条件分页查询（唯一入口）
+     * Page query by module code, table name and conditions (single entry point)
      * 
-     * @param moduleCode 模块编码（如：saleOrder, deliveryOrder 等）
-     * @param tableName 表名（必填，来自 JSON 配置）
-     * @param pageQuery 分页参数
-     * @param queryConfig 查询配置（包含 conditions, orderBy 等）
-     * @return 分页结果
+     * @param moduleCode Module code (e.g., saleOrder, deliveryOrder, etc.)
+     * @param tableName Table name (required, from JSON config)
+     * @param pageQuery Page parameters
+     * @param queryConfig Query config (contains conditions, orderBy, etc.)
+     * @return Page result
      */
     TableDataInfo<Map<String, Object>> selectPageByModuleWithTableName(
         String moduleCode,
@@ -29,12 +29,12 @@ public interface ISuperDataPermissionService {
     );
     
     /**
-     * 根据模块编码和表名新增数据
+     * Insert data by module code and table name
      * 
-     * @param moduleCode 模块编码
-     * @param tableName 表名（必填，来自 JSON 配置）
-     * @param data 数据对象
-     * @return 影响行数
+     * @param moduleCode Module code
+     * @param tableName Table name (required, from JSON config)
+     * @param data Data object
+     * @return Affected rows
      */
     int insertByModuleWithTableName(
         String moduleCode,
@@ -43,12 +43,12 @@ public interface ISuperDataPermissionService {
     );
     
     /**
-     * 根据模块编码和表名修改数据
+     * Update data by module code and table name
      * 
-     * @param moduleCode 模块编码
-     * @param tableName 表名（必填，来自 JSON 配置）
-     * @param data 数据对象（必须包含 id 字段）
-     * @return 影响行数
+     * @param moduleCode Module code
+     * @param tableName Table name (required, from JSON config)
+     * @param data Data object (must contain id field)
+     * @return Affected rows
      */
     int updateByModuleWithTableName(
         String moduleCode,
@@ -57,12 +57,12 @@ public interface ISuperDataPermissionService {
     );
     
     /**
-     * 根据模块编码和表名删除数据
+     * Delete data by module code and table name
      * 
-     * @param moduleCode 模块编码
-     * @param tableName 表名（必填，来自 JSON 配置）
-     * @param ids 主键 ID 数组
-     * @return 影响行数
+     * @param moduleCode Module code
+     * @param tableName Table name (required, from JSON config)
+     * @param ids Primary key ID array
+     * @return Affected rows
      */
     int deleteByModuleWithTableName(
         String moduleCode,

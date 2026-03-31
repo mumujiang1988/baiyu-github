@@ -1,16 +1,16 @@
 /**
- * ERP 公共模板 - 初始化脚本
+ * ERP Page Template - Initialization Script
  * @module views/erp/pageTemplate/scripts/initScript
- * @description 负责页面初始化时的字典数据预加载、查询配置构建等
+ * @description Responsible for dictionary data pre-loading and query config building during page initialization
  */
 
 import request from '@/utils/request'
 
 /**
- * 预加载字典数据
- * @param {Object} dictionaryConfig - 字典配置对象
- * @param {String} moduleCode - 模块编码
- * @returns {Promise<Map>} - 加载完成的字典 Map
+ * Preload dictionary data
+ * @param {Object} dictionaryConfig - Dictionary config object
+ * @param {String} moduleCode - Module code
+ * @returns {Promise<Map>} - Loaded dictionary Map
  */
 export const preloadDictionaries = async (dictionaryConfig, moduleCode) => {
   const dictionaries = new Map()
@@ -20,15 +20,12 @@ export const preloadDictionaries = async (dictionaryConfig, moduleCode) => {
   }
   
   try {
-    // 并行加载所有字典
     const promises = Object.entries(dictionaryConfig).map(async ([key, config]) => {
-      // 跳过静态字典
       if (Array.isArray(config)) {
         dictionaries.set(key, config)
         return
       }
       
-      // 跳过远程搜索的字典（如国家）
       if (key === 'nation') {
         dictionaries.set(key, [])
         return
@@ -59,22 +56,20 @@ export const preloadDictionaries = async (dictionaryConfig, moduleCode) => {
       }
     })
     
-    // 等待所有字典加载完成
     await Promise.all(promises)
     
   } catch (error) {
-    // 忽略错误，返回已加载的字典
   }
   
   return dictionaries
 }
 
 /**
- * 构建查询条件（构建器模式）
- * @param {Array} searchFields - 搜索字段配置
- * @param {Object} queryParams - 查询参数
- * @param {Array} dateRange - 日期范围
- * @returns {Object} - queryConfig 配置对象
+ * Build query conditions (Builder Pattern)
+ * @param {Array} searchFields - Search field config
+ * @param {Object} queryParams - Query params
+ * @param {Array} dateRange - Date range
+ * @returns {Object} - queryConfig object
  */
 export const buildQueryConfig = (searchFields, queryParams, dateRange) => {
   const conditions = []
@@ -87,23 +82,18 @@ export const buildQueryConfig = (searchFields, queryParams, dateRange) => {
     let value = queryParams[field.field]
     const operator = field.queryOperator || 'eq'
     
-    // 日期范围特殊处理：从 dateRange 获取值
     if (field.component === 'daterange') {
       if (Array.isArray(dateRange) && dateRange.length === 2) {
-        // 使用 dateRange 的值
         value = dateRange
       } else {
-        // 日期范围为空，跳过该条件
         return
       }
     }
     
-    // 跳过空值
     if (value === undefined || value === null || value === '') {
       return
     }
     
-    // 日期范围已在上面处理过
     if (field.component === 'daterange') {
       conditions.push({
         field: field.field,
@@ -111,14 +101,12 @@ export const buildQueryConfig = (searchFields, queryParams, dateRange) => {
         value: value
       })
     } else if (Array.isArray(value)) {
-      // IN 条件
       conditions.push({
         field: field.field,
-        operator: operator, // in
+        operator: operator,
         value: value
       })
     } else {
-      // 单个值条件
       conditions.push({
         field: field.field,
         operator: operator,
@@ -129,24 +117,24 @@ export const buildQueryConfig = (searchFields, queryParams, dateRange) => {
   
   return {
     conditions: conditions,
-    orderBy: [] // 默认排序在别处配置
+    orderBy: []
   }
 }
 
 /**
- * 获取表名
- * @param {Object} pageConfig - 页面配置
- * @param {String} defaultTableName - 默认表名
- * @returns {String} - 表名
+ * Get table name
+ * @param {Object} pageConfig - Page config
+ * @param {String} defaultTableName - Default table name
+ * @returns {String} - Table name
  */
 export const getTableName = (pageConfig, defaultTableName = 't_sale_order') => {
   return pageConfig?.tableName || defaultTableName
 }
 
 /**
- * 初始化销售人员字典
- * @param {String} moduleCode - 模块编码
- * @returns {Promise<Array>} - 销售人员列表
+ * Initialize salespersons dictionary
+ * @param {String} moduleCode - Module code
+ * @returns {Promise<Array>} - Salespersons list
  */
 export const loadSalespersons = async (moduleCode) => {
   try {
@@ -172,10 +160,10 @@ export const loadSalespersons = async (moduleCode) => {
 }
 
 /**
- * 初始化国家字典（支持搜索）
- * @param {String} keyword - 搜索关键词
- * @param {String} moduleCode - 模块编码
- * @returns {Promise<Array>} - 国家列表
+ * Initialize country dictionary (with search support)
+ * @param {String} keyword - Search keyword
+ * @param {String} moduleCode - Module code
+ * @returns {Promise<Array>} - Country list
  */
 export const searchNations = async (keyword, moduleCode) => {
   if (!keyword || keyword.trim() === '') {
@@ -209,9 +197,9 @@ export const searchNations = async (keyword, moduleCode) => {
 }
 
 /**
- * 验证查询配置是否完整
- * @param {Object} queryConfig - 查询配置
- * @returns {Boolean} - 是否有效
+ * Validate query config completeness
+ * @param {Object} queryConfig - Query config
+ * @returns {Boolean} - Is valid
  */
 export const validateQueryConfig = (queryConfig) => {
   if (!queryConfig) {
@@ -222,13 +210,11 @@ export const validateQueryConfig = (queryConfig) => {
     return false
   }
   
-  // 检查每个条件的必需字段
   for (const condition of queryConfig.conditions) {
     if (!condition.field || !condition.operator) {
       return false
     }
     
-    // isNull 和 isNotNull 不需要 value
     if (!['isNull', 'isNotNull'].includes(condition.operator)) {
       if (condition.value === undefined || condition.value === null) {
         return false
@@ -240,8 +226,8 @@ export const validateQueryConfig = (queryConfig) => {
 }
 
 /**
- * 获取支持的运算符列表
- * @returns {Promise<Array>} - 运算符列表
+ * Get supported operators list
+ * @returns {Promise<Array>} - Operators list
  */
 export const getSupportedOperators = async () => {
   try {

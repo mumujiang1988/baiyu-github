@@ -10,18 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 
 /**
- * 通用数据权限查询服务实现类（纯 JDBC 架构）
- * 
- * 特性：
- * 1. 完全去除 QueryWrapper - 使用 SqlBuilder 直接构建 SQL
- * 2. 零正则替换 - 直接生成标准 JDBC 占位符
- * 3. SQL 注入防护 - 字段名白名单校验
- * 4. 异常细化 - 区分不同错误类型
- * 5. 性能优化 - 无正则匹配开销
+ * Common data permission query service implementation (pure JDBC architecture)
  * 
  * @author JMH
  * @date 2026-03-30
@@ -47,20 +39,15 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
         validatePageQuery(pageQuery);
 
         try {
-            // 1. 提取查询条件
+            // 1. Extract query conditions
             List<Map<String, Object>> conditions = extractConditions(queryConfig);
             List<Map<String, Object>> orderBy = extractOrderBy(queryConfig);
             
-            log.info("[模块编码] {}", moduleCode);
-            log.info("[表名] {}", tableName);
-            log.info("[WHERE 条件数量] {}", conditions != null ? conditions.size() : 0);
-            log.info("[ORDER BY 数量] {}", orderBy != null ? orderBy.size() : 0);
-            
-            // 2. 使用 SqlBuilder 构建 SQL（完全去除 QueryWrapper）
+            // 2. Use SqlBuilder to build SQL (complete removal of QueryWrapper)
             SqlBuilder.SqlResult whereResult = sqlBuilder.buildWhere(conditions);
             SqlBuilder.SqlResult orderByResult = sqlBuilder.buildOrderBy(orderBy);
             
-            // 3. 构建完整 SQL
+            // 3. Build complete SQL
             StringBuilder selectSql = new StringBuilder("SELECT * FROM ");
             selectSql.append(tableName);
             selectSql.append(whereResult.getSql());
@@ -70,43 +57,37 @@ public class SuperDataPermissionServiceImpl implements ISuperDataPermissionServi
             countSql.append(tableName);
             countSql.append(whereResult.getSql());
             
-            log.info("[查询 SQL] {}", selectSql);
-            log.info("[计数 SQL] {}", countSql);
-            log.info("[参数列表] {}", whereResult.getParams());
-            
-            // 4. 分页参数
+            // 4. Page params
             long pageNum = pageQuery.getPageNum();
             long pageSize = pageQuery.getPageSize();
             long offset = (pageNum - 1) * pageSize;
             
-            // 5. 执行分页查询
+            // 5. Execute page query
             List<Object> pageParams = new ArrayList<>(whereResult.getParams());
             pageParams.add(pageSize);
             pageParams.add(offset);
             
             String pageSql = selectSql + " LIMIT ? OFFSET ?";
-            log.debug("[分页 SQL] {}", pageSql);
             
             List<Map<String, Object>> records = jdbcTemplate.queryForList(
                 pageSql, pageParams.toArray());
             
-            // 6. 查询总数
+            // 6. Query total
             Long total = jdbcTemplate.queryForObject(
                 countSql.toString(), 
                 Long.class, 
                 whereResult.getParams().toArray());
             
-            // 7. 封装结果（使用 RuoYi TableDataInfo）
+            // 7. Wrap result (use RuoYi TableDataInfo)
             TableDataInfo<Map<String, Object>> tableDataInfo = new TableDataInfo<>(records != null ? records : new ArrayList<>(), total);
             
-            log.info("[分页查询成功] module:{}, table:{}, total:{}", moduleCode, tableName, total);
             return tableDataInfo;
             
         } catch (BadSqlGrammarException e) {
-            log.error("[SQL 语法错误] module:{}, sql 异常", moduleCode, e);
+            log.error("[SQL syntax error] module:{}", moduleCode, e);
             throw new ServiceException("SQL 语法错误，请联系管理员检查配置：" + e.getMessage());
         } catch (Exception e) {
-            log.error("[查询异常] module:{}", moduleCode, e);
+            log.error("[Query exception] module:{}", moduleCode, e);
             throw new ServiceException("查询失败：" + e.getMessage());
         }
     }

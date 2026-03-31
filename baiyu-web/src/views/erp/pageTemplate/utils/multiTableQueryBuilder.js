@@ -1,15 +1,15 @@
 /**
- * 多表格查询构建器 - 支持单个页面多个表格的独立查询
+ * Multi-Table Query Builder - supports independent queries for multiple tables on a single page
  * @module views/erp/pageTemplate/utils/multiTableQueryBuilder
- * @description 为每个子表格生成独立的 queryConfig，支持不同的表名和查询条件
+ * @description Generate independent queryConfig for each sub-table, supporting different table names and query conditions
  */
 
 import request from '@/utils/request'
 
 /**
- * 主表格查询（标准构建器模式）
- * @param {Object} params - 查询参数
- * @returns {Promise} - 查询结果
+ * Main table query (standard builder pattern)
+ * @param {Object} params - Query params
+ * @returns {Promise} - Query result
  */
 export const queryMainTable = async (params) => {
   const { moduleCode, tableName, queryConfig, pageNum = 1, pageSize = 10 } = params
@@ -27,7 +27,7 @@ export const queryMainTable = async (params) => {
       }
     })
     
-    // 注意：后端返回的是 R.ok(result),所以数据在 response.data 中
+    // Backend returns R.ok(result), so data is in response.data
     return response.data || {}
   } catch (error) {
     throw error
@@ -35,16 +35,14 @@ export const queryMainTable = async (params) => {
 }
 
 /**
- * 子表格查询（通用方法）
- * @param {Object} params - 查询参数
- * @returns {Promise} - 查询结果
+ * Sub-table query (generic method)
+ * @param {Object} params - Query params
+ * @returns {Promise} - Query result
  */
 export const querySubTable = async (params) => {
   const { moduleCode, tableName, queryConfig, pageNum = 1, pageSize = 100 } = params
   
   try {
-    console.error('[成本表查询 - querySubTable] 📝 请求参数:', JSON.stringify({ moduleCode, tableName, queryConfig, pageNum, pageSize }, null, 2))
-    
     const response = await request({
       url: '/erp/engine/query/execute',
       method: 'post',
@@ -57,70 +55,43 @@ export const querySubTable = async (params) => {
       }
     })
     
-    // 成本表异常日志
-    if (tableName === 't_sale_order_cost') {
-      console.error('[成本表查询 - querySubTable] ✅ 响应数据:', JSON.stringify(response.data, null, 2))
-      if (!response.data || !response.data.rows || response.data.rows.length === 0) {
-        console.error('[成本表查询 - querySubTable] ⚠️ 警告：返回数据为空')
-        console.error('[成本表查询 - querySubTable] 🔍 检查 SQL 配置和数据库连接')
-      }
-    }
-    
-    // 注意：后端返回的是 R.ok(result),所以数据在 response.data 中
+    // Backend returns R.ok(result), so data is in response.data
     return response.data || {}
   } catch (error) {
-    // 成本表异常日志
-    if (tableName === 't_sale_order_cost') {
-      console.error('[成本表查询 - querySubTable] ❌ 查询失败:', error.message)
-      console.error('[成本表查询 - querySubTable] 错误堆栈:', error.stack)
-    }
     throw error
   }
 }
 
 /**
- * 并行查询多个子表格
- * @param {String} moduleCode - 模块编码
- * @param {Array} subTableConfigs - 子表格配置数组
- * @param {Object} contextData - 上下文数据（如 billNo）
- * @returns {Promise<Object>} - 所有子表格的查询结果
+ * Query multiple sub-tables in parallel
+ * @param {String} moduleCode - Module code
+ * @param {Array} subTableConfigs - Sub-table config array
+ * @param {Object} contextData - Context data (e.g., billNo)
+ * @returns {Promise<Object>} - All sub-table query results
  */
 export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData = {}) => {
   try {
-    console.error('[成本表汇总 - queryAllSubTables] 🚀 开始批量查询子表格')
-    console.error('[成本表汇总 - queryAllSubTables] 🔧 moduleCode:', moduleCode)
-    console.error('[成本表汇总 - queryAllSubTables] 📋 子表格数量:', subTableConfigs.length)
-    console.error('[成本表汇总 - queryAllSubTables] 💾 contextData:', JSON.stringify(contextData, null, 2))
-    
-    // 构建所有子表格的查询请求
+    // Build query requests for all sub-tables
     const promises = subTableConfigs.map(async (config) => {
       const { key, tableName, defaultConditions, defaultOrderBy } = config
       
-      console.error(`[成本表汇总 - queryAllSubTables] 📊 处理子表格 [${key}], tableName: ${tableName}`)
-      
-      // 替换模板变量（如 ${billNo}）
+      // Replace template variables (e.g., ${billNo})
       const conditions = replaceTemplateVariables(defaultConditions, contextData)
-      
-      console.error(`[成本表汇总 - queryAllSubTables] 🔧 子表格 [${key}] 查询条件:`, JSON.stringify(conditions, null, 2))
       
       const queryConfig = {
         conditions,
         orderBy: defaultOrderBy || []
       }
       
-      console.error(`[成本表汇总 - queryAllSubTables] 🔍 子表格 [${key}] 完整 queryConfig:`, JSON.stringify(queryConfig, null, 2))
-      
       const result = await querySubTable({
         moduleCode,
         tableName,
         queryConfig,
         pageNum: 1,
-        pageSize: 100 // 子表格通常不需要分页
+        pageSize: 100 // Sub-tables usually don't need pagination
       })
       
-      console.error(`[成本表汇总 - queryAllSubTables] ✅ 子表格 [${key}] 查询完成，rows: ${result?.rows?.length || 0}, total: ${result?.total || 0}`)
-      
-      // result 已经是 response.data，包含 rows 和 total
+      // result is already response.data, containing rows and total
       return {
         key,
         data: result.rows || [],
@@ -128,10 +99,10 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
       }
     })
     
-    // 等待所有查询完成
+    // Wait for all queries to complete
     const results = await Promise.all(promises)
     
-    // 转换为对象格式
+    // Convert to object format
     const resultMap = {}
     results.forEach(result => {
       resultMap[result.key] = {
@@ -140,31 +111,17 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
       }
     })
     
-    console.error('[成本表汇总 - queryAllSubTables] 📦 所有子表格查询完成，结果:', JSON.stringify(resultMap, null, 2))
-    
-    // 成本表异常日志
-    if (resultMap.cost) {
-      console.error('[成本表汇总 - queryAllSubTables] 💰 成本表最终结果:', JSON.stringify(resultMap.cost, null, 2))
-      if (!resultMap.cost.data || resultMap.cost.data.length === 0) {
-        console.error('[成本表汇总 - queryAllSubTables] ⚠️ 警告：成本表数据为空')
-        console.error('[成本表汇总 - queryAllSubTables] 🔍 请检查：1)SQL 配置 2) 数据库连接 3) 查询条件 4) 单据编号是否正确')
-      }
-    } else {
-      console.error('[成本表汇总 - queryAllSubTables] ⚠️ 警告：结果中没有 cost 数据')
-    }
-    
     return resultMap
   } catch (error) {
-    console.error('[成本表汇总 - queryAllSubTables] ❌ 批量查询子表格失败:', error)
     throw error
   }
 }
 
 /**
- * 替换查询条件中的模板变量
- * @param {Array} conditions - 查询条件数组
- * @param {Object} contextData - 上下文数据
- * @returns {Array} - 替换后的条件数组
+ * Replace template variables in query conditions
+ * @param {Array} conditions - Query condition array
+ * @param {Object} contextData - Context data
+ * @returns {Array} - Replaced condition array
  */
 export const replaceTemplateVariables = (conditions, contextData) => {
   if (!Array.isArray(conditions)) {
@@ -174,7 +131,7 @@ export const replaceTemplateVariables = (conditions, contextData) => {
   return conditions.map(condition => {
     let value = condition.value
     
-    // 处理数组类型的值
+    // Handle array type values
     if (Array.isArray(value)) {
       value = value.map(v => {
         if (typeof v === 'string' && v.startsWith('${') && v.endsWith('}')) {
@@ -184,7 +141,7 @@ export const replaceTemplateVariables = (conditions, contextData) => {
         return v
       })
     } 
-    // 处理字符串类型的值
+    // Handle string type values
     else if (typeof value === 'string' && value.startsWith('${') && value.endsWith('}')) {
       const varName = value.slice(2, -1)
       value = contextData[varName] || value
@@ -198,19 +155,19 @@ export const replaceTemplateVariables = (conditions, contextData) => {
 }
 
 /**
- * 从配置中解析子表格查询配置
- * @param {Object} pageConfig - 页面配置对象
- * @returns {Array} - 子表格配置数组
+ * Parse sub-table query configs from page config
+ * @param {Object} pageConfig - Page config object
+ * @returns {Array} - Sub-table config array
  */
 export const parseSubTableConfigs = (pageConfig) => {
   const configs = []
   
-  // 优先从 detailConfig 中解析（新版本）
+  // Priority: parse from detailConfig (new version)
   if (pageConfig && pageConfig.detailConfig && pageConfig.detailConfig.detail) {
     const tabs = pageConfig.detailConfig.detail.tabs || []
     
     for (const tab of tabs) {
-      // 支持表格、描述列表和表单（成本表）类型
+      // Support table, descriptions and form types (cost table)
       if (tab.type === 'table' || tab.type === 'descriptions' || tab.type === 'form') {
         configs.push({
           key: tab.name,
@@ -223,11 +180,11 @@ export const parseSubTableConfigs = (pageConfig) => {
       }
     }
   }
-  // 兼容旧的 subTableQueryConfigs（旧版本）
+  // Compatible with old subTableQueryConfigs (old version)
   else if (pageConfig && pageConfig.subTableQueryConfigs) {
     const subTableConfigs = pageConfig.subTableQueryConfigs
     
-    // 遍历所有子表格配置
+    // Iterate through all sub-table configs
     for (const [key, config] of Object.entries(subTableConfigs)) {
       if (config.enabled) {
         configs.push({
@@ -244,9 +201,9 @@ export const parseSubTableConfigs = (pageConfig) => {
 }
 
 /**
- * 获取主表格查询配置
- * @param {Object} pageConfig - 页面配置对象
- * @returns {Object|null} - 主表格查询配置
+ * Get main table query config
+ * @param {Object} pageConfig - Page config object
+ * @returns {Object|null} - Main table query config
  */
 export const getMainTableQueryConfig = (pageConfig) => {
   if (!pageConfig || !pageConfig.queryConfig || !pageConfig.queryConfig.enabled) {
@@ -261,10 +218,10 @@ export const getMainTableQueryConfig = (pageConfig) => {
 }
 
 /**
- * 根据单据编号查询明细表（专用方法）
- * @param {String} moduleCode - 模块编码
- * @param {String} billNo - 单据编号
- * @returns {Promise<Array>} - 明细数据
+ * Query entry details by bill number (specialized method)
+ * @param {String} moduleCode - Module code
+ * @param {String} billNo - Bill number
+ * @returns {Promise<Array>} - Entry details
  */
 export const queryEntryByBillNo = async (moduleCode, billNo) => {
   const queryConfig = {
@@ -291,15 +248,15 @@ export const queryEntryByBillNo = async (moduleCode, billNo) => {
     pageSize: 100
   })
   
-  // response 已经是 response.data，包含 rows 和 total
+  // response already contains response.data with rows and total
   return response.rows || []
 }
 
 /**
- * 根据单据编号查询成本表 (专用方法)
- * @param {String} moduleCode - 模块编码
- * @param {String} billNo - 单据编号
- * @returns {Promise<Object>} - 成本数据
+ * Query cost data by bill number (specialized method)
+ * @param {String} moduleCode - Module code
+ * @param {String} billNo - Bill number
+ * @returns {Promise<Object>} - Cost data
  */
 export const queryCostByBillNo = async (moduleCode, billNo) => {
   const queryConfig = {
@@ -323,10 +280,10 @@ export const queryCostByBillNo = async (moduleCode, billNo) => {
     tableName: 't_sale_order_cost',
     queryConfig,
     pageNum: 1,
-    pageSize: 1 // 成本表通常只有一条记录
+    pageSize: 1 // Cost table usually has only one record
   })
   
-  // response 已经是 response.data，包含 rows 和 total
+  // response already contains response.data with rows and total
   return response.rows?.[0] || {}
 }
 

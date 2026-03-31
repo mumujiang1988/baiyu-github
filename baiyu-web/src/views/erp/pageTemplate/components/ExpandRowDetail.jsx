@@ -1,7 +1,6 @@
 /**
- * 展开行详情组件 - 配置化版本
- * 支持多页签显示订单明细和成本数据
- * 完全由 JSON 配置驱动
+ * Expand Row Detail Component - Config-driven version
+ * Supports multi-tab display for order details and cost data
  */
 
 import { ref, reactive, watch, computed, h } from 'vue'
@@ -37,13 +36,11 @@ export default {
     const activeTab = ref('')
     const loadingData = ref(false)
 
-    // 获取字典选项
     const getDictOptions = (dictName) => {
       if (!props.parser || !dictName) return []
       return props.parser.getDictOptions(dictName) || []
     }
 
-    // 获取标签配置
     const getTagConfig = (value, dictName) => {
       const dict = getDictOptions(dictName)
       const option = dict.find(item => item.value === value)
@@ -53,7 +50,6 @@ export default {
       }
     }
 
-    // 格式化货币
     const formatCurrency = (value, precision = 2) => {
       if (!value && value !== 0) return '-'
       return Number(value).toLocaleString('zh-CN', {
@@ -62,13 +58,11 @@ export default {
       })
     }
 
-    // 格式化百分比
     const formatPercent = (value, precision = 2) => {
       if (!value && value !== 0) return '-'
       return `${Number(value).toFixed(precision)}%`
     }
 
-    // 格式化日期
     const formatDate = (value, format = 'YYYY-MM-DD') => {
       if (!value) return '-'
       try {
@@ -79,7 +73,6 @@ export default {
       }
     }
 
-    // 渲染单元格内容
     const renderCellContent = (row, prop, renderType, dictionary, precision, format) => {
       const value = row[prop]
       
@@ -103,14 +96,12 @@ export default {
           return value ?? '-'
       }
     }
-
-    // 加载数据
+    
     const loadData = () => {
       if (loadingData.value) return
-      
+          
       loadingData.value = true
       emit('load-data', props.row)
-      // 注意: loadingData 会在 watch 中检测到数据变化后重置
     }
 
     // 监听展开状态变化
@@ -131,9 +122,7 @@ export default {
       }
     }, { immediate: true })
 
-    // 关闭展开行
     const closeExpand = () => {
-      // 通知父组件关闭（如果需要）
     }
 
     // 监听数据变化
@@ -155,7 +144,6 @@ export default {
       }
     })
 
-    // 渲染表格列
     const renderTableColumns = (columns) => {
       return columns.map((col, index) => {
         const columnSlots = {}
@@ -189,7 +177,6 @@ export default {
       })
     }
 
-    // 渲染描述列表字段
     const renderDescriptionFields = (fields, data) => {
       return fields.map((field, index) => {
         return h(
@@ -209,7 +196,6 @@ export default {
       })
     }
 
-    // 渲染页签
     const renderTabs = () => {
       if (!props.expandConfig?.tabs) return null
 
@@ -221,7 +207,6 @@ export default {
 
         let content
         if (tab.type === 'descriptions') {
-          // 描述列表 - 使用 expand-content 包裹
           content = h(
             'div',
             { class: 'expand-content' },
@@ -232,7 +217,7 @@ export default {
             )
           )
         } else {
-          // 表格 - 使用 expand-section 和 expand-content 包裹
+          // Table - wrapped with expand-section and expand-content
           content = h(
             'div',
             { class: 'expand-section' },
@@ -278,21 +263,18 @@ export default {
         { default: () => tabPanes.filter(Boolean) }
       )
     }
-
+    
     return () => {
-      // 如果未展开,返回空
       if (!props.isExpanded) {
         return null
       }
 
       const children = []
       
-      // 检查是否有数据
       const hasEntryList = props.row.entryList && props.row.entryList.length > 0
       const hasCostData = props.row.costData && Object.keys(props.row.costData).length > 0
       const hasAnyData = hasEntryList || hasCostData
       
-      // 有关闭按钮时才渲染
       if (hasAnyData) {
         children.push(h(
           'div',
@@ -301,7 +283,6 @@ export default {
         ))
       }
       
-      // 加载中状态
       if (loadingData.value) {
         children.push(h(
           'div',
@@ -312,7 +293,6 @@ export default {
           ]
         ))
       }
-      // 无数据状态 - 已加载但数据为空
       else if (!hasAnyData) {
         children.push(h(
           'div',
@@ -320,7 +300,6 @@ export default {
           h('el-empty', { description: '暂无订单明细或成本数据', imageSize: 80 })
         ))
       }
-      // 有数据，渲染页签
       else {
         children.push(renderTabs())
       }

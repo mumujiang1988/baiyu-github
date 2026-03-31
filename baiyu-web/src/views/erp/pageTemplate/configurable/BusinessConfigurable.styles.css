@@ -1,10 +1,10 @@
 /**
- * 配置化通用业务页面样式
+ * Configurable Generic Business Page Styles
  */
 
 .app-container {
   padding: 8px;
-  height: calc(100vh - 84px);  /* 减去顶部导航(50px) + 面包屑(34px) = 84px */
+  height: calc(100vh - 84px);  /* Subtract top nav (50px) + breadcrumb (34px) = 84px */
   max-height: calc(100vh - 84px);
   display: flex;
   flex-direction: column;
@@ -14,7 +14,7 @@
   box-sizing: border-box;
 }
 
-/* 搜索卡片 */
+/* Search Card */
 .search-card {
   flex-shrink: 0;
   margin-bottom: 0;
@@ -24,7 +24,7 @@
   padding: 12px 16px;
 }
 
-/* 页面标题样式 */
+/* Page Title Style */
 .page-header {
   display: flex;
   align-items: center;
@@ -45,14 +45,14 @@
   color: #409EFF;
 }
 
-/* 工具栏行 - 第一排按钮 */
+/* Toolbar Row - First Row Buttons */
 .toolbar-row {
   margin-bottom: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid #ebeef5;
 }
 
-/* 搜索表单 - 第二排查询条件 */
+/* Search Form - Second Row Query Conditions */
 .search-form {
   width: 100%;
 }
@@ -62,27 +62,27 @@
   margin-right: 16px;
 }
 
-/* 左侧操作按钮项 */
+/* Left Action Button Item */
 .action-item {
   float: left;
   margin-right: 12px;
 }
 
-/* 工具栏项 - 靠右对齐 */
+/* Toolbar Item - Align Right */
 .toolbar-item {
   float: right;
   margin-right: 0;
   margin-left: auto;
 }
 
-/* 工具栏项内部间距调整 */
+/* Toolbar Item Internal Spacing Adjustment */
 .toolbar-item .el-space {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-/* 表格卡片 */
+/* Table Card */
 .table-card {
   flex: 1;
   min-height: 0;

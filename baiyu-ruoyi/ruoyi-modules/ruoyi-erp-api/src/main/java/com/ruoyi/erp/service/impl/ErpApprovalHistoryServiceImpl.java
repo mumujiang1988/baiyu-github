@@ -12,8 +12,7 @@ import com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo;
 import com.ruoyi.erp.service.ErpApprovalHistoryService; 
 
 /**
- * ERP 审批历史记录 Service 业务层实现
- * 
+ * ERP Approval History Service Business Layer Implementation
  * @author JMH
  * @date 2026-03-30
  */
@@ -63,10 +62,10 @@ public class ErpApprovalHistoryServiceImpl implements ErpApprovalHistoryService 
     }
     
     /**
-     * Map 转 VO
+     * Map to VO
      */
     private ErpApprovalHistoryVo mapToVo(Map<String, Object> row) {
-        // 使用 RuoYi MapstructUtils 自动转换
+        // Use RuoYi MapstructUtils auto conversion
         return MapstructUtils.convert(row, ErpApprovalHistoryVo.class);
     }
 }

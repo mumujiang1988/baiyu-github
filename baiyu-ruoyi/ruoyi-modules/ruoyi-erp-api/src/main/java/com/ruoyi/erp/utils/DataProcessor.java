@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 数据处理器
+ * Data Processor
  * 
- * 提供统一的数据处理功能:
- * - 计算字段处理
- * - 虚拟字段处理
- * - 字典翻译处理
+ * Provides unified data processing functionality:
+ * - Computed field processing
+ * - Virtual field processing
+ * - Dictionary translation
  * 
  * @author JMH
  * @date 2026-03-24
@@ -34,37 +34,35 @@ public class DataProcessor {
     private final ConfigParser configParser;
     
     /**
-     * 处理数据 (计算字段 + 虚拟字段)
+     * Process data (computed fields + virtual fields)
      * 
-     * @param dataList 原始数据列表
-     * @param config 配置 JSON
-     * @return 处理后的数据列表
+     * @param dataList Original data list
+     * @param config Configuration JSON
+     * @return Processed data list
      */
     public List<Map<String, Object>> process(
             List<Map<String, Object>> dataList,
             JSONObject config) {
         
         if (CollUtil.isEmpty(dataList)) {
-            log.debug("数据列表为空，跳过处理");
             return dataList;
         }
         
-        // 1. 执行字段计算
+        // Execute field computation
         dataList = computeFields(dataList, config);
         
-        // 2. 解析虚拟字段
+        // Resolve virtual fields
         dataList = resolveVirtualFields(dataList, config);
         
-        log.debug("数据处理完成，共处理{}条记录", dataList.size());
         return dataList;
     }
     
     /**
-     * 执行字段计算
+     * Execute field computation
      * 
-     * @param dataList 数据列表
-     * @param config 配置 JSON
-     * @return 计算后的数据列表
+     * @param dataList Data list
+     * @param config Configuration JSON
+     * @return Computed data list
      */
     private List<Map<String, Object>> computeFields(
             List<Map<String, Object>> dataList,
@@ -72,20 +70,18 @@ public class DataProcessor {
         
         List<ComputedFieldConfig> configs = configParser.parseComputedFields(config);
         if (CollUtil.isEmpty(configs)) {
-            log.debug("无计算字段配置，跳过计算");
             return dataList;
         }
         
-        log.debug("开始执行字段计算，共{}个计算规则", configs.size());
         return computedFieldEngine.computeFieldsBatch(dataList, configs);
     }
     
     /**
-     * 解析虚拟字段
+     * Resolve virtual fields
      * 
-     * @param dataList 数据列表
-     * @param config 配置 JSON
-     * @return 解析后的数据列表
+     * @param dataList Data list
+     * @param config Configuration JSON
+     * @return Resolved data list
      */
     private List<Map<String, Object>> resolveVirtualFields(
             List<Map<String, Object>> dataList,
@@ -93,20 +89,18 @@ public class DataProcessor {
         
         List<VirtualFieldConfig> configs = configParser.parseVirtualFields(config);
         if (CollUtil.isEmpty(configs)) {
-            log.debug("无虚拟字段配置，跳过解析");
             return dataList;
         }
         
-        log.debug("开始解析虚拟字段，共{}个映射规则", configs.size());
         return virtualFieldService.resolveVirtualFields(dataList, configs);
     }
     
     /**
-     * 处理单条数据
+     * Process single data
      * 
-     * @param data 原始数据
-     * @param config 配置 JSON
-     * @return 处理后的数据
+     * @param data Original data
+     * @param config Configuration JSON
+     * @return Processed data
      */
     public Map<String, Object> processSingle(
             Map<String, Object> data,
@@ -116,7 +110,7 @@ public class DataProcessor {
             return data;
         }
         
-        // 转换为列表处理
+        // Convert to list for processing
         List<Map<String, Object>> dataList = CollUtil.newArrayList(data);
         List<Map<String, Object>> processedList = process(dataList, config);
         

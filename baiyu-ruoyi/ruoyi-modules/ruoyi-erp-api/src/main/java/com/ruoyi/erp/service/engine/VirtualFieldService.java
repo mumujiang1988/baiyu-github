@@ -1,5 +1,4 @@
 package com.ruoyi.erp.service.engine;
-
 import cn.hutool.core.collection.CollUtil;
 import com.ruoyi.common.redis.utils.CacheUtils;
 import com.ruoyi.erp.exception.VirtualFieldException;
@@ -7,10 +6,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-
 import jakarta.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -27,13 +24,6 @@ public class VirtualFieldService {
     @Resource
     private JdbcTemplate jdbcTemplate;
     
-    /**
-     * 解析虚拟字段
-     * 
-     * @param dataList 原始数据列表
-     * @param configs 虚拟字段配置列表
-     * @return 解析后的数据列表
-     */
     public List<Map<String, Object>> resolveVirtualFields(
             List<Map<String, Object>> dataList,
             List<VirtualFieldConfig> configs) {
@@ -42,27 +32,21 @@ public class VirtualFieldService {
             return dataList;
         }
         
-        // 按配置逐个解析
         for (VirtualFieldConfig config : configs) {
             try {
                 resolveSingleConfig(dataList, config);
             } catch (Exception e) {
                 log.error("解析虚拟字段 {} 失败：{}", config.getName(), e.getMessage());
-                // 虚拟字段解析失败不影响主数据
             }
         }
         
         return dataList;
     }
     
-    /**
-     * 解析单个配置
-     */
     private void resolveSingleConfig(
             List<Map<String, Object>> dataList,
             VirtualFieldConfig config) {
         
-        // 1. 收集所有源字段值
         Set<Object> sourceValues = dataList.stream()
             .map(data -> data.get(config.getSourceField()))
             .filter(Objects::nonNull)
@@ -72,7 +56,6 @@ public class VirtualFieldService {
             return;
         }
         
-        // 2. 批量查询基础资料
         Map<Object, Object> valueMap = batchQueryBaseData(
             config.getSourceTable(),
             config.getSourceField(),
@@ -81,14 +64,12 @@ public class VirtualFieldService {
             config.getCacheable() != null && config.getCacheable()
         );
         
-        // 3. 设置虚拟字段值
         for (Map<String, Object> data : dataList) {
             Object sourceValue = data.get(config.getSourceField());
             if (sourceValue != null) {
                 Object displayValue = valueMap.get(sourceValue);
                 data.put(config.getName(), displayValue);
                 
-                // 如果配置了显示类型，同时存储显示配置
                 if (config.getDisplayConfig() != null) {
                     data.put(config.getName() + "_displayConfig", config.getDisplayConfig());
                 }
@@ -96,9 +77,6 @@ public class VirtualFieldService {
         }
     }
     
-    /**
-     * 批量查询基础资料
-     */
     private Map<Object, Object> batchQueryBaseData(
             String tableName,
             String sourceField,
@@ -109,7 +87,6 @@ public class VirtualFieldService {
         Map<Object, Object> result = new HashMap<>();
         Set<Object> needQueryValues = new HashSet<>();
         
-        // 1. 尝试从缓存获取
         if (Boolean.TRUE.equals(cacheable)) {
             for (Object value : sourceValues) {
                 String cacheKey = buildCacheKey(tableName, sourceField, value);
@@ -125,7 +102,6 @@ public class VirtualFieldService {
             needQueryValues.addAll(sourceValues);
         }
         
-        // 2. 查询数据库
         if (CollUtil.isNotEmpty(needQueryValues)) {
             try {
                 String sql = buildBatchQuerySql(tableName, sourceField, displayField, needQueryValues.size());
@@ -134,7 +110,6 @@ public class VirtualFieldService {
                     needQueryValues.toArray()
                 );
                 
-                // 3. 缓存查询结果
                 for (Map<String, Object> row : queryResult) {
                     Object sourceValue = row.get(sourceField);
                     Object displayValue = row.get(displayField);
@@ -159,9 +134,6 @@ public class VirtualFieldService {
         return result;
     }
     
-    /**
-     * 构建批量查询 SQL
-     */
     private String buildBatchQuerySql(String tableName, String sourceField, String displayField, int paramCount) {
         StringBuilder placeholders = new StringBuilder();
         for (int i = 0; i < paramCount; i++) {
@@ -177,9 +149,6 @@ public class VirtualFieldService {
         );
     }
     
-    /**
-     * 构建缓存键
-     */
     private String buildCacheKey(String tableName, String sourceField, Object value) {
         return String.format("virtual_field:%s:%s:%s", tableName, sourceField, value);
     }

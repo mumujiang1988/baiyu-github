@@ -1,7 +1,7 @@
 /**
- * 字典数据全局管理器 - 单例模式
+ * Dictionary Data Global Manager - Singleton Pattern
  * @module views/erp/utils/DictionaryManager
- * @description 负责页面初始化时一次性加载全部字典，并提供缓存和访问接口
+ * @description Responsible for loading all dictionaries during page initialization, providing cache and access interfaces
  * 
  * @author JMH
  * @date 2026-03-27
@@ -15,33 +15,33 @@ class DictionaryManager {
       return DictionaryManager.instance
     }
     
-    // 全部字典数据缓存
+    // All dictionary data cache
     this.allDictData = null
-    // 加载状态标记
+    // Loading status flag
     this.isLoading = false
-    // 加载完成的 Promise（用于等待）
+    // Load completion Promise (for waiting)
     this.loadPromise = null
     
     DictionaryManager.instance = this
   }
   
   /**
-   * 一次性加载全部字典数据（推荐）
-   * @param {boolean} forceReload - 是否强制重新加载
+   * Load all dictionary data at once (recommended)
+   * @param {boolean} forceReload - Force reload
    * @returns {Promise<Object>}
    */
   async loadAll(forceReload = false) {
-    // 如果已加载完成，直接返回
+    // If already loaded, return directly
     if (this.allDictData && !forceReload) {
       return this.allDictData
     }
     
-    // 如果正在加载中，等待完成
+    // If loading, wait for completion
     if (this.isLoading && this.loadPromise) {
       return this.loadPromise
     }
     
-    // 开始加载
+    // Start loading
     this.isLoading = true
     this.loadPromise = (async () => {
       try {
@@ -54,34 +54,34 @@ class DictionaryManager {
         if (response.code === 200 || response.errorCode === 0) {
           result = response.data || response
         } else {
-          throw new Error(`加载失败：${response.msg || '未知错误'}`)
+          throw new Error(`Load failed: ${response.msg || 'Unknown error'}`)
         }
         
-        // 合并两段数据
+        // Merge two segments of data
         const dictTypeList = result.dictTypeList || []
         const dictDataList = result.dictDataList || []
         
-        // 按类型分组存储
+        // Group by type
         const groupedDicts = {}
         
-        // ⚠️ 不再将 dictTypeList 放入结果中，仅使用 dictDataList
-        // 原因：dictTypeList 是字典类型定义，不是实际的字典数据
-        // 例如：{ label: '销售人员', value: 'salespersons', type: 'salespersons' } 不应该出现在下拉选项中
+        // ⚠️ No longer put dictTypeList in result, only use dictDataList
+        // Reason: dictTypeList is dictionary type definition, not actual dictionary data
+        // Example: { label: '销售人员', value: 'salespersons', type: 'salespersons' } should not appear in dropdown options
         
-        // 只处理字典数据列表
+        // Only process dictionary data list
         dictDataList.forEach(item => {
           const type = item.type
           if (!groupedDicts[type]) {
             groupedDicts[type] = []
           }
-          // 避免重复
+          // Avoid duplicates
           const exists = groupedDicts[type].some(d => d.value === item.value)
           if (!exists) {
             groupedDicts[type].push(item)
           }
         })
         
-        // 缓存结果
+        // Cache result
         this.allDictData = groupedDicts
         
         return groupedDicts
@@ -99,8 +99,8 @@ class DictionaryManager {
   }
   
   /**
-   * 获取指定类型的字典
-   * @param {string} dictType - 字典类型
+   * Get dictionary by type
+   * @param {string} dictType - Dictionary type
    * @returns {Array}
    */
   getDict(dictType) {
@@ -117,24 +117,24 @@ class DictionaryManager {
   }
   
   /**
-   * 获取字典选项（统一从后端加载）
-   * @param {string} dictName - 字典名称
+   * Get dictionary options (uniformly loaded from backend)
+   * @param {string} dictName - Dictionary name
    * @returns {Array}
    */
   getDictOptions(dictName) {
-    // 统一从后端加载，不再支持静态配置
+    // Uniformly loaded from backend, no longer support static config
     return this.getDict(dictName)
   }
   
   /**
-   * 清除缓存
+   * Clear cache
    */
   clear() {
     this.allDictData = null
   }
   
   /**
-   * 获取缓存状态
+   * Get cache status
    * @returns {Object}
    */
   getStatus() {
@@ -147,24 +147,24 @@ class DictionaryManager {
   }
 }
 
-// 导出单例
+// Export singleton
 const manager = new DictionaryManager()
 
-// ==================== 调试工具（全局暴露） ====================
+// ==================== Debug Tools (global exposure) ====================
 if (typeof window !== 'undefined') {
-  // 检查字典状态
+  // Check dictionary status
   window.checkDictManager = () => {
     const status = manager.getStatus()
     return status
   }
   
-  // 获取单个字典
+  // Get single dictionary
   window.getDict = (dictType) => {
     const dict = manager.getDict(dictType)
     return dict
   }
   
-  // 重新加载
+  // Reload all
   window.reloadAllDicts = async () => {
     manager.clear()
     await manager.loadAll(true)

@@ -19,13 +19,6 @@ import java.util.Map;
 @Component("erpFormValidationEngine")
 public class FormValidationEngine {
 
-    /**
-     * 根据配置验证表单数据
-     * 
-     * @param formData 表单数据
-     * @param validationConfig 验证配置
-     * @return 验证结果
-     */
     @SuppressWarnings("unchecked")
     public ValidationResult validate(Map<String, Object> formData, Map<String, Object> validationConfig) {
         ValidationResult result = new ValidationResult();
@@ -71,13 +64,8 @@ public class FormValidationEngine {
         return result;
     }
 
-    /**
-     * 验证单个规则
-     */
     private boolean validateRule(String field, Object value, String ruleType, Map<String, Object> rule) {
-        // 空值处理
         if (value == null || StringUtils.isEmpty(value.toString())) {
-            // 如果是必填规则，直接返回 false
             return "required".equals(ruleType);
         }
 
@@ -123,25 +111,16 @@ public class FormValidationEngine {
         }
     }
 
-    /**
-     * 验证邮箱格式
-     */
     private boolean isValidEmail(String email) {
         String regex = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         return email.matches(regex);
     }
 
-    /**
-     * 验证手机号格式 (中国大陆)
-     */
     private boolean isValidPhone(String phone) {
         String regex = "^1[3-9]\\d{9}$";
         return phone.matches(regex);
     }
 
-    /**
-     * 判断是否为数字
-     */
     private boolean isNumeric(String str) {
         try {
             Double.parseDouble(str);
@@ -151,9 +130,6 @@ public class FormValidationEngine {
         }
     }
 
-    /**
-     * 判断是否为整数
-     */
     private boolean isInteger(String str) {
         try {
             Integer.parseInt(str);
@@ -163,9 +139,6 @@ public class FormValidationEngine {
         }
     }
 
-    /**
-     * 验证最小值
-     */
     private boolean validateMin(Object value, Map<String, Object> rule) {
         Object minObj = rule.get("value");
         if (minObj == null) {
@@ -179,9 +152,6 @@ public class FormValidationEngine {
         return value.toString().compareTo(minObj.toString()) >= 0;
     }
 
-    /**
-     * 验证最大值
-     */
     private boolean validateMax(Object value, Map<String, Object> rule) {
         Object maxObj = rule.get("value");
         if (maxObj == null) {
@@ -195,9 +165,6 @@ public class FormValidationEngine {
         return value.toString().compareTo(maxObj.toString()) <= 0;
     }
 
-    /**
-     * 验证最小长度
-     */
     private boolean validateMinLength(String strValue, Map<String, Object> rule) {
         Object minLenObj = rule.get("value");
         if (minLenObj == null) {
@@ -208,9 +175,6 @@ public class FormValidationEngine {
         return strValue.length() >= minLen;
     }
 
-    /**
-     * 验证最大长度
-     */
     private boolean validateMaxLength(String strValue, Map<String, Object> rule) {
         Object maxLenObj = rule.get("value");
         if (maxLenObj == null) {
@@ -221,9 +185,6 @@ public class FormValidationEngine {
         return strValue.length() <= maxLen;
     }
 
-    /**
-     * 验证正则表达式
-     */
     private boolean validatePattern(String strValue, Map<String, Object> rule) {
         Object patternObj = rule.get("pattern");
         if (patternObj == null) {
@@ -234,9 +195,6 @@ public class FormValidationEngine {
         return strValue.matches(regex);
     }
 
-    /**
-     * 验证范围
-     */
     private boolean validateRange(Object value, Map<String, Object> rule) {
         Object minObj = rule.get("min");
         Object maxObj = rule.get("max");

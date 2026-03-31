@@ -1,20 +1,16 @@
 <template>
   <div class="app-container">
-    <!-- 字典加载中提示 -->
     <div v-if="!dictLoaded" class="dict-loading-container">
       <el-icon class="is-loading" :size="40"><Loading /></el-icon>
       <p>字典数据加载中...</p>
     </div>
     
-    <!-- 搜索区域 -->
     <el-card shadow="never" class="search-card" v-else-if="parsedConfig.search?.showSearch">
-      <!-- 页面标题 -->
       <div class="page-header" v-if="pageTitle">
         <el-icon :size="20" v-if="parsedConfig.page?.icon"><component :is="parsedConfig.page.icon" /></el-icon>
         <span class="page-title">{{ pageTitle }}</span>
       </div>
       
-      <!-- 第一排：操作按钮 + 调试按钮 -->
       <div class="toolbar-row" v-if="leftToolbarActions.length > 0">
         <el-space wrap>
           <el-button
@@ -31,12 +27,9 @@
         </el-space>
       </div>
       
-      <!-- 第二排：查询条件和查询按钮 -->
       <el-form :model="queryParams" ref="queryRef" :inline="true" label-width="70px" size="default" class="search-form">
-        <!-- 动态渲染查询字段 -->
         <template v-for="field in parsedConfig.search?.fields" :key="field.field">
           <el-form-item :label="field.label" :prop="field.field">
-            <!-- 日期范围选择器 -->
             <el-date-picker
               v-if="field.component === 'daterange'"
               v-model="dateRange"
@@ -49,7 +42,6 @@
               @change="handleQuery"
             />
             
-            <!-- 单个日期选择器 -->
             <el-date-picker
               v-else-if="field.component === 'date'"
               v-model="queryParams[field.field]"
@@ -61,7 +53,6 @@
               @change="handleQuery"
             />
             
-            <!-- 普通输入框 -->
             <el-input
               v-else-if="field.component === 'input'"
               v-model="queryParams[field.field]"
@@ -75,7 +66,6 @@
               </template>
             </el-input>
             
-            <!-- 下拉选择框 -->
             <el-select
               v-else-if="field.component === 'select'"
               v-model="queryParams[field.field]"
@@ -94,7 +84,6 @@
           </el-form-item>
         </template>
         
-        <!-- 查询和重置按钮 -->
         <el-form-item>
           <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -102,7 +91,6 @@
       </el-form>
     </el-card>
 
-    <!-- 表格区域 - 字典加载完成后才渲染 -->
     <el-card shadow="never" class="table-card" v-if="dictLoaded">
       <div class="table-wrapper">
         <el-table
@@ -116,9 +104,7 @@
           @selection-change="handleSelectionChange"
           @row-click="handleRowClick"
         >
-        <!-- 动态渲染列 -->
         <template v-for="(column, index) in visibleColumns" :key="index">
-          <!-- 选择列 -->
           <el-table-column
             v-if="column.type === 'selection'"
             :type="column.type"
@@ -127,7 +113,6 @@
             :resizable="column.resizable"
           />
           
-          <!-- 展开列 - 改为操作列 -->
           <el-table-column
             v-else-if="column.type === 'expand'"
             :width="column.width"
@@ -146,10 +131,9 @@
               </el-button>
             </template>
           </el-table-column>
-          
-          <!-- 普通列 -->
+                    
           <el-table-column
-            v-else
+            v-else"
             :prop="column.prop"
             :label="column.label"
             :width="column.width"
@@ -161,7 +145,6 @@
             :resizable="column.resizable"
           >
             <template #default="scope">
-              <!-- 标签渲染 -->
               <el-tag
                 v-if="column.renderType === 'tag'"
                 :type="getTagConfig(scope.row[column.prop], column.dictionary).type"
@@ -171,7 +154,6 @@
                 {{ getTagConfig(scope.row[column.prop], column.dictionary).label }}
               </el-tag>
               
-              <!-- 链接渲染 -->
               <el-link
                 v-else-if="column.renderType === 'link'"
                 type="primary"
@@ -180,32 +162,26 @@
                 {{ scope.row[column.prop] }}
               </el-link>
               
-              <!-- 字典文本渲染 (带 dictionary 属性的 text 类型) -->
               <span v-else-if="column.renderType === 'text' && column.dictionary">
                 {{ getDictLabel(scope.row[column.prop], column.dictionary) }}
               </span>
               
-              <!-- 货币渲染 -->
               <span v-else-if="column.renderType === 'currency'">
                 {{ formatCurrency(scope.row[column.prop], column.precision) }}
               </span>
               
-              <!-- 日期渲染 -->
               <span v-else-if="column.renderType === 'date'">
                 {{ formatDate(scope.row[column.prop], column.format) }}
               </span>
               
-              <!-- 日期时间渲染 -->
               <span v-else-if="column.renderType === 'datetime'">
                 {{ formatDateTime(scope.row[column.prop], column.format) }}
               </span>
               
-              <!-- 百分比渲染 -->
               <span v-else-if="column.renderType === 'percent'">
                 {{ formatPercent(scope.row[column.prop], column.precision) }}
               </span>
               
-              <!-- 默认文本 -->
               <span v-else>
                 {{ scope.row[column.prop] ?? '-' }}
               </span>
@@ -215,7 +191,6 @@
         </el-table>
       </div>
       
-      <!-- 分页 -->
       <div class="pagination-wrapper">
         <el-pagination
           v-show="total > 0"
@@ -231,7 +206,6 @@
       </div>
     </el-card>
 
-    <!-- 编辑对话框 -->
     <el-dialog
       :title="dialogTitle"
       v-model="dialogVisible"
@@ -242,7 +216,6 @@
     >
       <el-form :model="formData" :rules="formRules" ref="formRef" :label-width="parsedConfig.form?.labelWidth || '120px'">
         <el-scrollbar max-height="65vh">
-          <!-- 动态渲染表单分区 -->
           <el-card
             v-for="(section, index) in parsedConfig.form?.sections || []"
             :key="index"
@@ -257,14 +230,12 @@
             </template>
             
             <el-row :gutter="20">
-              <!-- 动态渲染表单字段 -->
               <el-col
                 v-for="field in section.fields"
                 :key="field.field"
                 :span="field.span || (24 / section.columns)"
               >
                 <el-form-item :label="field.label" :prop="field.field">
-                  <!-- 输入框 -->
                   <el-input
                     v-if="field.component === 'input'"
                     v-model="formData[field.field]"
@@ -272,7 +243,6 @@
                     clearable
                   />
                   
-                  <!-- 日期选择器 -->
                   <el-date-picker
                     v-else-if="['date', 'datetime'].includes(field.component)"
                     v-model="formData[field.field]"
@@ -282,7 +252,6 @@
                     style="width: 100%"
                   />
                   
-                  <!-- 数字输入框 -->
                   <el-input-number
                     v-else-if="field.component === 'input-number'"
                     v-model="formData[field.field]"
@@ -290,7 +259,6 @@
                     style="width: 100%"
                   />
                   
-                  <!-- 下拉选择框 -->
                   <el-select
                     v-else-if="field.component === 'select'"
                     v-model="formData[field.field]"
@@ -314,7 +282,6 @@
             </el-row>
           </el-card>
           
-          <!-- 页签形式的明细和成本表格 -->
           <el-card
             v-if="parsedConfig.form?.formTabs?.enabled"
             shadow="never"
@@ -327,7 +294,6 @@
                 :label="tab.label"
                 :name="tab.name"
               >
-                <!-- 明细表格页签 -->
                 <div v-if="tab.name === 'entry' && tab.table" class="tab-pane-content">
                   <div class="tab-pane-toolbar">
                     <el-button
@@ -400,7 +366,6 @@
                   </el-table>
                 </div>
                 
-                <!-- 成本表单页签 -->
                 <div v-else-if="tab.name === 'cost' && tab.type === 'form'" class="tab-pane-content">
                   <el-row :gutter="20">
                     <el-col
@@ -457,21 +422,17 @@
       </div>
       <div v-else class="drawer-content">
         <el-tabs v-model="detailActiveTab" stretch>
-          <!-- 动态渲染页签 -->
           <el-tab-pane
             v-for="tab in parsedConfig.drawer?.tabs || []"
             :key="tab.name"
             :label="tab.label"
             :name="tab.name"
           >
-            <!-- 🔍 调试：在控制台输出页签配置 -->
             <div style="display:none;" v-text="debugTabConfig(tab)"></div>
             
-            <!-- 表格类型页签 -->
             <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
               <!-- 修复：使用 toRaw 转换 Proxy 为普通对象，确保数据访问正常 -->
               <template v-for="tabKey in [tab.name]" :key="tabKey">
-                <!-- 🔍 渲染前调试 -->
                 <div v-if="!getTabData(tab) || getTabData(tab).length === 0" class="tab-empty">
                   <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
                 </div>
@@ -503,10 +464,8 @@
               </template>
             </div>
             
-            <!-- 表单类型页签（成本表） -->
             <div v-else-if="tab.type === 'form'" class="tab-content">
               <template v-for="tabKey in [tab.name]" :key="tabKey">
-                <!-- 🔍 调试：检查数据和字段 -->
                 <div style="display:none;" v-text="debugFormTabConfig(tab)"></div>
                 
                 <div v-if="!getTabData(tab) || Object.keys(getTabData(tab)).length === 0" class="tab-empty">
@@ -535,9 +494,7 @@
               </template>
             </div>
             
-            <!-- 描述列表类型页签 -->
             <div v-else-if="tab.type === 'descriptions'" class="tab-content">
-              <!-- 修复：使用 getTabData 方法安全获取数据 -->
               <template v-for="tabKey in [tab.name]" :key="tabKey">
                 <div v-if="!getTabData(tab) || (Array.isArray(getTabData(tab)) ? getTabData(tab).length === 0 : Object.keys(getTabData(tab)).length === 0)" class="tab-empty">
                   <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
@@ -576,35 +533,22 @@ import ERPConfigParser from '@/views/erp/utils/ERPConfigParser.mjs'
 import { validateAllTabs, printValidationResult } from '@/views/erp/utils/validateTabConfig.js'
 import dayjs from 'dayjs'
 import request from '@/utils/request'
-// 新增：用于将 Proxy 转换为普通对象
 import { toRaw } from 'vue'
 
-// ==================== 导入公共工具模块 ====================
 import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils'
 import { isSuccessResponse, getResponseData } from '@/views/erp/utils'
 
-// ==================== 统一响应处理工具 ====================
-/**
- * 判断API响应是否成功
- */
 const isResponseSuccess = (response) => {
   return response && (response.code === 200 || response.code === 0 || response.errorCode === 0)
 }
 
-/**
- * 获取响应数据
- */
 const getResponseResult = (response, defaultValue = null) => {
   return isResponseSuccess(response) ? (response.data || defaultValue) : defaultValue
 }
 
-// ==================== 导入多表格查询构建器 ====================
 import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
-
-// ==================== 导入字典管理器（统一入口） ====================
 import dictionaryManager from '@/views/erp/utils/DictionaryManager'
 
-// ==================== 导入引擎 API====================
 import {
   executeDynamicQuery,
   buildQueryConditions,
@@ -636,12 +580,6 @@ import {
   getPushHistory
 } from '../../api/engine/push'
 
-// ==================== API 方法映射 ====================
-/**
- * 获取API方法（基于配置）
- * @param {string} methodType - 方法类型 (get, add, update, delete, audit, unAudit, entry, cost)
- * @returns {Function|null} API方法或null
- */
 const getApiMethod = async (methodType) => {
   const apiConfig = currentConfig.value?.apiConfig
   
@@ -655,7 +593,6 @@ const getApiMethod = async (methodType) => {
     return null
   }
   
-  // 如果配置的是字符串 URL，构建简单的请求方法
   if (typeof methodConfig === 'string') {
     return (data) => request({
       url: methodConfig,
@@ -665,7 +602,6 @@ const getApiMethod = async (methodType) => {
     })
   }
   
-  // 如果配置的是对象，包含 url 和 method
   if (typeof methodConfig === 'object' && methodConfig.url) {
     return (data) => request({
       url: methodConfig.url,
@@ -678,9 +614,7 @@ const getApiMethod = async (methodType) => {
   return null
 }
 
-// ==================== Props 定义（强制在线模式）====================
 const props = defineProps({
-  // 模块编码，用于从数据库加载配置（从路由 query 参数获取）
   moduleCode: {
     type: String,
     required: false,
@@ -688,43 +622,29 @@ const props = defineProps({
   }
 })
 
-// ==================== 路由参数获取 ====================
 const route = useRoute()
-// 优先从路由 query 参数获取，其次从 props 获取，最后使用默认值
 const getModuleCode = () => {
   return route.query.moduleCode || props.moduleCode  
 }
 
-// ==================== 业务模板配置（从 currentConfig 获取）====================
 const BusinessTemplate = computed(() => ({
   apiConfig: currentConfig.value?.apiConfig || {},
   dictionaryConfig: currentConfig.value?.dictionaryConfig || {},
   pageConfig: currentConfig.value?.pageConfig || {}
 }))
 
-
-// ==================== 通用引擎 API（低代码方案）====================
-/**
- * 通用列表查询接口 - 使用 ERP 引擎构建器模式（支持多表格）
- */
 const getList = async () => {
   loading.value = true
   
   try {
-    // 构建主表格的 queryConfig 配置
     const mainQueryConfig = buildMainQueryConfig()
-    
-    // 获取主表表名
     const tableName = getTableNameFromConfig()
-    
-    // 获取 moduleCode
     const moduleCode = currentConfig.value?.moduleCode
     
     if (!moduleCode) {
       throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
     }
     
-    // 使用通用引擎查询接口（构建器模式）
     const response = await request({
       url: '/erp/engine/query/execute',
       method: 'post',
@@ -737,11 +657,9 @@ const getList = async () => {
       }
     })
     
-    // 后端返回的是 R.ok(result),所以数据在 response.data 中
     tableData.value = response.data?.rows || []
     total.value = response.data?.total || 0
     
-    // 并行查询所有子表格数据
     await loadSubTablesData()
     
   } catch (error) {
@@ -752,50 +670,42 @@ const getList = async () => {
 }
 
 /**
- * 构建主表格的 queryConfig 配置（构建器模式）
+ * Build main table queryConfig
  */
 const buildMainQueryConfig = () => {
   const conditions = []
   
-  // 从 searchConfig 构建查询条件
   const searchFields = parsedConfig.search?.fields || []
   
   searchFields.forEach(field => {
     let value = queryParams.value[field.field]
     const operator = field.queryOperator || 'eq'
     
-    // 日期范围特殊处理：从 dateRange 获取值
     if (field.component === 'daterange') {
       if (Array.isArray(dateRange.value) && dateRange.value.length === 2) {
-        // 使用 dateRange 的值
         value = dateRange.value
       } else {
-        // 日期范围为空，跳过该条件
         return
       }
     }
     
-    // 跳过空值
     if (value === undefined || value === null || value === '') {
       return
     }
     
-    // 日期范围已在上面处理过
     if (field.component === 'daterange') {
       conditions.push({
         field: field.field,
-        operator: operator, // between
+        operator: operator,
         value: value
       })
     } else if (Array.isArray(value)) {
-      // IN 条件
       conditions.push({
         field: field.field,
-        operator: operator, // in
+        operator: operator,
         value: value
       })
     } else {
-      // 单个值条件
       conditions.push({
         field: field.field,
         operator: operator,
@@ -804,7 +714,6 @@ const buildMainQueryConfig = () => {
     }
   })
   
-  // 构建排序配置
   const orderBy = parsedConfig.table?.orderBy || [
     { field: 'FCreateDate', direction: 'DESC' }
   ]
@@ -816,127 +725,109 @@ const buildMainQueryConfig = () => {
 }
 
 /**
- * 加载子表格数据（明细表和成本表）
+ * Load sub-table data
  */
 const loadSubTablesData = async () => {
   try {
-    // 检查是否有子表格配置
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     
     if (subTableConfigs.length === 0) {
       return
     }
     
-    // 准备上下文数据（用于替换模板变量）
     const contextData = {
-      billNo: 'PENDING' // 主表格加载后才会知道具体的 billNo，这里先不查询
+      billNo: 'PENDING'
     }
-    
-    // 暂时不查询子表格，等待展开行或详情页时再查询
   } catch (error) {
-    // 忽略错误，继续执行
+    // Ignore errors
   }
 }
 
 /**
- * 查询指定单据的子表格数据（用于展开行或详情页）
- * @param {String} billNo - 单据编号
+ * Query sub-table data by bill number
+ * @param {String} billNo - Bill number
  */
 const loadSubTablesByBillNo = async (billNo) => {
   try {
     const moduleCode = currentConfig.value?.moduleCode
     
     if (!moduleCode) {
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] ❌ 错误：moduleCode 为空')
-      throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
+      console.error('[loadSubTablesByBillNo] Module code is empty')
+      throw new Error('Module code is required for query')
     }
     
-    // 使用多表格查询构建器
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     
     if (subTableConfigs.length === 0) {
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] ⚠️ 警告：未解析到子表格配置')
+      console.error('[loadSubTablesByBillNo] No sub-table configs found')
       return
     }
     
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] 🚀 开始查询子表格，billNo:', billNo)
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] 📋 子表格配置:', JSON.stringify(subTableConfigs, null, 2))
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] 🔧 moduleCode:', moduleCode)
+    console.error('[loadSubTablesByBillNo] Querying sub-tables, billNo:', billNo)
+    console.error('[loadSubTablesByBillNo] Sub-table configs:', JSON.stringify(subTableConfigs, null, 2))
+    console.error('[loadSubTablesByBillNo] moduleCode:', moduleCode)
     
-    // 并行查询所有子表格
     const results = await multiTableQueryBuilder.queryAllSubTables(
       moduleCode,
       subTableConfigs,
-      { billNo } // 上下文数据，用于替换 ${billNo}
+      { billNo }
     )
     
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] ✅ 查询完成，结果:', JSON.stringify(results, null, 2))
+    console.error('[loadSubTablesByBillNo] Query completed')
     
-    // 存储到对应的数据变量中
     if (results.entry) {
       entryList.value = results.entry.data
-      // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 entryList）
       currentDetailRow.value.entryList = results.entry.data
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] 📊 明细表数据已加载:', results.entry.data.length, '条')
-    } else {
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] ⚠️ 警告：查询结果中没有 entry 数据')
+      console.error('[loadSubTablesByBillNo] Entry data loaded:', results.entry.data.length, 'records')
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
-      // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 costData）
       currentDetailRow.value.costData = results.cost.data[0] || {}
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] 💰 成本表数据已加载:', results.cost.data[0] ? '有数据' : '空数据')
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] 💰 成本数据详情:', JSON.stringify(results.cost.data[0], null, 2))
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] 💰 成本数据 keys:', Object.keys(results.cost.data[0] || {}))
-    } else {
-      console.error('[成本暂估页签 - loadSubTablesByBillNo] ⚠️ 警告：查询结果中没有 cost 数据')
+      console.error('[loadSubTablesByBillNo] Cost data loaded')
     }
-    
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] 🎉 全部数据处理完成')
   } catch (error) {
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] ❌ 查询失败:', error.message)
-    console.error('[成本暂估页签 - loadSubTablesByBillNo] 错误堆栈:', error.stack)
-    ElMessage.error('加载子表格数据失败：' + error.message)
+    console.error('[loadSubTablesByBillNo] Query failed:', error.message)
+    ElMessage.error('Failed to load sub-table data: ' + error.message)
   }
 }
 
 /**
- * 从配置获取表名
- * @returns {string} 表名
- * @throws {Error} 当配置中未指定表名时抛出错误
+ * Get table name from config
+ * @returns {string} Table name
+ * @throws {Error} Throw error if table name is not specified in config
  */
 const getTableNameFromConfig = () => {
   const tableName = currentConfig.value?.pageConfig?.tableName
   
   if (!tableName) {
     const moduleCode = getModuleCode()
-    throw new Error(`配置错误：请在 JSON 配置的 pageConfig.tableName 中指定表名`)
+    throw new Error(`Config error: Please specify table name in pageConfig.tableName`)
   }
   
   return tableName
 }
 
-// 配置解析器
+// Config parser
 let parser = null
 
-// 当前使用的配置（仅数据库配置）
+// Current config
 const currentConfig = ref(null)
 
-// 从配置中获取 API 方法映射
+// API methods from config
 const apiMethods = computed(() => currentConfig.value?.apiConfig?.methods || {})
 
-// 从配置中获取业务配置
+// Business config
 const businessConfig = computed(() => currentConfig.value?.businessConfig || {})
 
-// 页面标题
+// Page title
 const pageTitle = computed(() => {
   const titleTemplate = parsedConfig.page?.title || '{entityName}管理'
   const entityName = businessConfig.value.entityName || '数据'
   return titleTemplate.replace(/{entityName}/g, entityName)
 })
 
-// 解析后的配置
+// Parsed config
 const parsedConfig = reactive({
   page: {},
   search: {},
@@ -946,7 +837,7 @@ const parsedConfig = reactive({
   actions: {}
 })
 
-// 状态数据
+// Status data
 const loading = ref(true)
 const submitLoading = ref(false)
 const tableData = ref([])
@@ -965,56 +856,56 @@ const formRef = ref(null)
 const dateRange = ref([])
 const queryRef = ref(null)
 
-// 抽屉相关状态
+// Drawer status
 const drawerVisible = ref(false)
 const drawerTitle = ref('订单详情')
 const drawerLoading = ref(false)
 const currentDetailRow = ref({})
 const detailActiveTab = ref('entry')
 
-// 明细表格和成本数据
+// Entry list and cost data
 const entryList = ref([])
 const costData = ref({})
 
-// 表单页签激活状态
+// Form tab active state
 const formActiveTab = ref('entry')
 
-// 引擎相关配置
+// Engine config
 const engineConfig = reactive({
-  query: null,      // 动态查询引擎配置
-  validation: null, // 表单验证引擎配置
-  approval: null,   // 审批流程引擎配置
-  push: null        // 下推引擎配置
+  query: null,
+  validation: null,
+  approval: null,
+  push: null
 })
 
-// 审批相关状态
+// Approval status
 const approvalStep = ref(null)
 const approvalHistory = ref([])
 const workflowDefinition = ref(null)
 
-// 下推相关状态
+// Push status
 const pushTargets = ref([])
 const pushDialogVisible = ref(false)
 const pushTargetModule = ref('')
 
-// 国家搜索相关
+// Country search
 const nationSearchLoading = ref(false)
 const nationOptions = ref([])
 
-// 字典加载状态
+// Dictionary load status
 const dictLoaded = ref(false)
 
-// 左侧工具栏按钮
+// Left toolbar actions
 const leftToolbarActions = computed(() => {
   return parsedConfig.actions?.toolbar?.filter(a => a.position === 'left') || []
 })
 
-// 可见的列
+// Visible columns
 const visibleColumns = computed(() => {
   return parsedConfig.table?.columns?.filter(col => col.visible !== false) || []
 })
 
-// 表单验证规则
+// Form validation rules
 const formRules = computed(() => {
   const rules = {}
   parsedConfig.form?.sections?.forEach(section => {
@@ -1027,16 +918,13 @@ const formRules = computed(() => {
   return rules
 })
 
-// 初始化配置（强制从数据库加载）
+// Initialize config (force load from database)
 const initConfig = async () => {
   try {
-    // 从路由或 props 获取 moduleCode
     const moduleCode = getModuleCode()
     
-    // 从数据库加载配置
     await loadDatabaseConfig(moduleCode)
     
-    // 解析配置
     parsedConfig.page = parser.parsePageConfig()
     parsedConfig.search = parser.parseSearchForm()
     parsedConfig.table = parser.parseTableColumns()
@@ -1044,26 +932,18 @@ const initConfig = async () => {
     parsedConfig.drawer = parser.parseDrawerConfig()
     parsedConfig.actions = parser.parseActions()
     
-    // 增强：在解析表单配置时标记必填字典
     markRequiredDictionaries()
-    
-    //  构建器模式：无需单独加载字典，在 preloadDictionaries 中统一处理
   } catch (error) {
-    ElMessage.error(`加载配置失败：${error.message}`)
+    ElMessage.error(`Failed to load config: ${error.message}`)
     throw error
   }
 }
 
-/**
- * 标记必填字典（用于后续验证）
- */
 const markRequiredDictionaries = () => {
   const requiredDicts = new Set()
   
-  // 遍历表单配置中的所有字段
   parsedConfig.form?.sections?.forEach(section => {
     section.fields.forEach(field => {
-      // 必填字段且有字典配置
       if (field.required && field.dictionary) {
         field.dictRequired = true
         requiredDicts.add(field.dictionary)
@@ -1071,7 +951,6 @@ const markRequiredDictionaries = () => {
     })
   })
   
-  // 遍历搜索表单中的所有字段
   parsedConfig.search?.fields?.forEach(field => {
     if (field.required && field.dictionary) {
       field.dictRequired = true
@@ -1079,76 +958,46 @@ const markRequiredDictionaries = () => {
     }
   })
   
-  // 保存必填字典列表（供后续验证使用）
   window._erpRequiredDicts = requiredDicts
 }
 
-/**
- * 从数据库加载配置（无降级方案）
- * @param {string} moduleCode - 模块编码
- */
 const loadDatabaseConfig = async (moduleCode) => {
   try {
-    // 使用 ERPConfigParser 的静态方法加载（带缓存）
     const configContent = await ERPConfigParser.loadFromDatabase(moduleCode)
     
     if (!configContent) {
-      throw new Error(`未找到模块 [${moduleCode}] 的配置`)
+      throw new Error(`Module [${moduleCode}] config not found`)
     }
     
-    // 更新当前配置
     currentConfig.value = configContent
     
-    // 创建配置解析器
     parser = new ERPConfigParser(configContent)
   } catch (error) {
-    throw new Error(`无法加载配置：${error.message}`)
+    throw new Error(`Failed to load config: ${error.message}`)
   }
 }
 
-/**
- * 获取字典选项（优化版 - 统一使用 DictionaryManager）
- * 
- * 加载策略:
- * 1. 国家字典特殊处理（远程搜索）
- * 2. 其他字典全部从 DictionaryManager 获取
- * 3. 不再支持静态配置（确保数据一致性）
- * 
- * @param {string} dictName - 字典名称
- * @param {Array} staticOptions - 静态配置（已废弃，传入也会被忽略）
- * @param {boolean} required - 是否必填字典（仅用于警告提示）
- * @returns {Array} 字典选项数组
- */
 const getDictOptions = (dictName, staticOptions = null, required = false) => {
-  // 特殊情况 1: 国家字典（远程搜索）
   if (dictName === 'nation') {
     return nationOptions.value
   }
   
-  // 特殊情况 2: 静态配置（已废弃，仅保留兼容性警告）
   if (staticOptions && Array.isArray(staticOptions)) {
-    // 为了向后兼容，暂时返回静态配置，但会在控制台警告
-    // TODO: 未来版本直接忽略 staticOptions 参数
   }
   
-  // 正常情况：从 DictionaryManager 获取
   const dataFromManager = dictionaryManager.getDictOptions(dictName)
   
   if (!dataFromManager || dataFromManager.length === 0) {
-    // 必填字典缺失时警告
     if (required) {
-      // 不在控制台输出警告，避免干扰用户
     }
     return []
   }
   
-  // 销售人员字典特殊处理：在前端组合人名和部门
   if (dictName === 'salespersons') {
     return dataFromManager.map(option => {
-      const nickName = option.label || ''  // label 就是人名
+      const nickName = option.label || ''
       const departmentName = option.departmentName || ''
       
-      // 组合显示标签：人名 (部门)
       const label = departmentName ? `${nickName}(${departmentName})` : nickName
       
       return {
@@ -1161,7 +1010,6 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   return dataFromManager
 }
 
-// 获取按钮禁用状态
 const getButtonDisabled = (disabledKey) => {
   if (!disabledKey) return false
   if (disabledKey === 'single') return single.value
@@ -1176,11 +1024,9 @@ const getTagConfig = (value, dictName) => {
     return String(item.value) === String(value)
   })
   
-  // Element Plus Tag 组件支持的 type 值
   const validTypes = ['success', 'info', 'warning', 'danger', '']
   let tagType = option?.type || 'info'
   
-  // 如果不是有效的 type 值，则使用 info
   if (!validTypes.includes(tagType)) {
     tagType = 'info'
   }
@@ -1191,7 +1037,6 @@ const getTagConfig = (value, dictName) => {
   }
 }
 
-// 根据字典值和字典名称获取对应的标签文本（用于表格列显示）
 const getDictLabel = (value, dictName) => {
   if (!dictName || !value && value !== 0) return value || '-'
   const dict = getDictOptions(dictName)
@@ -1199,16 +1044,13 @@ const getDictLabel = (value, dictName) => {
   return option ? option.label : value
 }
 
-// 处理查询（添加防抖和重复提交控制）
 let queryTimer = null
 const handleQuery = () => {
-  // 如果正在加载中，直接返回
   if (loading.value) {
     ElMessage.warning('数据正在处理，请勿重复提交')
     return
   }
   
-  // 清除之前的定时器
   if (queryTimer) {
     clearTimeout(queryTimer)
   }
@@ -1222,38 +1064,35 @@ const handleQuery = () => {
   }
   queryParams.value.pageNum = 1
   
-  // 使用 300ms 防抖
   queryTimer = setTimeout(() => {
     getList()
   }, 300)
 }
 
-// 初始化日期范围（支持配置中的 defaultValue）
 const initDateRange = () => {
   const searchFields = parsedConfig.search?.fields || []
   
-  // 查找 beginDate 和 endDate 字段
   const beginDateField = searchFields.find(f => f.field === 'beginDate')
   const endDateField = searchFields.find(f => f.field === 'endDate')
   
   let beginDateValue = null
   let endDateValue = null
   
-  // 处理开始日期
+  // Handle begin date
   if (beginDateField && beginDateField.defaultValue) {
     beginDateValue = parseDynamicDate(beginDateField.defaultValue)
   }
   
-  // 处理结束日期
+  // Handle end date
   if (endDateField && endDateField.defaultValue) {
     endDateValue = parseDynamicDate(endDateField.defaultValue)
   }
   
-  // 如果配置了默认值，使用配置的值；否则使用默认的"本月 1 号到今天"
+  // Use configured default values if available, otherwise use "current month 1st to today"
   if (beginDateValue && endDateValue) {
     dateRange.value = [beginDateValue, endDateValue]
   } else {
-    // 降级处理：本月 1 号到今天
+    // Fallback: 1st of current month to today
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     dateRange.value = [
@@ -1267,46 +1106,46 @@ const initDateRange = () => {
 }
 
 /**
- * 解析动态日期值
- * @param {string} value - 日期值，可以是：固定日期 "2010-01-01"、动态值 "today"、"yesterday"、"monthStart" 等
- * @returns {string|null} - 格式化后的日期字符串 YYYY-MM-DD
+ * Parse dynamic date value
+ * @param {string} value - Date value, can be: fixed date "2010-01-01", dynamic value "today", "yesterday", "monthStart", etc.
+ * @returns {string|null} - Formatted date string YYYY-MM-DD
  */
 const parseDynamicDate = (value) => {
   if (!value) return null
   
   const today = new Date()
   
-  // 动态值：today
+  // Dynamic value: today
   if (value === 'today') {
     return dayjs(today).format('YYYY-MM-DD')
   }
   
-  // 动态值：yesterday
+  // Dynamic value: yesterday
   if (value === 'yesterday') {
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
     return dayjs(yesterday).format('YYYY-MM-DD')
   }
   
-  // 动态值：monthStart (本月 1 号)
+  // Dynamic value: monthStart (1st of current month)
   if (value === 'monthStart') {
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
     return dayjs(monthStart).format('YYYY-MM-DD')
   }
   
-  // 动态值：yearStart (本年 1 月 1 日)
+  // Dynamic value: yearStart (Jan 1st of current year)
   if (value === 'yearStart') {
     const yearStart = new Date(today.getFullYear(), 0, 1)
     return dayjs(yearStart).format('YYYY-MM-DD')
   }
   
-  // 固定日期：尝试解析为 YYYY-MM-DD 格式
+  // Fixed date: try to parse as YYYY-MM-DD format
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/
   if (dateRegex.test(value)) {
     return value
   }
   
-  // 其他情况，尝试直接返回（可能是 dayjs 可解析的格式）
+  // Other cases, try to parse directly (may be a dayjs-parseable format)
   const parsed = dayjs(value)
   if (parsed.isValid()) {
     return parsed.format('YYYY-MM-DD')
@@ -1315,11 +1154,11 @@ const parseDynamicDate = (value) => {
   return null
 }
 
-// 重置查询（添加重复提交控制）
+// Reset query (with duplicate submission control)
 const resetQuery = () => {
-  // 如果正在加载中，直接返回
+  // Return if loading
   if (loading.value) {
-    ElMessage.warning('数据正在处理，请勿重复提交')
+    ElMessage.warning('Data is being processed, please do not submit repeatedly')
     return
   }
   
@@ -1328,9 +1167,9 @@ const resetQuery = () => {
   handleQuery()
 }
 
-// 处理分页（添加重复提交控制）
+// Handle page size change (with duplicate submission control)
 const handlePageSizeChange = (newSize) => {
-  // 如果正在加载中，直接返回
+  // Return if loading
   if (loading.value) return
   
   queryParams.value.pageSize = newSize
@@ -1338,37 +1177,32 @@ const handlePageSizeChange = (newSize) => {
 }
 
 const handlePageChange = (newPage) => {
-  // 如果正在加载中，直接返回
+  // Return if loading
   if (loading.value) return
   
   queryParams.value.pageNum = newPage
   getList()
 }
 
-// 处理选择变化
+// Handle selection change
 const handleSelectionChange = (selection) => {
   ids.value = selection.map(item => item.id)
   single.value = selection.length !== 1
   multiple.value = !selection.length
 }
 
-// 处理表格行点击
-const handleRowClick = (row) => {
-  // 可以在这里添加行点击逻辑
+// Handle row click
+const handleRowClick = (row) => { 
 }
-
-// 查看详情 - 使用配置中的标题
+ 
 const handleViewDetail = async (row) => {
   drawerVisible.value = true
-  
-  // 从配置中获取单据编号字段名（完全配置化，无转换）
+   
   const billNoField = parsedConfig.page?.billNoField || 'FBillNo'
-  
-  // 使用配置化的抽屉标题模板
+   
   const titleTemplate = businessConfig.value.drawerTitle || '{entityName}详情 - {billNo}'
   const entityName = businessConfig.value.entityName || '订单'
-  
-  // 动态替换模板变量（支持任意字段名）
+   
   drawerTitle.value = titleTemplate
     .replace(/{entityName}/g, entityName)
     .replace(/{billNo}/g, row[billNoField] || row.FBillNo || '')
@@ -1378,21 +1212,18 @@ const handleViewDetail = async (row) => {
   
   console.error('[成本暂估页签 - handleViewDetail] 开始加载详情页，billNo:', row[billNoField] || row.FBillNo)
   
-  try {
-    // 使用新的多表格查询方法
+  try { 
     const billNoValue = row[billNoField] || row.FBillNo
     
     console.error('[成本暂估页签 - handleViewDetail] billNoValue:', billNoValue)
     
-    if (billNoValue) {
-      // 查询子表格数据（明细表和成本表）
+    if (billNoValue) { 
       console.error('[成本暂估页签 - handleViewDetail] 调用 loadSubTablesByBillNo')
       await loadSubTablesByBillNo(billNoValue)
     } else {
       console.error('[成本暂估页签 - handleViewDetail] ⚠️ 警告：billNoValue 为空')
     }
-    
-    // 设置默认激活的标签
+     
     const hasEntryData = entryList.value && entryList.value.length > 0
     const hasCostData = costData.value && Object.keys(costData.value).length > 0
     console.error('[成本暂估页签 - handleViewDetail] 数据检查 - hasEntryData:', hasEntryData, 'hasCostData:', hasCostData)
@@ -1404,34 +1235,33 @@ const handleViewDetail = async (row) => {
     drawerLoading.value = false
   }
 }
-
-// 关闭抽屉
+ 
 const handleDrawerClose = (done) => {
   currentDetailRow.value = {}
   done()
 }
 
 /**
- * 获取字段值（支持不区分大小写的字段名匹配）
- * @param {Object} row - 数据行对象
- * @param {String} fieldName - 字段名（可能为大写）
- * @returns {Any} 字段值
+ * Get field value (supports case-insensitive field name matching)
+ * @param {Object} row - Data row object
+ * @param {String} fieldName - Field name (may be uppercase)
+ * @returns {Any} Field value
  */
 const getFieldValue = (row, fieldName) => {
   if (!row || !fieldName) return undefined
   
-  // 1. 先尝试精确匹配
+  // Try exact match first
   if (row.hasOwnProperty(fieldName)) {
     return row[fieldName]
   }
   
-  // 2. 尝试小写匹配（数据库字段名通常为小写）
+  // Try lowercase match (database field names are usually lowercase)
   const lowerFieldName = fieldName.toLowerCase()
   if (row.hasOwnProperty(lowerFieldName)) {
     return row[lowerFieldName]
   }
   
-  // 3. 尝试在 row 的所有 key 中查找（忽略大小写）
+  // Try case-insensitive search in all row keys
   const rowKeys = Object.keys(row)
   const matchedKey = rowKeys.find(key => key.toLowerCase() === fieldName.toLowerCase())
   if (matchedKey) {
@@ -1442,9 +1272,9 @@ const getFieldValue = (row, fieldName) => {
 }
 
 /**
- * 获取页签数据（修复 Proxy 访问问题）
- * @param {Object} tab - 页签配置对象
- * @returns {Array|Object} 页签对应的数据
+ * Get tab data (fix Proxy access issue)
+ * @param {Object} tab - Tab config object
+ * @returns {Array|Object} Data for the tab
  */
 const getTabData = (tab) => {
   if (!tab || !tab.dataField) {
@@ -1453,31 +1283,31 @@ const getTabData = (tab) => {
   
   const data = currentDetailRow.value[tab.dataField]
   
-  // 成本表特殊处理，添加调试日志
+  // Special handling for cost tab with debug logs
   if (tab.name === 'cost') {
-    console.error('[成本暂估页签 - getTabData] tab:', tab.name, 'dataField:', tab.dataField, 'data:', JSON.stringify(data, null, 2))
+    console.error('[getTabData] tab:', tab.name, 'dataField:', tab.dataField, 'data:', JSON.stringify(data, null, 2))
   }
   
-  // 如果是数组，直接返回
+  // Return directly if array
   if (Array.isArray(data)) {
     return data
   }
   
-  // 如果是对象（成本表），也返回
+  // Return if object (cost tab)
   if (data && typeof data === 'object') {
     return data
   }
   
-  // 其他情况返回空数组
+  // Return empty array for other cases
   return []
 }
 
 /**
- * 🔍 新增：自动校验详情页签配置（开发环境启用）
+ * Validate drawer tabs (enabled in development environment)
  */
 const validateDrawerTabs = () => {
   if (process.env.NODE_ENV !== 'development') {
-    return // 仅开发环境启用
+    return
   }
   
   const tabs = parsedConfig.drawer?.tabs || []
@@ -1488,17 +1318,16 @@ const validateDrawerTabs = () => {
   const validationResult = validateAllTabs(tabs)
   printValidationResult(validationResult)
   
-  // 如果有错误，在控制台显示警告
   if (!validationResult.valid) {
-    console.warn('💡 [配置建议] 请检查 detail_config 的 JSON 配置，确保字段路径正确。参考文档：DOC/公共模块文档/落地 sql/销售订单初始化配置.sql')
+    console.warn('[Config Suggestion] Please check detail_config JSON config, ensure field paths are correct. Refer to: DOC/公共模块文档/落地 sql/销售订单初始化配置.sql')
   }
 }
 
 /**
- * 调试页签配置（在模板中调用）
+ * Debug tab config (called in template)
  */
 const debugTabConfig = (tab) => {
-  console.error('📑 [详情页 - 页签配置]', {
+  console.error('📑 [Drawer - Tab Config]', {
     name: tab.name,
     label: tab.label,
     type: tab.type,
@@ -1507,15 +1336,15 @@ const debugTabConfig = (tab) => {
     fieldsCount: tab.fields?.length || 0,
     fullConfig: tab
   })
-  return '' // 不显示任何内容
+  return ''
 }
 
 /**
- * 调试表单页签配置（在模板中调用）
+ * Debug form tab config (called in template)
  */
 const debugFormTabConfig = (tab) => {
   const formFields = getFormFields(tab)
-  console.error('💰 [成本暂估页签 - 字段检查]', {
+  console.error('💰 [Cost Tab - Field Check]', {
     tabName: tab.name,
     hasFieldsProp: !!tab.fields,
     hasForm: !!tab.form,
@@ -1523,30 +1352,27 @@ const debugFormTabConfig = (tab) => {
     fieldsFromMethod: formFields?.length || 0,
     fields: formFields
   })
-  return '' // 不显示任何内容
+  return ''  
 }
 
 /**
- * 获取表单字段配置（兼容两种配置格式）
- * @param {Object} tab - 页签配置对象
- * @returns {Array} 字段配置数组
+ * Get form field config (compatible with two formats)
+ * @param {Object} tab - Tab config object
+ * @returns {Array} Field config array
  */
 const getFormFields = (tab) => {
-  // 优先从 tab.form.fields 读取（标准格式）
   if (tab.form && Array.isArray(tab.form.fields)) {
     return tab.form.fields
   }
   
-  // 降级：从 tab.fields 读取（兼容旧格式）
   if (Array.isArray(tab.fields)) {
     return tab.fields
   }
   
-  // 最后返回空数组
   return []
 }
 
-// 处理操作
+// Handle action
 const handleAction = (handlerName) => {
   const handlerMap = {
     handleAdd: () => openDialog('add'),
@@ -1562,12 +1388,10 @@ const handleAction = (handlerName) => {
   }
 }
 
-// 打开对话框 - 使用配置中的标题
+// Open dialog - use title from config
 const openDialog = (type) => {
-  // 初始化表单数据为默认值
   formData.value = {}
   
-  // 如果是新增模式，应用配置中的默认值
   if (type === 'add' && parsedConfig.form?.sections) {
     parsedConfig.form.sections.forEach(section => {
       section.fields.forEach(field => {

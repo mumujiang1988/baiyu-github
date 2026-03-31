@@ -7,13 +7,13 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * JDBC 结果集转换工具类
+ * JDBC ResultSet Utility Class
  * 
- * 功能:
- * 1. 类型安全转换
- * 2. 空值处理
- * 3. 时间类型转换
- * 4. Map 辅助方法
+ * Features:
+ * 1. Type-safe conversion
+ * 2. Null value handling
+ * 3. Date/time type conversion
+ * 4. Map helper methods
  * 
  * @author JMH
  * @date 2026-03-30
@@ -21,16 +21,16 @@ import java.util.Map;
 public final class JdbcResultUtils {
     
     private JdbcResultUtils() {
-        // 工具类，禁止实例化
+        // Utility class, prevent instantiation
     }
     
-    // ==================== 基础类型转换 ====================
+    // ==================== Basic Type Conversion ====================
     
     /**
-     * 安全获取 Long 值
+     * Safely get Long value
      * 
-     * @param value 原始值
-     * @return Long 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return Long value, null if conversion failed
      */
     public static Long getLong(Object value) {
         if (value == null) {
@@ -47,10 +47,10 @@ public final class JdbcResultUtils {
     }
     
     /**
-     * 安全获取 Integer 值
+     * Safely get Integer value
      * 
-     * @param value 原始值
-     * @return Integer 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return Integer value, null if conversion failed
      */
     public static Integer getInteger(Object value) {
         if (value == null) {
@@ -67,20 +67,20 @@ public final class JdbcResultUtils {
     }
     
     /**
-     * 安全获取 String 值
+     * Safely get String value
      * 
-     * @param value 原始值
-     * @return String 值，如果为 null 返回 null
+     * @param value Raw value
+     * @return String value, null if value is null
      */
     public static String getString(Object value) {
         return value != null ? value.toString() : null;
     }
     
     /**
-     * 安全获取 Double 值
+     * Safely get Double value
      * 
-     * @param value 原始值
-     * @return Double 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return Double value, null if conversion failed
      */
     public static Double getDouble(Object value) {
         if (value == null) {
@@ -97,10 +97,10 @@ public final class JdbcResultUtils {
     }
     
     /**
-     * 安全获取 BigDecimal 值
+     * Safely get BigDecimal value
      * 
-     * @param value 原始值
-     * @return BigDecimal 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return BigDecimal value, null if conversion failed
      */
     public static BigDecimal getBigDecimal(Object value) {
         if (value == null) {
@@ -117,10 +117,10 @@ public final class JdbcResultUtils {
     }
     
     /**
-     * 安全获取 Boolean 值
+     * Safely get Boolean value
      * 
-     * @param value 原始值
-     * @return Boolean 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return Boolean value, null if conversion failed
      */
     public static Boolean getBoolean(Object value) {
         if (value == null) {
@@ -139,13 +139,13 @@ public final class JdbcResultUtils {
         return null;
     }
     
-    // ==================== 时间类型转换 ====================
+    // ==================== Date/Time Type Conversion ====================
     
     /**
-     * 安全获取 LocalDateTime 值
+     * Safely get LocalDateTime value
      * 
-     * @param value 原始值
-     * @return LocalDateTime 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return LocalDateTime value, null if conversion failed
      */
     public static LocalDateTime getLocalDateTime(Object value) {
         if (value == null) {
@@ -166,10 +166,10 @@ public final class JdbcResultUtils {
     }
     
     /**
-     * 安全获取 Date 值
+     * Safely get Date value
      * 
-     * @param value 原始值
-     * @return Date 值，如果转换失败返回 null
+     * @param value Raw value
+     * @return Date value, null if conversion failed
      */
     public static Date getDate(Object value) {
         if (value == null) {
@@ -186,91 +186,91 @@ public final class JdbcResultUtils {
         return null;
     }
     
-    // ==================== Map 辅助方法 ====================
+    // ==================== Map Helper Methods ====================
     
     /**
-     * 从 Map 中安全获取 Long 值
+     * Safely get Long value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return Long 值
+     * @param map Map data
+     * @param key Key name
+     * @return Long value
      */
     public static Long getLong(Map<String, Object> map, String key) {
         return getLong(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 Integer 值
+     * Safely get Integer value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return Integer 值
+     * @param map Map data
+     * @param key Key name
+     * @return Integer value
      */
     public static Integer getInteger(Map<String, Object> map, String key) {
         return getInteger(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 String 值
+     * Safely get String value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return String 值
+     * @param map Map data
+     * @param key Key name
+     * @return String value
      */
     public static String getString(Map<String, Object> map, String key) {
         return getString(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 Double 值
+     * Safely get Double value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return Double 值
+     * @param map Map data
+     * @param key Key name
+     * @return Double value
      */
     public static Double getDouble(Map<String, Object> map, String key) {
         return getDouble(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 BigDecimal 值
+     * Safely get BigDecimal value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return BigDecimal 值
+     * @param map Map data
+     * @param key Key name
+     * @return BigDecimal value
      */
     public static BigDecimal getBigDecimal(Map<String, Object> map, String key) {
         return getBigDecimal(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 Boolean 值
+     * Safely get Boolean value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return Boolean 值
+     * @param map Map data
+     * @param key Key name
+     * @return Boolean value
      */
     public static Boolean getBoolean(Map<String, Object> map, String key) {
         return getBoolean(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 LocalDateTime 值
+     * Safely get LocalDateTime value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return LocalDateTime 值
+     * @param map Map data
+     * @param key Key name
+     * @return LocalDateTime value
      */
     public static LocalDateTime getLocalDateTime(Map<String, Object> map, String key) {
         return getLocalDateTime(map.get(key));
     }
     
     /**
-     * 从 Map 中安全获取 Date 值
+     * Safely get Date value from Map
      * 
-     * @param map Map 数据
-     * @param key 键名
-     * @return Date 值
+     * @param map Map data
+     * @param key Key name
+     * @return Date value
      */
     public static Date getDate(Map<String, Object> map, String key) {
         return getDate(map.get(key));

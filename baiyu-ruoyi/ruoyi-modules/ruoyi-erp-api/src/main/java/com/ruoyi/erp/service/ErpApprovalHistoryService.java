@@ -5,7 +5,7 @@ import com.ruoyi.erp.domain.vo.ErpApprovalHistoryVo;
 import com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo;
 
 /**
- * ERP 审批历史记录 Service 接口
+ * ERP Approval History Service Interface
  * 
  * @author JMH
  * @date 2026-03-30
@@ -13,19 +13,19 @@ import com.ruoyi.erp.domain.bo.ErpApprovalHistoryBo;
 public interface ErpApprovalHistoryService {
 
     /**
-     * 根据模块编码和单据 ID 查询审批历史
+     * Query approval history by module code and bill ID
      * 
-     * @param moduleCode 模块编码
-     * @param billId 单据 ID
-     * @return 审批历史列表
+     * @param moduleCode Module code
+     * @param billId Bill ID
+     * @return Approval history list
      */
     List<ErpApprovalHistoryVo> selectByModuleAndBillId(String moduleCode, Long billId);
     
     /**
-     * 保存审批历史记录
+     * Save approval history
      * 
-     * @param bo 审批历史业务对象
-     * @return 影响行数
+     * @param bo Approval history business object
+     * @return Affected rows
      */
     int save(ErpApprovalHistoryBo bo);
 }

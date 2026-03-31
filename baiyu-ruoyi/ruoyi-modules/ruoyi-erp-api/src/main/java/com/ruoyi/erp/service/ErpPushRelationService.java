@@ -8,7 +8,7 @@ import com.ruoyi.erp.domain.vo.ErpPushRelationVo;
 import java.util.List;
 
 /**
- * ERP 下推关系配置 Service 业务层接口
+ * ERP Push Relation Config Service Business Layer Interface
  * 
  * @author JMH
  * @date 2026-03-22
@@ -16,68 +16,68 @@ import java.util.List;
 public interface ErpPushRelationService {
 
     /**
-     * 根据 ID 查询下推关系
+     * Query push relation by ID
      *
-     * @param relationId 关系 ID
-     * @return 下推关系信息
+     * @param relationId Relation ID
+     * @return Push relation info
      */
     ErpPushRelationVo selectById(Long relationId);
 
     /**
-     * 查询下推关系列表
+     * Query push relation list
      *
-     * @param bo 下推关系参数
-     * @return 下推关系集合
+     * @param bo Push relation params
+     * @return Push relation collection
      */
     List<ErpPushRelationVo> selectList(ErpPushRelationBo bo);
 
     /**
-     * 分页查询下推关系列表
+     * Page query push relation list
      *
-     * @param bo 下推关系参数
-     * @param pageQuery 分页参数
-     * @return 下推关系分页信息
+     * @param bo Push relation params
+     * @param pageQuery Page params
+     * @return Push relation page info
      */
     TableDataInfo<ErpPushRelationVo> selectPageList(ErpPushRelationBo bo, PageQuery pageQuery);
 
     /**
-     * 新增下推关系
+     * Insert push relation
      *
-     * @param bo 下推关系信息
-     * @return 结果
+     * @param bo Push relation info
+     * @return Result
      */
     int insertByBo(ErpPushRelationBo bo);
 
     /**
-     * 修改下推关系
+     * Update push relation
      *
-     * @param bo 下推关系信息
-     * @return 结果
+     * @param bo Push relation info
+     * @return Result
      */
     int updateByBo(ErpPushRelationBo bo);
 
     /**
-     * 批量删除下推关系
+     * Batch delete push relations
      *
-     * @param relationIds 需要删除的关系 ID 数组
-     * @return 结果
+     * @param relationIds Relation ID array
+     * @return Result
      */
     int deleteByIds(Long[] relationIds);
 
     /**
-     * 删除下推关系
+     * Delete push relation
      *
-     * @param relationId 关系 ID
-     * @return 结果
+     * @param relationId Relation ID
+     * @return Result
      */
     int deleteById(Long relationId);
 
     /**
-     * 获取下推关系配置
+     * Get push relation config
      *
-     * @param sourceModule 源模块编码
-     * @param targetModule 目标模块编码
-     * @return 下推关系配置
+     * @param sourceModule Source module code
+     * @param targetModule Target module code
+     * @return Push relation config
      */
     ErpPushRelationVo getPushRelation(String sourceModule, String targetModule);
 }

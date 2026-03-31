@@ -1,7 +1,7 @@
 /**
- * ERP 字典构建器 - 构建器模式
+ * ERP Dictionary Builder - Builder Pattern
  * @module views/erp/utils/DictionaryBuilder
- * @description 负责字典数据的构建、加载、缓存和搜索
+ * @description Responsible for dictionary data building, loading, caching and searching
  * 
  * @author JMH
  * @date 2026-03-25
@@ -10,7 +10,7 @@
 import request from '@/utils/request'
 
 /**
- * 字典缓存内部类
+ * Dictionary cache internal class
  */
 class DictionaryCache {
   constructor(data, ttl) {
@@ -27,31 +27,29 @@ class DictionaryCache {
 }
 
 /**
- * 字典构建器类
+ * Dictionary builder class
  */
 class DictionaryBuilder {
   /**
-   * 构造函数
-   * @param {string} name - 字典名称
-   * @param {Object} options - 配置选项
+   * Constructor
+   * @param {string} name - Dictionary name
+   * @param {Object} options - Config options
    */
   constructor(name, options = {}) {
     this.name = name
     this.type = options.type || 'static' // static | dynamic | remote
-    this.config = options.config || {}
-    this.ttl = options.ttl || 5 * 60 * 1000 // 默认 5 分钟
     this.cache = null
   }
 
   /**
-   * 构建动态字典（仅支持后端加载）
-   * @param {string} name - 字典名称
-   * @param {Object} config - 配置对象（必须包含 api 字段）
+   * Build dynamic dictionary (only supports backend loading)
+   * @param {string} name - Dictionary name
+   * @param {Object} config - Config object (must contain api field)
    * @returns {DictionaryBuilder}
    */
   static buildDynamic(name, config) {
     if (!config || !config.api) {
-      throw new Error(`字典 "${name}" 的配置必须包含 api 字段，用于从后端加载数据`)
+      throw new Error(`Dictionary "${name}" config must contain api field for loading data from backend`)
     }
     
     const builder = new DictionaryBuilder(name, {
@@ -63,9 +61,9 @@ class DictionaryBuilder {
   }
 
   /**
-   * 构建远程搜索字典
-   * @param {string} name - 字典名称
-   * @param {Object} config - 配置对象
+   * Build remote search dictionary
+   * @param {string} name - Dictionary name
+   * @param {Object} config - Config object
    * @returns {DictionaryBuilder}
    */
   static buildRemoteSearch(name, config) {
@@ -78,12 +76,12 @@ class DictionaryBuilder {
   }
 
   /**
-   * 加载字典数据
-   * @param {Function} loader - 数据加载函数
+   * Load dictionary data
+   * @param {Function} loader - Data load function
    * @returns {Promise<Array>}
    */
   async load(loader) {
-    // 检查缓存是否有效
+    // Check if cache is valid
     if (this.cache && this.cache.data && !this.cache.isExpired()) {
       return this.cache.data
     }
@@ -91,7 +89,7 @@ class DictionaryBuilder {
     try {
       const data = await loader()
       
-      // 更新缓存
+      // Update cache
       this.cache = new DictionaryCache(data, this.ttl)
       
       return data
@@ -104,21 +102,20 @@ class DictionaryBuilder {
   }
 
   /**
-   * 远程搜索字典
-   * @param {string} keyword - 搜索关键词
-   * @param {Function} searcher - 搜索函数
+   * Remote search dictionary
+   * @param {string} keyword - Search keyword
+   * @param {Function} searcher - Search function
    * @returns {Promise<Array>}
    */
   async search(keyword, searcher) {
     if (!this.cache) {
-      console.warn(` 字典不存在：${this.name}`)
       return []
     }
 
     try {
       const data = await searcher(keyword)
       
-      // 更新缓存
+      // Update cache
       this.cache = new DictionaryCache(data, this.ttl)
       
       return data
@@ -128,7 +125,7 @@ class DictionaryBuilder {
   }
 
   /**
-   * 获取字典数据（直接从缓存读取）
+   * Get dictionary data (directly from cache)
    * @returns {Array}
    */
   get() {
@@ -139,7 +136,7 @@ class DictionaryBuilder {
   }
 
   /**
-   * 清除缓存
+   * Clear cache
    */
   clear() {
     if (this.cache) {
@@ -150,7 +147,7 @@ class DictionaryBuilder {
   }
 
   /**
-   * 获取字典状态
+   * Get dictionary status
    * @returns {Object}
    */
   getStatus() {
@@ -169,7 +166,7 @@ class DictionaryBuilder {
 }
 
 /**
- * 字典构建器引擎 - 单例模式
+ * Dictionary builder engine - Singleton pattern
  */
 class DictionaryBuilderEngine {
   constructor() {
@@ -177,15 +174,15 @@ class DictionaryBuilderEngine {
       return DictionaryBuilderEngine.instance
     }
 
-    // 字典注册表
+    // Dictionary registry
     this.registry = new Map()
     DictionaryBuilderEngine.instance = this
   }
 
   /**
-   * 注册字典
-   * @param {string} name - 字典名称
-   * @param {DictionaryBuilder} builder - 字典构建器实例
+   * Register dictionary
+   * @param {string} name - Dictionary name
+   * @param {DictionaryBuilder} builder - Dictionary builder instance
    * @returns {DictionaryBuilderEngine}
    */
   register(name, builder) {
@@ -194,22 +191,22 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 获取字典构建器（增强日志）
-   * @param {string} name - 字典名称
+   * Get dictionary builder
+   * @param {string} name - Dictionary name
    * @returns {DictionaryBuilder|null}
    */
   get(name) {
     const builder = this.registry.get(name)
     if (!builder) {
-      console.error(`[字典引擎] ❌ 字典未注册：${name}`)
+      console.error(`Dictionary not found: ${name}`)
     }
     return builder
   }
 
   /**
-   * 加载字典数据
-   * @param {string} name - 字典名称
-   * @param {Function} loader - 数据加载函数
+   * Load dictionary data
+   * @param {string} name - Dictionary name
+   * @param {Function} loader - Data load function
    * @returns {Promise<Array>}
    */
   async load(name, loader) {
@@ -221,10 +218,10 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 搜索字典
-   * @param {string} name - 字典名称
-   * @param {string} keyword - 搜索关键词
-   * @param {Function} searcher - 搜索函数
+   * Search dictionary
+   * @param {string} name - Dictionary name
+   * @param {string} keyword - Search keyword
+   * @param {Function} searcher - Search function
    * @returns {Promise<Array>}
    */
   async search(name, keyword, searcher) {
@@ -236,8 +233,8 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 获取字典数据(直接从缓存读取)
-   * @param {string} name - 字典名称
+   * Get dictionary data (directly from cache)
+   * @param {string} name - Dictionary name
    * @returns {Array}
    */
   getData(name) {
@@ -249,8 +246,8 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 清除字典缓存
-   * @param {string} name - 字典名称
+   * Clear dictionary cache
+   * @param {string} name - Dictionary name
    */
   clear(name) {
     const builder = this.registry.get(name)
@@ -260,7 +257,7 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 清除所有字典缓存
+   * Clear all dictionary caches
    */
   clearAll() {
     this.registry.forEach((builder, name) => {
@@ -269,7 +266,7 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 获取所有字典状态
+   * Get all dictionary statuses
    * @returns {Object}
    */
   getAllStatus() {
@@ -281,9 +278,9 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 从 JSON 配置批量构建字典（仅支持 dynamic 和 remote 类型）
-   * @param {Object} dictionaryConfig - 字典配置对象
-   * @param {string} moduleCode - 模块编码
+   * Build dictionaries from JSON config (only supports dynamic and remote types)
+   * @param {Object} dictionaryConfig - Dictionary config object
+   * @param {string} moduleCode - Module code
    * @returns {DictionaryBuilderEngine}
    */
   buildFromConfig(dictionaryConfig, moduleCode) {
@@ -300,7 +297,7 @@ class DictionaryBuilderEngine {
       try {
         const { type, config } = dictConfig
         
-        // ❌ 不再支持 static 类型
+        // No longer support static type
         if (type === 'static') {
           errorCount++
           continue
@@ -311,7 +308,7 @@ class DictionaryBuilderEngine {
           const finalConfig = {
             ...builderConfig,
             type: type === 'remote' ? 'remote' : 'dynamic',
-            // ✅ 必须使用后端 API
+            // Must use backend API
             api: builderConfig.api || `/erp/engine/dict/union/${dictName}`,
             searchApi: dictName === 'nation'
               ? (builderConfig.searchApi || `/erp/engine/country/search?keyword={keyword}&limit=20`)
@@ -331,8 +328,8 @@ class DictionaryBuilderEngine {
   }
 
   /**
-   * 预加载所有字典（精简日志）
-   * @param {string} moduleCode - 模块编码
+   * Preload all dictionaries (simplified logs)
+   * @param {string} moduleCode - Module code
    * @returns {Promise<void>}
    */
   async preloadAll(moduleCode) {
@@ -346,7 +343,7 @@ class DictionaryBuilderEngine {
           try {
             let apiUrl = builder.config?.api || `/erp/engine/dict/union/${name}`
             
-            // 🔧 替换 URL 中的模板变量
+            // Replace template variables in URL
             if (moduleCode) {
               apiUrl = apiUrl.replace(/{moduleCode}/g, moduleCode)
             }
@@ -363,7 +360,7 @@ class DictionaryBuilderEngine {
             
             return data
           } catch (error) {
-            console.error(`${name}: 加载失败`, error.message)
+            console.error(`${name}: Load failed`, error.message)
             return []
           }
         })
@@ -382,34 +379,34 @@ class DictionaryBuilderEngine {
   }
 }
 
-// 导出单例
+// Export singleton
 const engine = new DictionaryBuilderEngine()
 
-// ==================== 调试工具（全局暴露） ====================
+// ==================== Debug Tools (global exposure) ====================
 /**
- * 在浏览器控制台中手动检查字典状态
- * 使用方法：window.checkDict('orderStatus') 或 window.checkAllDicts()
+ * Manually check dictionary status in browser console
+ * Usage: window.checkDict('orderStatus') or window.checkAllDicts()
  */
 if (typeof window !== 'undefined') {
-  // 检查单个字典
+  // Check single dictionary
   window.checkDict = (dictName) => {
     const builder = engine.get(dictName)
     if (!builder) {
-      console.error(`❌ 字典 "${dictName}" 未注册`)
-      console.log(`当前已注册的字典:`, Array.from(engine.registry.keys()))
+      console.error(`Dictionary "${dictName}" not registered`)
+      console.log(`Currently registered dictionaries:`, Array.from(engine.registry.keys()))
       return null
     }
     
     const status = builder.getStatus()
     const data = builder.get()
     
-    console.log(`\n========== 字典 "${dictName}" 信息 ==========`)
-    console.log(`名称：${dictName}`)
-    console.log(`类型：${builder.type}`)
-    console.log(`状态:`, status)
-    console.log(`数据量：${data?.length || 0}`)
-    console.log(`数据预览:`, data?.slice(0, 5))
-    console.log(`完整配置:`, builder.config)
+    console.log(`\n========== Dictionary "${dictName}" Info ==========`)
+    console.log(`Name: ${dictName}`)
+    console.log(`Type: ${builder.type}`)
+    console.log(`Status:`, status)
+    console.log(`Data count: ${data?.length || 0}`)
+    console.log(`Data preview:`, data?.slice(0, 5))
+    console.log(`Full config:`, builder.config)
     
     return {
       name: dictName,
@@ -420,11 +417,11 @@ if (typeof window !== 'undefined') {
     }
   }
   
-  // 检查所有字典
+  // Check all dictionaries
   window.checkAllDicts = () => {
-    console.log(`\n========== 所有字典状态 ==========`)
-    console.log(`总数量：${engine.registry.size}`)
-    console.log(`字典列表:`, Array.from(engine.registry.keys()))
+    console.log(`\n========== All Dictionaries Status ==========`)
+    console.log(`Total count: ${engine.registry.size}`)
+    console.log(`Dictionary list:`, Array.from(engine.registry.keys()))
     
     const allStatus = {}
     engine.registry.forEach((builder, name) => {
@@ -435,13 +432,13 @@ if (typeof window !== 'undefined') {
       }
     })
     
-    console.log(`详细状态:`, allStatus)
+    console.log(`Detailed status:`, allStatus)
     return allStatus
   }
   
-  // 打印字典引擎实例
+  // Print dictionary engine instance
   window.getDictEngine = () => {
-    console.log('字典引擎实例:', engine)
+    console.log('Dictionary engine instance:', engine)
     return engine
   }
 }

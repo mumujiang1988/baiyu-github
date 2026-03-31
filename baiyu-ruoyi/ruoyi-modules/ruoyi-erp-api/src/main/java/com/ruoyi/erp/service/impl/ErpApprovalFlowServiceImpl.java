@@ -15,15 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * ERP 审批流程配置 Service 业务层实现
- * 
+ * ERP Approval Flow Config Service Business Layer Implementation
  * @author JMH
  * @date 2026-03-22
  */
@@ -50,7 +48,6 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
             return null;
         }
         
-        // 转换为 VO 对象
         Map<String, Object> row = results.get(0);
         ErpApprovalFlowVo vo = new ErpApprovalFlowVo();
         vo.setFlowId(getLong(row.get("flow_id")));
@@ -73,7 +70,6 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
             WHERE 1=1
         """);
         
-        // 构建动态 WHERE 条件
         if (StringUtils.isNotBlank(bo.getModuleCode())) {
             sql.append(" AND module_code = ?");
         }
@@ -84,16 +80,13 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
             sql.append(" AND is_active = ?");
         }
         
-        // 查询参数
         List<Object> params = buildParams(bo);
         
-        // 执行查询并转换为 VO 列表
         return queryForVoList(sql.toString(), params);
     }
 
     @Override
     public TableDataInfo<ErpApprovalFlowVo> selectPageList(ErpApprovalFlowBo bo, PageQuery pageQuery) {
-        // 构建查询 SQL（不含排序和分页）
         StringBuilder countSql = new StringBuilder("""
             SELECT COUNT(*) 
             FROM erp_approval_flow 
@@ -109,7 +102,6 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
             WHERE 1=1
         """);
         
-        // 添加条件
         if (StringUtils.isNotBlank(bo.getModuleCode())) {
             countSql.append(" AND module_code = ?");
             querySql.append(" AND module_code = ?");
@@ -125,27 +117,23 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
         
         List<Object> params = buildParams(bo);
         
-        // 查询总数
         Long total = jdbcTemplate.queryForObject(countSql.toString(), Long.class, params.toArray());
         if (total == null || total == 0) {
             return new TableDataInfo<>(new ArrayList<>(), 0L);
         }
         
-        // 添加排序和分页
         querySql.append(" ORDER BY create_time DESC LIMIT ?, ?");
         params.add((pageQuery.getPageNum() - 1) * pageQuery.getPageSize());
         params.add(pageQuery.getPageSize());
         
-        // 查询数据
         List<ErpApprovalFlowVo> list = queryForVoList(querySql.toString(), params);
         
-        // 构建分页结果（使用 RuoYi TableDataInfo）
         TableDataInfo<ErpApprovalFlowVo> tableDataInfo = new TableDataInfo<>(list, total);
         return tableDataInfo;
     }
 
     /**
-     * 构建查询参数列表
+     * Build query params list
      */
     private List<Object> buildParams(ErpApprovalFlowBo bo) {
         List<Object> params = new ArrayList<>();
@@ -162,7 +150,7 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
     }
     
     /**
-     * 查询并转换为 VO 列表
+     * Query and convert to VO list
      */
     private List<ErpApprovalFlowVo> queryForVoList(String sql, List<Object> params) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
@@ -170,17 +158,16 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
     }
     
     /**
-     * Map 转 VO
+     * Map to VO
      */
     private ErpApprovalFlowVo mapToVo(Map<String, Object> row) {
-        // 使用 RuoYi MapstructUtils 自动转换
+        // Use RuoYi MapstructUtils auto conversion
         return MapstructUtils.convert(row, ErpApprovalFlowVo.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int insertByBo(ErpApprovalFlowBo bo) {
-        // 检查模块编码是否唯一（使用 JdbcTemplate）
         String checkSql = """
             SELECT COUNT(*) 
             FROM erp_approval_flow 
@@ -189,10 +176,9 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
         Long count = jdbcTemplate.queryForObject(checkSql, Long.class, bo.getModuleCode(), "1");
         
         if (count != null && count > 0) {
-            throw new ServiceException("该模块的激活审批流程已存在");
+            throw new ServiceException("Active approval flow for this module already exists");
         }
         
-        // 使用 JdbcTemplate 插入
         String sql = """
             INSERT INTO erp_approval_flow (
                 module_code, flow_name, flow_definition,
@@ -204,7 +190,7 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
             bo.getModuleCode(),
             bo.getFlowName(),
             bo.getFlowDefinition(),
-            1,  // current_version 默认为 1
+            1,
             bo.getIsActive(),
             bo.getCreateBy(),
             LocalDateTime.now()
@@ -216,10 +202,8 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int updateByBo(ErpApprovalFlowBo bo) {
-        // 版本号 +1
         Integer newVersion = bo.getCurrentVersion() + 1;
         
-        // 使用 JdbcTemplate 更新
         String sql = """
             UPDATE erp_approval_flow 
             SET flow_name = ?,
@@ -248,7 +232,6 @@ public class ErpApprovalFlowServiceImpl implements ErpApprovalFlowService {
     @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(Long[] flowIds) {
         if (ObjectUtil.isNotEmpty(flowIds)) {
-            // 批量删除（使用 IN 条件）
             StringBuilder inClause = new StringBuilder();
             for (int i = 0; i < flowIds.length; i++) {
                 if (i > 0) inClause.append(",");

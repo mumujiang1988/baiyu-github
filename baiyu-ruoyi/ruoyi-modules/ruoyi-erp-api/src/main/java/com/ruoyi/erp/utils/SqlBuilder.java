@@ -7,14 +7,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * 动态 SQL 构建器（完全替代 QueryWrapper）
- * 
- * 功能特性：
- * 1. 支持所有常用查询操作符
- * 2. 自动转义 LIKE 特殊字符
- * 3. 字段名白名单校验（防 SQL 注入）
- * 4. 生成标准 JDBC 占位符 SQL
- * 
+ * Dynamic SQL Builder
  * @author JMH
  * @date 2026-03-30
  */
@@ -22,20 +15,20 @@ import java.util.regex.Pattern;
 @Component
 public class SqlBuilder {
     
-    // 字段名校验正则（只允许字母、数字、下划线）
+    // Field name validation pattern (only letters, numbers, underscore)
     private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
     
-    // SQL 注入关键词黑名单
+    // SQL injection keyword blacklist
     private static final Set<String> SQL_KEYWORDS = new HashSet<>(Arrays.asList(
         "--", ";", "/*", "*/", "DROP", "DELETE", "UPDATE", "INSERT", 
         "TRUNCATE", "ALTER", "CREATE", "GRANT", "REVOKE"
     ));
     
     /**
-     * 构建 WHERE 子句
+     * Build WHERE clause
      * 
-     * @param conditions 条件列表 [{field, operator, value}]
-     * @return SQL 片段和参数列表
+     * @param conditions Condition list [{field, operator, value}]
+     * @return SQL fragment and parameter list
      */
     public SqlResult buildWhere(List<Map<String, Object>> conditions) {
         StringBuilder sql = new StringBuilder();
@@ -52,16 +45,15 @@ public class SqlBuilder {
             String operator = (String) condition.get("operator");
             Object value = condition.get("value");
             
-            // 跳过空值字段
+            // Skip empty value fields
             if (field == null || field.trim().isEmpty()) {
-                log.debug("跳过空字段名：{}", condition);
                 continue;
             }
             
-            // 字段名校验
+            // Field name validation
             validateFieldName(field);
             
-            // 处理不同类型的条件
+            // Handle different types of conditions
             boolean conditionAdded = appendCondition(sql, params, field, operator, value);
             
             if (conditionAdded) {
@@ -69,10 +61,9 @@ public class SqlBuilder {
             }
         }
         
-        // 如果有条件，在前面加上 WHERE
+        // If has conditions, add WHERE prefix
         if (hasCondition) {
-            String whereSql = " WHERE " + sql.substring(5); // 去掉开头的 " AND"
-            log.debug("构建 WHERE 子句：{}, 参数数量：{}", whereSql, params.size());
+            String whereSql = " WHERE " + sql.substring(5); // Remove leading " AND"
             return new SqlResult(whereSql, params);
         }
         
@@ -80,7 +71,7 @@ public class SqlBuilder {
     }
     
     /**
-     * 构建 ORDER BY 子句
+     * Build ORDER BY clause
      */
     public SqlResult buildOrderBy(List<Map<String, Object>> orderBy) {
         StringBuilder sql = new StringBuilder();
@@ -110,17 +101,16 @@ public class SqlBuilder {
             sql.append(" ASC".equalsIgnoreCase(direction) ? " ASC" : " DESC");
         }
         
-        // 如果没有有效的排序字段，返回空
+        // If no valid sort fields, return empty
         if (sql.length() == " ORDER BY ".length()) {
             return new SqlResult("", Collections.emptyList());
         }
         
-        log.debug("构建 ORDER BY 子句：{}", sql);
         return new SqlResult(sql.toString(), Collections.emptyList());
     }
     
     /**
-     * 构建 SELECT 字段列表
+     * Build SELECT field list
      */
     public String buildSelectFields(List<String> fields) {
         if (fields == null || fields.isEmpty()) {
@@ -147,42 +137,41 @@ public class SqlBuilder {
     }
     
     /**
-     * 字段名校验（防 SQL 注入）
+     * Field name validation (prevent SQL injection)
      */
     private void validateFieldName(String fieldName) {
         if (fieldName == null || fieldName.trim().isEmpty()) {
-            throw new IllegalArgumentException("字段名不能为空");
+            throw new IllegalArgumentException("Field name cannot be empty");
         }
         
-        // 1. 格式校验
+        // 1. Format validation
         if (!FIELD_NAME_PATTERN.matcher(fieldName).matches()) {
-            throw new IllegalArgumentException("非法字段名格式：" + fieldName);
+            throw new IllegalArgumentException("Invalid field name format: " + fieldName);
         }
         
-        // 2. 关键词检查
+        // 2. Keyword check
         String upperField = fieldName.toUpperCase();
         for (String keyword : SQL_KEYWORDS) {
             if (upperField.contains(keyword)) {
                 throw new IllegalArgumentException(
-                    "字段名包含 SQL 注入关键词：" + fieldName + " (包含：" + keyword + ")");
+                    "Field contains SQL injection keyword: " + fieldName + " (contains: " + keyword + ")");
             }
         }
         
-        // 3. 长度限制
+        // 3. Length limit
         if (fieldName.length() > 64) {
-            throw new IllegalArgumentException("字段名过长：" + fieldName);
+            throw new IllegalArgumentException("Field name too long: " + fieldName);
         }
         
-        log.trace("字段名校验通过：{}", fieldName);
+        log.trace("Field name validation passed: {}", fieldName);
     }
     
     /**
-     * 追加单个条件到 SQL
+     * Append single condition to SQL
      */
     private boolean appendCondition(StringBuilder sql, List<Object> params,
                                      String field, String operator, Object value) {
         if (value == null) {
-            log.debug("值为 null，跳过条件：field={}, operator={}", field, operator);
             return false;
         }
         
@@ -190,55 +179,55 @@ public class SqlBuilder {
             case "eq":
                 sql.append(" AND ").append(field).append(" = ?");
                 params.add(value);
-                log.trace("添加等于条件：{} = {}", field, value);
+                log.trace("Add equal condition: {} = {}", field, value);
                 break;
                 
             case "ne":
                 sql.append(" AND ").append(field).append(" <> ?");
                 params.add(value);
-                log.trace("添加不等于条件：{} <> {}", field, value);
+                log.trace("Add not equal condition: {} <> {}", field, value);
                 break;
                 
             case "gt":
                 sql.append(" AND ").append(field).append(" > ?");
                 params.add(value);
-                log.trace("添加大于条件：{} > {}", field, value);
+                log.trace("Add greater than condition: {} > {}", field, value);
                 break;
                 
             case "ge":
                 sql.append(" AND ").append(field).append(" >= ?");
                 params.add(value);
-                log.trace("添加大于等于条件：{} >= {}", field, value);
+                log.trace("Add greater than or equal condition: {} >= {}", field, value);
                 break;
                 
             case "lt":
                 sql.append(" AND ").append(field).append(" < ?");
                 params.add(value);
-                log.trace("添加小于条件：{} < {}", field, value);
+                log.trace("Add less than condition: {} < {}", field, value);
                 break;
                 
             case "le":
                 sql.append(" AND ").append(field).append(" <= ?");
                 params.add(value);
-                log.trace("添加小于等于条件：{} <= {}", field, value);
+                log.trace("Add less than or equal condition: {} <= {}", field, value);
                 break;
                 
             case "like":
                 sql.append(" AND ").append(field).append(" LIKE ?");
                 params.add(escapeLikeSpecialChars(value));
-                log.trace("添加模糊匹配条件：{} LIKE %{}%", field, value);
+                log.trace("Add like condition: {} LIKE %{}%", field, value);
                 break;
                 
             case "left_like":
                 sql.append(" AND ").append(field).append(" LIKE ?");
                 params.add("%" + escapeLikeSpecialChars(value));
-                log.trace("添加左模糊条件：{} LIKE {}%", field, value);
+                log.trace("Add left like condition: {} LIKE {}%", field, value);
                 break;
                 
             case "right_like":
                 sql.append(" AND ").append(field).append(" LIKE ?");
                 params.add(escapeLikeSpecialChars(value) + "%");
-                log.trace("添加右模糊条件：{} LIKE %{}", field, value);
+                log.trace("Add right like condition: {} LIKE %{}", field, value);
                 break;
                 
             case "in":
@@ -252,13 +241,12 @@ public class SqlBuilder {
                             params.add(list.get(i));
                         }
                         sql.append(")");
-                        log.trace("添加 IN 条件：{} IN ({} 个值)", field, list.size());
+                        log.trace("Add IN condition: {} IN ({} values)", field, list.size());
                     } else {
-                        log.debug("IN 条件值为空列表，跳过：field={}", field);
                         return false;
                     }
                 } else {
-                    log.warn("IN 条件的值不是 List 类型：field={}, value={}", field, value);
+                    log.warn("IN condition value is not List type: field={}, value={}", field, value);
                     return false;
                 }
                 break;
@@ -270,30 +258,30 @@ public class SqlBuilder {
                         sql.append(" AND ").append(field).append(" BETWEEN ? AND ?");
                         params.add(list.get(0));
                         params.add(list.get(1));
-                        log.trace("添加 BETWEEN 条件：{} BETWEEN {} AND {}", 
+                        log.trace("Add BETWEEN condition: {} BETWEEN {} AND {}", 
                             field, list.get(0), list.get(1));
                     } else {
-                        log.warn("BETWEEN 条件值的数量不足 2 个：{}", list.size());
+                        log.warn("BETWEEN condition value count less than 2: {}", list.size());
                         return false;
                     }
                 } else {
-                    log.warn("BETWEEN 条件的值不是 List 类型：field={}, value={}", field, value);
+                    log.warn("BETWEEN condition value is not List type: field={}, value={}", field, value);
                     return false;
                 }
                 break;
                 
             case "isNull":
                 sql.append(" AND ").append(field).append(" IS NULL");
-                log.trace("添加 IS NULL 条件：{}", field);
+                log.trace("Add IS NULL condition: {}", field);
                 break;
                 
             case "isNotNull":
                 sql.append(" AND ").append(field).append(" IS NOT NULL");
-                log.trace("添加 IS NOT NULL 条件：{}", field);
+                log.trace("Add IS NOT NULL condition: {}", field);
                 break;
                 
             default:
-                log.warn("未知的操作符：operator={}, field={}", operator, field);
+                log.warn("Unknown operator: operator={}, field={}", operator, field);
                 return false;
         }
         
@@ -301,7 +289,7 @@ public class SqlBuilder {
     }
     
     /**
-     * 转义 LIKE 特殊字符
+     * Escape LIKE special characters
      */
     private String escapeLikeSpecialChars(Object value) {
         if (value == null) {
@@ -313,7 +301,7 @@ public class SqlBuilder {
     }
     
     /**
-     * SQL 构建结果
+     * SQL build result
      */
     public static class SqlResult {
         private final String sql;

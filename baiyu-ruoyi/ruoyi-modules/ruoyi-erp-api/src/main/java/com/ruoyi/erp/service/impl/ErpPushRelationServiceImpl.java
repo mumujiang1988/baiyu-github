@@ -15,15 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * ERP 下推关系配置 Service 业务层实现
- * 
+ * ERP Push Relation Config Service Business Layer Implementation
  * @author JMH
  * @date 2026-03-22
  */
@@ -51,7 +49,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
             return null;
         }
         
-        // 转换为 VO 对象
+        // Convert to VO object
         Map<String, Object> row = results.get(0);
         ErpPushRelationVo vo = new ErpPushRelationVo();
         vo.setRelationId(getLong(row.get("relation_id")));
@@ -80,7 +78,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
             WHERE 1=1
         """);
         
-        // 构建动态 WHERE 条件
+        // Build dynamic WHERE conditions
         if (StringUtils.isNotBlank(bo.getSourceModule())) {
             sql.append(" AND source_module = ?");
         }
@@ -94,16 +92,16 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
             sql.append(" AND status = ?");
         }
         
-        // 查询参数
+        // Query params
         List<Object> params = buildParams(bo);
         
-        // 执行查询并转换为 VO 列表
+        // Execute query and convert to VO list
         return queryForVoList(sql.toString(), params);
     }
 
     @Override
     public TableDataInfo<ErpPushRelationVo> selectPageList(ErpPushRelationBo bo, PageQuery pageQuery) {
-        // 构建查询 SQL（不含排序和分页）
+        // Build query SQL (without ORDER BY and pagination)
         StringBuilder countSql = new StringBuilder("""
             SELECT COUNT(*) 
             FROM erp_push_relation 
@@ -120,7 +118,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
             WHERE 1=1
         """);
         
-        // 添加条件
+        // Add conditions
         if (StringUtils.isNotBlank(bo.getSourceModule())) {
             countSql.append(" AND source_module = ?");
             querySql.append(" AND source_module = ?");
@@ -140,28 +138,28 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
         
         List<Object> params = buildParams(bo);
         
-        // 查询总数
+        // Query total count
         Long total = jdbcTemplate.queryForObject(countSql.toString(), Long.class, params.toArray());
         if (total == null || total == 0) {
             return new TableDataInfo<>(new ArrayList<>(), 0L);
         }
         
-        // 添加排序和分页
+        // Add ORDER BY and pagination
         querySql.append(" ORDER BY create_time DESC LIMIT ?, ?");
         params.add((pageQuery.getPageNum() - 1) * pageQuery.getPageSize());
         params.add(pageQuery.getPageSize());
         
-        // 查询数据
+        // Query data
         List<ErpPushRelationVo> list = queryForVoList(querySql.toString(), params);
         
-        // 构建分页结果（使用 RuoYi TableDataInfo）
+        // Build page result (use RuoYi TableDataInfo)
         TableDataInfo<ErpPushRelationVo> tableDataInfo = new TableDataInfo<>(list, total);
         return tableDataInfo;
     }
 
 
     /**
-     * 构建查询参数列表
+     * Build query params list
      */
     private List<Object> buildParams(ErpPushRelationBo bo) {
         List<Object> params = new ArrayList<>();
@@ -181,7 +179,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
     }
     
     /**
-     * 查询并转换为 VO 列表
+     * Query and convert to VO list
      */
     private List<ErpPushRelationVo> queryForVoList(String sql, List<Object> params) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
@@ -189,17 +187,17 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
     }
     
     /**
-     * Map 转 VO
+     * Map to VO
      */
     private ErpPushRelationVo mapToVo(Map<String, Object> row) {
-        // 使用 RuoYi MapstructUtils 自动转换
+        // Use RuoYi MapstructUtils auto conversion
         return MapstructUtils.convert(row, ErpPushRelationVo.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int insertByBo(ErpPushRelationBo bo) {
-        // 检查源模块 + 目标模块是否唯一（使用 JdbcTemplate）
+        // Check source module + target module uniqueness (use JdbcTemplate)
         String checkSql = """
             SELECT COUNT(*) 
             FROM erp_push_relation 
@@ -208,10 +206,10 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
         Long count = jdbcTemplate.queryForObject(checkSql, Long.class, bo.getSourceModule(), bo.getTargetModule());
         
         if (count != null && count > 0) {
-            throw new ServiceException("该源模块到目标模块的下推关系已存在");
+            throw new ServiceException("Push relation from source module to target module already exists");
         }
         
-        // 使用 JdbcTemplate 插入
+        // Use JdbcTemplate insert
         String sql = """
             INSERT INTO erp_push_relation (
                 source_module, target_module, relation_name,
@@ -231,7 +229,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
             bo.getConcurrencyControl(),
             bo.getTransactionEnabled(),
             bo.getStatus(),
-            1,  // version 默认为 1
+            1,  // version default to 1
             bo.getCreateBy(),
             LocalDateTime.now()
         );
@@ -242,7 +240,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int updateByBo(ErpPushRelationBo bo) {
-        // 使用 JdbcTemplate 更新
+        // Use JdbcTemplate update
         String sql = """
             UPDATE erp_push_relation 
             SET relation_name = ?,
@@ -277,7 +275,7 @@ public class ErpPushRelationServiceImpl implements ErpPushRelationService {
     @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(Long[] relationIds) {
         if (ObjectUtil.isNotEmpty(relationIds)) {
-            // 批量删除（使用 IN 条件）
+            // Batch delete (use IN condition)
             StringBuilder inClause = new StringBuilder();
             for (int i = 0; i < relationIds.length; i++) {
                 if (i > 0) inClause.append(",");

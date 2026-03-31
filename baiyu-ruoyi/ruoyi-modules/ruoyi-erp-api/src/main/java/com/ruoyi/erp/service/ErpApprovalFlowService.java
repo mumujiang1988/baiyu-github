@@ -8,7 +8,7 @@ import com.ruoyi.erp.domain.vo.ErpApprovalFlowVo;
 import java.util.List;
 
 /**
- * ERP 审批流程配置 Service 业务层接口
+ * ERP Approval Flow Config Service Business Layer Interface
  * 
  * @author JMH
  * @date 2026-03-22
@@ -16,67 +16,67 @@ import java.util.List;
 public interface ErpApprovalFlowService {
 
     /**
-     * 根据 ID 查询审批流程
+     * Query approval flow by ID
      *
-     * @param flowId 流程 ID
-     * @return 审批流程信息
+     * @param flowId Flow ID
+     * @return Approval flow info
      */
     ErpApprovalFlowVo selectById(Long flowId);
 
     /**
-     * 查询审批流程列表
+     * Query approval flow list
      *
-     * @param bo 审批流程参数
-     * @return 审批流程集合
+     * @param bo Approval flow params
+     * @return Approval flow collection
      */
     List<ErpApprovalFlowVo> selectList(ErpApprovalFlowBo bo);
 
     /**
-     * 分页查询审批流程列表
+     * Page query approval flow list
      *
-     * @param bo 审批流程参数
-     * @param pageQuery 分页参数
-     * @return 审批流程分页信息
+     * @param bo Approval flow params
+     * @param pageQuery Page params
+     * @return Approval flow page info
      */
     TableDataInfo<ErpApprovalFlowVo> selectPageList(ErpApprovalFlowBo bo, PageQuery pageQuery);
 
     /**
-     * 新增审批流程
+     * Insert approval flow
      *
-     * @param bo 审批流程信息
-     * @return 结果
+     * @param bo Approval flow info
+     * @return Result
      */
     int insertByBo(ErpApprovalFlowBo bo);
 
     /**
-     * 修改审批流程
+     * Update approval flow
      *
-     * @param bo 审批流程信息
-     * @return 结果
+     * @param bo Approval flow info
+     * @return Result
      */
     int updateByBo(ErpApprovalFlowBo bo);
 
     /**
-     * 批量删除审批流程
+     * Batch delete approval flows
      *
-     * @param flowIds 需要删除的流程 ID 数组
-     * @return 结果
+     * @param flowIds Flow ID array
+     * @return Result
      */
     int deleteByIds(Long[] flowIds);
 
     /**
-     * 删除审批流程
+     * Delete approval flow
      *
-     * @param flowId 流程 ID
-     * @return 结果
+     * @param flowId Flow ID
+     * @return Result
      */
     int deleteById(Long flowId);
 
     /**
-     * 获取审批流程配置
+     * Get approval flow config
      *
-     * @param moduleCode 模块编码
-     * @return 审批流程配置
+     * @param moduleCode Module code
+     * @return Approval flow config
      */
     ErpApprovalFlowVo getApprovalFlow(String moduleCode);
 }

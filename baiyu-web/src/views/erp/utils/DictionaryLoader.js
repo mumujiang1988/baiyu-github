@@ -1,7 +1,7 @@
 /**
- * ERP 字典数据加载器 - 增强版
+ * ERP Dictionary Data Loader - Enhanced Version
  * @module views/erp/utils/DictionaryLoader
- * @description 专门用于加载新的分段返回字典接口数据
+ * @description Specifically for loading segmented dictionary interface data
  * 
  * @author JMH
  * @date 2026-03-27
@@ -10,28 +10,28 @@
 import request from '@/utils/request'
 
 /**
- * 字典加载器类
+ * Dictionary loader class
  */
 class DictionaryLoader {
   /**
-   * 加载单个字典（按类型）
-   * @param {string} dictType - 字典类型（如 'currency', 'sys_user_sex'）
-   * @param {Object} options - 配置选项
-   * @returns {Promise<Object>} 返回 { dictTypeList, dictDataList }
+   * Load single dictionary (by type)
+   * @param {string} dictType - Dictionary type (e.g., 'currency', 'sys_user_sex')
+   * @param {Object} options - Config options
+   * @returns {Promise<Object>} Returns { dictTypeList, dictDataList }
    */
   static async loadByType(dictType, options = {}) {
     try {
       const { mergeData = true } = options
-      
+        
       const response = await request({
         url: `/erp/engine/dict/union/${dictType}`,
         method: 'get'
       })
-      
+        
       if (response.code === 200 || response.errorCode === 0) {
         const result = response.data || response
-        
-        // 如果 mergeData 为 true，则合并两段数据
+          
+        // If mergeData is true, merge two segments of data
         if (mergeData) {
           return {
             dictTypeList: result.dictTypeList || [],
@@ -42,17 +42,17 @@ class DictionaryLoader {
             ]
           }
         }
-        
-        // 否则返回分段数据
+          
+        // Otherwise return segmented data
         return {
           dictTypeList: result.dictTypeList || [],
           dictDataList: result.dictDataList || []
         }
       }
-      
-      throw new Error(response.msg || '字典加载失败')
+        
+      throw new Error(response.msg || 'Failed to load dictionary')
     } catch (error) {
-      console.error(`加载字典失败 [${dictType}]:`, error)
+      console.error(`Failed to load dictionary [${dictType}]:`, error)
       return {
         dictTypeList: [],
         dictDataList: [],
@@ -62,8 +62,8 @@ class DictionaryLoader {
   }
 
   /**
-   * 加载所有字典
-   * @returns {Promise<Object>} 返回 { dictTypeList, dictDataList }
+   * Load all dictionaries
+   * @returns {Promise<Object>} Returns { dictTypeList, dictDataList }
    */
   static async loadAll() {
     try {
@@ -85,9 +85,9 @@ class DictionaryLoader {
         }
       }
       
-      throw new Error(response.msg || '字典加载失败')
+      throw new Error(response.msg || 'Failed to load dictionary')
     } catch (error) {
-      console.error('加载所有字典失败:', error)
+      console.error('Failed to load all dictionaries:', error)
       return {
         dictTypeList: [],
         dictDataList: [],
@@ -97,9 +97,9 @@ class DictionaryLoader {
   }
 
   /**
-   * 仅加载字典类型列表
-   * @param {string} dictType - 字典类型（可选，用于过滤）
-   * @returns {Promise<Array>} 返回 dictTypeList
+   * Load only dictionary type list
+   * @param {string} dictType - Dictionary type (optional, for filtering)
+   * @returns {Promise<Array>} Returns dictTypeList
    */
   static async loadDictTypes(dictType = null) {
     try {
@@ -119,15 +119,15 @@ class DictionaryLoader {
       
       return []
     } catch (error) {
-      console.error('加载字典类型失败:', error)
+      console.error('Failed to load dictionary type:', error)
       return []
     }
   }
 
   /**
-   * 仅加载字典数据列表
-   * @param {string} dictType - 字典类型（可选，用于过滤）
-   * @returns {Promise<Array>} 返回 dictDataList
+   * Load only dictionary data list
+   * @param {string} dictType - Dictionary type (optional, for filtering)
+   * @returns {Promise<Array>} Returns dictDataList
    */
   static async loadDictData(dictType = null) {
     try {
@@ -147,15 +147,15 @@ class DictionaryLoader {
       
       return []
     } catch (error) {
-      console.error('加载字典数据失败:', error)
+      console.error('Failed to load dictionary data:', error)
       return []
     }
   }
 
   /**
-   * 批量加载多个字典类型
-   * @param {Array<string>} dictTypes - 字典类型数组
-   * @returns {Promise<Map>} 返回 Map<dictType, {dictTypeList, dictDataList}>
+   * Batch load multiple dictionary types
+   * @param {Array<string>} dictTypes - Dictionary type array
+   * @returns {Promise<Map>} Returns Map<dictType, {dictTypeList, dictDataList}>
    */
   static async loadBatch(dictTypes) {
     const promises = dictTypes.map(type => this.loadByType(type))
@@ -170,15 +170,15 @@ class DictionaryLoader {
   }
 
   /**
-   * 缓存版本的加载器（带 TTL）
+   * Cached version of loader (with TTL)
    */
   static cache = new Map()
   static cacheTimestamp = new Map()
 
   /**
-   * 加载字典（带缓存）
-   * @param {string} dictType - 字典类型
-   * @param {number} ttl - 缓存时间（毫秒），默认 5 分钟
+   * Load dictionary (with cache)
+   * @param {string} dictType - Dictionary type
+   * @param {number} ttl - Cache time in milliseconds, default 5 minutes
    * @returns {Promise<Object>}
    */
   static async loadWithCache(dictType, ttl = 5 * 60 * 1000) {
@@ -186,40 +186,35 @@ class DictionaryLoader {
     const cached = this.cache.get(dictType)
     const timestamp = this.cacheTimestamp.get(dictType)
     
-    // 检查缓存是否有效
+    // Check if cache is valid
     if (cached && timestamp && (now - timestamp < ttl)) {
-      console.debug(`💾 使用缓存字典：${dictType}`)
       return cached
     }
     
-    // 重新加载
-    console.log(`🌐 加载字典：${dictType}`)
+    // Reload
     const data = await this.loadByType(dictType)
     
-    // 更新缓存
+    // Update cache
     this.cache.set(dictType, data)
     this.cacheTimestamp.set(dictType, now)
     
-    console.log(`字典加载成功：${dictType}, 共 ${data.allData?.length || 0} 条`)
     return data
   }
 
   /**
-   * 清除缓存
-   * @param {string} dictType - 字典类型（可选，不传则清除所有）
+   * Clear cache
+   * @param {string} dictType - Dictionary type (optional, clear all if not provided)
    */
   static clearCache(dictType = null) {
     if (dictType) {
       this.cache.delete(dictType)
       this.cacheTimestamp.delete(dictType)
-      console.log(`已清除字典缓存：${dictType}`)
     } else {
       this.cache.clear()
       this.cacheTimestamp.clear()
-      console.log('已清除所有字典缓存')
     }
   }
 }
 
-// 导出默认实例
+// Export default instance
 export default DictionaryLoader

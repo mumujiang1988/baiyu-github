@@ -4,9 +4,9 @@ import com.ruoyi.erp.domain.response.ErpResponse;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * ERP 响应工具类
+ * ERP Response Utility Class
  * 
- * 提供便捷的响应构建方法
+ * Provides convenient methods for building responses
  * 
  * @author JMH
  * @date 2026-03-27
@@ -18,171 +18,171 @@ public class ErpResponseUtils {
         throw new IllegalStateException("Utility class");
     }
 
-    // ==================== 成功响应 ====================
+    // ==================== Success Responses ====================
 
     /**
-     * 构建成功响应（无数据）
+     * Build success response (no data)
      *
-     * @return 成功响应
+     * @return Success response
      */
     public static <T> ErpResponse<T> success() {
         return ErpResponse.ok();
     }
 
     /**
-     * 构建成功响应（带数据）
+     * Build success response (with data)
      *
-     * @param data 数据对象
-     * @return 成功响应
+     * @param data Data object
+     * @return Success response
      */
     public static <T> ErpResponse<T> success(T data) {
         return ErpResponse.ok(data);
     }
 
     /**
-     * 构建成功响应（带消息和数据）
+     * Build success response (with message and data)
      *
-     * @param msg 消息
-     * @param data 数据对象
-     * @return 成功响应
+     * @param msg Message
+     * @param data Data object
+     * @return Success response
      */
     public static <T> ErpResponse<T> success(String msg, T data) {
         return ErpResponse.ok(msg, data);
     }
 
     /**
-     * 构建成功响应（带自定义消息）
+     * Build success response (with custom message)
      *
-     * @param msg 消息
-     * @return 成功响应
+     * @param msg Message
+     * @return Success response
      */
     public static <T> ErpResponse<T> successWithMessage(String msg) {
         return ErpResponse.ok(msg);
     }
 
-    // ==================== 失败响应 ====================
+    // ==================== Error Responses ====================
 
     /**
-     * 构建失败响应（默认消息）
+     * Build error response (default message)
      *
-     * @return 失败响应
+     * @return Error response
      */
     public static <T> ErpResponse<T> error() {
         return ErpResponse.fail();
     }
 
     /**
-     * 构建失败响应（带消息）
+     * Build error response (with message)
      *
-     * @param msg 错误消息
-     * @return 失败响应
+     * @param msg Error message
+     * @return Error response
      */
     public static <T> ErpResponse<T> error(String msg) {
         return ErpResponse.fail(msg);
     }
 
     /**
-     * 构建失败响应（带状态码和消息）
+     * Build error response (with code and message)
      *
-     * @param code 状态码
-     * @param msg 错误消息
-     * @return 失败响应
+     * @param code Status code
+     * @param msg Error message
+     * @return Error response
      */
     public static <T> ErpResponse<T> error(int code, String msg) {
         return ErpResponse.fail(code, msg);
     }
 
     /**
-     * 构建失败响应（带状态码、消息和详细错误信息）
+     * Build error response (with code, message and detail)
      *
-     * @param code 状态码
-     * @param msg 错误消息
-     * @param detailMsg 详细错误信息
-     * @return 失败响应
+     * @param code Status code
+     * @param msg Error message
+     * @param detailMsg Detail error information
+     * @return Error response
      */
     public static <T> ErpResponse<T> error(int code, String msg, String detailMsg) {
         return ErpResponse.fail(code, msg, detailMsg);
     }
 
     /**
-     * 构建失败响应（从异常对象）
+     * Build error response (from exception)
      *
-     * @param e 异常对象
-     * @return 失败响应
+     * @param e Exception object
+     * @return Error response
      */
     public static <T> ErpResponse<T> errorFromException(Exception e) {
-        log.error("操作失败", e);
-        return ErpResponse.fail(500, "操作失败：" + e.getMessage(), e.getClass().getName());
+        log.error("Operation failed", e);
+        return ErpResponse.fail(500, "Operation failed: " + e.getMessage(), e.getClass().getName());
     }
 
     /**
-     * 构建失败响应（从异常对象，带自定义消息）
+     * Build error response (from exception with custom message)
      *
-     * @param e 异常对象
-     * @param customMsg 自定义消息
-     * @return 失败响应
+     * @param e Exception object
+     * @param customMsg Custom message
+     * @return Error response
      */
     public static <T> ErpResponse<T> errorFromException(Exception e, String customMsg) {
         log.error("{}: {}", customMsg, e.getMessage(), e);
         return ErpResponse.fail(500, customMsg + ": " + e.getMessage());
     }
 
-    // ==================== 警告响应 ====================
+    // ==================== Warning Responses ====================
 
     /**
-     * 构建警告响应
+     * Build warning response
      *
-     * @param msg 警告消息
-     * @return 警告响应
+     * @param msg Warning message
+     * @return Warning response
      */
     public static <T> ErpResponse<T> warn(String msg) {
         return ErpResponse.warn(msg);
     }
 
     /**
-     * 构建警告响应（带数据）
+     * Build warning response (with data)
      *
-     * @param msg 警告消息
-     * @param data 数据对象
-     * @return 警告响应
+     * @param msg Warning message
+     * @param data Data object
+     * @return Warning response
      */
     public static <T> ErpResponse<T> warn(String msg, T data) {
         return ErpResponse.warn(msg, data);
     }
 
-    // ==================== 条件响应 ====================
+    // ==================== Conditional Responses ====================
 
     /**
-     * 根据条件返回成功或失败响应
+     * Build success or error response based on condition
      *
-     * @param condition 条件
-     * @param successMsg 成功消息
-     * @param failMsg 失败消息
-     * @return 响应对象
+     * @param condition Condition
+     * @param successMsg Success message
+     * @param failMsg Fail message
+     * @return Response object
      */
     public static <T> ErpResponse<T> conditional(boolean condition, String successMsg, String failMsg) {
         return condition ? ErpResponse.ok(successMsg) : ErpResponse.fail(failMsg);
     }
 
     /**
-     * 根据结果返回成功或失败响应（基于整数结果）
+     * Build success or error response based on result (integer result)
      *
-     * @param result 执行结果（通常指数据库操作影响的行数）
-     * @param successMsg 成功消息
-     * @param failMsg 失败消息
-     * @return 响应对象
+     * @param result Execution result (usually database operation affected rows)
+     * @param successMsg Success message
+     * @param failMsg Fail message
+     * @return Response object
      */
     public static <T> ErpResponse<T> fromResult(int result, String successMsg, String failMsg) {
         return result > 0 ? ErpResponse.ok(successMsg) : ErpResponse.fail(failMsg);
     }
 
     /**
-     * 根据对象是否为空返回响应
+     * Build response based on whether object is null
      *
-     * @param object 待检查的对象
-     * @param successMsg 成功消息
-     * @param notFoundMsg 未找到对象时的消息
-     * @return 响应对象
+     * @param object Object to check
+     * @param successMsg Success message
+     * @param notFoundMsg Not found message
+     * @return Response object
      */
     public static <T> ErpResponse<T> fromObject(Object object, String successMsg, String notFoundMsg) {
         if (object == null) {
@@ -193,33 +193,33 @@ public class ErpResponseUtils {
         return response;
     }
 
-    // ==================== 调试辅助方法 ====================
+    // ==================== Debug Helper Methods ====================
 
     /**
-     * 打印响应信息到日志
+     * Log response to console
      *
-     * @param response 响应对象
-     * @param prefix 日志前缀
+     * @param response Response object
+     * @param prefix Log prefix
      */
     public static <T> void logResponse(ErpResponse<T> response, String prefix) {
         if (response.isSuccess()) {
-            log.info("{} - 成功：{}", prefix, response.getMsg());
+            log.info("{} - Success: {}", prefix, response.getMsg());
         } else if (response.isError()) {
-            log.error("{} - 失败：{} (code={})", prefix, response.getMsg(), response.getCode());
+            log.error("{} - Error: {} (code={})", prefix, response.getMsg(), response.getCode());
         } else if (response.isWarn()) {
-            log.warn("{} - 警告：{} (code={})", prefix, response.getMsg(), response.getCode());
+            log.warn("{} - Warning: {} (code={})", prefix, response.getMsg(), response.getCode());
         }
         
         if (response.getDetailMessage() != null) {
-            log.debug("{} - 详细信息：{}", prefix, response.getDetailMessage());
+            log.debug("{} - Detail: {}", prefix, response.getDetailMessage());
         }
     }
 
     /**
-     * 验证响应是否成功，如果失败则抛出异常
+     * Validate if response is successful, throw exception if failed
      *
-     * @param response 响应对象
-     * @throws RuntimeException 如果响应失败
+     * @param response Response object
+     * @throws RuntimeException If response is failed
      */
     public static <T> void validateSuccessOrThrow(ErpResponse<T> response) {
         if (!response.isSuccess()) {

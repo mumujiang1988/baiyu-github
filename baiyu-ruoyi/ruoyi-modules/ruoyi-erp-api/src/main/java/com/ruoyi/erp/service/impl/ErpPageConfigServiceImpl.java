@@ -25,14 +25,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDateTime;
-
 import java.util.*;
 
 /**
- * ERP 公共配置 Service 业务层实现
- * 
+ * ERP Page Config Service Business Layer Implementation
  * @author JMH
  * @date 2026-03-22
  */
@@ -44,12 +41,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     private final JdbcTemplate jdbcTemplate;
     private final SqlBuilder sqlBuilder;
     
-    // 添加事件发布器
+    // Add event publisher
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public ErpPageConfigVo selectById(Long configId) {
-        // 使用 SqlBuilder + JdbcTemplate 查询
+        // Use SqlBuilder + JdbcTemplate query
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition = new HashMap<>();
         condition.put("field", "config_id");
@@ -70,19 +67,19 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
     @Override
     public List<ErpPageConfigVo> selectList(ErpPageConfigBo bo) {
-        // 使用 SqlBuilder 构建查询条件
+        // Use SqlBuilder to build query conditions
         List<Map<String, Object>> conditions = buildConditionsFromBo(bo);
         SqlBuilder.SqlResult sqlResult = sqlBuilder.buildWhere(conditions);
         
-        // 构建完整 SQL
+        // Build complete SQL
         StringBuilder sql = new StringBuilder("SELECT * FROM erp_page_config");
         sql.append(sqlResult.getSql());
         sql.append(" ORDER BY create_time DESC");
         
-        // 执行查询
+        // Execute query
         List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), sqlResult.getParams().toArray());
         
-        // 转换为 VO
+        // Convert to VO
         List<ErpPageConfigVo> voList = new ArrayList<>();
         for (Map<String, Object> row : resultList) {
             ErpPageConfigVo vo = convertMapToVo(row);
@@ -96,34 +93,34 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
     @Override
     public TableDataInfo<ErpPageConfigVo> selectPageList(ErpPageConfigBo bo, PageQuery pageQuery) {
-        // 使用 SqlBuilder 构建查询条件
+        // Use SqlBuilder to build query conditions
         List<Map<String, Object>> conditions = buildConditionsFromBo(bo);
         SqlBuilder.SqlResult sqlResult = sqlBuilder.buildWhere(conditions);
         
-        // 构建完整 SQL
+        // Build complete SQL
         StringBuilder sql = new StringBuilder("SELECT * FROM erp_page_config");
         sql.append(sqlResult.getSql());
         sql.append(" ORDER BY create_time DESC");
         
-        // 分页参数
+        // Page params
         long pageNum = pageQuery.getPageNum();
         long pageSize = pageQuery.getPageSize();
         long offset = (pageNum - 1) * pageSize;
         
-        // 添加分页限制
+        // Add pagination limit
         sql.append(" LIMIT ? OFFSET ?");
         List<Object> params = new ArrayList<>(sqlResult.getParams());
         params.add(pageSize);
         params.add(offset);
         
-        // 执行查询
+        // Execute query
         List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         
-        // 查询总数
+        // Query total count
         String countSql = "SELECT COUNT(*) FROM erp_page_config" + sqlResult.getSql();
         Long total = jdbcTemplate.queryForObject(countSql, Long.class, sqlResult.getParams().toArray());
         
-        // 构建分页结果（使用 RuoYi TableDataInfo）
+        // Build page result (use RuoYi TableDataInfo)
         List<ErpPageConfigVo> voList = new ArrayList<>();
         for (Map<String, Object> row : resultList) {
             ErpPageConfigVo vo = convertMapToVo(row);
@@ -136,7 +133,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     /**
-     * 从 Bo 构建查询条件
+     * Build query conditions from Bo
      */
     private List<Map<String, Object>> buildConditionsFromBo(ErpPageConfigBo bo) {
         List<Map<String, Object>> conditions = new ArrayList<>();
@@ -193,14 +190,14 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     /**
-     * Map 转 VO
+     * Map to VO
      */
     private ErpPageConfigVo convertMapToVo(Map<String, Object> map) {
         if (map == null || map.isEmpty()) {
             return null;
         }
         
-        // 手动字段映射（避免 Mapstruct 转换异常）
+        // Manual field mapping (avoid Mapstruct conversion exception)
         ErpPageConfigVo vo = new ErpPageConfigVo();
         vo.setConfigId(getLongValue(map, "config_id"));
         vo.setModuleCode(getStringValue(map, "module_code"));
@@ -258,7 +255,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     /**
-     * Map 转 Entity
+     * Map to Entity
      */
     private ErpPageConfig convertMapToEntity(Map<String, Object> map) {
         if (map == null || map.isEmpty()) {
@@ -286,7 +283,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         config.setRemark(getStringValue(map, "remark"));
         config.setCreateBy(getStringValue(map, "create_by"));
         
-        // 处理 LocalDateTime 类型
+        // Handle LocalDateTime type
         Object createTime = map.get("create_time");
         if (createTime instanceof java.sql.Timestamp) {
             config.setCreateTime(((java.sql.Timestamp) createTime).toLocalDateTime());
@@ -302,17 +299,17 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     /**
-     * Map 转 History VO
+     * Map to History VO
      */
     private ErpPageConfigHistoryVo convertHistoryMapToVo(Map<String, Object> map) {
-        // 使用 RuoYi MapstructUtils 自动转换
+        // Use RuoYi MapstructUtils auto conversion
         return MapstructUtils.convert(map, ErpPageConfigHistoryVo.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int insertByBo(ErpPageConfigBo bo) {
-        // 检查模块编码 + 配置类型是否唯一（使用 SqlBuilder）
+        // Check module code + config type uniqueness (use SqlBuilder)
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition1 = new HashMap<>();
         condition1.put("field", "module_code");
@@ -331,13 +328,13 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         Long count = jdbcTemplate.queryForObject(countSql, Long.class, sqlResult.getParams().toArray());
         
         if (count != null && count > 0) {
-            throw new ServiceException("该模块编码和配置类型已存在");
+            throw new ServiceException("Module code and config type already exists");
         }
         
         ErpPageConfig config = MapstructUtils.convert(bo, ErpPageConfig.class);
         config.setVersion(1);
         
-        // 使用 JdbcTemplate 插入
+        // Use JdbcTemplate insert
         String sql = """
             INSERT INTO erp_page_config (
                 module_code, config_name, config_type,
@@ -371,7 +368,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         );
         
         if (row > 0) {
-            // 清除缓存
+            // Clear cache
             CacheUtils.evict(CacheNames.ERP_CONFIG, config.getModuleCode());
         }
         
@@ -383,15 +380,15 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     public int updateByBo(ErpPageConfigBo bo) {
         ErpPageConfig config = MapstructUtils.convert(bo, ErpPageConfig.class);
         
-        // 版本号 +1
+        // Version number +1
         Integer newVersion = bo.getVersion() + 1;
         config.setVersion(newVersion);
         
-        // 手动设置更新者（从登录用户获取）
+        // Manually set updater (from login user)
         String updateBy = StringUtils.substring(LoginHelper.getUsername(), 0, 64);
         config.setUpdateBy(updateBy != null ? updateBy : "admin");
         
-        // 使用 JdbcTemplate 更新
+        // Use JdbcTemplate update
         String sql = """
             UPDATE erp_page_config 
             SET page_config = ?, 
@@ -427,22 +424,19 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         );
         
         if (row > 0) {
-            // 记录历史版本
+            // Record history version
             recordHistory(config, bo.getChangeReason());
             
-            // 优化 1：主动清除缓存（而不是等待 TTL）
+            // Optimization 1: Actively clear cache (instead of waiting for TTL)
             CacheUtils.evict(CacheNames.ERP_CONFIG, config.getModuleCode());
-            log.info("已清除配置缓存，moduleCode: {}, version: {}", 
-                config.getModuleCode(), newVersion);
             
-            // 优化 2：广播刷新事件（供其他模块监听处理）
+            // Optimization 2: Broadcast refresh event (for other modules to listen and handle)
             try {
                 eventPublisher.publishEvent(
                     new ConfigRefreshEvent(this, config.getModuleCode(), newVersion)
                 );
-                log.info("已广播配置刷新事件，moduleCode: {}", config.getModuleCode());
             } catch (Exception e) {
-                log.warn("广播配置刷新事件失败，但不影响主流程", e);
+                log.warn("Broadcast config refresh event failed, but does not affect main flow", e);
             }
         }
         
@@ -450,11 +444,11 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     }
 
     /**
-     * 记录配置历史（使用 JdbcTemplate）
+     * Record config history (use JdbcTemplate)
      */
     private void recordHistory(ErpPageConfig config, String changeReason) {
         try {
-            // 使用 JdbcTemplate 插入历史记录
+            // Use JdbcTemplate insert history
             String sql = """
                 INSERT INTO erp_page_config_history (
                     config_id, module_code, config_type, version,
@@ -482,10 +476,8 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 config.getUpdateBy(),
                 LocalDateTime.now()
             );
-            log.info("记录配置历史成功，configId: {}, version: {}", 
-                config.getConfigId(), config.getVersion());
         } catch (Exception e) {
-            log.error("记录配置历史失败", e);
+            log.error("Record config history failed", e);
         }
     }
 
@@ -493,7 +485,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(Long[] configIds) {
         if (ObjectUtil.isNotEmpty(configIds)) {
-            // 先清除缓存
+            // First clear cache
             for (Long configId : configIds) {
                 List<Map<String, Object>> conditions = new ArrayList<>();
                 Map<String, Object> condition = new HashMap<>();
@@ -512,7 +504,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 }
             }
             
-            // 批量删除（使用 IN 条件）
+            // Batch delete (use IN condition)
             StringBuilder inClause = new StringBuilder();
             for (int i = 0; i < configIds.length; i++) {
                 if (i > 0) inClause.append(",");
@@ -528,7 +520,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteById(Long configId) {
-        // 查询配置信息并清除缓存
+        // Query config info and clear cache
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition = new HashMap<>();
         condition.put("field", "config_id");
@@ -544,7 +536,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             String moduleCode = (String) result.get(0).get("module_code");
             CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
             
-            // 执行删除
+            // Execute delete
             String deleteSql = "DELETE FROM erp_page_config WHERE config_id = ?";
             return jdbcTemplate.update(deleteSql, configId);
         }
@@ -563,17 +555,15 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
     @Override
     public String getPageConfig(String moduleCode) {
-        // 先从缓存获取
+        // First get from cache
         Object cached = CacheUtils.get(CacheNames.ERP_CONFIG, moduleCode);
         if (ObjectUtil.isNotNull(cached)) {
-            log.info("[getPageConfig] 命中缓存，moduleCode: {}, cachedDataLength: {}",
-                moduleCode, cached.toString().length());
             return cached.toString();
         }
     
-        log.info("[getPageConfig] 缓存未命中，从数据库查询，moduleCode: {}", moduleCode);
+        log.info("[getPageConfig] Cache miss, query from database, moduleCode: {}", moduleCode);
     
-        // 缓存未命中，从数据库查询（使用 SqlBuilder）
+        // Cache miss, query from database (use SqlBuilder)
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition1 = new HashMap<>();
         condition1.put("field", "module_code");
@@ -595,15 +585,14 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), sqlResult.getParams().toArray());
             
         if (resultList.isEmpty()) {
-            log.warn("[getPageConfig] 未找到配置，moduleCode: {}", moduleCode);
             return null;
         }
             
         Map<String, Object> row = resultList.get(0);
         ErpPageConfig config = convertMapToEntity(row);
     
-        // 标准返回：直接组合 JSON 字符串，不做解析和序列化
-        // 九字段强制拆分：pageConfig, formConfig, tableConfig, searchConfig, actionConfig, apiConfig, dictConfig, businessConfig, detailConfig
+        // Standard return: directly combine JSON string, no parsing and serialization
+        // Nine-field split: pageConfig, formConfig, tableConfig, searchConfig, actionConfig, apiConfig, dictConfig, businessConfig, detailConfig
         String jsonString = String.format(
             "{\"pageConfig\":%s,\"formConfig\":%s,\"tableConfig\":%s,\"searchConfig\":%s,\"actionConfig\":%s,\"apiConfig\":%s,\"dictionaryConfig\":%s,\"businessConfig\":%s,\"detailConfig\":%s,\"moduleCode\":\"%s\",\"configName\":\"%s\",\"version\":%d}",
             config.getPageConfig(),
@@ -620,18 +609,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             config.getVersion()
         );
     
-        log.info("[getPageConfig] 数据库查询成功，configId: {}, moduleCode: {}, configName: {}, version: {}, status: {}, combinedJsonLength: {}",
-            config.getConfigId(),
-            config.getModuleCode(),
-            config.getConfigName(),
-            config.getVersion(),
-            config.getStatus(),
-            jsonString != null ? jsonString.length() : 0);
+        log.info("[getPageConfig] Database query successful, configId: {}, moduleCode: {}, version: {}",
+            config.getConfigId(), moduleCode, config.getVersion());
     
-        // 放入缓存 (TTL: 1 小时 - 已在 CacheNames.ERP_CONFIG 中定义)
+        // Put in cache (TTL: 1 hour - already defined in CacheNames.ERP_CONFIG)
         CacheUtils.put(CacheNames.ERP_CONFIG, moduleCode, jsonString);
-        log.info("[getPageConfig] 已放入缓存，moduleCode: {}", moduleCode);
-    
+                
         return jsonString;
     }
 
@@ -650,7 +633,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     public ErpPageConfig getByModuleCode(String moduleCode) {
         log.debug("[getByModuleCode] 查询模块配置，moduleCode: {}", moduleCode);
         
-        // 使用 SqlBuilder 构建查询条件
+        // Use SqlBuilder to build query conditions
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition1 = new HashMap<>();
         condition1.put("field", "module_code");
@@ -672,14 +655,13 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), sqlResult.getParams().toArray());
             
         if (resultList.isEmpty()) {
-            log.warn("[getByModuleCode] 未找到配置，moduleCode: {}", moduleCode);
             return null;
         }
         
         Map<String, Object> row = resultList.get(0);
         ErpPageConfig config = convertMapToEntity(row);
         
-        log.debug("[getByModuleCode] 查询成功，configId: {}, configName: {}, version: {}", 
+        log.debug("[getByModuleCode] Query successful, configId: {}, configName: {}, version: {}",
             config.getConfigId(), config.getConfigName(), config.getVersion());
         
         return config;
@@ -687,9 +669,9 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
 
     @Override
     public TableDataInfo<ErpPageConfigHistoryVo> selectHistoryPage(Long configId, PageQuery pageQuery) {
-        log.info("[selectHistoryPage] 查询配置历史，configId: {}", configId);
+        log.info("[selectHistoryPage] Query config history, configId: {}", configId);
         
-        // 使用 SqlBuilder 构建查询条件
+        // Use SqlBuilder to build query conditions
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition = new HashMap<>();
         condition.put("field", "config_id");
@@ -702,25 +684,25 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         sql.append(sqlResult.getSql());
         sql.append(" ORDER BY version DESC");
         
-        // 分页参数
+        // Page params
         long pageNum = pageQuery.getPageNum();
         long pageSize = pageQuery.getPageSize();
         long offset = (pageNum - 1) * pageSize;
         
-        // 添加分页限制
+        // Add pagination limit
         sql.append(" LIMIT ? OFFSET ?");
         List<Object> params = new ArrayList<>(sqlResult.getParams());
         params.add(pageSize);
         params.add(offset);
         
-        // 执行查询
+        // Execute query
         List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         
-        // 查询总数
+        // Query total count
         String countSql = "SELECT COUNT(*) FROM erp_page_config_history" + sqlResult.getSql();
         Long total = jdbcTemplate.queryForObject(countSql, Long.class, sqlResult.getParams().toArray());
         
-        // 转换为 VO（使用 RuoYi TableDataInfo）
+        // Convert to VO (use RuoYi TableDataInfo)
         List<ErpPageConfigHistoryVo> voList = new ArrayList<>();
         for (Map<String, Object> row : resultList) {
             ErpPageConfigHistoryVo vo = convertHistoryMapToVo(row);
@@ -730,15 +712,15 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         }
         TableDataInfo<ErpPageConfigHistoryVo> tableDataInfo = new TableDataInfo<>(voList, total);
         
-        log.info("[selectHistoryPage] 查询成功，total: {}", total);
+        log.info("[selectHistoryPage] Query successful, total: {}", total);
         return tableDataInfo;
     }
 
     @Override
     public ErpPageConfigHistoryVo getVersionDetail(Long configId, Integer version) {
-        log.info("[getVersionDetail] 查询版本详情，configId: {}, version: {}", configId, version);
+        log.info("[getVersionDetail] Query version detail, configId: {}, version: {}", configId, version);
         
-        // 使用 SqlBuilder 构建查询条件
+        // Use SqlBuilder to build query conditions
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition1 = new HashMap<>();
         condition1.put("field", "config_id");
@@ -759,12 +741,10 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql.toString(), sqlResult.getParams().toArray());
         
         if (resultList.isEmpty()) {
-            log.warn("[getVersionDetail] 未找到版本，configId: {}, version: {}", configId, version);
             return null;
         }
         
         ErpPageConfigHistoryVo vo = convertHistoryMapToVo(resultList.get(0));
-        log.info("[getVersionDetail] 查询成功，historyId: {}", vo.getHistoryId());
         return vo;
     }
 
@@ -782,7 +762,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         history.setModuleCode(getStringValue(map, "module_code"));
         history.setConfigType(getStringValue(map, "config_type"));
         history.setVersion(getIntegerValue(map, "version"));
-        // History Entity 有分开的配置字段
+        // History Entity has separate config fields
         history.setPageConfig(getStringValue(map, "page_config"));
         history.setFormConfig(getStringValue(map, "form_config"));
         history.setTableConfig(getStringValue(map, "table_config"));
@@ -791,12 +771,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         history.setDictConfig(getStringValue(map, "dict_config"));
         history.setApiConfig(getStringValue(map, "api_config"));
         history.setBusinessConfig(getStringValue(map, "business_config"));
-        // ErpPageConfigHistory 没有 detailConfig 字段
+        // ErpPageConfigHistory does not have detailConfig field
         history.setChangeReason(getStringValue(map, "change_reason"));
         history.setChangeType(getStringValue(map, "change_type"));
         history.setCreateBy(getStringValue(map, "create_by"));
         
-        // 处理 LocalDateTime 类型
+        // Handle LocalDateTime type
         Object createTime = map.get("create_time");
         if (createTime instanceof java.sql.Timestamp) {
             history.setCreateTime(((java.sql.Timestamp) createTime).toLocalDateTime());
@@ -812,7 +792,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             configId, targetVersion, reason);
         
         try {
-            // 1. 查询当前配置（使用 SqlBuilder）
+            // 1. Query current config (use SqlBuilder)
             List<Map<String, Object>> conditions1 = new ArrayList<>();
             Map<String, Object> condition1 = new HashMap<>();
             condition1.put("field", "config_id");
@@ -830,7 +810,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             }
             ErpPageConfig currentConfig = convertMapToEntity(currentList.get(0));
             
-            // 2. 查询目标版本（使用 SqlBuilder）
+            // 2. Query target version (use SqlBuilder)
             List<Map<String, Object>> conditions2 = new ArrayList<>();
             Map<String, Object> condition2a = new HashMap<>();
             condition2a.put("field", "config_id");
@@ -855,14 +835,14 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             Map<String, Object> historyRow = historyList.get(0);
             ErpPageConfigHistory targetVersionHistory = convertHistoryMapToEntity(historyRow);
             
-            // 3. 更新配置内容为目标版本
+            // 3. Update config content to target version
             currentConfig.setPageConfig(targetVersionHistory.getPageConfig());
             currentConfig.setFormConfig(targetVersionHistory.getFormConfig());
             currentConfig.setTableConfig(targetVersionHistory.getTableConfig());
             currentConfig.setApiConfig(targetVersionHistory.getApiConfig());
             currentConfig.setDictConfig(targetVersionHistory.getDictConfig());
             currentConfig.setBusinessConfig(targetVersionHistory.getBusinessConfig());
-            currentConfig.setVersion(currentConfig.getVersion() + 1); // 版本号 +1
+            currentConfig.setVersion(currentConfig.getVersion() + 1); // Version number +1
             
             int updateCount = jdbcTemplate.update(
                 """
@@ -893,7 +873,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 throw new ServiceException("更新配置失败");
             }
             
-            // 4. 记录回滚历史（使用 JdbcTemplate）
+            // 4. Record rollback history (use JdbcTemplate)
             String insertHistorySql = """
                 INSERT INTO erp_page_config_history (
                     config_id, module_code, config_type, version,
@@ -919,7 +899,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 LocalDateTime.now()
             );
             
-            // 5. 清除缓存
+            // 5. Clear cache
             CacheUtils.evict(CacheNames.ERP_CONFIG, currentConfig.getModuleCode());
             
             log.info("[rollbackToVersion] 回滚成功，newVersion: {}", currentConfig.getVersion());
@@ -934,19 +914,19 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         log.info("[exportConfig] 导出配置，configId: {}", configId);
         
         try {
-            // 1. 查询配置详情
+            // 1. Query config detail
             ErpPageConfigVo config = selectById(configId);
             if (config == null) {
                 throw new ServiceException("配置不存在");
             }
             
-            // 2. 设置响应头
+            // 2. Set response headers
             response.setContentType("application/json;charset=UTF-8");
             response.setHeader("Content-Disposition", "attachment;filename=" + 
                 java.net.URLEncoder.encode(config.getModuleCode() + "_config.json", "UTF-8"));
             
-            // 3. 写入 JSON 数据
-            // 🔧 修复：组合 6 个字段为 JSON 对象
+            // 3. Write JSON data
+            // Fix: Combine 6 fields into JSON object
             Map<String, Object> jsonContent = new HashMap<>();
             jsonContent.put("pageConfig", parseJsonString(config.getPageConfig()));
             jsonContent.put("formConfig", parseJsonString(config.getFormConfig()));
@@ -970,24 +950,24 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         log.info("[importConfig] 导入配置，文件名：{}", file.getOriginalFilename());
         
         try {
-            // 1. 读取文件内容
+            // 1. Read file content
             String content = new String(file.getBytes(), "UTF-8");
             
-            // 2. 解析 JSON 并验证格式
+            // 2. Parse JSON and validate format
             Object parsedJson = JsonUtils.parseObject(content, Object.class);
             if (parsedJson == null) {
                 throw new ServiceException("JSON 格式错误");
             }
             
-            // 3. 生成模块编码（如果原文件中有则使用，否则生成新的）
+            // 3. Generate module code (use from original file if exists, otherwise generate new)
             String moduleCode = "imported_" + System.currentTimeMillis();
             
-            // 4. 构建配置对象
+            // 4. Build config object
             ErpPageConfigBo bo = new ErpPageConfigBo();
             bo.setModuleCode(moduleCode);
             bo.setConfigName("导入的配置 - " + System.currentTimeMillis());
             bo.setConfigType("PAGE");
-            // 🔧 修复：解析 JSON 并设置 6 个字段
+            // Fix: Parse JSON and set 6 fields
             try {
                 if (parsedJson instanceof Map) {
                     @SuppressWarnings("unchecked")
@@ -1001,14 +981,14 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 }
             } catch (Exception e) {
                 log.warn("解析导入的 JSON 失败，将使用原始字符串", e);
-                // 如果解析失败，将整个内容作为 pageConfig
+                // If parsing failed, use entire content as pageConfig
                 bo.setPageConfig(content);
             }
             bo.setStatus("1");
             bo.setIsPublic("0");
             bo.setRemark("通过导入功能创建");
             
-            // 5. 保存配置
+            // 5. Save config
             insertByBo(bo);
             
             log.info("[importConfig] 导入成功，moduleCode: {}", moduleCode);
@@ -1024,18 +1004,18 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         log.info("[copyConfig] 复制配置，configId: {}", configId);
         
         try {
-            // 1. 查询原配置
+            // 1. Query original config
             ErpPageConfigVo originalConfig = selectById(configId);
             if (originalConfig == null) {
                 throw new ServiceException("原配置不存在");
             }
             
-            // 2. 构建新配置
+            // 2. Build new config
             ErpPageConfigBo newConfig = new ErpPageConfigBo();
             newConfig.setModuleCode(originalConfig.getModuleCode() + "_copy_" + System.currentTimeMillis());
             newConfig.setConfigName(originalConfig.getConfigName() + " (副本)");
             newConfig.setConfigType(originalConfig.getConfigType());
-            // 🔧 修复：复制 6 个字段
+            // Fix: Copy 6 fields
             newConfig.setPageConfig(originalConfig.getPageConfig());
             newConfig.setFormConfig(originalConfig.getFormConfig());
             newConfig.setTableConfig(originalConfig.getTableConfig());
@@ -1046,7 +1026,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             newConfig.setIsPublic("0");
             newConfig.setRemark("复制自配置 ID: " + configId);
             
-            // 3. 保存新配置
+            // 3. Save new config
             insertByBo(newConfig);
             
             log.info("[copyConfig] 复制成功，newModuleCode: {}", newConfig.getModuleCode());
@@ -1063,7 +1043,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         log.info("[updateConfigStatus] 更新配置状态，configId: {}, status: {}", configId, status);
         
         try {
-            // 1. 查询配置（使用 SqlBuilder + JdbcTemplate）
+            // 1. Query config (use SqlBuilder + JdbcTemplate)
             List<Map<String, Object>> conditions = new ArrayList<>();
             Map<String, Object> condition = new HashMap<>();
             condition.put("field", "config_id");
@@ -1082,12 +1062,12 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             Map<String, Object> row = resultList.get(0);
             String moduleCode = getStringValue(row, "module_code");
             
-            // 2. 验证状态值
+            // 2. Validate status value
             if (!"0".equals(status) && !"1".equals(status)) {
                 throw new ServiceException("状态值必须为 0 或 1");
             }
             
-            // 3. 更新状态（使用 JdbcTemplate）
+            // 3. Update status (use JdbcTemplate)
             String updateSql = "UPDATE erp_page_config SET status = ?, update_time = ? WHERE config_id = ?";
             int count = jdbcTemplate.update(updateSql, status, LocalDateTime.now(), configId);
             
@@ -1095,7 +1075,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 throw new ServiceException("更新状态失败");
             }
             
-            // 4. 清除缓存
+            // 4. Clear cache
             CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
             
             log.info("[updateConfigStatus] 更新成功，newStatus: {}", status);
