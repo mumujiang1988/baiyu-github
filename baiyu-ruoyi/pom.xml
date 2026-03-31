@@ -334,15 +334,8 @@
                 <artifactId>mapstruct-plus-spring-boot-starter</artifactId>
                 <version>${mapstruct-plus.version}</version>
             </dependency>
-
-            <!-- demo模块 -->
-            <dependency>
-                <groupId>com.ruoyi</groupId>
-                <artifactId>ruoyi-demo</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <!-- ERP配置化模块 -->
+            
+            <!-- ERP 配置化模块 -->
             <dependency>
                 <groupId>com.ruoyi</groupId>
                 <artifactId>ruoyi-erp-api</artifactId>

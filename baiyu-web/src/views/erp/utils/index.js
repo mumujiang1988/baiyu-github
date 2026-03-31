@@ -25,12 +25,12 @@ export {
 } from './responseHelper'
 
 // 配置解析器
-export { default as ERPConfigParser } from './ERPConfigParser'
+export { default as ERPConfigParser } from './ERPConfigParser.mjs'
 
 // 默认导出
 import * as formatters from './formatters'
 import * as responseHelper from './responseHelper'
-import ERPConfigParser from './ERPConfigParser'
+import ERPConfigParser from './ERPConfigParser.mjs'
 
 export default {
   ...formatters,

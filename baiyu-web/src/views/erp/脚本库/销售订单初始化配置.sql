@@ -57,9 +57,7 @@ INSERT INTO `erp_page_config` (
 ) VALUES (
   'saleorder',
   '销售订单管理',
-  'PAGE',
-  
-  -- page_config: 页面基础配置
+  'PAGE', 
   '{
     "pageId": "saleorder",
     "pageName": "销售订单管理",
@@ -67,9 +65,7 @@ INSERT INTO `erp_page_config` (
     "layout": "standard",
     "apiPrefix": "/erp/engine",
     "tableName": "t_sale_order"
-  }',
-  
-  -- form_config: 从 form.json 读取（✨ 已优化：使用数据库字段名）
+  }', 
   '{
     "formConfig": {
       "dialogWidth": "1400px",
@@ -252,9 +248,7 @@ INSERT INTO `erp_page_config` (
         "defaultValue": "6191b13c997848"
       }
     ]
-  }',
-  
-  -- table_config: 从 table.json 读取（只包含表格列配置）
+  }', 
   '{
     "tableName": "t_sale_order",
     "primaryKey": "id",
@@ -278,8 +272,6 @@ INSERT INTO `erp_page_config` (
       "pageSizeOptions": [10, 20, 50, 100]
     }
   }',
-  
-  -- search_config: 从 search.json 读取（查询表单配置）
   '{
     "showSearch": true,
     "defaultExpand": true,
@@ -375,9 +367,7 @@ INSERT INTO `erp_page_config` (
         "queryOperator": "eq"
       }
     ]
-  }',
-  
-  -- action_config: 按钮操作配置（从 config.json 的 buttons 提取）
+  }', 
   '{
     "toolbar": [
       {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:saleorder:add", "type": "primary", "position": "left", "handler": "handleAdd"},
@@ -390,10 +380,7 @@ INSERT INTO `erp_page_config` (
       {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
     "row": []
-  }',
-  
-  -- ✨ api_config: API接口配置（新增）
-  -- ✨ 说明：定义所有CRUD操作的API接口
+  }', 
   '{
     "baseUrl": "/api/saleorder",
     "methods": {
@@ -443,11 +430,7 @@ INSERT INTO `erp_page_config` (
         "description": "反审核销售订单"
       }
     }
-  }',
-  
-  -- ✨ dict_config: 从 dict.json 读取（重构为新构建器格式）
-  -- ✨ 变更：从 dicts 数组改为 dictionaries 对象，增加 builder.enabled
-  -- ✨ 优化：移除普通字典配置，统一使用 API 返回的字典数据
+  }', 
   '{
     "builder": {
       "enabled": true
@@ -520,9 +503,7 @@ INSERT INTO `erp_page_config` (
       "enabled": true,
       "defaultTTL": 300000
     }
-  }',
-  
-  -- business_config: 业务消息和实体名称配置（已移除 buttons 到 action_config）
+  }', 
   '{
     "messages": {
       "selectOne": "请选择一条数据",
@@ -537,8 +518,6 @@ INSERT INTO `erp_page_config` (
     "dialogTitle": {"add": "新增{entityName}", "edit": "修改{entityName}"},
     "drawerTitle": "{entityName}详情 - {billNo}"
   }',
-  
-  -- detail_config: 从 detail.json 读取（✨ 已优化：修复 type 为 form + 使用数据库字段名）
   '{
     "detail": {
       "enabled": true,
@@ -552,7 +531,7 @@ INSERT INTO `erp_page_config` (
           "name": "entry",
           "label": "销售订单明细",
           "icon": "Document",
-          "type": "table",
+          "type": "table",  
           "dataField": "entryList",
           "tableName": "t_sale_order_entry",
           "queryConfig": {
@@ -593,7 +572,7 @@ INSERT INTO `erp_page_config` (
           "name": "cost",
           "label": "成本暂估",
           "icon": "Money",
-          "type": "form",
+          "type": "form",   
           "dataField": "costData",
           "tableName": "t_sale_order_cost",
           "queryConfig": {

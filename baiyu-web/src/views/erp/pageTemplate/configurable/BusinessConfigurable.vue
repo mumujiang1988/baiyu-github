@@ -464,6 +464,9 @@
             :label="tab.label"
             :name="tab.name"
           >
+            <!-- 🔍 调试：在控制台输出页签配置 -->
+            <div style="display:none;" v-text="debugTabConfig(tab)"></div>
+            
             <!-- 表格类型页签 -->
             <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
               <!-- 修复：使用 toRaw 转换 Proxy 为普通对象，确保数据访问正常 -->
@@ -497,6 +500,38 @@
                     </template>
                   </el-table-column>
                 </el-table>
+              </template>
+            </div>
+            
+            <!-- 表单类型页签（成本表） -->
+            <div v-else-if="tab.type === 'form'" class="tab-content">
+              <template v-for="tabKey in [tab.name]" :key="tabKey">
+                <!-- 🔍 调试：检查数据和字段 -->
+                <div style="display:none;" v-text="debugFormTabConfig(tab)"></div>
+                
+                <div v-if="!getTabData(tab) || Object.keys(getTabData(tab)).length === 0" class="tab-empty">
+                  <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+                </div>
+                <el-form 
+                  v-else 
+                  :model="getTabData(tab)" 
+                  label-width="120px" 
+                  size="small"
+                >
+                  <el-row :gutter="20">
+                    <el-col
+                      v-for="field in getFormFields(tab)"
+                      :key="field.prop"
+                      :span="field.span || 12"
+                    >
+                      <el-form-item :label="field.label">
+                        <span v-if="field.renderType === 'currency'">{{ formatAmount(getFieldValue(getTabData(tab), field.prop)) }}</span>
+                        <span v-else-if="field.renderType === 'percent'">{{ getFieldValue(getTabData(tab), field.prop) ? (getFieldValue(getTabData(tab), field.prop) + '%') : '-' }}</span>
+                        <span v-else>{{ getFieldValue(getTabData(tab), field.prop) ?? '-' }}</span>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-form>
               </template>
             </div>
             
@@ -537,7 +572,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, View, Document, Money } from '@element-plus/icons-vue'
-import ERPConfigParser from '@/views/erp/utils/ERPConfigParser'
+import ERPConfigParser from '@/views/erp/utils/ERPConfigParser.mjs'
+import { validateAllTabs, printValidationResult } from '@/views/erp/utils/validateTabConfig.js'
 import dayjs from 'dayjs'
 import request from '@/utils/request'
 // 新增：用于将 Proxy 转换为普通对象
@@ -811,6 +847,7 @@ const loadSubTablesByBillNo = async (billNo) => {
     const moduleCode = currentConfig.value?.moduleCode
     
     if (!moduleCode) {
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] ❌ 错误：moduleCode 为空')
       throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
     }
     
@@ -818,12 +855,13 @@ const loadSubTablesByBillNo = async (billNo) => {
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     
     if (subTableConfigs.length === 0) {
-      console.error('[成本暂估页签] ⚠️ 警告：未解析到子表格配置')
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] ⚠️ 警告：未解析到子表格配置')
       return
     }
     
-    console.error('[成本暂估页签] 🚀 开始查询子表格，billNo:', billNo)
-    console.error('[成本暂估页签] 📋 子表格配置:', JSON.stringify(subTableConfigs, null, 2))
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] 🚀 开始查询子表格，billNo:', billNo)
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] 📋 子表格配置:', JSON.stringify(subTableConfigs, null, 2))
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] 🔧 moduleCode:', moduleCode)
     
     // 并行查询所有子表格
     const results = await multiTableQueryBuilder.queryAllSubTables(
@@ -832,30 +870,34 @@ const loadSubTablesByBillNo = async (billNo) => {
       { billNo } // 上下文数据，用于替换 ${billNo}
     )
     
-    console.error('[成本暂估页签] ✅ 查询完成，结果:', JSON.stringify(results, null, 2))
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] ✅ 查询完成，结果:', JSON.stringify(results, null, 2))
     
     // 存储到对应的数据变量中
     if (results.entry) {
       entryList.value = results.entry.data
       // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 entryList）
       currentDetailRow.value.entryList = results.entry.data
-      console.error('[成本暂估页签] 📊 明细表数据已加载:', results.entry.data.length, '条')
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] 📊 明细表数据已加载:', results.entry.data.length, '条')
+    } else {
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] ⚠️ 警告：查询结果中没有 entry 数据')
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
       // 同步到 currentDetailRow，用于详情页渲染（注意：dataField 是 costData）
       currentDetailRow.value.costData = results.cost.data[0] || {}
-      console.error('[成本暂估页签] 💰 成本表数据已加载:', results.cost.data[0] ? '有数据' : '空数据')
-      console.error('[成本暂估页签] 💰 成本数据详情:', JSON.stringify(results.cost.data[0], null, 2))
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] 💰 成本表数据已加载:', results.cost.data[0] ? '有数据' : '空数据')
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] 💰 成本数据详情:', JSON.stringify(results.cost.data[0], null, 2))
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] 💰 成本数据 keys:', Object.keys(results.cost.data[0] || {}))
     } else {
-      console.error('[成本暂估页签] ⚠️ 警告：查询结果中没有 cost 数据')
+      console.error('[成本暂估页签 - loadSubTablesByBillNo] ⚠️ 警告：查询结果中没有 cost 数据')
     }
     
-    console.error('[成本暂估页签] 🎉 全部数据处理完成')
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] 🎉 全部数据处理完成')
   } catch (error) {
-    console.error('[成本暂估页签] ❌ 查询失败:', error.message)
-    console.error('[成本暂估页签] 错误堆栈:', error.stack)
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] ❌ 查询失败:', error.message)
+    console.error('[成本暂估页签 - loadSubTablesByBillNo] 错误堆栈:', error.stack)
+    ElMessage.error('加载子表格数据失败：' + error.message)
   }
 }
 
@@ -1188,41 +1230,29 @@ const handleQuery = () => {
 
 // 初始化日期范围（支持配置中的 defaultValue）
 const initDateRange = () => {
-  console.error('[日期初始化] 开始执行 initDateRange')
-  
   const searchFields = parsedConfig.search?.fields || []
-  console.error('[日期初始化] searchFields:', JSON.stringify(searchFields, null, 2))
   
   // 查找 beginDate 和 endDate 字段
   const beginDateField = searchFields.find(f => f.field === 'beginDate')
   const endDateField = searchFields.find(f => f.field === 'endDate')
-  
-  console.error('[日期初始化] beginDateField:', beginDateField)
-  console.error('[日期初始化] endDateField:', endDateField)
   
   let beginDateValue = null
   let endDateValue = null
   
   // 处理开始日期
   if (beginDateField && beginDateField.defaultValue) {
-    console.error('[日期初始化] 解析 beginDate.defaultValue:', beginDateField.defaultValue)
     beginDateValue = parseDynamicDate(beginDateField.defaultValue)
-    console.error('[日期初始化] beginDateValue 结果:', beginDateValue)
   }
   
   // 处理结束日期
   if (endDateField && endDateField.defaultValue) {
-    console.error('[日期初始化] 解析 endDate.defaultValue:', endDateField.defaultValue)
     endDateValue = parseDynamicDate(endDateField.defaultValue)
-    console.error('[日期初始化] endDateValue 结果:', endDateValue)
   }
   
   // 如果配置了默认值，使用配置的值；否则使用默认的"本月 1 号到今天"
   if (beginDateValue && endDateValue) {
-    console.error('[日期初始化] ✅ 使用配置的默认值:', beginDateValue, 'to', endDateValue)
     dateRange.value = [beginDateValue, endDateValue]
   } else {
-    console.error('[日期初始化] ⚠️ 未找到配置，使用降级处理：本月 1 号到今天')
     // 降级处理：本月 1 号到今天
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -1234,10 +1264,6 @@ const initDateRange = () => {
   
   queryParams.value.beginDate = dateRange.value[0]
   queryParams.value.endDate = dateRange.value[1]
-  
-  console.error('[日期初始化] 最终 dateRange:', dateRange.value)
-  console.error('[日期初始化] 最终 queryParams.beginDate:', queryParams.value.beginDate)
-  console.error('[日期初始化] 最终 queryParams.endDate:', queryParams.value.endDate)
 }
 
 /**
@@ -1443,6 +1469,80 @@ const getTabData = (tab) => {
   }
   
   // 其他情况返回空数组
+  return []
+}
+
+/**
+ * 🔍 新增：自动校验详情页签配置（开发环境启用）
+ */
+const validateDrawerTabs = () => {
+  if (process.env.NODE_ENV !== 'development') {
+    return // 仅开发环境启用
+  }
+  
+  const tabs = parsedConfig.drawer?.tabs || []
+  if (tabs.length === 0) {
+    return
+  }
+  
+  const validationResult = validateAllTabs(tabs)
+  printValidationResult(validationResult)
+  
+  // 如果有错误，在控制台显示警告
+  if (!validationResult.valid) {
+    console.warn('💡 [配置建议] 请检查 detail_config 的 JSON 配置，确保字段路径正确。参考文档：DOC/公共模块文档/落地 sql/销售订单初始化配置.sql')
+  }
+}
+
+/**
+ * 调试页签配置（在模板中调用）
+ */
+const debugTabConfig = (tab) => {
+  console.error('📑 [详情页 - 页签配置]', {
+    name: tab.name,
+    label: tab.label,
+    type: tab.type,
+    dataField: tab.dataField,
+    hasFields: !!tab.fields,
+    fieldsCount: tab.fields?.length || 0,
+    fullConfig: tab
+  })
+  return '' // 不显示任何内容
+}
+
+/**
+ * 调试表单页签配置（在模板中调用）
+ */
+const debugFormTabConfig = (tab) => {
+  const formFields = getFormFields(tab)
+  console.error('💰 [成本暂估页签 - 字段检查]', {
+    tabName: tab.name,
+    hasFieldsProp: !!tab.fields,
+    hasForm: !!tab.form,
+    hasFormFields: !!tab.form?.fields,
+    fieldsFromMethod: formFields?.length || 0,
+    fields: formFields
+  })
+  return '' // 不显示任何内容
+}
+
+/**
+ * 获取表单字段配置（兼容两种配置格式）
+ * @param {Object} tab - 页签配置对象
+ * @returns {Array} 字段配置数组
+ */
+const getFormFields = (tab) => {
+  // 优先从 tab.form.fields 读取（标准格式）
+  if (tab.form && Array.isArray(tab.form.fields)) {
+    return tab.form.fields
+  }
+  
+  // 降级：从 tab.fields 读取（兼容旧格式）
+  if (Array.isArray(tab.fields)) {
+    return tab.fields
+  }
+  
+  // 最后返回空数组
   return []
 }
 
@@ -1827,6 +1927,9 @@ const initEngineConfig = async () => {
   if (!moduleCode) return
   
   try {
+    // 🔍 新增：校验详情页签配置（开发环境）
+    validateDrawerTabs()
+    
     // 1. 初始化动态查询引擎
     if (parsedConfig.search) {
       engineConfig.query = {

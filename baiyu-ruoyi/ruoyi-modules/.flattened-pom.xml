@@ -13,7 +13,6 @@
   <packaging>pom</packaging>
   <description>ruoyi-modules 业务模块</description>
   <modules>
-    <module>ruoyi-demo</module>
     <module>ruoyi-generator</module>
     <module>ruoyi-system</module>
     <module>ruoyi-erp-api</module>

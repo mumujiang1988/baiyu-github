@@ -59,7 +59,6 @@ class DictionaryBuilder {
       config: config,
       ttl: config.ttl || 5 * 60 * 1000
     })
-    console.log(` 构建动态字典：${name}, API: ${config.api}`)
     return builder
   }
 
@@ -75,7 +74,6 @@ class DictionaryBuilder {
       config: config,
       ttl: config.ttl || 5 * 60 * 1000
     })
-    console.log(` 构建远程搜索字典：${name}`)
     return builder
   }
 
@@ -87,21 +85,17 @@ class DictionaryBuilder {
   async load(loader) {
     // 检查缓存是否有效
     if (this.cache && this.cache.data && !this.cache.isExpired()) {
-      console.debug(`💾 使用缓存字典：${this.name}`)
       return this.cache.data
     }
 
     try {
-      console.log(`🌐 加载字典：${this.name}`)
       const data = await loader()
       
       // 更新缓存
       this.cache = new DictionaryCache(data, this.ttl)
-      console.log(` 字典加载成功：${this.name}, 共 ${data.length} 条`)
       
       return data
     } catch (error) {
-      console.error(`字典加载失败：${this.name}`, error)
       if (this.cache) {
         this.cache.error = error.message
       }
@@ -122,16 +116,13 @@ class DictionaryBuilder {
     }
 
     try {
-      console.log(`搜索字典：${this.name}, 关键词：${keyword}`)
       const data = await searcher(keyword)
       
       // 更新缓存
       this.cache = new DictionaryCache(data, this.ttl)
-      console.log(` 字典搜索成功：${this.name}, 共 ${data.length} 条`)
       
       return data
     } catch (error) {
-      console.error(`字典搜索失败：${this.name}`, error)
       return []
     }
   }
@@ -155,7 +146,6 @@ class DictionaryBuilder {
       this.cache.loaded = false
       this.cache.data = null
       this.cache.timestamp = 0
-      console.log(`已清除字典缓存：${this.name}`)
     }
   }
 
@@ -276,7 +266,6 @@ class DictionaryBuilderEngine {
     this.registry.forEach((builder, name) => {
       builder.clear()
     })
-    console.log('已清除所有字典缓存')
   }
 
   /**
@@ -299,7 +288,6 @@ class DictionaryBuilderEngine {
    */
   buildFromConfig(dictionaryConfig, moduleCode) {
     if (!dictionaryConfig) {
-      console.warn(`[字典引擎] 字典配置为空`)
       return this
     }
 
@@ -314,7 +302,6 @@ class DictionaryBuilderEngine {
         
         // ❌ 不再支持 static 类型
         if (type === 'static') {
-          console.error(`❌ [字典优化] 检测到已废弃的静态字典 "${dictName}"，请改为使用 dynamic 或 remote 类型。`)
           errorCount++
           continue
         }
@@ -333,17 +320,11 @@ class DictionaryBuilderEngine {
           this.register(dictName, DictionaryBuilder.buildDynamic(dictName, finalConfig))
           successCount++
         } else {
-          console.error(`❌ [字典优化] 未知的字典类型 "${type}" for "${dictName}"`)
           errorCount++
         }
       } catch (error) {
-        console.error(`构建失败：${dictName}`, error)
         errorCount++
       }
-    }
-
-    if (errorCount > 0) {
-      console.warn(`[字典引擎] 构建完成：成功 ${successCount}, 失败 ${errorCount}（包含废弃的 static 类型）`)
     }
 
     return this
@@ -369,9 +350,6 @@ class DictionaryBuilderEngine {
             if (moduleCode) {
               apiUrl = apiUrl.replace(/{moduleCode}/g, moduleCode)
             }
-            
-            console.log(`🔍 [${name}] 请求 API:`, apiUrl)
-            
             const response = await request({ url: apiUrl, method: 'get' })
             
             let data = []

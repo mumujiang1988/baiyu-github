@@ -7,7 +7,7 @@
 import { ref, reactive, watch, computed, h } from 'vue'
 import { ElTabs, ElTabPane, ElTable, ElDescriptions, ElDescriptionsItem, ElEmpty, ElIcon, ElTag } from 'element-plus'
 import { Loading, Close } from '@element-plus/icons-vue'
-import ERPConfigParser from '@/views/erp/utils/ERPConfigParser'
+import ERPConfigParser from '@/views/erp/utils/ERPConfigParser.mjs'
 
 export default {
   name: 'ExpandRowDetail',

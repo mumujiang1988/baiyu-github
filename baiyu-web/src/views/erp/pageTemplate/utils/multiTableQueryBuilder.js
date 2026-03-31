@@ -43,6 +43,8 @@ export const querySubTable = async (params) => {
   const { moduleCode, tableName, queryConfig, pageNum = 1, pageSize = 100 } = params
   
   try {
+    console.error('[成本表查询 - querySubTable] 📝 请求参数:', JSON.stringify({ moduleCode, tableName, queryConfig, pageNum, pageSize }, null, 2))
+    
     const response = await request({
       url: '/erp/engine/query/execute',
       method: 'post',
@@ -57,10 +59,10 @@ export const querySubTable = async (params) => {
     
     // 成本表异常日志
     if (tableName === 't_sale_order_cost') {
-      console.error('[成本表查询] 请求参数:', JSON.stringify({ moduleCode, tableName, queryConfig, pageNum, pageSize }, null, 2))
-      console.error('[成本表查询] 响应数据:', JSON.stringify(response.data, null, 2))
+      console.error('[成本表查询 - querySubTable] ✅ 响应数据:', JSON.stringify(response.data, null, 2))
       if (!response.data || !response.data.rows || response.data.rows.length === 0) {
-        console.error('[成本表查询] ⚠️ 警告：返回数据为空')
+        console.error('[成本表查询 - querySubTable] ⚠️ 警告：返回数据为空')
+        console.error('[成本表查询 - querySubTable] 🔍 检查 SQL 配置和数据库连接')
       }
     }
     
@@ -69,8 +71,8 @@ export const querySubTable = async (params) => {
   } catch (error) {
     // 成本表异常日志
     if (tableName === 't_sale_order_cost') {
-      console.error('[成本表查询] ❌ 查询失败:', error.message)
-      console.error('[成本表查询] 错误堆栈:', error.stack)
+      console.error('[成本表查询 - querySubTable] ❌ 查询失败:', error.message)
+      console.error('[成本表查询 - querySubTable] 错误堆栈:', error.stack)
     }
     throw error
   }
@@ -85,17 +87,28 @@ export const querySubTable = async (params) => {
  */
 export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData = {}) => {
   try {
+    console.error('[成本表汇总 - queryAllSubTables] 🚀 开始批量查询子表格')
+    console.error('[成本表汇总 - queryAllSubTables] 🔧 moduleCode:', moduleCode)
+    console.error('[成本表汇总 - queryAllSubTables] 📋 子表格数量:', subTableConfigs.length)
+    console.error('[成本表汇总 - queryAllSubTables] 💾 contextData:', JSON.stringify(contextData, null, 2))
+    
     // 构建所有子表格的查询请求
     const promises = subTableConfigs.map(async (config) => {
       const { key, tableName, defaultConditions, defaultOrderBy } = config
       
+      console.error(`[成本表汇总 - queryAllSubTables] 📊 处理子表格 [${key}], tableName: ${tableName}`)
+      
       // 替换模板变量（如 ${billNo}）
       const conditions = replaceTemplateVariables(defaultConditions, contextData)
+      
+      console.error(`[成本表汇总 - queryAllSubTables] 🔧 子表格 [${key}] 查询条件:`, JSON.stringify(conditions, null, 2))
       
       const queryConfig = {
         conditions,
         orderBy: defaultOrderBy || []
       }
+      
+      console.error(`[成本表汇总 - queryAllSubTables] 🔍 子表格 [${key}] 完整 queryConfig:`, JSON.stringify(queryConfig, null, 2))
       
       const result = await querySubTable({
         moduleCode,
@@ -104,6 +117,8 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
         pageNum: 1,
         pageSize: 100 // 子表格通常不需要分页
       })
+      
+      console.error(`[成本表汇总 - queryAllSubTables] ✅ 子表格 [${key}] 查询完成，rows: ${result?.rows?.length || 0}, total: ${result?.total || 0}`)
       
       // result 已经是 response.data，包含 rows 和 total
       return {
@@ -125,17 +140,22 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
       }
     })
     
+    console.error('[成本表汇总 - queryAllSubTables] 📦 所有子表格查询完成，结果:', JSON.stringify(resultMap, null, 2))
+    
     // 成本表异常日志
     if (resultMap.cost) {
-      console.error('[成本表汇总] 最终结果:', JSON.stringify(resultMap.cost, null, 2))
+      console.error('[成本表汇总 - queryAllSubTables] 💰 成本表最终结果:', JSON.stringify(resultMap.cost, null, 2))
       if (!resultMap.cost.data || resultMap.cost.data.length === 0) {
-        console.error('[成本表汇总] ⚠️ 警告：成本表数据为空')
+        console.error('[成本表汇总 - queryAllSubTables] ⚠️ 警告：成本表数据为空')
+        console.error('[成本表汇总 - queryAllSubTables] 🔍 请检查：1)SQL 配置 2) 数据库连接 3) 查询条件 4) 单据编号是否正确')
       }
+    } else {
+      console.error('[成本表汇总 - queryAllSubTables] ⚠️ 警告：结果中没有 cost 数据')
     }
     
     return resultMap
   } catch (error) {
-    console.error(' 批量查询子表格失败:', error)
+    console.error('[成本表汇总 - queryAllSubTables] ❌ 批量查询子表格失败:', error)
     throw error
   }
 }

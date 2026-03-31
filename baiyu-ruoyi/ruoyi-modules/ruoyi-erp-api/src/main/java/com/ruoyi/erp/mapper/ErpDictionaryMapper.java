@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ERP 字典 Mapper - 无 UNION 纯净版
- * 彻底解决 Illegal mix of collations 报错
+ * ERP 字典 Mapper - 无 UNION 纯净版 
  */
 @Mapper
 public interface ErpDictionaryMapper {
@@ -135,4 +134,112 @@ public interface ErpDictionaryMapper {
             "GROUP BY u.user_id, u.nick_name, u.staff_id, d.dept_name, e.salesman_id " +
             "ORDER BY u.nick_name")
     List<Map<String, Object>> selectSalespersonsDict();
+
+    // ==================== 客户字典查询 ====================
+    
+    /**
+     * 查询客户字典数据
+     * 返回客户简称和客户编码
+     */
+    @Select("SELECT " +
+            "  fname AS label, " +  // 客户全称
+            "  CAST(fcustid AS CHAR) AS value, " +  // 客户 ID（转为字符串）
+            "  'customers' AS type, " +
+            "  fshort_name AS shortName, " +  // 客户简称
+            "  fnumber AS customerCode " +  // 客户编码
+            "FROM bd_customer " +
+            "WHERE fdocumentStatus = 'A' " +  // 只查询已审核的客户
+            "ORDER BY fname ASC")
+    List<Map<String, Object>> selectCustomersDict();
+
+    // ==================== 物料字典查询 ====================
+    
+    /**
+     * 查询物料字典数据
+     * 返回物料名称、规格、编码等
+     */
+    @Select("SELECT " +
+            "  name AS label, " +  // 物料名称
+            "  number AS value, " +  // 物料编码
+            "  'materials' AS type, " +
+            "  specification AS specification, " +  // 规格型号
+            "  product_category AS productCategory, " +  // 产品类别
+            "  materialgroup AS materialGroup " +  // 物料分组
+            "FROM by_material " +
+            "WHERE f_state = '1' " +  // 只查询启用状态的物料
+            "ORDER BY name ASC")
+    List<Map<String, Object>> selectMaterialsDict();
+
+    // ==================== 用户字典查询 ====================
+    
+    /**
+     * 查询用户字典数据（所有正常用户）
+     * 用于需要选择用户的场景
+     */
+    @Select("SELECT " +
+            "  u.nick_name AS label, " +  // 显示标签（人名）
+            "  CAST(u.user_id AS CHAR) AS value, " +  // 用户 ID（转为字符串）
+            "  'users' AS type, " +
+            "  u.user_name AS userName, " +  // 登录账号
+            "  d.dept_name AS departmentName, " +  // 部门名称
+            "  u.email AS email, " +  // 邮箱
+            "  u.phonenumber AS phonenumber " +  // 手机号
+            "FROM sys_user u " +
+            "LEFT JOIN sys_dept d ON u.dept_id = d.dept_id " +
+            "WHERE u.status = '1' " +  // 状态正常
+            "AND u.del_flag = '0' " +  // 未删除
+            "ORDER BY u.nick_name ASC")
+    List<Map<String, Object>> selectUsersDict();
+
+    // ==================== 供应商字典查询 ====================
+    
+    /**
+     * 查询供应商字典数据
+     * 返回供应商名称、简称、编码等
+     */
+    @Select("SELECT " +
+            "  name AS label, " +  // 供应商名称
+            "  CAST(supplierid AS CHAR) AS value, " +  // 供应商 ID（转为字符串）
+            "  'suppliers' AS type, " +
+            "  abbreviation AS shortName, " +  // 供应商简称
+            "  number AS supplierCode " +  // 供应商编码
+            "FROM supplier " +
+            "ORDER BY name ASC")
+    List<Map<String, Object>> selectSuppliersDict();
+
+    // ==================== 部门字典查询 ====================
+    
+    /**
+     * 查询部门字典数据
+     * 返回部门名称和层级关系
+     */
+    @Select("SELECT " +
+            "  dept_name AS label, " +  // 部门名称
+            "  CAST(dept_id AS CHAR) AS value, " +  // 部门 ID（转为字符串）
+            "  'departments' AS type, " +
+            "  parent_id AS parentId, " +  // 父部门 ID
+            "  ancestors AS ancestors, " +  // 祖列列表
+            "  order_num AS orderNum " +  // 显示顺序
+            "FROM sys_dept " +
+            "WHERE status = '0' " +  // 只查询正常状态的部门
+            "AND del_flag = '0' " +  // 未删除
+            "ORDER BY ancestors ASC, order_num ASC")
+    List<Map<String, Object>> selectDepartmentsDict();
+
+    // ==================== 税率字典查询 ====================
+    
+    /**
+     * 查询税率字典数据
+     * 返回税率名称、税率值、税制等信息
+     */
+    @Select("SELECT " +
+            "  name AS label, " +  // 税率名称
+            "  code AS value, " +  // 税率编码
+            "  'tax_rates' AS type, " +
+            "  tax_rate AS taxRate, " +  // 税率值（百分比）
+            "  tax_system AS taxSystem, " +  // 税制
+            "  tax_category AS taxCategory " +  // 税种分类
+            "FROM tax_rate " +
+            "ORDER BY tax_rate ASC, id ASC")
+    List<Map<String, Object>> selectTaxRatesDict();
 }

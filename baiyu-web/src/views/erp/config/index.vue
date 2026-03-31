@@ -186,9 +186,11 @@
               <template #header>
                 <div class="dict-header">
                   <span>字典接口数据展示</span>
-                  <el-button type="primary" size="small" icon="Refresh" @click="loadAllDicts">
-                    刷新数据
-                  </el-button>
+                  <div class="header-actions">
+                    <el-button type="primary" size="small" icon="Refresh" @click="loadAllDicts">
+                      刷新数据
+                    </el-button>
+                  </div>
                 </div>
               </template>
 
@@ -720,19 +722,15 @@ function handleAdd() {
  * 编辑按钮操作
  */
 function handleEdit(row) {
-  console.log('\n✏️ [配置管理] 点击编辑，configId:', row.configId)
-  
   isEditMode.value = false
   currentConfig.value = { ...row }
   
   // 加载编辑数据并打开对话框
   loadEditData(row.configId)
     .then(() => {
-      console.log('✅ 数据加载成功，打开编辑对话框')
       viewDialogVisible.value = true
     })
     .catch(error => {
-      console.error('❌ 数据加载失败，不打开对话框')
       // 错误已在 loadEditData 中处理，这里不需要再次提示
     })
 }
@@ -800,30 +798,24 @@ function cancelEditMode() {
  * 加载编辑数据
  */
 function loadEditData(configId) {
-  console.log('\n📦 [配置管理] 开始加载配置数据，configId:', configId)
-  
   return getConfig(configId)
     .then(res => {
-      console.log('✅ API 响应:', res)
-      
-      //  处理 ErpResponse 包装结构
+      // 处理 ErpResponse 包装结构
       let data
       if (res.code === 200 || res.code === 0) {
         // 成功响应，提取 data 字段
         data = res.data || {}
-        console.log('✅ 从 res.data 中提取数据:', data)
       } else {
         // 错误响应
         throw new Error(res.msg || '加载配置失败')
       }
       
-      //  检查必要字段是否为空
+      // 检查必要字段是否为空
       if (!data.configId) {
-        console.error('❌ 配置 ID 为空')
         throw new Error('配置不存在或已删除')
       }
       
-      //  更新编辑表单数据（直接使用后端返回的分散字段）
+      // 更新编辑表单数据（直接使用后端返回的分散字段）
       Object.assign(editFormData, {
         configId: data.configId,
         moduleCode: data.moduleCode || '',
@@ -838,21 +830,15 @@ function loadEditData(configId) {
         dictConfig: data.dictConfig || '',
         businessConfig: data.businessConfig || '',
         detailConfig: data.detailConfig || '',
+        status: data.status || '1',
         isPublic: data.isPublic || '0',
         remark: data.remark || '',
         version: data.version || 1
       })
       
-      console.log('✅ 编辑表单数据已更新:', editFormData)
-      console.log('=================================\n')
-      
       return data
     })
     .catch(error => {
-      console.error('\n❌ [配置管理] 加载配置数据失败:', error.message)
-      console.error('完整错误:', error)
-      console.error('=================================\n')
-      
       ElMessage.error('加载配置数据失败：' + (error.message || '未知错误'))
       throw error // 继续抛出错误，让调用者处理
     })
@@ -904,6 +890,7 @@ function handleEditSubmit() {
     dictConfig: editFormData.dictConfig,
     businessConfig: editFormData.businessConfig,
     detailConfig: editFormData.detailConfig,
+    status: editFormData.status || '1',
     isPublic: editFormData.isPublic,
     remark: editFormData.remark,
     changeReason: editFormData.changeReason,
@@ -928,8 +915,6 @@ function handleEditSubmit() {
  * 查看按钮操作
  */
 function handleView(row) {
-  console.log('\n👁️ [配置管理] 点击查看，configId:', row.configId)
-  
   // 先初始化为列表中的基础数据
   currentConfig.value = { ...row }
   isEditMode.value = false
@@ -938,12 +923,10 @@ function handleView(row) {
   // 异步加载完整数据（在对话框打开后更新）
   loadEditData(row.configId)
     .then(() => {
-      console.log('✅ 数据加载成功，更新查看对话框')
       // 数据加载成功后，更新 currentConfig
       currentConfig.value = { ...editFormData }
     })
     .catch(error => {
-      console.error('❌ 数据加载失败', error)
       // 加载失败时，给 configContent 一个默认值避免显示 undefined
       if (!currentConfig.value.configContent) {
         currentConfig.value.configContent = '{\n  "error": "配置加载失败，请稍后重试"\n}'
@@ -1079,9 +1062,36 @@ async function loadAllDicts() {
     const promises = [
       request({ url: '/erp/engine/dict/all', method: 'get' }).then(res => {
         if (res && (res.code === 200 || res.code === 0)) {
-          allDictsData.value = res.data || {}
+          // 🔧 修复：正确处理后端返回的 { dictTypeList, dictDataList } 结构
+          const data = res.data || {}
+          
+          // 如果返回的是 { dictTypeList, dictDataList } 结构
+          if (data.dictTypeList && Array.isArray(data.dictTypeList)) {
+            // 提取所有字典类型
+            const dictTypes = data.dictTypeList.map(item => item.type || item.value).filter(Boolean)
+            
+            // 从 dictDataList 中按类型分组
+            const groupedDicts = {}
+            if (data.dictDataList && Array.isArray(data.dictDataList)) {
+              data.dictDataList.forEach(item => {
+                const type = item.type
+                if (type && !groupedDicts[type]) {
+                  groupedDicts[type] = []
+                }
+                if (type) {
+                  groupedDicts[type].push(item)
+                }
+              })
+            }
+            
+            allDictsData.value = groupedDicts
+            console.log('✅ All 字典加载成功:', Object.keys(groupedDicts).length, '个类型')
+          } else {
+            // 已经是分组好的数据
+            allDictsData.value = data
+          }
         }
-        return { success: true, data: res.data || {} }
+        return { success: true, data: allDictsData.value }
       }).catch(error => {
         console.warn('加载 All 字典接口失败:', error)
         return { success: false, error }
@@ -1115,6 +1125,25 @@ async function loadAllDicts() {
   } finally {
     dictLoading.value = false
   }
+}
+
+// ==================== 字典接口相关方法（完结） ====================
+
+/**
+ * 显示生成的配置
+ */
+function showGeneratedConfig(dictConfig) {
+  const jsonStr = JSON.stringify(dictConfig, null, 2)
+  
+  ElMessageBox.alert(
+    `<pre style="max-height: 400px; overflow: auto; background: #f5f7fa; padding: 12px; border-radius: 4px;">${jsonStr}</pre>`,
+    '生成的字典配置',
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '关闭',
+      type: 'success'
+    }
+  )
 }
 </script>
 
@@ -1231,6 +1260,11 @@ async function loadAllDicts() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
 }
 
 .dict-section {

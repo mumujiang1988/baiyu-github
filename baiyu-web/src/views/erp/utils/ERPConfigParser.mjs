@@ -15,7 +15,7 @@ class ERPConfigParser {
   /**
    * 静态方法：从数据库加载配置（带缓存）
    * @param {string} moduleCode - 模块编码
-   * @returns {Promise<Object>} - 配置对象
+   * @returns {Promise} - 配置对象
    */
   static async loadFromDatabase(moduleCode) {
     const cacheKey = `erp_config_${moduleCode}`
@@ -23,7 +23,6 @@ class ERPConfigParser {
     // 检查缓存（开发环境禁用缓存）
     const cached = configCache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL && process.env.NODE_ENV !== 'development') {
-      console.log('命中缓存配置:', moduleCode)
       return cached.config
     }
     
@@ -60,15 +59,11 @@ class ERPConfigParser {
           timestamp: Date.now()
         });
 
-        console.log('配置加载成功:', configContent.pageConfig?.title || configContent.pageConfig?.pageName);
-
         return configContent;
       } else {
-        console.error('后端返回错误码:', response.code, '错误信息:', response.msg)
         throw new Error(response.msg || '配置加载失败');
       }
     } catch (error) {
-      console.error(' 加载数据库配置失败:', error);
       throw error;
     }
   }
@@ -80,7 +75,6 @@ class ERPConfigParser {
   static clearCache(moduleCode) {
     const cacheKey = `erp_config_${moduleCode}`
     configCache.delete(cacheKey)
-    console.log(' 已清除配置缓存:', moduleCode)
   }
   
   /**
@@ -88,7 +82,6 @@ class ERPConfigParser {
    */
   static clearAllCache() {
     configCache.clear()
-    console.log(' 已清除所有配置缓存')
   }
   constructor(config) {
     this.config = config
@@ -136,7 +129,6 @@ class ERPConfigParser {
    */
   parseSearchForm() {
     const { searchConfig } = this.config
-    console.error('[ERPConfigParser] 原始 searchConfig:', JSON.stringify(searchConfig, null, 2))
     
     if (!searchConfig) return { showSearch: false, fields: [] }
   
@@ -144,14 +136,6 @@ class ERPConfigParser {
     const hasFields = Array.isArray(searchConfig.fields)
     const hasSections = Array.isArray(searchConfig.sections)
       
-    console.error('[ERPConfigParser] hasFields:', hasFields, 'hasSections:', hasSections)
-    console.error('[ERPConfigParser] searchConfig.fields:', searchConfig.fields)
-    
-    if (!hasFields && !hasSections) {
-      console.warn('searchConfig 缺少 fields 或 sections 数组')
-      return { showSearch: false, fields: [] }
-    }
-  
     const result = {
       showSearch: searchConfig.showSearch !== false,
       defaultExpand: searchConfig.defaultExpand !== false,
@@ -164,8 +148,6 @@ class ERPConfigParser {
         queryOperator: field.queryOperator || 'eq' // 新增：查询运算符配置
       }))
     }
-    
-    console.error('[ERPConfigParser] 解析后的 search fields:', JSON.stringify(result.fields, null, 2))
     
     return result
   }
@@ -261,10 +243,16 @@ class ERPConfigParser {
         }],
         formTabs: formConfig.formTabs ? {
           enabled: formConfig.formTabs.enabled !== false,
-          tabs: (formConfig.formTabs.tabs || []).map(tab => ({
-            ...tab,
-            type: tab.type || 'table'
-          }))
+          tabs: (formConfig.formTabs.tabs || []).map(tab => {
+            // 开发环境警告：未显式指定 type
+            if (!tab.type && process.env.NODE_ENV === 'development') {
+              console.warn(`⚠️ [配置规范] formTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'form'。建议显式指定以避免歧义。`)
+            }
+            return {
+              ...tab,
+              type: tab.type || 'form'  // 默认改为 form，因为成本暂估页签需要 form 类型
+            }
+          })
         } : null
       }
     } else if (Array.isArray(formConfig.sections)) {
@@ -282,10 +270,16 @@ class ERPConfigParser {
         })),
         formTabs: formConfig.formTabs ? {
           enabled: formConfig.formTabs.enabled !== false,
-          tabs: (formConfig.formTabs.tabs || []).map(tab => ({
-            ...tab,
-            type: tab.type || 'table'
-          }))
+          tabs: (formConfig.formTabs.tabs || []).map(tab => {
+            // 开发环境警告：未显式指定 type
+            if (!tab.type && process.env.NODE_ENV === 'development') {
+              console.warn(`⚠️ [配置规范] formTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'form'。建议显式指定以避免歧义。`)
+            }
+            return {
+              ...tab,
+              type: tab.type || 'form'  // 默认改为 form，因为成本暂估页签需要 form 类型
+            }
+          })
         } : null
       }
     } else {
@@ -309,20 +303,26 @@ class ERPConfigParser {
         width: detailConfig.detail.width || '60%',
         direction: detailConfig.detail.direction || 'rtl',
         loadStrategy: detailConfig.detail.loadStrategy || 'lazy',
-        tabs: (detailConfig.detail.tabs || []).map(tab => ({
-          ...tab,
-          type: tab.type || 'table',
-          dataField: tab.dataField || `${tab.name}Data`,
-          tableName: tab.tableName,
-          queryConfig: tab.queryConfig || {},
-          columns: tab.columns || 3,
-          fields: tab.fields || [],
-          // 修复：确保 table.columns 被正确解析
-          table: {
-            ...tab.table,
-            columns: tab.table?.columns || []
+        tabs: (detailConfig.detail.tabs || []).map(tab => {
+          // 开发环境警告：未显式指定 type
+          if (!tab.type && process.env.NODE_ENV === 'development') {
+            console.warn(`⚠️ [配置规范] detailTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'table'。建议显式指定以避免歧义。`)
           }
-        }))
+          return {
+            ...tab,
+            type: tab.type || 'table',
+            dataField: tab.dataField || `${tab.name}Data`,
+            tableName: tab.tableName,
+            queryConfig: tab.queryConfig || {},
+            columns: tab.columns || 3,
+            fields: tab.fields || [],
+            // 修复：确保 table.columns 被正确解析
+            table: {
+              ...tab.table,
+              columns: tab.table?.columns || []
+            }
+          }
+        }),
       }
     }
     
@@ -333,16 +333,22 @@ class ERPConfigParser {
         trigger: drawerConfig.trigger || 'click',
         loadStrategy: drawerConfig.loadStrategy || 'lazy',
         title: drawerConfig.title || '详情',
-        tabs: (drawerConfig.tabs || []).map(tab => ({
-          ...tab,
-          type: tab.type || 'table',
-          columns: tab.columns || 3,
-          // 修复：确保 table.columns 被正确解析
-          table: {
-            ...tab.table,
-            columns: tab.table?.columns || []
+        tabs: (drawerConfig.tabs || []).map(tab => {
+          // 开发环境警告：未显式指定 type
+          if (!tab.type && process.env.NODE_ENV === 'development') {
+            console.warn(`⚠️ [配置规范] drawerTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'table'。建议显式指定以避免歧义。`)
           }
-        }))
+          return {
+            ...tab,
+            type: tab.type || 'table',
+            columns: tab.columns || 3,
+            // 修复：确保 table.columns 被正确解析
+            table: {
+              ...tab.table,
+              columns: tab.table?.columns || []
+            }
+          }
+        }),
       }
     }
     

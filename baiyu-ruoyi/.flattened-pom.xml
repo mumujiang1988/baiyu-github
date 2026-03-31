@@ -253,11 +253,6 @@
       </dependency>
       <dependency>
         <groupId>com.ruoyi</groupId>
-        <artifactId>ruoyi-demo</artifactId>
-        <version>5.2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.ruoyi</groupId>
         <artifactId>ruoyi-erp-api</artifactId>
         <version>5.2.0</version>
       </dependency>

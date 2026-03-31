@@ -121,3 +121,33 @@ INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create
 VALUES (2034567892345678023, '单据状态', 'f_document_status', '1', '单据状态：创建/审核中/已审核/重新审核/暂存', 'admin', '2026-01-09 10:22:00')
 ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
 
+-- 24. 客户字典 (2026-01-09 10:23:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892456789024, '客户列表', 'customers', '1', '客户信息列表（来自 bd_customer 表）', 'admin', '2026-01-09 10:23:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 25. 物料字典 (2026-01-09 10:24:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892567890025, '物料列表', 'materials', '1', '物料信息列表（来自 by_material 表）', 'admin', '2026-01-09 10:24:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 26. 用户字典 (2026-01-09 10:25:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892678901026, '用户列表', 'users', '1', '用户信息列表（来自 sys_user 表）', 'admin', '2026-01-09 10:25:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 27. 供应商字典 (2026-01-09 10:26:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892789012027, '供应商列表', 'suppliers', '1', '供应商信息列表（来自 supplier 表）', 'admin', '2026-01-09 10:26:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 28. 部门字典 (2026-01-09 10:27:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892890123028, '部门列表', 'departments', '1', '部门信息列表（来自 sys_dept 表）', 'admin', '2026-01-09 10:27:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+-- 29. 税率字典 (2026-01-09 10:28:00)
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
+VALUES (2034567892901234029, '税率列表', 'tax_rates', '1', '税率信息列表（来自 tax_rate 表）', 'admin', '2026-01-09 10:28:00')
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+

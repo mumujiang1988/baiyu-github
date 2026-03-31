@@ -1,5 +1,4 @@
 package com.ruoyi.erp.service.impl;
-
 import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
@@ -404,6 +403,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 dict_config = ?,
                 business_config = ?,
                 detail_config = ?,
+                status = ?,
                 version = ?,
                 update_by = ?,
                 update_time = ?
@@ -419,6 +419,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             config.getDictConfig(),
             config.getBusinessConfig(),
             config.getDetailConfig(),
+            config.getStatus(),
             newVersion,
             config.getUpdateBy(),
             LocalDateTime.now(),

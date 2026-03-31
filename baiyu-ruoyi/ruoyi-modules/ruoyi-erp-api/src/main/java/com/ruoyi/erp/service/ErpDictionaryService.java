@@ -77,6 +77,42 @@ public class ErpDictionaryService {
             list.addAll(salespersons);
         }
         
+        // 4. 查询客户字典
+        List<Map<String, Object>> customers = erpDictionaryMapper.selectCustomersDict();
+        if (customers != null) {
+            list.addAll(customers);
+        }
+        
+        // 5. 查询物料字典
+        List<Map<String, Object>> materials = erpDictionaryMapper.selectMaterialsDict();
+        if (materials != null) {
+            list.addAll(materials);
+        }
+        
+        // 6. 查询用户字典（新增）
+        List<Map<String, Object>> users = erpDictionaryMapper.selectUsersDict();
+        if (users != null) {
+            list.addAll(users);
+        }
+        
+        // 7. 查询供应商字典（新增）
+        List<Map<String, Object>> suppliers = erpDictionaryMapper.selectSuppliersDict();
+        if (suppliers != null) {
+            list.addAll(suppliers);
+        }
+        
+        // 8. 查询部门字典（新增）
+        List<Map<String, Object>> departments = erpDictionaryMapper.selectDepartmentsDict();
+        if (departments != null) {
+            list.addAll(departments);
+        }
+        
+        // 9. 查询税率字典（新增）
+        List<Map<String, Object>> taxRates = erpDictionaryMapper.selectTaxRatesDict();
+        if (taxRates != null) {
+            list.addAll(taxRates);
+        }
+        
         return list;
     }
 

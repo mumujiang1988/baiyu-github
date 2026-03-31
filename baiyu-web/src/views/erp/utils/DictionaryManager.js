@@ -33,13 +33,11 @@ class DictionaryManager {
   async loadAll(forceReload = false) {
     // 如果已加载完成，直接返回
     if (this.allDictData && !forceReload) {
-      console.log('使用缓存的全部字典数据')
       return this.allDictData
     }
     
     // 如果正在加载中，等待完成
     if (this.isLoading && this.loadPromise) {
-      console.log('等待字典加载中...')
       return this.loadPromise
     }
     
@@ -89,9 +87,6 @@ class DictionaryManager {
         return groupedDicts
         
       } catch (error) {
-        console.error('\n❌ [字典加载] 失败')
-        console.error('错误信息:', error.message)
-        console.error('完整错误:', error)
         this.allDictData = {}
         return {}
       } finally {
@@ -160,25 +155,17 @@ if (typeof window !== 'undefined') {
   // 检查字典状态
   window.checkDictManager = () => {
     const status = manager.getStatus()
-    console.log('\n========== 字典管理器状态 ==========')
-    console.log('已加载:', status.loaded)
-    console.log('加载中:', status.loading)
-    console.log('字典类型数量:', status.dictCount)
-    console.log('字典类型列表:', status.dictTypes)
-    console.log('=====================================\n')
     return status
   }
   
   // 获取单个字典
   window.getDict = (dictType) => {
     const dict = manager.getDict(dictType)
-    console.log(`\n字典 "${dictType}":`, dict)
     return dict
   }
   
   // 重新加载
   window.reloadAllDicts = async () => {
-    console.log('重新加载全部字典...')
     manager.clear()
     await manager.loadAll(true)
     window.checkDictManager()

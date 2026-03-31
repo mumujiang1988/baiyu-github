@@ -118,6 +118,11 @@ public class ErpEngineController {
             PageQuery pageQuery = new PageQuery();
             pageQuery.setPageNum(pageNum);
             pageQuery.setPageSize(pageSize);
+            
+            // 成本表特殊日志
+            if ("t_sale_order_cost".equals(tableName)) {
+                log.info("💰 [成本表查询] 分页参数：pageNum={}, pageSize={}", pageNum, pageSize);
+            }
                         
             //  直接调用 Service 执行查询（完全去除 QueryWrapper）
             log.info("执行查询，moduleCode: {}, tableName: {}", moduleCode, tableName);
@@ -128,6 +133,18 @@ public class ErpEngineController {
                     pageQuery, 
                     queryConfig  // 直接传入 queryConfig
                 );
+            
+            // 成本表特殊日志
+            if ("t_sale_order_cost".equals(tableName)) {
+                log.info("💰 [成本表查询] Service 返回结果：rows={}, total={}", 
+                    tableDataInfo.getRows() != null ? tableDataInfo.getRows().size() : 0,
+                    tableDataInfo.getTotal());
+                if (tableDataInfo.getRows() != null && !tableDataInfo.getRows().isEmpty()) {
+                    log.info("💰 [成本表查询] 第一行数据：{}", tableDataInfo.getRows().get(0));
+                } else {
+                    log.warn("💰 [成本表查询] ⚠️ 警告：返回数据为空！请检查 SQL 配置或数据库连接");
+                }
+            }
             
             //  处理数据 (计算字段 + 虚拟字段)
             List<Map<String, Object>> processedRecords = processData(tableDataInfo.getRows(), moduleCode);
