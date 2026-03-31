@@ -22,7 +22,7 @@
 }
 
 .search-card :deep(.el-card__body) {
-  padding: 8px 10px 4px 10px; /* 上右下左：减少上下内边距 */
+  padding: 8px 10px 4px 10px;  
 }
 
 /* Page Title Style */
@@ -31,7 +31,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 0;
-  margin-bottom: 4px; /* 减少底部间距 */
+  margin-bottom: 4px; 
   border-bottom: 4px solid #ebeef5;
 }
 
@@ -48,8 +48,8 @@
 
 /* Toolbar Row - First Row Buttons */
 .toolbar-row {
-  margin-bottom: 8px; /* 减少底部间距 */
-  padding-bottom: 8px; /* 减少底部内边距 */
+  margin-bottom: 8px;  
+  padding-bottom: 8px; 
   border-bottom: 1px solid #ebeef5;
 }
 
@@ -59,7 +59,7 @@
 }
 
 .search-form :deep(.el-form-item) {
-  margin-bottom: 4px; /* 减少底部间距 */
+  margin-bottom: 4px;  
   margin-right: 16px;
 }
 
@@ -102,7 +102,7 @@
   min-height: 0;
 }
 
-/* 表格容器 - 包裹表格和分页 */
+/* Table container - wraps table and pagination */
 .table-wrapper {
   flex: 1;
   display: flex;
@@ -111,14 +111,14 @@
   overflow: hidden;
 }
 
-/* 表格 */
+/* Table */
 .table-wrapper :deep(.el-table) {
   flex: 0 1 auto;
   min-height: 0;
   max-height: 100%;
 }
 
-/* 表格滚动容器 */
+/* Table scroll container */
 .table-wrapper :deep(.el-table__body-wrapper) {
   overflow-y: auto;
   max-height: calc(100% - 40px);
@@ -132,7 +132,7 @@
   justify-content: flex-end;
 }
 
-/* 悬停触发区域样式 */
+/* Hover expand trigger style */
 .hover-expand-trigger {
   cursor: pointer;
   width: 100%;
@@ -149,12 +149,12 @@
   font-weight: 500;
 }
 
-/* 悬停行样式 */
+/* Hover row style */
 :deep(.el-table__row:hover) {
   background-color: #f5f7fa;
 }
 
-/* 扩展行展开行样式 */
+ 
 :deep(.el-table__row.expanded-row) {
   background-color: #e6f7ff !important;
 }
@@ -162,8 +162,7 @@
 :deep(.el-table__row.expanded-row:hover) {
   background-color: #b3e1ff !important;
 }
-
-/* 扩展行单元格样式 */
+ 
 :deep(.el-table__expanded-cell) {
   padding: 0 !important;
   background-color: #fff !important;
@@ -171,8 +170,7 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-
-/* 扩展行容器样式 */
+ 
 .row-expand-container {
   position: relative;
   z-index: 1000;
@@ -181,13 +179,12 @@
   border-bottom: 1px solid #ebeef5;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   max-height: 600px;
-  min-height: 200px; /* 确保最小高度，防止变成一条线 */
+  min-height: 200px;  
   overflow-y: auto;
   overflow-x: hidden;
   padding: 16px;
 }
-
-/* 扩展行关闭按钮样式 */
+ 
 .expand-close-btn {
   position: absolute;
   top: 12px;
@@ -206,11 +203,11 @@
   background-color: #fef0f0;
 }
 
-/* 无数据和加载提示样式 */
+ 
 .no-data-tip {
   padding: 40px 20px;
   text-align: center;
-  min-height: 120px; /* 确保有足够的高度 */
+  min-height: 120px;  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,14 +222,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 120px; /* 确保有足够的高度 */
+  min-height: 120px;  
 }
 
 .loading-data-tip .is-loading {
   font-size: 20px;
 }
-
-/* 扩展行选项卡样式 */
+ 
 .expand-tabs {
   margin-top: 16px;
 }
@@ -247,8 +243,7 @@
 :deep(.expand-tabs .el-tabs__content) {
   padding: 0;
 }
-
-/* 扩展内容区域 */
+ 
 .expand-section {
   margin-bottom: 0;
 }
@@ -268,14 +263,12 @@
   background-color: #f8f9fa;
   font-weight: 600;
 }
-
-/* 描述列表样式 */
+ 
 :deep(.el-descriptions__label) {
   font-weight: 600;
   background-color: #f8f9fa;
 }
-
-/* 表单分区卡片样式 */
+ 
 .form-section-card {
   margin-bottom: 16px;
   border: none;
@@ -299,13 +292,12 @@
   color: #409EFF;
   font-size: 18px;
 }
-
-/* 表单元素间距 */
+ 
 :deep(.el-form-item) {
   margin-bottom: 14px;
 }
 
-/* 表格卡片头部 */
+/* Table card header */
 .table-card-header {
   display: flex;
   justify-content: space-between;
@@ -315,8 +307,7 @@
 .table-card-header .el-button {
   margin-left: auto;
 }
-
-/* 明细表格样式 */
+ 
 .entry-table-card {
   margin-top: 16px;
 }
@@ -338,8 +329,7 @@
 .entry-table :deep(.el-input-number.is-controls-right .el-input__wrapper) {
   padding-right: 25px;
 }
-
-/* 成本表单卡片 */
+ 
 .cost-form-card {
   margin-top: 16px;
 }
@@ -347,8 +337,7 @@
 .cost-form-card :deep(.el-form-item) {
   margin-bottom: 14px;
 }
-
-/* 字典加载容器样式 */
+ 
 .dict-loading-container {
   display: flex;
   flex-direction: column;
@@ -362,8 +351,7 @@
   margin-top: 16px;
   font-size: 14px;
 }
-
-/* 抽屉样式 */
+ 
 .drawer-loading {
   display: flex;
   flex-direction: column;
@@ -393,8 +381,7 @@
 .drawer-content :deep(.el-descriptions) {
   margin-top: 0;
 }
-
-/* 页签空状态样式 */
+ 
 .tab-empty {
   display: flex;
   align-items: center;
@@ -402,8 +389,7 @@
   min-height: 300px;
   padding: 40px 20px;
 }
-
-/* 表单页签样式 */
+ 
 .form-tabs-card {
   margin-top: 16px;
 }
@@ -429,18 +415,16 @@
 .entry-table {
   width: 100%;
 }
-
-/* 对话框底部间距 */
+ 
 .dialog-footer {
   padding-top: 8px;
 }
-
-/* 滚动条优化 */
+ 
 .el-scrollbar {
   padding-right: 8px;
 }
 
-/* 表格边框和圆角 */
+/* Table border and radius */
 :deep(.el-table) {
   border-radius: 4px;
   overflow: hidden;
@@ -455,12 +439,11 @@
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
   background-color: #fafafa;
 }
-
-/* 响应式调整 */
+ 
 @media (max-width: 768px) {
   .app-container {
     padding: 8px;
-    height: calc(100vh - 84px);  /* 保持一致的高度计算 */
+    height: calc(100vh - 84px);  
     max-height: calc(100vh - 84px);
   }
 
@@ -486,8 +469,7 @@
     font-size: 14px;
   }
 }
-
-/* 扩展行悬停区域 */
+ 
 :deep(.el-table__expanded-cell):hover {
   background-color: #f5f7fa !important;
 }

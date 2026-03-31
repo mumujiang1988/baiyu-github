@@ -104,17 +104,17 @@ export default {
       emit('load-data', props.row)
     }
 
-    // 监听展开状态变化
+    // Listen for expand state changes
     watch(() => props.isExpanded, async (newVal) => {
       if (newVal) {
-        // 展开时,如果没有数据则加载
+        // Load data when expanded if no data exists
         const hasEntryList = props.row.entryList && props.row.entryList.length > 0
         const hasCostData = props.row.costData && Object.keys(props.row.costData).length > 0
         
         if (!hasEntryList && !hasCostData) {
           loadData()
         } else {
-          // 有数据时设置活跃标签
+          // Set active tab when data exists
           if (!activeTab.value) {
             activeTab.value = hasEntryList ? 'entry' : 'cost'
           }
@@ -125,7 +125,7 @@ export default {
     const closeExpand = () => {
     }
 
-    // 监听数据变化
+    // Watch for data changes
     watch(() => props.row.entryList, () => {
       if (props.row.entryList?.length > 0) {
         loadingData.value = false
@@ -278,7 +278,7 @@ export default {
       if (hasAnyData) {
         children.push(h(
           'div',
-          { class: 'expand-close-btn', onClick: closeExpand, title: '关闭' },
+          { class: 'expand-close-btn', onClick: closeExpand, title: 'Close' },
           h('el-icon', {}, h(Close))
         ))
       }
@@ -289,7 +289,7 @@ export default {
           { class: 'loading-data-tip' },
           [
             h('el-icon', { class: 'is-loading' }, h(Loading)),
-            h('span', {}, '正在加载数据...')
+            h('span', {}, 'Loading data...')
           ]
         ))
       }
@@ -297,7 +297,7 @@ export default {
         children.push(h(
           'div',
           { class: 'no-data-tip' },
-          h('el-empty', { description: '暂无订单明细或成本数据', imageSize: 80 })
+          h('el-empty', { description: 'No order details or cost data available', imageSize: 80 })
         ))
       }
       else {

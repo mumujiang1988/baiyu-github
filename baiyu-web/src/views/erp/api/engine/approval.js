@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 /**
- * 审批流程引擎 API
+ * Approval Workflow Engine API
  */
 
 /**
- * 获取当前审批步骤
- * @param {Object} data - 参数
- * @param {string} data.moduleCode - 模块编码
- * @param {string|number} data.billId - 单据 ID
- * @param {Object} data.billData - 单据数据
+ * Get current approval step
+ * @param {Object} data - Parameters
+ * @param {string} data.moduleCode - Module code
+ * @param {string|number} data.billId - Bill ID
+ * @param {Object} data.billData - Bill data
  * @returns {Promise}
  */
 export function getCurrentApprovalStep(data) {
@@ -21,13 +21,13 @@ export function getCurrentApprovalStep(data) {
 }
 
 /**
- * 执行审批操作
- * @param {Object} data - 审批参数
- * @param {string|number} data.billId - 单据 ID
- * @param {string} data.moduleCode - 模块编码
- * @param {string} data.action - 审批动作 (AUDIT/REJECT/TRANSFER)
- * @param {string} data.opinion - 审批意见
- * @param {number} data.step - 审批步骤
+ * Execute approval operation
+ * @param {Object} data - Approval parameters
+ * @param {string|number} data.billId - Bill ID
+ * @param {string} data.moduleCode - Module code
+ * @param {string} data.action - Approval action (AUDIT/REJECT/TRANSFER)
+ * @param {string} data.opinion - Approval opinion
+ * @param {number} data.step - Approval step
  * @returns {Promise}
  */
 export function executeApproval(data) {
@@ -39,12 +39,12 @@ export function executeApproval(data) {
 }
 
 /**
- * 检查用户是否有审批权限
- * @param {Object} data - 参数
- * @param {string|number} data.billId - 单据 ID
- * @param {string} data.moduleCode - 模块编码
- * @param {string} data.userId - 用户 ID
- * @param {Array} data.userRoles - 用户角色列表
+ * Check user approval permission
+ * @param {Object} data - Parameters
+ * @param {string|number} data.billId - Bill ID
+ * @param {string} data.moduleCode - Module code
+ * @param {string} data.userId - User ID
+ * @param {Array} data.userRoles - User roles list
  * @returns {Promise}
  */
 export function checkApprovalPermission(data) {
@@ -56,10 +56,10 @@ export function checkApprovalPermission(data) {
 }
 
 /**
- * 获取审批历史
- * @param {Object} params - 查询参数
- * @param {string|number} params.billId - 单据 ID
- * @param {string} params.moduleCode - 模块编码
+ * Get approval history
+ * @param {Object} params - Query parameters
+ * @param {string|number} params.billId - Bill ID
+ * @param {string} params.moduleCode - Module code
  * @returns {Promise}
  */
 export function getApprovalHistory(params) {
@@ -71,8 +71,8 @@ export function getApprovalHistory(params) {
 }
 
 /**
- * 获取审批流程定义
- * @param {string} moduleCode - 模块编码
+ * Get workflow definition
+ * @param {string} moduleCode - Module code
  * @returns {Promise}
  */
 export function getWorkflowDefinition(moduleCode) {
@@ -84,12 +84,12 @@ export function getWorkflowDefinition(moduleCode) {
 }
 
 /**
- * 转审操作
- * @param {Object} data - 转审参数
- * @param {string|number} data.billId - 单据 ID
- * @param {string} data.moduleCode - 模块编码
- * @param {string} data.targetUserId - 目标用户 ID
- * @param {string} data.reason - 转审原因
+ * Transfer approval
+ * @param {Object} data - Transfer parameters
+ * @param {string|number} data.billId - Bill ID
+ * @param {string} data.moduleCode - Module code
+ * @param {string} data.targetUserId - Target user ID
+ * @param {string} data.reason - Transfer reason
  * @returns {Promise}
  */
 export function transferApproval(data) {
@@ -101,10 +101,10 @@ export function transferApproval(data) {
 }
 
 /**
- * 撤回审批
- * @param {Object} data - 撤回参数
- * @param {string|number} data.billId - 单据 ID
- * @param {string} data.moduleCode - 模块编码
+ * Withdraw approval
+ * @param {Object} data - Withdraw parameters
+ * @param {string|number} data.billId - Bill ID
+ * @param {string} data.moduleCode - Module code
  * @returns {Promise}
  */
 export function withdrawApproval(data) {

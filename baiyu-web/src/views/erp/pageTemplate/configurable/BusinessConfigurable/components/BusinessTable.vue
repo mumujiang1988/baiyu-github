@@ -12,9 +12,9 @@
         @selection-change="handleSelectionChange"
         @row-click="handleRowClick"
       >
-        <!-- 动态列 -->
+        <!-- Dynamic columns -->
         <template v-for="(column, index) in visibleColumns" :key="index">
-          <!-- 选择列 -->
+          <!-- Selection column -->
           <el-table-column
             v-if="column.type === 'selection'"
             :type="column.type"
@@ -23,7 +23,7 @@
             :resizable="column.resizable"
           />
           
-          <!-- 展开列 -->
+          <!-- Expand column -->
           <el-table-column
             v-else-if="column.type === 'expand'"
             :width="column.width"
@@ -38,12 +38,12 @@
                 icon="View"
                 @click.stop="handleViewDetail(scope.row)"
               >
-                查看
+                View
               </el-button>
             </template>
           </el-table-column>
                     
-          <!-- 普通列 -->
+          <!-- Normal column -->
           <el-table-column
             v-else
             :prop="column.prop"
@@ -57,7 +57,7 @@
             :resizable="column.resizable"
           >
             <template #default="scope">
-              <!-- 标签渲染 -->
+              <!-- Tag render -->
               <el-tag
                 v-if="column.renderType === 'tag'"
                 :type="getTagConfig(scope.row[column.prop], column.dictionary).type"
@@ -67,7 +67,7 @@
                 {{ getTagConfig(scope.row[column.prop], column.dictionary).label }}
               </el-tag>
               
-              <!-- 链接渲染 -->
+              <!-- Link render -->
               <el-link
                 v-else-if="column.renderType === 'link'"
                 type="primary"
@@ -76,32 +76,32 @@
                 {{ scope.row[column.prop] }}
               </el-link>
               
-              <!-- 字典文本渲染 -->
+              <!-- Dictionary text render -->
               <span v-else-if="column.renderType === 'text' && column.dictionary">
                 {{ getDictLabel(scope.row[column.prop], column.dictionary) }}
               </span>
               
-              <!-- 货币渲染 -->
+              <!-- Currency render -->
               <span v-else-if="column.renderType === 'currency'">
                 {{ formatCurrency(scope.row[column.prop], column.precision) }}
               </span>
               
-              <!-- 日期渲染 -->
+              <!-- Date render -->
               <span v-else-if="column.renderType === 'date'">
                 {{ formatDate(scope.row[column.prop], column.format) }}
               </span>
               
-              <!-- 日期时间渲染 -->
+              <!-- DateTime render -->
               <span v-else-if="column.renderType === 'datetime'">
                 {{ formatDateTime(scope.row[column.prop], column.format) }}
               </span>
               
-              <!-- 百分比渲染 -->
+              <!-- Percent render -->
               <span v-else-if="column.renderType === 'percent'">
                 {{ formatPercent(scope.row[column.prop], column.precision) }}
               </span>
               
-              <!-- 默认渲染 -->
+              <!-- Default render -->
               <span v-else>
                 {{ scope.row[column.prop] ?? '-' }}
               </span>
@@ -111,7 +111,7 @@
       </el-table>
     </div>
     
-    <!-- 分页 -->
+    <!-- Pagination -->
     <div class="pagination-wrapper">
       <el-pagination
         v-show="total > 0"
@@ -168,11 +168,11 @@ const emit = defineEmits([
   'page-change'
 ])
 
-// 内部页码状态
+// Internal page state
 const internalPageNum = ref(props.queryParams?.pageNum || 1)
 const internalPageSize = ref(props.queryParams?.pageSize || 10)
 
-// 监听外部页码变化
+// Watch parent pageNum
 watch(() => props.queryParams?.pageNum, (newVal) => {
   if (newVal) {
     internalPageNum.value = newVal
@@ -185,7 +185,7 @@ watch(() => props.queryParams?.pageSize, (newVal) => {
   }
 })
 
-// 计算属性
+// Computed
 const rowKey = computed(() => props.tableConfig?.rowKey || 'id')
 const border = computed(() => props.tableConfig?.border ?? true)
 const stripe = computed(() => props.tableConfig?.stripe ?? true)
@@ -196,12 +196,12 @@ const visibleColumns = computed(() => {
   return props.tableConfig?.columns?.filter(col => col.visible !== false) || []
 })
 
-// 字典选项
+// Dict options
 const getDictOptions = (dictName) => {
   return dictionaryManager.getDictOptions(dictName)
 }
 
-// 标签配置
+// Tag config
 const getTagConfig = (value, dictName) => {
   const dict = getDictOptions(dictName)
   
@@ -222,7 +222,7 @@ const getTagConfig = (value, dictName) => {
   }
 }
 
-// 字典文本
+// Dict label
 const getDictLabel = (value, dictName) => {
   if (!dictName || !value && value !== 0) return value || '-'
   const dict = getDictOptions(dictName)
@@ -230,7 +230,7 @@ const getDictLabel = (value, dictName) => {
   return option ? option.label : value
 }
 
-// 事件处理
+// Events
 const handleSelectionChange = (selection) => {
   emit('selection-change', selection)
 }
@@ -256,9 +256,9 @@ const handleCurrentChange = (page) => {
 </script>
 
 <style scoped>
-/* ✅ 使用父组件的全局样式，不重复定义 */
+/* ✅ Use parent global styles */
 
-/* 表格卡片样式 */
+/* Table card */
 .table-card {
   flex: 1;
   min-height: 0;
@@ -277,7 +277,7 @@ const handleCurrentChange = (page) => {
   min-height: 0;
 }
 
-/* 表格容器样式 */
+/* Table wrapper */
 .table-wrapper {
   flex: 1;
   display: flex;
@@ -297,7 +297,7 @@ const handleCurrentChange = (page) => {
   max-height: calc(100% - 40px);
 }
 
-/* 分页包装器样式 */
+/* Pagination wrapper */
 .pagination-wrapper {
   flex-shrink: 0;
   padding-top: 12px;

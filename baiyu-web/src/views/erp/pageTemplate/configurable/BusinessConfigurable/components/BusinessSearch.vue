@@ -1,13 +1,13 @@
 <template>
   <el-card shadow="never" class="search-card">
-    <div class="page-header" v-if="pageConfig?.icon || title">
+      <!-- Header -->
       <el-icon :size="20" v-if="pageConfig?.icon">
         <component :is="pageConfig.icon" />
       </el-icon>
       <span class="page-title">{{ title }}</span>
     </div>
     
-    <div class="toolbar-row" v-if="toolbarActions && toolbarActions.length > 0">
+    <!-- Toolbar -->
       <el-space wrap>
         <el-button
           v-for="action in toolbarActions"
@@ -33,7 +33,7 @@
     >
       <template v-for="field in searchFields" :key="field.field">
         <el-form-item :label="field.label" :prop="field.field">
-          <!-- 日期范围 -->
+          <!-- Date range -->
           <el-date-picker
             v-if="field.component === 'daterange'"
             v-model="dateRangeModel"
@@ -46,7 +46,7 @@
             @change="handleDateChange"
           />
           
-          <!-- 单个日期 -->
+          <!-- Single date -->
           <el-date-picker
             v-else-if="field.component === 'date'"
             v-model="queryParams[field.field]"
@@ -58,7 +58,7 @@
             @change="handleQuery"
           />
           
-          <!-- 文本输入 -->
+          <!-- Text input -->
           <el-input
             v-else-if="field.component === 'input'"
             v-model="queryParams[field.field]"
@@ -72,7 +72,7 @@
             </template>
           </el-input>
           
-          <!-- 下拉选择 -->
+          <!-- Dropdown select -->
           <el-select
             v-else-if="field.component === 'select'"
             v-model="queryParams[field.field]"
@@ -139,29 +139,29 @@ const props = defineProps({
 
 const emit = defineEmits(['query', 'reset'])
 
-// 计算属性
+// Computed
 const searchFields = computed(() => props.searchConfig?.fields || [])
 const title = computed(() => {
-  const titleTemplate = props.pageConfig?.title || '{entityName}管理'
-  // 优先从 businessConfig 获取 entityName，兼容 pageConfig
-  const entityName = props.businessConfig?.entityName || props.pageConfig?.entityName || '数据'
+  const titleTemplate = props.pageConfig?.title || '{entityName} Management'
+  // Use entityName from businessConfig first, fallback to pageConfig
+  const entityName = props.businessConfig?.entityName || props.pageConfig?.entityName || 'Data'
   return titleTemplate.replace(/{entityName}/g, entityName)
 })
 const toolbarActions = computed(() => {
-  // 优先从 actionsConfig 获取，兼容旧版从 searchConfig 获取
+  // Use actionsConfig first, fallback to searchConfig.toolbarActions
   return props.actionsConfig?.toolbar?.filter(a => a.position === 'left') || 
          props.searchConfig?.toolbarActions || []
 })
 
-// 日期范围本地模型
+// Date range model
 const dateRangeModel = ref([...props.dateRange])
 
-// 监听父组件 dateRange 变化
+// Watch parent dateRange
 watch(() => props.dateRange, (newVal) => {
   dateRangeModel.value = [...newVal]
 }, { deep: true })
 
-// 字典选项
+// Dict options
 const getDictOptions = (dictName, staticOptions = null, required = false) => {
   if (staticOptions && Array.isArray(staticOptions)) {
     return staticOptions
@@ -171,12 +171,12 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   
   if (!dataFromManager || dataFromManager.length === 0) {
     if (required) {
-      console.warn(`[BusinessSearch] 必填字典 ${dictName} 数据为空`)
+      console.warn(`[BusinessSearch] Required dictionary ${dictName} data is empty`)
     }
     return []
   }
   
-  // 特殊处理销售员字典
+  // Special handling for salespersons
   if (dictName === 'salespersons') {
     return dataFromManager.map(option => {
       const nickName = option.label || ''
@@ -194,7 +194,7 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   return dataFromManager
 }
 
-// 按钮禁用状态
+// Button disabled
 const getButtonDisabled = (disabledKey) => {
   if (!disabledKey) return false
   if (disabledKey === 'single') return props.selectionInfo?.single ?? false
@@ -202,7 +202,7 @@ const getButtonDisabled = (disabledKey) => {
   return false
 }
 
-// 事件处理
+// Event handlers
 const handleQuery = () => {
   emit('query')
 }
@@ -216,15 +216,15 @@ const handleDateChange = () => {
 }
 
 const handleAction = (handlerName) => {
-  // 触发父组件的 action 事件
+  // Trigger parent action event
   emit('action', handlerName)
 }
 </script>
 
 <style scoped>
-/* ✅ 使用父组件的全局样式，不重复定义 */
+/* ✅ Use parent global styles */
 
-/* 页面标题样式 */
+/* Page header */
 .page-header {
   display: flex;
   align-items: center;
@@ -246,20 +246,20 @@ const handleAction = (handlerName) => {
   font-size: 20px;
 }
 
-/* 工具栏行样式 */
+/* Toolbar row */
 .toolbar-row {
   margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid #ebeef5;
 }
 
-/* 搜索表单样式 */
+/* Search form */
 .search-form {
   width: 100%;
 }
 
 .search-form :deep(.el-form-item) {
-  margin-bottom: 2px;  /* 从 4px 改为 2px，更紧凑 */
-  margin-right: 8px;  /* 从 16px 改为 12px，减少横向间距 */
+  margin-bottom: 2px;  /* Changed from 4px to 2px, more compact */
+  margin-right: 8px;  /* Changed from 16px to 12px, reduce horizontal spacing */
 }
 </style>

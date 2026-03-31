@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-card shadow="never">
-      <!-- 页面标题和操作按钮 -->
+      <!-- Header -->
       <template #header>
         <div class="card-header">
           <div class="header-left">
@@ -10,6 +10,9 @@
           <div class="header-right">
             <el-button type="primary" icon="Plus" @click="handleAdd">
               新增配置
+            </el-button>
+            <el-button type="warning" icon="Delete" @click="handleClearCache">
+              清理缓存
             </el-button>
             <el-button icon="Refresh" @click="refreshList">刷新</el-button>
           </div>
@@ -22,7 +25,7 @@
         <el-tab-pane label="页面配置" name="config">
           <div class="tab-content">
 
-      <!-- 搜索区域 -->
+      <!-- Search Form -->
       <el-form :model="queryParams" :inline="true" label-width="70px">
         <el-row :gutter="8">
           <el-col :span="6">
@@ -90,7 +93,7 @@
         </el-row>
       </el-form>
 
-      <!-- 表格列表 -->
+      <!-- Table -->
       <el-table
         v-loading="loading"
         :data="configList"
@@ -167,7 +170,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- 分页 -->
+      <!-- Pagination -->
       <Pagination
         v-show="total > 0"
         v-model:page="queryParams.pageNum"
@@ -178,7 +181,7 @@
           </div>
         </el-tab-pane>
 
-        <!-- 第二页签：低代码 -->
+        <!-- Dictionary Tab -->
         <el-tab-pane label="字典接口" name="lowcode">
           <div class="tab-content">
             <!-- 字典接口展示 -->
@@ -195,7 +198,7 @@
               </template>
 
               <el-tabs v-model="dictActiveTab" type="card">
-                <!-- All 字典接口 -->
+              <!-- All Dict -->
                 <el-tab-pane label="All 字典接口" name="all">
                   <div class="dict-section">
                     <div class="dict-info">
@@ -215,7 +218,7 @@
                   </div>
                 </el-tab-pane>
               
-                <!-- 国家字典接口 -->
+              <!-- Country Dict -->
                 <el-tab-pane label="国家字典" name="nation">
                   <div class="dict-section">
                     <div class="dict-info">
@@ -286,7 +289,7 @@
         </div>
       </div>
 
-      <!-- 编辑模式 -->
+      <!-- Edit Mode -->
       <div v-else>
         <el-descriptions :column="3" border size="small">
           <el-descriptions-item label="配置 ID">
@@ -400,7 +403,7 @@
         </div>
       </div>
 
-      <!-- 底部按钮区域 -->
+      <!-- Footer -->
       <template #footer>
         <div v-if="!isEditMode">
           <el-button @click="viewDialogVisible = false">关闭</el-button>
@@ -448,7 +451,7 @@
         </template>
       </el-alert>
 
-      <!-- 历史版本列表 -->
+      <!-- Version List -->
       <el-table
         v-loading="historyLoading"
         :data="versionList"
@@ -507,7 +510,7 @@ import { Codemirror } from 'vue-codemirror'
 import { json } from '@codemirror/lang-json'
 import request from '@/utils/request'
 
-// ==================== 状态定义 ====================
+// ==================== State ====================
 // 页签状态
 const activeTab = ref('config')
 const dictActiveTab = ref('all')
@@ -524,7 +527,7 @@ const loading = ref(false)
 const total = ref(0)
 const configList = ref([])
 
-// 组合配置内容（将分散字段组合为 JSON 用于显示）
+// Combined config content (JSON display)
 const combinedConfigContent = computed(() => {
   const configObj = {}
   if (currentConfig.value.pageConfig) {
@@ -557,7 +560,7 @@ const combinedConfigContent = computed(() => {
   return Object.keys(configObj).length > 0 ? JSON.stringify(configObj, null, 2) : '{}'
 })
 
-// 编辑模式组合配置内容（双向绑定）
+// Edit mode combined config (two-way binding)
 const editCombinedConfigContent = computed({
   get() {
     const configObj = {}
@@ -609,7 +612,7 @@ const editCombinedConfigContent = computed({
   }
 })
 
-// 对话框状态
+// Dialog state
 const viewDialogVisible = ref(false)
 const historyDialogVisible = ref(false)
 
@@ -618,7 +621,7 @@ const currentHistoryConfig = ref({})
 const versionList = ref([])
 const historyLoading = ref(false)
 
-// 编辑相关
+// Edit state
 const isEditMode = ref(false)
 const submitLoading = ref(false)
 const jsonValid = ref(false)
@@ -652,20 +655,19 @@ const queryParams = reactive({
   status: ''
 })
 
-// ==================== 已移除的验证规则 ====================
-//  不再使用表单验证（已移除 el-form 组件）
+// ==================== Removed Rules ====================
 // const editFormRules = { ... }
 
-// ==================== 方法定义 ====================
+// ==================== Methods ====================
 
 /**
- * 查询配置列表
+ * Load config list
  */
 function getList() {
   loading.value = true
   listConfig(queryParams)
     .then(res => {
-      // 适配 ErpResponse 包装的 TableDataInfo 结构
+    // Adapt ErpResponse wrapped TableDataInfo structure
       const data = res.data || res
       configList.value = data.rows || []
       total.value = data.total !== undefined ? data.total : 0
@@ -682,7 +684,7 @@ function getList() {
 }
 
 /**
- * 搜索按钮操作
+ * Search
  */
 function handleQuery() {
   queryParams.pageNum = 1
@@ -690,7 +692,7 @@ function handleQuery() {
 }
 
 /**
- * 重置按钮操作
+ * Reset
  */
 function resetQuery() {
   queryParams.pageNum = 1
@@ -702,45 +704,71 @@ function resetQuery() {
 }
 
 /**
- * 刷新列表
+ * Refresh
  */
 function refreshList() {
   resetQuery()
 }
 
 /**
- * 新增按钮操作
+ * Clear cache
+ */
+function handleClearCache() {
+  ElMessageBox.confirm(
+    '确定要清理所有 ERP 配置缓存吗？清理后系统将重新从数据库加载配置。',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    return request({
+      url: '/erp/cache/clear-all',
+      method: 'delete'
+    })
+  }).then(res => {
+    ElMessage.success('缓存清理成功')
+  }).catch(error => {
+    if (error !== 'cancel') {
+      ElMessage.error('缓存清理失败：' + (error.message || '未知错误'))
+    }
+  })
+}
+
+/**
+ * Add
  */
 function handleAdd() {
   isEditMode.value = false
   resetEditForm()
-  // 新增时直接打开对话框
+  // Open dialog directly for new config
   viewDialogVisible.value = true
 }
 
 /**
- * 编辑按钮操作
+ * Edit
  */
 function handleEdit(row) {
   isEditMode.value = false
   currentConfig.value = { ...row }
   
-  // 加载编辑数据并打开对话框
+  // Load edit data and open dialog
   loadEditData(row.configId)
     .then(() => {
       viewDialogVisible.value = true
     })
     .catch(error => {
-      // 错误已在 loadEditData 中处理，这里不需要再次提示
+    // Error already handled in loadEditData
     })
 }
 
 /**
- * 从查看模式进入编辑模式
+ * Enter edit mode from view
  */
 function enterEditMode() {
   isEditMode.value = true
-  // 准备编辑数据
+  // Prepare edit data
   const data = currentConfig.value
   Object.assign(editFormData, {
     configId: data.configId,
@@ -755,10 +783,10 @@ function enterEditMode() {
 }
 
 /**
- * 格式化 JSON（编辑模式）
+ * Format JSON (edit mode)
  */
 function formatEditJson() {
-  // 从组合的 JSON 重新解析并分散到各个字段
+  // Parse JSON and distribute to fields
   try {
     const parsed = JSON.parse(editCombinedConfigContent.value)
     editFormData.pageConfig = parsed.pageConfig ? JSON.stringify(parsed.pageConfig, null, 2) : ''
@@ -781,7 +809,7 @@ function formatEditJson() {
 }
 
 /**
- * 取消编辑，返回查看模式
+ * Cancel edit, return to view mode
  */
 function cancelEditMode() {
   ElMessageBox.confirm('确定要取消编辑吗？', '提示', {
@@ -790,12 +818,12 @@ function cancelEditMode() {
     type: 'warning'
   }).then(() => {
     isEditMode.value = false
-    //  不再需要清除验证（已移除 el-form）
+    // No need to clear validation (el-form removed)
   })
 }
 
 /**
- * 加载编辑数据
+ * Load edit data
  */
 function loadEditData(configId) {
   return getConfig(configId)
@@ -803,19 +831,19 @@ function loadEditData(configId) {
       // 处理 ErpResponse 包装结构
       let data
       if (res.code === 200 || res.code === 0) {
-        // 成功响应，提取 data 字段
+        // Success response, extract data field
         data = res.data || {}
       } else {
-        // 错误响应
+        // Error response
         throw new Error(res.msg || '加载配置失败')
       }
       
-      // 检查必要字段是否为空
+      // Check required fields
       if (!data.configId) {
         throw new Error('配置不存在或已删除')
       }
       
-      // 更新编辑表单数据（直接使用后端返回的分散字段）
+      // Update edit form data (use backend fields directly)
       Object.assign(editFormData, {
         configId: data.configId,
         moduleCode: data.moduleCode || '',
@@ -845,7 +873,7 @@ function loadEditData(configId) {
 }
 
 /**
- * 重置编辑表单
+ * Reset edit form
  */
 function resetEditForm() {
   Object.assign(editFormData, {
@@ -865,15 +893,14 @@ function resetEditForm() {
   }
 }
 
-// ==================== 已移除的方法 ====================
-// handleEditClose - 已移除（不再需要）
+// ==================== Removed Methods ====================
 
 /**
- * 提交编辑表单
+ * Submit edit form
  */
 function handleEditSubmit() {
-  //  不再需要表单验证（已移除 el-form）
-  // 直接执行保存逻辑
+  // No form validation needed (el-form removed)
+  // Direct save logic
   submitLoading.value = true
 
   const data = {
@@ -912,22 +939,22 @@ function handleEditSubmit() {
 }
 
 /**
- * 查看按钮操作
+ * View
  */
 function handleView(row) {
-  // 先初始化为列表中的基础数据
+  // Initialize with list data
   currentConfig.value = { ...row }
   isEditMode.value = false
   viewDialogVisible.value = true
   
-  // 异步加载完整数据（在对话框打开后更新）
+  // Load full data asynchronously (updates after dialog opens)
   loadEditData(row.configId)
     .then(() => {
-      // 数据加载成功后，更新 currentConfig
+      // Update currentConfig after data loads successfully
       currentConfig.value = { ...editFormData }
     })
     .catch(error => {
-      // 加载失败时，给 configContent 一个默认值避免显示 undefined
+      // Set default value for configContent to avoid undefined
       if (!currentConfig.value.configContent) {
         currentConfig.value.configContent = '{\n  "error": "配置加载失败，请稍后重试"\n}'
       }
@@ -935,7 +962,7 @@ function handleView(row) {
 }
 
 /**
- * 查看历史版本
+ * View history
  */
 function handleHistory(row) {
   currentHistoryConfig.value = { ...row }
@@ -944,7 +971,7 @@ function handleHistory(row) {
 }
 
 /**
- * 加载历史数据
+ * Load history data
  */
 function loadHistoryData(configId) {
   historyLoading.value = true
@@ -958,7 +985,7 @@ function loadHistoryData(configId) {
 }
 
 /**
- * 查看版本详情
+ * View version details
  */
 function viewVersion(row) {
   ElMessageBox.alert(
@@ -972,7 +999,7 @@ function viewVersion(row) {
 }
 
 /**
- * 回滚版本
+ * Rollback
  */
 function rollbackVersion(row) {
   ElMessageBox.confirm(
@@ -996,7 +1023,7 @@ function rollbackVersion(row) {
 }
 
 /**
- * 下拉菜单命令
+ * Dropdown command
  */
 function handleCommand(command, row) {
   switch (command) {
@@ -1013,21 +1040,21 @@ function handleCommand(command, row) {
 }
 
 /**
- * 复制配置
+ * Copy config
  */
 function handleCopy(row) {
   ElMessage.info('复制功能开发中')
 }
 
 /**
- * 导出配置
+ * Export config
  */
 function handleExport(row) {
   ElMessage.info('导出功能开发中')
 }
 
 /**
- * 删除配置
+ * Delete config
  */
 function handleDelete(row) {
   ElMessageBox.confirm(
@@ -1046,31 +1073,31 @@ function handleDelete(row) {
   })
 }
 
-// ==================== 生命周期 ====================
+// ==================== Lifecycle ====================
 onMounted(() => {
   getList()
 })
 
-// ==================== 字典接口相关方法 ====================
+// ==================== Dict Methods ====================
 /**
- * 加载所有字典数据
+ * Load all dicts
  */
 async function loadAllDicts() {
   dictLoading.value = true
   try {
-    // 并行加载 All 字典和国家字典接口
+    // Parallel load All dict and country dict
     const promises = [
       request({ url: '/erp/engine/dict/all', method: 'get' }).then(res => {
         if (res && (res.code === 200 || res.code === 0)) {
-          // 🔧 修复：正确处理后端返回的 { dictTypeList, dictDataList } 结构
+          // 🔧 Fix: Handle backend { dictTypeList, dictDataList } structure correctly
           const data = res.data || {}
           
           // 如果返回的是 { dictTypeList, dictDataList } 结构
           if (data.dictTypeList && Array.isArray(data.dictTypeList)) {
-            // 提取所有字典类型
+            // Extract all dict types
             const dictTypes = data.dictTypeList.map(item => item.type || item.value).filter(Boolean)
             
-            // 从 dictDataList 中按类型分组
+            // Group by type from dictDataList
             const groupedDicts = {}
             if (data.dictDataList && Array.isArray(data.dictDataList)) {
               data.dictDataList.forEach(item => {
@@ -1087,7 +1114,7 @@ async function loadAllDicts() {
             allDictsData.value = groupedDicts
             console.log('✅ All 字典加载成功:', Object.keys(groupedDicts).length, '个类型')
           } else {
-            // 已经是分组好的数据
+            // Already grouped data
             allDictsData.value = data
           }
         }
@@ -1110,7 +1137,7 @@ async function loadAllDicts() {
 
     const results = await Promise.all(promises)
     
-    // 统计成功和失败的接口
+    // Count success and failed calls
     const successCount = results.filter(r => r.success).length
     const failCount = results.filter(r => !r.success).length
     
@@ -1127,10 +1154,10 @@ async function loadAllDicts() {
   }
 }
 
-// ==================== 字典接口相关方法（完结） ====================
+// ==================== Dict Methods (End) ====================
 
 /**
- * 显示生成的配置
+ * Show generated config
  */
 function showGeneratedConfig(dictConfig) {
   const jsonStr = JSON.stringify(dictConfig, null, 2)

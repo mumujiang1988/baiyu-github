@@ -14,7 +14,7 @@
       :label-width="formConfig?.labelWidth || '120px'"
     >
       <el-scrollbar max-height="65vh">
-        <!-- 表单分区 -->
+        <!-- Sections -->
         <el-card
           v-for="(section, index) in formConfig?.sections || []"
           :key="index"
@@ -35,7 +35,7 @@
               :span="field.span || (24 / section.columns)"
             >
               <el-form-item :label="field.label" :prop="field.field">
-                <!-- 文本输入 -->
+                <!-- Text input -->
                 <el-input
                   v-if="field.component === 'input'"
                   v-model="formData[field.field]"
@@ -43,7 +43,7 @@
                   clearable
                 />
                 
-                <!-- 日期选择 -->
+                <!-- Date picker -->
                 <el-date-picker
                   v-else-if="['date', 'datetime'].includes(field.component)"
                   v-model="formData[field.field]"
@@ -53,7 +53,7 @@
                   style="width: 100%"
                 />
                 
-                <!-- 数字输入 -->
+                <!-- Number input -->
                 <el-input-number
                   v-else-if="field.component === 'input-number'"
                   v-model="formData[field.field]"
@@ -61,7 +61,7 @@
                   style="width: 100%"
                 />
                 
-                <!-- 下拉选择 -->
+                <!-- Dropdown select -->
                 <el-select
                   v-else-if="field.component === 'select'"
                   v-model="formData[field.field]"
@@ -85,7 +85,7 @@
           </el-row>
         </el-card>
         
-        <!-- 表单标签页 -->
+        <!-- Tabs -->
         <el-card
           v-if="formConfig?.formTabs?.enabled"
           shadow="never"
@@ -98,7 +98,7 @@
               :label="tab.label"
               :name="tab.name"
             >
-              <!-- 明细表格 -->
+              <!-- Entry table -->
               <div v-if="tab.name === 'entry' && tab.table" class="tab-pane-content">
                 <div class="tab-pane-toolbar">
                   <el-button
@@ -108,7 +108,7 @@
                     icon="Plus"
                     @click="handleAddEntry"
                   >
-                    添加明细
+                    Add Detail
                   </el-button>
                 </div>
                 <el-table
@@ -151,7 +151,7 @@
                   </el-table-column>
                   <el-table-column
                     v-if="tab.table.deleteRow"
-                    label="操作"
+                    label="Actions"
                     width="80"
                     align="center"
                     fixed="right"
@@ -164,14 +164,14 @@
                         link
                         @click="handleDeleteEntry(scope.$index)"
                       >
-                        删除
+                        Delete
                       </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
               </div>
               
-              <!-- 成本表单 -->
+              <!-- Cost form -->
               <div v-else-if="tab.name === 'cost' && tab.type === 'form'" class="tab-pane-content">
                 <el-row :gutter="20">
                   <el-col
@@ -204,9 +204,9 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取 消</el-button>
+        <el-button @click="handleCancel">Cancel</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
-          确 定
+          Confirm
         </el-button>
       </div>
     </template>
@@ -255,20 +255,20 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'submit', 'add-entry', 'delete-entry'])
 
-// 表单引用
+// Form ref
 const formRef = ref(null)
 const formActiveTab = ref('entry')
 const nationSearchLoading = ref(false)
 const nationOptions = ref([])
 
-// 监听 visible 变化
+// Watch visible
 watch(() => props.visible, (newVal) => {
   if (!newVal) {
     formRef.value?.resetFields()
   }
 })
 
-// 表单验证规则
+// Validation rules
 const formRules = computed(() => {
   const rules = {}
   props.formConfig?.sections?.forEach(section => {
@@ -281,7 +281,7 @@ const formRules = computed(() => {
   return rules
 })
 
-// 字典选项
+// Dict options
 const getDictOptions = (dictName, staticOptions = null, required = false) => {
   if (dictName === 'nation') {
     return nationOptions.value
@@ -295,12 +295,12 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   
   if (!dataFromManager || dataFromManager.length === 0) {
     if (required) {
-      console.warn(`[BusinessForm] 必填字典 ${dictName} 数据为空`)
+      console.warn(`[BusinessForm] Required dictionary ${dictName} data is empty`)
     }
     return []
   }
   
-  // 特殊处理销售员字典
+  // Special handling for salespersons
   if (dictName === 'salespersons') {
     return dataFromManager.map(option => {
       const nickName = option.label || ''
@@ -318,7 +318,7 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   return dataFromManager
 }
 
-// 搜索国家
+// Search country
 const searchNations = async (keyword) => {
   if (!keyword || keyword.trim() === '') {
     nationOptions.value = []
@@ -357,7 +357,7 @@ const searchNations = async (keyword) => {
   }
 }
 
-// 事件处理
+// Event handlers
 const handleClose = () => {
   emit('update:visible', false)
 }
@@ -380,7 +380,7 @@ const handleSubmit = async () => {
     
     emit('submit', submitData)
   } catch (error) {
-    console.error('[BusinessForm] 表单验证失败:', error)
+    console.error('[BusinessForm] Form validation failed:', error)
   }
 }
 
@@ -394,9 +394,9 @@ const handleDeleteEntry = (index) => {
 </script>
 
 <style scoped>
-/* ✅ 使用父组件的全局样式，不重复定义 */
+/* ✅ Use parent global styles */
 
-/* 表单分区卡片样式 */
+/* Section card */
 .form-section-card {
   margin-bottom: 16px;
   border: none;
@@ -407,7 +407,7 @@ const handleDeleteEntry = (index) => {
   margin-bottom: 0;
 }
 
-/* 卡片头部样式 */
+/* Card header */
 .card-header {
   display: flex;
   align-items: center;
@@ -422,7 +422,7 @@ const handleDeleteEntry = (index) => {
   font-size: 18px;
 }
 
-/* 表单页签卡片样式 */
+/* Form tabs card */
 .form-tabs-card {
   margin-top: 16px;
 }
@@ -435,19 +435,19 @@ const handleDeleteEntry = (index) => {
   margin: 0 0 16px 0;
 }
 
-/* 页签内容区样式 */
+/* Tab pane content */
 .tab-pane-content {
   padding: 8px 0;
 }
 
-/* 页签工具栏样式 */
+/* Tab pane toolbar */
 .tab-pane-toolbar {
   margin-bottom: 12px;
   display: flex;
   justify-content: flex-end;
 }
 
-/* 明细表格样式 */
+/* Entry table */
 .entry-table {
   width: 100%;
 }
@@ -462,7 +462,7 @@ const handleDeleteEntry = (index) => {
   padding: 8px 0;
 }
 
-/* 对话框底部样式 */
+/* Dialog footer */
 .dialog-footer {
   padding-top: 8px;
 }

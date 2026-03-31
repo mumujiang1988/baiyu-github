@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 /**
- * 表单验证引擎 API
+ * Form Validation Engine API
  */
 
 /**
- * 执行表单验证
- * @param {Object} data - 验证参数
- * @param {Object} data.formData - 表单数据
- * @param {Object} data.validationConfig - 验证配置
- * @param {string} data.moduleCode - 模块编码
+ * Execute form validation
+ * @param {Object} data - Validation parameters
+ * @param {Object} data.formData - Form data
+ * @param {Object} data.validationConfig - Validation configuration
+ * @param {string} data.moduleCode - Module code
  * @returns {Promise}
  */
 export function executeValidation(data) {
@@ -21,10 +21,10 @@ export function executeValidation(data) {
 }
 
 /**
- * 批量验证
- * @param {Object} data - 验证参数
- * @param {Array} data.formDataList - 表单数据列表
- * @param {Object} data.validationConfig - 验证配置
+ * Batch validation
+ * @param {Object} data - Validation parameters
+ * @param {Array} data.formDataList - Form data list
+ * @param {Object} data.validationConfig - Validation configuration
  * @returns {Promise}
  */
 export function batchValidate(data) {
@@ -36,7 +36,7 @@ export function batchValidate(data) {
 }
 
 /**
- * 获取可用的验证规则
+ * Get available validation rules
  * @returns {Promise}
  */
 export function getAvailableValidationRules() {
@@ -47,11 +47,11 @@ export function getAvailableValidationRules() {
 }
 
 /**
- * 验证单个字段
- * @param {Object} data - 验证参数
- * @param {string} data.field - 字段名
- * @param {any} data.value - 字段值
- * @param {Object} data.rule - 验证规则
+ * Validate single field
+ * @param {Object} data - Validation parameters
+ * @param {string} data.field - Field name
+ * @param {any} data.value - Field value
+ * @param {Object} data.rule - Validation rule
  * @returns {Promise}
  */
 export function validateField(data) {

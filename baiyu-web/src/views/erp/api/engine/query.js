@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 /**
- * 动态查询引擎 API
+ * Dynamic Query Engine API
  */
 
 /**
- * 执行动态查询
- * @param {Object} data - 查询参数
- * @param {string} data.moduleCode - 模块编码
- * @param {Object} data.queryParams - 查询条件
- * @param {Object} data.searchConfig - 搜索配置
+ * Execute dynamic query
+ * @param {Object} data - Query parameters
+ * @param {string} data.moduleCode - Module code
+ * @param {Object} data.queryParams - Query conditions
+ * @param {Object} data.searchConfig - Search configuration
  * @returns {Promise}
  */
 export function executeDynamicQuery(data) {
@@ -21,10 +21,10 @@ export function executeDynamicQuery(data) {
 }
 
 /**
- * 构建查询条件
- * @param {Object} data - 条件参数
- * @param {Object} data.searchConfig - 搜索配置
- * @param {Object} data.queryParams - 查询参数
+ * Build query conditions
+ * @param {Object} data - Condition parameters
+ * @param {Object} data.searchConfig - Search configuration
+ * @param {Object} data.queryParams - Query parameters
  * @returns {Promise}
  */
 export function buildQueryConditions(data) {
@@ -36,7 +36,7 @@ export function buildQueryConditions(data) {
 }
 
 /**
- * 获取可用的查询类型
+ * Get available query types
  * @returns {Promise}
  */
 export function getAvailableQueryTypes() {

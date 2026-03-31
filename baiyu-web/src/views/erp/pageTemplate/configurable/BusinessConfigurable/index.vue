@@ -4,8 +4,7 @@
     <p>字典数据加载中...</p>
   </div>
   
-  <div v-else>
-    <!-- 搜索区域 -->
+  <div v-else> 
     <BusinessSearch
       v-if="parsedConfig.search?.showSearch"
       :search-config="parsedConfig.search"
@@ -20,7 +19,7 @@
       @action="handleToolbarAction"
     />
     
-    <!-- 主表格区域 -->
+    <!-- Main table area -->
     <BusinessTable
       :table-config="parsedConfig.table"
       :table-data="tableData"
@@ -35,7 +34,7 @@
       @page-change="handlePageChange"
     />
     
-    <!-- 表单弹窗 -->
+    <!-- Form dialog -->
     <BusinessForm
       v-model:visible="dialogVisible"
       :form-config="parsedConfig.form"
@@ -50,7 +49,7 @@
       @delete-entry="handleDeleteEntryRow"
     />
     
-    <!-- 详情抽屉 -->
+   
     <BusinessDetail
       v-model:visible="drawerVisible"
       :drawer-config="parsedConfig.drawer"
@@ -75,7 +74,7 @@ import multiTableQueryBuilder from '../../utils/multiTableQueryBuilder'
 import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils/index.js'
 import { isSuccessResponse, getResponseData } from '@/views/erp/utils/index.js'
 
-// 导入业务组件
+// Import business components
 import BusinessSearch from './components/BusinessSearch.vue'
 import BusinessTable from './components/BusinessTable.vue'
 import BusinessForm from './components/BusinessForm.vue'
@@ -92,12 +91,12 @@ const props = defineProps({
   }
 })
 
-// 获取模块编码
+// Get module code
 const getModuleCode = () => {
   return route.query.moduleCode || props.moduleCode  
 }
 
-// 配置相关
+// Configuration related
 const currentConfig = ref(null)
 const parsedConfig = reactive({
   page: {},
@@ -108,14 +107,14 @@ const parsedConfig = reactive({
   actions: {}
 })
 
-// 业务模板（计算属性）
+  // Business template (computed property)
 const BusinessTemplate = computed(() => ({
   apiConfig: currentConfig.value?.apiConfig || {},
   dictionaryConfig: currentConfig.value?.dictionaryConfig || {},
   pageConfig: currentConfig.value?.pageConfig || {}
 }))
 
-// 状态管理
+// State management
 const dictLoaded = ref(false)
 const loading = ref(true)
 const submitLoading = ref(false)
@@ -136,7 +135,7 @@ const entryList = ref([])
 const costData = ref({})
 const currentDetailRow = ref({})
 
-// 选中状态管理
+ 
 const ids = ref([])
 const single = ref(true)
 const multiple = ref(true)
@@ -145,7 +144,7 @@ const queryRef = ref(null)
 const detailActiveTab = ref('entry')
 const formActiveTab = ref('entry')
 
-// 计算属性
+// Computed properties
 const businessConfig = computed(() => currentConfig.value?.businessConfig || {})
 const pageTitle = computed(() => {
   const titleTemplate = parsedConfig.page?.title || '{entityName}管理'
@@ -153,7 +152,7 @@ const pageTitle = computed(() => {
   return titleTemplate.replace(/{entityName}/g, entityName)
 })
 
-// ==================== 配置加载 ====================
+// ==================== Config loading ====================
 const initConfig = async () => {
   try {
     const moduleCode = getModuleCode()
@@ -209,7 +208,7 @@ const markRequiredDictionaries = () => {
   window._erpRequiredDicts = requiredDicts
 }
 
-// ==================== 字典加载 ====================
+// ==================== Dictionary loading ====================
 const preloadDictionaries = async () => {
   try {
     const allDicts = await dictionaryManager.loadAll()
@@ -235,7 +234,7 @@ const preloadDictionaries = async () => {
   }
 }
 
-// ==================== 数据查询 ====================
+// ==================== Data query ====================
 const getList = async () => {
   loading.value = true
   
@@ -364,7 +363,7 @@ const loadSubTablesByBillNo = async (billNo) => {
   }
 }
 
-// ==================== 事件处理 ====================
+ 
 let queryTimer = null
 const handleQuery = () => {
   if (loading.value) {
@@ -419,7 +418,7 @@ const handleSelectionChange = (selection) => {
   multiple.value = !selection.length
 }
 
-// 处理工具栏按钮动作
+ 
 const handleToolbarAction = (handlerName) => {
   const handlerMap = {
     handleAdd: () => openDialog('add'),
@@ -435,7 +434,7 @@ const handleToolbarAction = (handlerName) => {
   }
 }
 
-// 打开对话框 - 使用配置中的标题和默认值
+ 
 const openDialog = (type) => {
   formData.value = {}
   
@@ -472,11 +471,11 @@ const openDialog = (type) => {
   dialogVisible.value = true
 }
 
-// 加载表单数据 - 使用配置中的 API
+ 
 const loadFormData = async (id) => {
   try {
     loading.value = true
-    const apiMethod = await getApiMethod('get')  // ✅ 修复：使用 'get' 而非 'getInfo'
+    const apiMethod = await getApiMethod('get')   
     if (!apiMethod) {
       ElMessage.error('API 未配置')
       return
@@ -485,7 +484,7 @@ const loadFormData = async (id) => {
     const data = await apiMethod(id)
     formData.value = data.data || data
     
-    // 加载子表数据
+    
     await loadSubTablesByBillNo(formData.value.billNo)
   } catch (error) {
     ElMessage.error('加载数据失败：' + (error.message || '未知错误'))
@@ -495,7 +494,7 @@ const loadFormData = async (id) => {
 }
 
 const handleRowClick = (row) => { 
-  // 预留行点击事件
+   
 }
 
 const handleViewDetail = async (row) => {
@@ -529,58 +528,49 @@ const handleDrawerClose = () => {
   drawerVisible.value = false
 }
 
-// ==================== 引擎相关方法 ====================
+// ==================== Engine configuration ====================
 /**
- * 初始化引擎配置
+ * Initialize engine configuration
  */
 const initEngineConfig = async () => {
   const moduleCode = BusinessTemplate.value.pageConfig?.moduleCode
   if (!moduleCode) return
   
-  try {
-    // 1. 初始化动态查询引擎
+  try { 
     if (parsedConfig.search) {
       engineConfig.query = {
         moduleCode,
         searchConfig: parsedConfig.search
       }
     }
-    
-    // 2. 初始化表单验证引擎
+     
     if (parsedConfig.form?.validationConfig) {
       engineConfig.validation = {
         moduleCode,
         validationConfig: parsedConfig.form.validationConfig
       }
     }
-    
-    // 3. 初始化审批流程引擎
+     
     if (parsedConfig.actions?.approvalConfig?.enabled) {
       engineConfig.approval = {
         moduleCode,
         workflowConfig: parsedConfig.actions.approvalConfig
-      }
-      // 加载审批流程定义
+      } 
       await loadWorkflowDefinition(moduleCode)
     }
-    
-    // 4. 初始化下推引擎
+     
     if (parsedConfig.actions?.pushConfig?.enabled) {
       engineConfig.push = {
         moduleCode,
         pushConfig: parsedConfig.actions.pushConfig
-      }
-      // 加载可下推目标
+      } 
       await loadPushTargets(moduleCode)
     }
-  } catch (error) {
-    // 忽略错误
+  } catch (error) { 
   }
 }
 
-/**
- * 加载审批流程定义
- */
+ 
 const loadWorkflowDefinition = async (moduleCode) => {
   try {
     const response = await getWorkflowDefinition(moduleCode)
@@ -588,13 +578,11 @@ const loadWorkflowDefinition = async (moduleCode) => {
       workflowDefinition.value = response.data
     }
   } catch (error) {
-    // 忽略错误
+     
   }
 }
 
-/**
- * 加载可下推目标
- */
+ 
 const loadPushTargets = async (moduleCode) => {
   try {
     const response = await getPushTargets(moduleCode)
@@ -602,13 +590,10 @@ const loadPushTargets = async (moduleCode) => {
       pushTargets.value = response.data || []
     }
   } catch (error) {
-    // 忽略错误
+    
   }
 }
-
-/**
- * 执行动态查询
- */
+ 
 const executeEngineQuery = async (queryParams) => {
   if (!engineConfig.query) {
     return null
@@ -630,9 +615,7 @@ const executeEngineQuery = async (queryParams) => {
   }
 }
 
-/**
- * 执行表单验证
- */
+ 
 const executeEngineValidation = async (formData) => {
   if (!engineConfig.validation) {
     return { valid: true, message: '未启用验证' }
@@ -654,9 +637,7 @@ const executeEngineValidation = async (formData) => {
   }
 }
 
-/**
- * 获取当前审批步骤
- */
+ 
 const getCurrentStep = async (billData) => {
   if (!engineConfig.approval) {
     return null
@@ -679,9 +660,7 @@ const getCurrentStep = async (billData) => {
   }
 }
 
-/**
- * 执行审批操作
- */
+ 
 const executeEngineApproval = async (billId, action, opinion = '') => {
   if (!engineConfig.approval) {
     throw new Error('未启用审批流程')
@@ -698,7 +677,7 @@ const executeEngineApproval = async (billId, action, opinion = '') => {
     
     if (response.code === 200 || response.code === 0) {
       ElMessage.success('审批成功')
-      // 刷新审批历史和步骤
+      
       await loadApprovalHistory(billId)
       return response.data
     }
@@ -708,9 +687,7 @@ const executeEngineApproval = async (billId, action, opinion = '') => {
   }
 }
 
-/**
- * 加载审批历史
- */
+ 
 const loadApprovalHistory = async (billId) => {
   if (!engineConfig.approval) return
   
@@ -724,13 +701,10 @@ const loadApprovalHistory = async (billId) => {
       approvalHistory.value = response.data || []
     }
   } catch (error) {
-    // 忽略错误
+     
   }
 }
-
-/**
- * 执行下推操作
- */
+ 
 const executeEnginePushDown = async (sourceId, targetModule, confirmData = {}) => {
   if (!engineConfig.push) {
     throw new Error('未启用下推功能')
@@ -746,7 +720,7 @@ const executeEnginePushDown = async (sourceId, targetModule, confirmData = {}) =
     
     if (response.code === 200 || response.code === 0) {
       ElMessage.success('下推成功')
-      // 加载下推历史
+     
       await loadPushHistory(sourceId)
       return response.data
     }
@@ -756,9 +730,7 @@ const executeEnginePushDown = async (sourceId, targetModule, confirmData = {}) =
   }
 }
 
-/**
- * 预览下推数据
- */
+ 
 const previewEnginePushDown = async (sourceId, targetModule) => {
   if (!engineConfig.push) {
     return null
@@ -780,9 +752,7 @@ const previewEnginePushDown = async (sourceId, targetModule) => {
   }
 }
 
-/**
- * 加载下推历史
- */
+ 
 const loadPushHistory = async (billId) => {
   if (!engineConfig.push) return
   
@@ -793,16 +763,14 @@ const loadPushHistory = async (billId) => {
     })
     
     if (response.code === 200 || response.code === 0) {
-      // 可以在这里更新 UI
+      // You can update the UI here
     }
   } catch (error) {
-    // 忽略错误
+   
   }
 }
 
-/**
- * 打开下推对话框
- */
+ 
 const handleOpenPushDialog = async (row) => {
   if (!engineConfig.push || pushTargets.value.length === 0) {
     ElMessage.warning('没有可用的下推目标')
@@ -813,9 +781,7 @@ const handleOpenPushDialog = async (row) => {
   pushDialogVisible.value = true
 }
 
-/**
- * 执行下推
- */
+ 
 const handlePushDown = async () => {
   if (!pushTargetModule.value) {
     ElMessage.warning('请选择下推目标')
@@ -877,8 +843,7 @@ const handleDeleteEntryRow = (index) => {
   entryList.value.splice(index, 1)
 }
 
-// ==================== 删除与审核 ====================
-// 确认删除 - 使用配置中的 API 和消息
+// ==================== Deletion and Review ==================== 
 const confirmDelete = async () => {
   if (!ids.value || ids.value.length === 0) {
     ElMessage.warning('请选择要删除的数据')
@@ -911,8 +876,7 @@ const confirmDelete = async () => {
     }
   }
 }
-
-// 批量审核 - 使用配置中的 API 和消息
+ 
 const batchAudit = async () => {
   if (!ids.value || ids.value.length === 0) {
     ElMessage.warning('请选择要审核的数据')
@@ -945,8 +909,7 @@ const batchAudit = async () => {
     }
   }
 }
-
-// 批量反审核 - 使用配置中的 API 和消息
+ 
 const batchUnAudit = async () => {
   if (!ids.value || ids.value.length === 0) {
     ElMessage.warning('请选择要反审核的数据')
@@ -980,7 +943,7 @@ const batchUnAudit = async () => {
   }
 }
 
-// ==================== API 方法 ====================
+// ==================== API   ====================
 const getApiMethod = async (methodType) => {
   const apiConfig = currentConfig.value?.apiConfig
   
@@ -1015,7 +978,7 @@ const getApiMethod = async (methodType) => {
   return null
 }
 
-// ==================== 初始化 ====================
+// ==================== Data initialization ====================
 const initDateRange = () => {
   const searchFields = parsedConfig.search?.fields || []
   const beginDateField = searchFields.find(f => f.field === 'beginDate')
@@ -1086,20 +1049,15 @@ const parseDynamicDate = (value) => {
 }
 
 onMounted(async () => {
-  try {
-    // 步骤 1: 加载页面配置
+  try { 
     await initConfig()
-    
-    // 步骤 2: 加载字典数据
+     
     await preloadDictionaries()
-    
-    // 步骤 3: 初始化引擎配置
+     
     await initEngineConfig()
-    
-    // 步骤 4: 设置默认日期区间
+     
     initDateRange()
-    
-    // 步骤 5: 加载列表数据
+     
     getList()
   } catch (error) {
     ElMessage.error(`页面初始化失败：${error.message}`)

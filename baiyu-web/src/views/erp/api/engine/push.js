@@ -1,12 +1,12 @@
 import request from '@/utils/request'
 
 /**
- * 下推引擎 API
+ * Push Engine API
  */
 
 /**
- * 获取可下推的目标列表
- * @param {string} moduleCode - 源模块编码
+ * Get push target list
+ * @param {string} moduleCode - Source module code
  * @returns {Promise}
  */
 export function getPushTargets(moduleCode) {
@@ -18,12 +18,12 @@ export function getPushTargets(moduleCode) {
 }
 
 /**
- * 执行下推操作
- * @param {Object} data - 下推参数
- * @param {string|number} data.sourceId - 源单 ID
- * @param {string} data.sourceModule - 源模块编码
- * @param {string} data.targetModule - 目标模块编码
- * @param {Object} data.confirmData - 确认数据（可选）
+ * Execute push operation
+ * @param {Object} data - Push parameters
+ * @param {string|number} data.sourceId - Source bill ID
+ * @param {string} data.sourceModule - Source module code
+ * @param {string} data.targetModule - Target module code
+ * @param {Object} data.confirmData - Confirmation data (optional)
  * @returns {Promise}
  */
 export function executePushDown(data) {
@@ -35,11 +35,11 @@ export function executePushDown(data) {
 }
 
 /**
- * 预览下推数据
- * @param {Object} data - 预览参数
- * @param {string|number} data.sourceId - 源单 ID
- * @param {string} data.sourceModule - 源模块编码
- * @param {string} data.targetModule - 目标模块编码
+ * Preview push data
+ * @param {Object} data - Preview parameters
+ * @param {string|number} data.sourceId - Source bill ID
+ * @param {string} data.sourceModule - Source module code
+ * @param {string} data.targetModule - Target module code
  * @returns {Promise}
  */
 export function previewPushDown(data) {
@@ -51,11 +51,11 @@ export function previewPushDown(data) {
 }
 
 /**
- * 批量下推
- * @param {Object} data - 下推参数
- * @param {Array} data.sourceIds - 源单 ID 列表
- * @param {string} data.sourceModule - 源模块编码
- * @param {string} data.targetModule - 目标模块编码
+ * Batch push
+ * @param {Object} data - Push parameters
+ * @param {Array} data.sourceIds - Source bill ID list
+ * @param {string} data.sourceModule - Source module code
+ * @param {string} data.targetModule - Target module code
  * @returns {Promise}
  */
 export function batchPushDown(data) {
@@ -67,10 +67,10 @@ export function batchPushDown(data) {
 }
 
 /**
- * 获取下推映射配置
- * @param {Object} params - 查询参数
- * @param {string} params.sourceModule - 源模块编码
- * @param {string} params.targetModule - 目标模块编码
+ * Get push mapping configuration
+ * @param {Object} params - Query parameters
+ * @param {string} params.sourceModule - Source module code
+ * @param {string} params.targetModule - Target module code
  * @returns {Promise}
  */
 export function getPushMappingConfig(params) {
@@ -82,11 +82,11 @@ export function getPushMappingConfig(params) {
 }
 
 /**
- * 验证下推数据
- * @param {Object} data - 验证参数
- * @param {Object} data.sourceData - 源单数据
- * @param {string} data.sourceModule - 源模块编码
- * @param {string} data.targetModule - 目标模块编码
+ * Validate push data
+ * @param {Object} data - Validation parameters
+ * @param {Object} data.sourceData - Source data
+ * @param {string} data.sourceModule - Source module code
+ * @param {string} data.targetModule - Target module code
  * @returns {Promise}
  */
 export function validatePushData(data) {
@@ -98,11 +98,11 @@ export function validatePushData(data) {
 }
 
 /**
- * 取消下推
- * @param {Object} data - 取消参数
- * @param {string|number} data.targetId - 目标单 ID
- * @param {string} data.targetModule - 目标模块编码
- * @param {string} data.reason - 取消原因
+ * Cancel push
+ * @param {Object} data - Cancel parameters
+ * @param {string|number} data.targetId - Target bill ID
+ * @param {string} data.targetModule - Target module code
+ * @param {string} data.reason - Cancel reason
  * @returns {Promise}
  */
 export function cancelPushDown(data) {
@@ -114,10 +114,10 @@ export function cancelPushDown(data) {
 }
 
 /**
- * 获取下推历史记录
- * @param {Object} params - 查询参数
- * @param {string|number} params.billId - 单据 ID
- * @param {string} params.moduleCode - 模块编码
+ * Get push history
+ * @param {Object} params - Query parameters
+ * @param {string|number} params.billId - Bill ID
+ * @param {string} params.moduleCode - Module code
  * @returns {Promise}
  */
 export function getPushHistory(params) {

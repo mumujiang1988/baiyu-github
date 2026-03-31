@@ -485,7 +485,8 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(Long[] configIds) {
         if (ObjectUtil.isNotEmpty(configIds)) {
-            // First clear cache
+            // First query all module_codes to be deleted
+            List<String> moduleCodes = new ArrayList<>();
             for (Long configId : configIds) {
                 List<Map<String, Object>> conditions = new ArrayList<>();
                 Map<String, Object> condition = new HashMap<>();
@@ -499,8 +500,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
                 List<Map<String, Object>> result = jdbcTemplate.queryForList(selectSql, sqlResult.getParams().toArray());
                 
                 if (!result.isEmpty()) {
-                    String moduleCode = (String) result.get(0).get("module_code");
-                    CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
+                    moduleCodes.add((String) result.get(0).get("module_code"));
                 }
             }
             
@@ -512,7 +512,16 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
             }
             
             String deleteSql = "DELETE FROM erp_page_config WHERE config_id IN (" + inClause + ")";
-            return jdbcTemplate.update(deleteSql, (Object[]) configIds);
+            int result = jdbcTemplate.update(deleteSql, (Object[]) configIds);
+            
+            // Clear cache after delete success
+            if (result > 0) {
+                for (String moduleCode : moduleCodes) {
+                    CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
+                }
+            }
+            
+            return result;
         }
         return 0;
     }
@@ -520,7 +529,7 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteById(Long configId) {
-        // Query config info and clear cache
+        // Query config info
         List<Map<String, Object>> conditions = new ArrayList<>();
         Map<String, Object> condition = new HashMap<>();
         condition.put("field", "config_id");
@@ -534,11 +543,17 @@ public class ErpPageConfigServiceImpl implements ErpPageConfigService {
         
         if (!result.isEmpty()) {
             String moduleCode = (String) result.get(0).get("module_code");
-            CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
             
             // Execute delete
             String deleteSql = "DELETE FROM erp_page_config WHERE config_id = ?";
-            return jdbcTemplate.update(deleteSql, configId);
+            int deleteResult = jdbcTemplate.update(deleteSql, configId);
+            
+            // Clear cache after delete success
+            if (deleteResult > 0) {
+                CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
+            }
+            
+            return deleteResult;
         }
         return 0;
     }

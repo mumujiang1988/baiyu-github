@@ -1,5 +1,5 @@
 <template>
-  <el-drawer
+    <!-- Drawer loading -->
     :model-value="visible"
     :title="drawerTitle"
     direction="rtl"
@@ -10,10 +10,10 @@
   >
     <div v-if="loading" class="drawer-loading">
       <el-icon class="is-loading" :size="40"><Loading /></el-icon>
-      <p>正在加载数据...</p>
+      <p>Loading data...</p>
     </div>
     
-    <div v-else class="drawer-content">
+    <!-- Drawer content -->
       <el-tabs v-model="detailActiveTab" stretch>
         <el-tab-pane
           v-for="tab in tabs"
@@ -21,11 +21,11 @@
           :label="tab.label"
           :name="tab.name"
         >
-          <!-- Table 类型页签 -->
+          <!-- Table tab -->
           <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
             <template v-for="tabKey in [tab.name]" :key="tabKey">
               <div v-if="!getTabData(tab) || getTabData(tab).length === 0" class="tab-empty">
-                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+                <el-empty :description="`No ${tab.label} data`" :image-size="120" />
               </div>
               <el-table 
                 v-else
@@ -55,11 +55,11 @@
             </template>
           </div>
           
-          <!-- Form 类型页签 -->
+          <!-- Form tab -->
           <div v-else-if="tab.type === 'form'" class="tab-content">
             <template v-for="tabKey in [tab.name]" :key="tabKey">
               <div v-if="!getTabData(tab) || Object.keys(getTabData(tab)).length === 0" class="tab-empty">
-                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+                <el-empty :description="`No ${tab.label} data`" :image-size="120" />
               </div>
               <el-form 
                 v-else 
@@ -84,11 +84,11 @@
             </template>
           </div>
           
-          <!-- Descriptions 类型页签 -->
+          <!-- Descriptions tab -->
           <div v-else-if="tab.type === 'descriptions'" class="tab-content">
             <template v-for="tabKey in [tab.name]" :key="tabKey">
               <div v-if="!getTabData(tab) || (Array.isArray(getTabData(tab)) ? getTabData(tab).length === 0 : Object.keys(getTabData(tab)).length === 0)" class="tab-empty">
-                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
+                <el-empty :description="`No ${tab.label} data`" :image-size="120" />
               </div>
               <el-descriptions 
                 v-else 
@@ -146,19 +146,19 @@ const emit = defineEmits(['update:visible', 'close'])
 
 const detailActiveTab = ref('entry')
 
-// 监听 visible 变化
+// Watch visible
 watch(() => props.visible, (newVal) => {
   if (newVal) {
     detailActiveTab.value = 'entry'
   }
 })
 
-// 计算属性
+// Computed tabs
 const tabs = computed(() => {
   return props.drawerConfig?.tabs || []
 })
 
-// 获取页签数据
+// Get tab data
 const getTabData = (tab) => {
   if (!tab || !tab.dataField) {
     return null
@@ -166,21 +166,21 @@ const getTabData = (tab) => {
   
   const data = props.detailRow[tab.dataField]
   
-  // 返回数组
+  // Return array
   if (Array.isArray(data)) {
     return data
   }
   
-  // 返回对象
+  // Return object
   if (data && typeof data === 'object') {
     return data
   }
   
-  // 返回空数组
+  // Return empty array
   return []
 }
 
-// 获取表单字段
+// Get form fields
 const getFormFields = (tab) => {
   if (tab.form && Array.isArray(tab.form.fields)) {
     return tab.form.fields
@@ -193,22 +193,22 @@ const getFormFields = (tab) => {
   return []
 }
 
-// 获取字段值（大小写不敏感）
+// Get field value (case-insensitive)
 const getFieldValue = (row, fieldName) => {
   if (!row || !fieldName) return undefined
   
-  // 精确匹配
+  // Exact match
   if (row.hasOwnProperty(fieldName)) {
     return row[fieldName]
   }
   
-  // 小写匹配
+  // Lowercase match
   const lowerFieldName = fieldName.toLowerCase()
   if (row.hasOwnProperty(lowerFieldName)) {
     return row[lowerFieldName]
   }
   
-  // 忽略大小写匹配
+  // Case-insensitive match
   const rowKeys = Object.keys(row)
   const matchedKey = rowKeys.find(key => key.toLowerCase() === fieldName.toLowerCase())
   if (matchedKey) {
@@ -218,7 +218,7 @@ const getFieldValue = (row, fieldName) => {
   return undefined
 }
 
-// 事件处理
+// Event handlers
 const handleBeforeClose = (done) => {
   emit('close')
   done()
@@ -226,9 +226,9 @@ const handleBeforeClose = (done) => {
 </script>
 
 <style scoped>
-/* ✅ 使用父组件的全局样式，不重复定义 */
+/* ✅ Use parent global styles */
 
-/* 抽屉加载容器样式 */
+/* Drawer loading */
 .drawer-loading {
   display: flex;
   flex-direction: column;
@@ -243,7 +243,7 @@ const handleBeforeClose = (done) => {
   font-size: 14px;
 }
 
-/* 抽屉内容区样式 */
+/* Drawer content */
 .drawer-content {
   padding: 0;
 }
@@ -260,7 +260,7 @@ const handleBeforeClose = (done) => {
   margin-top: 0;
 }
 
-/* 页签空状态样式 */
+/* Tab empty state */
 .tab-empty {
   display: flex;
   align-items: center;
@@ -269,7 +269,7 @@ const handleBeforeClose = (done) => {
   padding: 40px 20px;
 }
 
-/* 页签内容区通用样式 */
+/* Tab content */
 .tab-content {
   padding: 0;
 }

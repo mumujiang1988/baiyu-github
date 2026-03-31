@@ -3,9 +3,7 @@ import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
 
 /**
- * 业务数据管理 Composable
- * 用于管理 ERP 业务页面的核心数据逻辑
- * @param {import('vue').Ref} config - 配置对象引用
+ * Business Data Management Composable
  */
 export function useBusinessData(config) {
   // 状态管理
@@ -19,9 +17,7 @@ export function useBusinessData(config) {
   })
 
   /**
-   * 获取 API 方法
-   * @param {string} methodType - 方法类型
-   * @returns {Promise<Function|null>}
+   * Get API Method
    */
   const getApiMethod = async (methodType) => {
     const apiConfig = config.value?.apiConfig
@@ -58,10 +54,7 @@ export function useBusinessData(config) {
   }
 
   /**
-   * 查询列表数据
-   * @param {string} tableName - 表名
-   * @param {Object} queryConfig - 查询配置
-   * @returns {Promise<Object>}
+   * Query list data
    */
   const getList = async (tableName, queryConfig) => {
     loading.value = true
@@ -70,7 +63,7 @@ export function useBusinessData(config) {
       const moduleCode = config.value?.moduleCode
       
       if (!moduleCode) {
-        throw new Error('模块配置中缺少 moduleCode 字段，无法执行查询')
+        throw new Error('Missing moduleCode field in module configuration, cannot execute query')
       }
       
       const response = await request({
@@ -94,7 +87,7 @@ export function useBusinessData(config) {
         total: total.value
       }
     } catch (error) {
-      ElMessage.error(config.value?.businessConfig?.messages?.error?.load || '查询列表失败')
+      ElMessage.error(config.value?.businessConfig?.messages?.error?.load || 'Failed to query list')
       return {
         success: false,
         error: error.message
@@ -105,11 +98,7 @@ export function useBusinessData(config) {
   }
 
   /**
-   * 构建查询条件
-   * @param {Array} searchFields - 搜索字段配置
-   * @param {Object} currentParams - 当前查询参数
-   * @param {Array} dateRange - 日期范围
-   * @returns {Object}
+   * Build query conditions
    */
   const buildQueryConfig = (searchFields, currentParams, dateRange) => {
     const conditions = []
@@ -148,10 +137,7 @@ export function useBusinessData(config) {
   }
 
   /**
-   * 提交数据
-   * @param {Object} data - 提交数据
-   * @param {boolean} isNew - 是否新增
-   * @returns {Promise<Object>}
+   * Submit data
    */
   const submitData = async (data, isNew) => {
     submitLoading.value = true
@@ -160,10 +146,10 @@ export function useBusinessData(config) {
       const apiMethod = await getApiMethod(isNew ? 'add' : 'update')
       
       if (!apiMethod) {
-        ElMessage.error('API 未配置')
+        ElMessage.error('API not configured')
         return {
           success: false,
-          error: 'API 未配置'
+          error: 'API not configured'
         }
       }
       
@@ -171,7 +157,7 @@ export function useBusinessData(config) {
       
       ElMessage.success(
         config.value?.businessConfig?.messages?.success?.[isNew ? 'add' : 'edit'] 
-        || (isNew ? '新增成功' : '修改成功')
+        || (isNew ? 'Added successfully' : 'Updated successfully')
       )
       
       return {
@@ -179,7 +165,7 @@ export function useBusinessData(config) {
         data: data
       }
     } catch (error) {
-      ElMessage.error('保存失败：' + (error.message || '请检查表单填写是否正确'))
+      ElMessage.error('Save failed: ' + (error.message || 'Please check if the form is filled correctly'))
       return {
         success: false,
         error: error.message
@@ -190,33 +176,31 @@ export function useBusinessData(config) {
   }
 
   /**
-   * 删除数据
-   * @param {Array<string>} ids - ID 数组
-   * @returns {Promise<Object>}
+   * Delete data
    */
   const deleteData = async (ids) => {
     try {
       const apiMethod = await getApiMethod('delete')
       
       if (!apiMethod) {
-        ElMessage.error('API 未配置')
+        ElMessage.error('API not configured')
         return {
           success: false,
-          error: 'API 未配置'
+          error: 'API not configured'
         }
       }
       
       await apiMethod(ids)
       
       ElMessage.success(
-        config.value?.businessConfig?.messages?.success?.delete || '删除成功'
+        config.value?.businessConfig?.messages?.success?.delete || 'Deleted successfully'
       )
       
       return {
         success: true
       }
     } catch (error) {
-      ElMessage.error('删除失败：' + (error.message || '未知错误'))
+      ElMessage.error('Delete failed: ' + (error.message || 'Unknown error'))
       return {
         success: false,
         error: error.message
