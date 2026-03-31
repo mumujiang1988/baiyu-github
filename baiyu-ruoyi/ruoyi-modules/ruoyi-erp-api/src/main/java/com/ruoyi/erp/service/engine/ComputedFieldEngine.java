@@ -20,13 +20,6 @@ import java.util.*;
 @Component
 public class ComputedFieldEngine {
     
-    /**
-     * 执行字段计算
-     * 
-     * @param data 原始数据
-     * @param configs 计算配置列表
-     * @return 计算后的数据
-     */
     public Map<String, Object> computeFields(
             Map<String, Object> data,
             List<ComputedFieldConfig> configs) {
@@ -39,10 +32,8 @@ public class ComputedFieldEngine {
         
         for (ComputedFieldConfig config : configs) {
             try {
-                // 解析并计算公式
                 Object value = evaluateFormula(config.getFormula(), result);
                 
-                // 精度处理
                 if (value instanceof Number && config.getPrecision() != null) {
                     if (value instanceof BigDecimal) {
                         value = ((BigDecimal) value).setScale(config.getPrecision(), RoundingMode.HALF_UP);
@@ -57,7 +48,6 @@ public class ComputedFieldEngine {
                 
             } catch (Exception e) {
                 log.error("计算字段 {} 失败：{}", config.getTargetField(), e.getMessage());
-                // 计算失败时抛出异常
                 throw new ComputedFieldException(
                     config.getTargetField(), 
                     config.getFormula(), 
@@ -70,9 +60,6 @@ public class ComputedFieldEngine {
         return result;
     }
     
-    /**
-     * 批量计算字段
-     */
     public List<Map<String, Object>> computeFieldsBatch(
             List<Map<String, Object>> dataList,
             List<ComputedFieldConfig> configs) {
@@ -86,11 +73,7 @@ public class ComputedFieldEngine {
             .toList();
     }
     
-    /**
-     * 解析并计算公式
-     */
     private Object evaluateFormula(String formula, Map<String, Object> context) {
-        // 支持的函数
         if (formula.startsWith("SUM(")) {
             return evaluateSum(formula, context);
         } else if (formula.startsWith("AVG(")) {
@@ -102,16 +85,11 @@ public class ComputedFieldEngine {
         } else if (formula.startsWith("MIN(")) {
             return evaluateMin(formula, context);
         } else {
-            // 普通表达式计算 (支持四则运算)
             return evaluateExpression(formula, context);
         }
     }
     
-    /**
-     * SUM 函数计算 - 支持嵌套列表字段汇总
-     */
     private Object evaluateSum(String formula, Map<String, Object> context) {
-        // 提取字段路径：SUM(entryList.fAllAmount)
         String fieldPath = formula.substring(4, formula.length() - 1);
         String[] parts = fieldPath.split("\\.");
         
@@ -145,9 +123,6 @@ public class ComputedFieldEngine {
         return sum;
     }
     
-    /**
-     * AVG 函数计算
-     */
     private Object evaluateAvg(String formula, Map<String, Object> context) {
         String fieldPath = formula.substring(4, formula.length() - 1);
         String[] parts = fieldPath.split("\\.");
@@ -185,9 +160,6 @@ public class ComputedFieldEngine {
         return count > 0 ? sum.divide(BigDecimal.valueOf(count), 10, RoundingMode.HALF_UP) : 0;
     }
     
-    /**
-     * COUNT 函数计算
-     */
     private Object evaluateCount(String formula, Map<String, Object> context) {
         String fieldPath = formula.substring(6, formula.length() - 1);
         Object listObj = context.get(fieldPath);
@@ -199,9 +171,6 @@ public class ComputedFieldEngine {
         return ((List<?>) listObj).size();
     }
     
-    /**
-     * MAX 函数计算
-     */
     private Object evaluateMax(String formula, Map<String, Object> context) {
         String fieldPath = formula.substring(4, formula.length() - 1);
         String[] parts = fieldPath.split("\\.");
@@ -239,9 +208,6 @@ public class ComputedFieldEngine {
         return max;
     }
     
-    /**
-     * MIN 函数计算
-     */
     private Object evaluateMin(String formula, Map<String, Object> context) {
         String fieldPath = formula.substring(4, formula.length() - 1);
         String[] parts = fieldPath.split("\\.");
@@ -279,12 +245,8 @@ public class ComputedFieldEngine {
         return min;
     }
     
-    /**
-     * 计算普通表达式 (支持四则运算)
-     */
     private Object evaluateExpression(String expression, Map<String, Object> context) {
         try {
-            // 替换变量为实际值
             String evaluatedExpr = expression;
             for (Map.Entry<String, Object> entry : context.entrySet()) {
                 String key = entry.getKey();
@@ -294,22 +256,15 @@ public class ComputedFieldEngine {
                 }
             }
             
-            // 使用简单的表达式计算 (仅支持四则运算)
             return calculateSimpleExpression(evaluatedExpr);
         } catch (Exception e) {
             throw new RuntimeException("表达式计算失败：" + expression, e);
         }
     }
     
-    /**
-     * 简单四则运算计算器(修复运算符优先级)
-     * 优先级: 括号 > 乘除 > 加减
-     */
     private BigDecimal calculateSimpleExpression(String expression) {
-        // 移除空格
         expression = expression.replaceAll("\\s+", "");
         
-        // 处理括号(最高优先级)
         int parenStart = expression.lastIndexOf('(');
         if (parenStart >= 0) {
             int parenEnd = expression.indexOf(')', parenStart);
@@ -317,7 +272,6 @@ public class ComputedFieldEngine {
                 throw new IllegalArgumentException("括号不匹配");
             }
             
-            // 递归计算括号内的表达式
             String before = expression.substring(0, parenStart);
             String inside = expression.substring(parenStart + 1, parenEnd);
             String after = expression.substring(parenEnd + 1);
@@ -326,7 +280,6 @@ public class ComputedFieldEngine {
             return calculateSimpleExpression(before + insideValue + after);
         }
         
-        // 处理加减法(最低优先级,从右往左找)
         int plusIndex = findOperatorIndex(expression, '+');
         if (plusIndex > 0) {
             BigDecimal left = calculateSimpleExpression(expression.substring(0, plusIndex));
@@ -336,19 +289,15 @@ public class ComputedFieldEngine {
         
         int minusIndex = findOperatorIndex(expression, '-');
         if (minusIndex > 0) {
-            // 处理负数情况: -5 或 3*-5
             if (minusIndex == 0) {
-                // 整个表达式是负数
                 return calculateSimpleExpression(expression.substring(1)).negate();
             }
             char prevChar = expression.charAt(minusIndex - 1);
             if (prevChar == '+' || prevChar == '-' || prevChar == '*' || prevChar == '/') {
-                // 负号,不是减号,继续找下一个减号
                 int nextMinus = findOperatorIndex(expression.substring(0, minusIndex), '-');
                 if (nextMinus > 0) {
                     minusIndex = nextMinus;
                 } else {
-                    // 整个是负数表达式
                     return calculateSimpleExpression(expression.substring(1)).negate();
                 }
             }
@@ -358,11 +307,9 @@ public class ComputedFieldEngine {
             return left.subtract(right);
         }
         
-        // 处理乘除法(高优先级)
         int multiplyIndex = expression.indexOf('*');
         int divideIndex = expression.indexOf('/');
         
-        // 优先处理先出现的运算符(从左往右)
         if (multiplyIndex > 0 && (divideIndex < 0 || multiplyIndex < divideIndex)) {
             BigDecimal left = calculateSimpleExpression(expression.substring(0, multiplyIndex));
             BigDecimal right = calculateSimpleExpression(expression.substring(multiplyIndex + 1));
@@ -378,7 +325,6 @@ public class ComputedFieldEngine {
             return left.divide(right, 10, RoundingMode.HALF_UP);
         }
         
-        // 解析数字
         try {
             return new BigDecimal(expression);
         } catch (NumberFormatException e) {
@@ -386,9 +332,6 @@ public class ComputedFieldEngine {
         }
     }
     
-    /**
-     * 查找运算符索引 (忽略括号内的运算符)
-     */
     private int findOperatorIndex(String expression, char operator) {
         int parenDepth = 0;
         for (int i = expression.length() - 1; i >= 0; i--) {
@@ -398,7 +341,6 @@ public class ComputedFieldEngine {
             } else if (c == '(') {
                 parenDepth--;
             } else if (c == operator && parenDepth == 0) {
-                // 确保不是负号 (前面是运算符或开头)
                 if (i > 0) {
                     char prev = expression.charAt(i - 1);
                     if (prev == '+' || prev == '-' || prev == '*' || prev == '/') {

@@ -18,7 +18,7 @@ WHERE NOT EXISTS (
 SET @config_menu_id := '162307528422595391';
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, query_param, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark)
 SELECT @config_menu_id, '公共配置管理' COLLATE utf8mb4_general_ci, @erp_parent_id, 2, 'erp/config', 
-        'erp/config/index', '{"moduleCode":"erp"}', 0, 0, 'C', 1, 1, 
+        'erp/pageTemplate/configurable/BusinessConfigurable/index', '{"moduleCode":"erp"}', 0, 0, 'C', 1, 1, 
         'erp:config:query', 'setting', 'admin', NOW(), '', NULL, 'ERP 公共配置管理页面'
 WHERE NOT EXISTS (
     SELECT 1 FROM sys_menu 

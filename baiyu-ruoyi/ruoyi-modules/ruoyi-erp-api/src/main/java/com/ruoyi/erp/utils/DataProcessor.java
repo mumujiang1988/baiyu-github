@@ -14,13 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Data Processor
- * 
- * Provides unified data processing functionality:
- * - Computed field processing
- * - Virtual field processing
- * - Dictionary translation
- * 
  * @author JMH
  * @date 2026-03-24
  */

@@ -60,7 +60,7 @@ INSERT INTO `erp_page_config` (
   'PAGE', 
   '{
     "pageId": "saleorder",
-    "pageName": "销售订单管理",
+    "title": "{entityName}管理",
     "permission": "k3:saleorder:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
@@ -277,38 +277,27 @@ INSERT INTO `erp_page_config` (
     "defaultExpand": true,
     "fields": [
       {
-        "field": "beginDate",
-        "label": "开始日期",
-        "component": "date",
+        "field": "FDate",
+        "label": "销售合同日期",
+        "component": "daterange",
         "props": {
-          "placeholder": "选择开始日期",
+          "startPlaceholder": "开始日期",
+          "endPlaceholder": "结束日期",
           "valueFormat": "YYYY-MM-DD",
-          "style": {"width": "160px"}
+          "style": {"width": "240px"}
         },
-        "defaultValue": "2010-01-01",
-        "queryOperator": "gte"
-      },
-      {
-        "field": "endDate",
-        "label": "结束日期",
-        "component": "date",
-        "props": {
-          "placeholder": "选择结束日期",
-          "valueFormat": "YYYY-MM-DD",
-          "style": {"width": "160px"}
-        },
-        "defaultValue": "today",
-        "queryOperator": "lte"
+        "defaultValue": ["2010-01-01", "today"],
+        "queryOperator": "between"
       },
       {
         "field": "FBillNo",
         "label": "单据编号",
         "component": "input",
         "props": {
-          "placeholder": "输入单据编号",
+          "placeholder": "单据编号",
           "clearable": true,
           "prefixIcon": "Search",
-          "style": {"width": "180px"}
+          "style": {"width": "160px"}
         },
         "queryOperator": "right_like"
       },
@@ -317,10 +306,10 @@ INSERT INTO `erp_page_config` (
         "label": "客户简称",
         "component": "input",
         "props": {
-          "placeholder": "输入客户简称",
+          "placeholder": "客户简称",
           "clearable": true,
           "prefixIcon": "User",
-          "style": {"width": "150px"}
+          "style": {"width": "130px"}
         },
         "queryOperator": "like"
       },
@@ -330,7 +319,7 @@ INSERT INTO `erp_page_config` (
         "component": "select",
         "dictionary": "salespersons",
         "props": {
-          "placeholder": "选择销售员",
+          "placeholder": "销售员",
           "clearable": true,
           "filterable": true,
           "style": {"width": "120px"}
@@ -344,7 +333,7 @@ INSERT INTO `erp_page_config` (
         "component": "select",
         "dictionary": "order_status",
         "props": {
-          "placeholder": "选择订单状态",
+          "placeholder": "订单状态",
           "clearable": true,
           "filterable": true,
           "style": {"width": "120px"}
@@ -358,7 +347,7 @@ INSERT INTO `erp_page_config` (
         "component": "select",
         "dictionary": "f_document_status",
         "props": {
-          "placeholder": "选择单据状态",
+          "placeholder": "单据状态",
           "clearable": true,
           "filterable": true,
           "style": {"width": "120px"}
