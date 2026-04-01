@@ -124,7 +124,7 @@ INSERT INTO `erp_page_config` (
         "label": "单据状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {"placeholder": "请选择单据状态", "clearable": true},
         "defaultValue": "0"
       }
@@ -141,7 +141,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "FSupplierId", "label": "供应商", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "FPurchaseOrgId", "label": "采购组织", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "purchase_org"},
       {"prop": "FStockId", "label": "收料仓库", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "stock"},
-      {"prop": "FDocumentStatus", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {"prop": "FDocumentStatus", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "FCreateDate", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
       {"prop": "FCreatorId", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
     ],
@@ -211,7 +211,7 @@ INSERT INTO `erp_page_config` (
         "field": "FDocumentStatus",
         "label": "单据状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "单据状态",
           "clearable": true,

@@ -60,11 +60,12 @@
   // 1. page_config - 页面基础配置
   page_config: {
     pageId: "saleorder",
-    pageName: "销售订单管理",
+    title: "{entityName}管理",
     permission: "k3:saleorder:query",
     layout: "standard",
     apiPrefix: "/erp/engine",
-    tableName: "t_sale_order"
+    tableName: "t_sale_order",
+    billNoField: "FBillNo"
   },
   
   // 2. form_config - 表单配置
@@ -81,10 +82,28 @@
         component: "input",
         span: 6,
         required: true,
-        rules: [{required: true, message: "不能为空", trigger: "blur"}],
+        rules: [{required: true, message: "单据编号不能为空", trigger: "blur"}],
         props: {maxlength: 100, clearable: true}
+      },
+      {
+        field: "FDate",
+        label: "新增日期",
+        component: "date",
+        span: 6,
+        required: true,
+        rules: [{required: true, message: "日期不能为空", trigger: "change"}],
+        props: {placeholder: "选择日期", valueFormat: "YYYY-MM-DD"}
+      },
+      {
+        field: "FCustId",
+        label: "客户编码",
+        component: "select",
+        span: 6,
+        dictionary: "customers",
+        required: true,
+        props: {placeholder: "请选择客户", filterable: true, clearable: true}
       }
-      // ... 更多字段
+      // ... 共 21 个字段，详见 SQL 配置文件
     ]
   },
   
@@ -93,8 +112,8 @@
     tableName: "t_sale_order",
     primaryKey: "id",
     columns: [
-      {type: "selection", width: 55, fixed: "left"},
-      {type: "expand", width: 100, fixed: "left", label: "详情"},
+      {type: "selection", width: 55, fixed: "left", resizable: false},
+      {type: "expand", width: 100, fixed: "left", resizable: false, label: "详情"},
       {
         prop: "FBillNo",
         label: "单据编号",
@@ -106,6 +125,24 @@
         renderType: "text"
       },
       {
+        prop: "F_ora_BaseProperty",
+        label: "客户简称",
+        width: 150,
+        fixed: "left",
+        align: "left",
+        visible: true,
+        resizable: true
+      },
+      {
+        prop: "orderStatus",
+        label: "订单状态",
+        width: 120,
+        align: "center",
+        visible: true,
+        renderType: "tag",
+        dictionary: "order_status"
+      },
+      {
         prop: "FDocumentStatus",
         label: "单据状态",
         width: 140,
@@ -113,8 +150,17 @@
         visible: true,
         renderType: "tag",
         dictionary: "f_document_status"
+      },
+      {
+        prop: "FSalerId",
+        label: "销售员",
+        width: 120,
+        align: "left",
+        visible: true,
+        renderType: "text",
+        dictionary: "salespersons"
       }
-      // ... 更多列
+      // ... 共 13 列，详见 SQL 配置文件
     ],
     pagination: {
       defaultPageSize: 10,
@@ -128,16 +174,41 @@
     defaultExpand: true,
     fields: [
       {
-        field: "beginDate",
-        label: "开始日期",
-        component: "date",
+        field: "FDate",
+        label: "订单日期",
+        component: "daterange",
         props: {
-          placeholder: "选择开始日期",
+          startPlaceholder: "开始日期",
+          endPlaceholder: "结束日期",
           valueFormat: "YYYY-MM-DD",
+          style: {width: "220px"}
+        },
+        defaultValue: ["2010-01-01", "today"],
+        queryOperator: "between"
+      },
+      {
+        field: "FBillNo",
+        label: "单据编号",
+        component: "input",
+        props: {
+          placeholder: "单据编号",
+          clearable: true,
+          prefixIcon: "Search",
           style: {width: "160px"}
         },
-        defaultValue: "2010-01-01",
-        queryOperator: "gte"
+        queryOperator: "right_like"
+      },
+      {
+        field: "F_ora_BaseProperty",
+        label: "客户简称",
+        component: "input",
+        props: {
+          placeholder: "客户简称",
+          clearable: true,
+          prefixIcon: "User",
+          style: {width: "130px"}
+        },
+        queryOperator: "like"
       },
       {
         field: "FSalerId",
@@ -145,14 +216,42 @@
         component: "select",
         dictionary: "salespersons",
         props: {
-          placeholder: "选择销售员",
+          placeholder: "销售员",
           clearable: true,
           filterable: true,
           style: {width: "120px"}
         },
+        defaultValue: "",
+        queryOperator: "eq"
+      },
+      {
+        field: "orderStatus",
+        label: "订单状态",
+        component: "select",
+        dictionary: "order_status",
+        props: {
+          placeholder: "订单状态",
+          clearable: true,
+          filterable: true,
+          style: {width: "120px"}
+        },
+        defaultValue: "",
+        queryOperator: "eq"
+      },
+      {
+        field: "FDocumentStatus",
+        label: "单据状态",
+        component: "select",
+        dictionary: "f_document_status",
+        props: {
+          placeholder: "单据状态",
+          clearable: true,
+          filterable: true,
+          style: {width: "120px"}
+        },
+        defaultValue: "",
         queryOperator: "eq"
       }
-      // ... 更多字段
     ]
   },
   
@@ -169,6 +268,16 @@
         handler: "handleAdd"
       },
       {
+        key: "edit",
+        label: "修改",
+        icon: "Edit",
+        permission: "k3:saleorder:edit",
+        type: "success",
+        position: "left",
+        disabled: "single",
+        handler: "handleUpdate"
+      },
+      {
         key: "delete",
         label: "删除",
         icon: "Delete",
@@ -178,13 +287,62 @@
         disabled: "multiple",
         handler: "handleDelete",
         confirm: "是否确认删除选中的 {count} 条数据？"
+      },
+      {
+        key: "audit",
+        label: "审核",
+        icon: "CircleCheck",
+        permission: "k3:saleorder:audit",
+        type: "success",
+        position: "left",
+        disabled: "multiple",
+        handler: "handleAudit",
+        confirm: "是否确认审核选中的 {count} 条数据？"
+      },
+      {
+        key: "unAudit",
+        label: "反审核",
+        icon: "Close",
+        permission: "k3:saleorder:unAudit",
+        type: "warning",
+        position: "left",
+        disabled: "multiple",
+        handler: "handleUnAudit",
+        confirm: "是否确认反审核选中的 {count} 条数据？"
+      },
+      {
+        key: "push",
+        label: "下推",
+        icon: "Download",
+        permission: "k3:saleorder:push",
+        type: "info",
+        position: "left",
+        disabled: "single",
+        handler: "handleOpenPushDialog"
+      },
+      {
+        key: "export",
+        label: "导出",
+        icon: "Download",
+        permission: "k3:saleorder:export",
+        type: "warning",
+        position: "left",
+        disabled: "multiple",
+        handler: "handleExport"
+      },
+      {
+        key: "columnSetting",
+        label: "列设置",
+        icon: "Setting",
+        type: "info",
+        position: "right",
+        handler: "openColumnSetting"
       }
-      // ... 更多按钮
     ],
     row: []
   },
   
-  // 6. api_config - API 接口配置
+  // 6. api_config - API 接口配置 ✨ v4.0 新增
   api_config: {
     baseUrl: "/api/saleorder",
     methods: {
@@ -202,12 +360,41 @@
         url: "/add",
         method: "POST",
         description: "新增销售订单"
+      },
+      update: {
+        url: "/update",
+        method: "PUT",
+        description: "修改销售订单"
+      },
+      delete: {
+        url: "/delete",
+        method: "DELETE",
+        description: "删除销售订单"
+      },
+      entry: {
+        url: "/entry/{billNo}",
+        method: "GET",
+        description: "获取销售订单明细"
+      },
+      cost: {
+        url: "/cost/{billNo}",
+        method: "GET",
+        description: "获取销售订单成本"
+      },
+      audit: {
+        url: "/audit",
+        method: "POST",
+        description: "审核销售订单"
+      },
+      unAudit: {
+        url: "/unAudit",
+        method: "POST",
+        description: "反审核销售订单"
       }
-      // ... 更多接口
     }
   },
   
-  // 7. dict_config - 字典数据源配置
+  // 7. dict_config - 字典数据源配置 ✨ 统一使用 /erp/engine/dict/all API
   dict_config: {
     builder: {
       enabled: true
@@ -223,24 +410,40 @@
         }
       },
       customers: {
-        type: "dynamic",
-        table: "bd_customer",
-        conditions: [
-          {field: "deleted", operator: "isNull"}
-        ],
-        orderBy: [
-          {field: "fname", direction: "ASC"}
-        ],
-        fieldMapping: {
-          valueField: "fnumber",
-          labelField: "fname"
-        },
+        type: "api",
         config: {
           api: "/erp/engine/dict/union/customers",
-          useGlobalCache: true
+          useGlobalCache: true,
+          cacheKey: "customers_dict",
+          cacheTTL: 86400000
+        }
+      },
+      materials: {
+        type: "api",
+        config: {
+          api: "/erp/engine/dict/union/materials",
+          useGlobalCache: true,
+          cacheKey: "materials_dict",
+          cacheTTL: 86400000
+        }
+      },
+      nation: {
+        type: "remote",
+        config: {
+          searchApi: "/erp/engine/country/search?keyword={keyword}&limit=20",
+          minKeywordLength: 1,
+          debounce: 300
+        }
+      },
+      currency: {
+        type: "api",
+        config: {
+          api: "/erp/engine/dict/union/currency",
+          useGlobalCache: true,
+          cacheKey: "currency_dict",
+          cacheTTL: 86400000
         }
       }
-      // ... 更多字典
     },
     globalCacheSettings: {
       enabled: true,
@@ -282,7 +485,7 @@
       direction: "rtl",
       loadStrategy: "lazy",
       tabs: [
-        // ✅ 表格类型页签
+        // ✅ 表格类型页签 (type: "table")
         {
           name: "entry",
           label: "销售订单明细",
@@ -290,14 +493,22 @@
           type: "table",              // ⚠️ 必须显式指定
           dataField: "entryList",     // ⚠️ 数据存储在 currentDetailRow.entryList
           tableName: "t_sale_order_entry",
+          relationConfig: {
+            enabled: true,
+            masterTable: "t_sale_order",
+            masterField: "FBillNo",
+            detailTable: "t_sale_order_entry",
+            detailField: "fbillno",
+            operator: "eq"
+          },
           queryConfig: {
             enabled: true,
             defaultConditions: [
               {
                 field: "FBillNo",
                 operator: "eq",
-                value: "${billNo}",   // ⚠️ 模板变量，运行时替换
-                description: "按订单编号查询明细"
+                value: "${FBillNo}",   // ⚠️ 模板变量，运行时替换为当前单据号
+                description: "按订单编号查询明细 (t_sale_order.FBillNo = t_sale_order_entry.fbillno)"
               }
             ],
             defaultOrderBy: [
@@ -318,19 +529,108 @@
                 sortable: true
               },
               {
+                prop: "FPlanMaterialName",
+                label: "物料名称",
+                width: 180,
+                align: "left",
+                showOverflowTooltip: true,
+                sortable: true
+              },
+              {
                 prop: "FQty",
                 label: "数量",
                 width: 100,
                 align: "right",
                 renderType: "number",
+                sortable: true,
                 precision: 4
+              },
+              {
+                prop: "FPrice",
+                label: "单价",
+                width: 100,
+                align: "right",
+                renderType: "currency",
+                precision: 8,
+                sortable: true
+              },
+              {
+                prop: "FTaxPrice",
+                label: "含税单价",
+                width: 100,
+                align: "right",
+                renderType: "currency",
+                precision: 8,
+                sortable: true
+              },
+              {
+                prop: "FAllAmount",
+                label: "金额合计",
+                width: 120,
+                align: "right",
+                renderType: "currency",
+                precision: 2,
+                sortable: true
+              },
+              {
+                prop: "FDeliQty",
+                label: "已交付数量",
+                width: 100,
+                align: "right",
+                renderType: "number",
+                sortable: true,
+                precision: 4
+              },
+              {
+                prop: "F_mz",
+                label: "毛重",
+                width: 80,
+                align: "right",
+                renderType: "number",
+                precision: 2
+              },
+              {
+                prop: "F_jz",
+                label: "净重",
+                width: 80,
+                align: "right",
+                renderType: "number",
+                precision: 2
+              },
+              {
+                prop: "F_kpdj",
+                label: "开票单价",
+                width: 100,
+                align: "right",
+                renderType: "currency",
+                precision: 8
+              },
+              {
+                prop: "F_ygcb",
+                label: "预估成本",
+                width: 100,
+                align: "right",
+                renderType: "currency",
+                precision: 2
+              },
+              {
+                prop: "F_hsbm",
+                label: "海关编码",
+                width: 100,
+                align: "center"
+              },
+              {
+                prop: "F_cplb",
+                label: "产品类别",
+                width: 100,
+                align: "center"
               }
-              // ... 更多列
+              // ... 共 13 列，详见 SQL 配置文件
             ]
           }
         },
         
-        // ✅ 表单类型页签 ⚠️ 高频错误点
+        // ✅ 表单类型页签 (type: "form") ⚠️ 高频错误点
         {
           name: "cost",
           label: "成本暂估",
@@ -338,14 +638,22 @@
           type: "form",               // ⚠️ 必须显式指定为 form
           dataField: "costData",      // ⚠️ 数据存储在 currentDetailRow.costData
           tableName: "t_sale_order_cost",
+          relationConfig: {
+            enabled: true,
+            masterTable: "t_sale_order",
+            masterField: "FBillNo",
+            detailTable: "t_sale_order_cost",
+            detailField: "FBillNo",
+            operator: "eq"
+          },
           queryConfig: {
             enabled: true,
             defaultConditions: [
               {
                 field: "FBillNo",
                 operator: "eq",
-                value: "${billNo}",
-                description: "按订单编号查询成本"
+                value: "${FBillNo}",
+                description: "按订单编号查询成本 (t_sale_order.FBillNo = t_sale_order_cost.FBillNo)"
               }
             ],
             defaultOrderBy: [
@@ -374,8 +682,35 @@
                 renderType: "currency",
                 precision: 2,
                 readonly: true
+              },
+              {
+                prop: "FBillAllAmount_LC",
+                label: "价税合计 (本位币)",
+                span: 8,
+                component: "input-number",
+                renderType: "currency",
+                precision: 2,
+                readonly: true
+              },
+              {
+                prop: "F_bxf",
+                label: "保险费",
+                span: 8,
+                component: "input-number",
+                renderType: "currency",
+                precision: 2,
+                readonly: true
+              },
+              {
+                prop: "F_gwyhfy",
+                label: "国外银行费用",
+                span: 8,
+                component: "input-number",
+                renderType: "currency",
+                precision: 2,
+                readonly: true
               }
-              // ... 更多字段
+              // ... 共 23 个字段，详见 SQL 配置文件
             ]
           }
         },

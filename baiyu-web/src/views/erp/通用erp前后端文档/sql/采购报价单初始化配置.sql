@@ -115,7 +115,7 @@ INSERT INTO `erp_page_config` (
         "label": "数据状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {"placeholder": "请选择数据状态", "clearable": true},
         "defaultValue": "0"
       },
@@ -138,7 +138,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "fdate", "label": "报价日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
       {"prop": "f_khjc", "label": "客户简称", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "customers"},
       {"prop": "f_xsy", "label": "销售员", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "salesman"},
-      {"prop": "fdocumentstatus", "label": "数据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {"prop": "fdocumentstatus", "label": "数据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "f_fktj", "label": "Payment terms", "width": 150, "align": "left", "visible": true, "renderType": "text"},
       {"prop": "fcreatedate", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
       {"prop": "fcreatorid", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
@@ -209,7 +209,7 @@ INSERT INTO `erp_page_config` (
         "field": "fdocumentstatus",
         "label": "数据状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "数据状态",
           "clearable": true,
@@ -283,6 +283,33 @@ INSERT INTO `erp_page_config` (
       "enabled": true
     },
     "dictionaries": {
+      "customers": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/customers",
+          "useGlobalCache": true,
+          "cacheKey": "customers_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "salesman": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/salesman",
+          "useGlobalCache": true,
+          "cacheKey": "salesman_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "bill_status": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/bill_status",
+          "useGlobalCache": true,
+          "cacheKey": "bill_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
       "suppliers": {
         "type": "api",
         "config": {
@@ -325,15 +352,6 @@ INSERT INTO `erp_page_config` (
           "api": "/erp/engine/dict/union/quote_type",
           "useGlobalCache": true,
           "cacheKey": "quote_type_dict",
-          "cacheTTL": 86400000
-        }
-      },
-      "bill_status": {
-        "type": "api",
-        "config": {
-          "api": "/erp/engine/dict/union/bill_status",
-          "useGlobalCache": true,
-          "cacheKey": "bill_status_dict",
           "cacheTTL": 86400000
         }
       }

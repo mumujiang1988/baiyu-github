@@ -125,8 +125,8 @@ INSERT INTO `erp_page_config` (
         "label": "单据状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
-        "props": {"placeholder": "请选择单据状态", "clearable": true},
+        "dictionary": "f_document_status",
+        "props": {"placeholder": "请选择单据状态", "clearable": true, "filterable": true},
         "defaultValue": "0"
       },
       {
@@ -149,9 +149,9 @@ INSERT INTO `erp_page_config` (
       {"prop": "f_rectunit", "label": "收款单位", "width": 180, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "f_applyamountfor_h", "label": "申请付款金额", "width": 140, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "f_settlecur", "label": "结算币别", "width": 120, "align": "center", "visible": true, "renderType": "text", "dictionary": "currency"},
-      {"prop": "f_document_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {"prop": "f_document_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "create_time", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "create_by", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {"prop": "create_by", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -219,7 +219,7 @@ INSERT INTO `erp_page_config` (
         "field": "f_document_status",
         "label": "单据状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "单据状态",
           "clearable": true,
@@ -311,12 +311,21 @@ INSERT INTO `erp_page_config` (
           "cacheTTL": 86400000
         }
       },
-      "bill_status": {
+      "f_document_status": {
         "type": "api",
         "config": {
-          "api": "/erp/engine/dict/union/bill_status",
+          "api": "/erp/engine/dict/union/f_document_status",
           "useGlobalCache": true,
-          "cacheKey": "bill_status_dict",
+          "cacheKey": "f_document_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "users": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/users",
+          "useGlobalCache": true,
+          "cacheKey": "users_dict",
           "cacheTTL": 86400000
         }
       }

@@ -116,7 +116,7 @@ INSERT INTO `erp_page_config` (
         "label": "单据状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {"placeholder": "请选择单据状态", "clearable": true},
         "defaultValue": "0"
       },
@@ -139,7 +139,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "fdate", "label": "采购日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
       {"prop": "fsupplier_id", "label": "供应商", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "f_settle_curr_id", "label": "结算币别", "width": 120, "align": "center", "visible": true, "renderType": "text", "dictionary": "currency"},
-      {"prop": "fdocument_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {"prop": "fdocument_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "f_zje", "label": "总金额", "width": 140, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "fcreate_date", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
       {"prop": "fcreator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
@@ -196,7 +196,7 @@ INSERT INTO `erp_page_config` (
         "field": "fdocument_status",
         "label": "单据状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "单据状态",
           "clearable": true,

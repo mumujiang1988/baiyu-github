@@ -124,7 +124,7 @@ INSERT INTO `erp_page_config` (
         "label": "单据状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {"placeholder": "请选择单据状态", "clearable": true},
         "defaultValue": "0"
       },
@@ -148,7 +148,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "f_supplier_id", "label": "供应商编码", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "f_settle_org_id", "label": "采购组织", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "stock_org"},
       {"prop": "f_purchaser_id", "label": "采购员", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "salesman"},
-      {"prop": "f_document_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {"prop": "f_document_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "f_create_date", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
       {"prop": "f_creator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
     ],
@@ -218,7 +218,7 @@ INSERT INTO `erp_page_config` (
         "field": "f_document_status",
         "label": "单据状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "单据状态",
           "clearable": true,
@@ -325,6 +325,15 @@ INSERT INTO `erp_page_config` (
           "api": "/erp/engine/dict/union/bill_status",
           "useGlobalCache": true,
           "cacheKey": "bill_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "salesman": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/salesman",
+          "useGlobalCache": true,
+          "cacheKey": "salesman_dict",
           "cacheTTL": 86400000
         }
       },

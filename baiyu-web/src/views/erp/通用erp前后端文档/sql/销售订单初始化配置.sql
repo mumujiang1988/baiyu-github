@@ -80,16 +80,14 @@ INSERT INTO `erp_page_config` (
         "component": "input",
         "span": 6,
         "required": true,
-        "rules": [{"required": true, "message": "单据编号不能为空", "trigger": "blur"}],
         "props": {"maxlength": 100, "clearable": true}
       },
       {
         "field": "FDate",
         "label": "新增日期",
-        "component": "date",
+        "component": "date-picker",
         "span": 6,
         "required": true,
-        "rules": [{"required": true, "message": "日期不能为空", "trigger": "change"}],
         "props": {"placeholder": "选择日期", "valueFormat": "YYYY-MM-DD"}
       },
       {
@@ -107,7 +105,6 @@ INSERT INTO `erp_page_config` (
         "component": "input",
         "span": 6,
         "required": true,
-        "rules": [{"required": true, "message": "客户简称不能为空", "trigger": "blur"}],
         "props": {"placeholder": "请输入客户简称", "maxlength": 200},
         "defaultValue": ""
       },
@@ -130,7 +127,6 @@ INSERT INTO `erp_page_config` (
         "label": "客户邮箱",
         "component": "input",
         "span": 6,
-        "rules": [{"type": "email", "message": "请输入正确的邮箱地址", "trigger": ["blur", "change"]}],
         "props": {"maxlength": 100, "clearable": true, "readonly": true}
       },
       {
@@ -458,7 +454,9 @@ INSERT INTO `erp_page_config` (
         "config": {
           "searchApi": "/erp/engine/country/search?keyword={keyword}&limit=20",
           "minKeywordLength": 1,
-          "debounce": 300
+          "debounce": 300,
+          "labelField": "name",
+          "valueField": "code"
         }
       },
       "currency": {
@@ -503,7 +501,7 @@ INSERT INTO `erp_page_config` (
           "name": "entry",
           "label": "销售订单明细",
           "icon": "Document",
-          "type": "table",  
+          "type": "table",
           "dataField": "entryList",
           "tableName": "t_sale_order_entry",
           "relationConfig": {
@@ -552,7 +550,7 @@ INSERT INTO `erp_page_config` (
           "name": "cost",
           "label": "成本暂估",
           "icon": "Money",
-          "type": "form",   
+          "type": "form",
           "dataField": "costData",
           "tableName": "t_sale_order_cost",
           "relationConfig": {

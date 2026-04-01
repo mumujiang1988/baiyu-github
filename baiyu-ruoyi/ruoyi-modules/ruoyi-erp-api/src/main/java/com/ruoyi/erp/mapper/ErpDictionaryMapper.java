@@ -198,6 +198,7 @@ public interface ErpDictionaryMapper {
             "  abbreviation AS shortName, " +  // 供应商简称
             "  number AS supplierCode " +  // 供应商编码
             "FROM supplier " +
+            "WHERE supplierid IS NOT NULL AND supplierid != '' " +
             "ORDER BY name ASC")
     List<Map<String, Object>> selectSuppliersDict();
 

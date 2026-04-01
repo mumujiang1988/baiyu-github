@@ -115,7 +115,7 @@ INSERT INTO `erp_page_config` (
         "label": "质检状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {"placeholder": "请选择质检状态", "clearable": true},
         "defaultValue": "0"
       },
@@ -138,7 +138,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "fdate", "label": "业务日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
       {"prop": "fsupplier_id", "label": "供应商 ID", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "fstock_id", "label": "仓库 ID", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "stock"},
-      {"prop": "fqc_status", "label": "质检状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {"prop": "fqc_status", "label": "质检状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "finspect_result", "label": "检验结果", "width": 120, "align": "left", "visible": true, "renderType": "text"},
       {"prop": "create_time", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
       {"prop": "fcreator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
@@ -195,7 +195,7 @@ INSERT INTO `erp_page_config` (
         "field": "fqc_status",
         "label": "质检状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "质检状态",
           "clearable": true,
