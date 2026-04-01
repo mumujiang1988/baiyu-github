@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:receivenotice:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "receive_notice"
+    "tableName": "receive_notice",
+    "billNoField": "FBillNo"
   }', 
   '{
     "formConfig": {
@@ -365,6 +366,14 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "receive_notice_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "receive_notice",
+            "masterField": "FBillNo",
+            "detailTable": "receive_notice_entry",
+            "detailField": "FBillNo",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [

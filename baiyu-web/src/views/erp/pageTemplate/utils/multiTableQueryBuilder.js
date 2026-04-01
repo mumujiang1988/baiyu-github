@@ -73,10 +73,28 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
   try {
     // Build query requests for all sub-tables
     const promises = subTableConfigs.map(async (config) => {
-      const { key, tableName, defaultConditions, defaultOrderBy } = config
+      const { key, tableName, defaultConditions, defaultOrderBy, relationConfig } = config
       
-      // Replace template variables (e.g., ${billNo})
-      const conditions = replaceTemplateVariables(defaultConditions, contextData)
+      // If relation config exists, extract master field value from contextData
+      let conditions = [...defaultConditions]
+      if (relationConfig && relationConfig.enabled) {
+        const masterFieldValue = contextData[relationConfig.masterField]
+        console.error(`[queryAllSubTables] ${key}: Using relation config, ${relationConfig.masterTable}.${relationConfig.masterField} =`, masterFieldValue)
+        
+        // Replace template variables with actual master field value
+        conditions = conditions.map(cond => {
+          if (cond.field === relationConfig.detailField && cond.value && cond.value.startsWith('${') && cond.value.endsWith('}')) {
+            return {
+              ...cond,
+              value: masterFieldValue
+            }
+          }
+          return cond
+        })
+      } else {
+        // Old method: replace template variables
+        conditions = replaceTemplateVariables(defaultConditions, contextData)
+      }
       
       const queryConfig = {
         conditions,
@@ -169,14 +187,27 @@ export const parseSubTableConfigs = (pageConfig) => {
     for (const tab of tabs) {
       // Support table, descriptions and form types (cost table)
       if (tab.type === 'table' || tab.type === 'descriptions' || tab.type === 'form') {
-        configs.push({
+        const config = {
           key: tab.name,
           tableName: tab.tableName,
           defaultConditions: tab.queryConfig?.defaultConditions || [],
           defaultOrderBy: tab.queryConfig?.defaultOrderBy || [],
           dataField: tab.dataField || `${tab.name}Data`,
           type: tab.type
-        })
+        }
+        
+        // Parse relation config if exists
+        if (tab.relationConfig && tab.relationConfig.enabled) {
+          config.relationConfig = {
+            masterTable: tab.relationConfig.masterTable,
+            masterField: tab.relationConfig.masterField,
+            detailTable: tab.relationConfig.detailTable,
+            detailField: tab.relationConfig.detailField,
+            operator: tab.relationConfig.operator || 'eq'
+          }
+        }
+        
+        configs.push(config)
       }
     }
   }

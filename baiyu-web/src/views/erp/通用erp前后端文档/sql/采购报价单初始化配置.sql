@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:purchasequotation:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "purchase_quotation"
+    "tableName": "purchase_quotation",
+    "billNoField": "fbillno"
   }', 
   '{
     "formConfig": {
@@ -372,6 +373,14 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "purchase_quotation_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "purchase_quotation",
+            "masterField": "fbillno",
+            "detailTable": "purchase_quotation_entry",
+            "detailField": "fbillno",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [

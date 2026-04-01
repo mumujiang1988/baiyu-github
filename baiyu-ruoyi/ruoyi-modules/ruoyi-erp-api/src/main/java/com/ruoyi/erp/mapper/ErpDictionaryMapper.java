@@ -108,10 +108,6 @@ public interface ErpDictionaryMapper {
     /**
      * 查询销售人员字典数据
      * 包含部门、角色、工号等信息
-     * 
-     * ⚠️ **重要说明**:
-     * - value: user_id (雪花算法 ID, BIGINT)
-     * - FSalerId: salesman_id (销售员编码，VARCHAR) ✅ 使用数据库字段名
      */
     @Select("SELECT " +
             "  u.nick_name AS label, " +  // 显示标签（人名）
@@ -148,7 +144,7 @@ public interface ErpDictionaryMapper {
             "  fshort_name AS shortName, " +  // 客户简称
             "  fnumber AS customerCode " +  // 客户编码
             "FROM bd_customer " +
-            "WHERE fdocumentStatus = 'A' " +  // 只查询已审核的客户
+            "WHERE fdocumentStatus = 'C' " +  // 查询已创建/暂存的客户
             "ORDER BY fname ASC")
     List<Map<String, Object>> selectCustomersDict();
 
@@ -185,9 +181,7 @@ public interface ErpDictionaryMapper {
             "  u.email AS email, " +  // 邮箱
             "  u.phonenumber AS phonenumber " +  // 手机号
             "FROM sys_user u " +
-            "LEFT JOIN sys_dept d ON u.dept_id = d.dept_id " +
-            "WHERE u.status = '1' " +  // 状态正常
-            "AND u.del_flag = '0' " +  // 未删除
+            "LEFT JOIN sys_dept d ON u.dept_id = d.dept_id " + 
             "ORDER BY u.nick_name ASC")
     List<Map<String, Object>> selectUsersDict();
 
@@ -220,9 +214,7 @@ public interface ErpDictionaryMapper {
             "  parent_id AS parentId, " +  // 父部门 ID
             "  ancestors AS ancestors, " +  // 祖列列表
             "  order_num AS orderNum " +  // 显示顺序
-            "FROM sys_dept " +
-            "WHERE status = '0' " +  // 只查询正常状态的部门
-            "AND del_flag = '0' " +  // 未删除
+            "FROM sys_dept " + 
             "ORDER BY ancestors ASC, order_num ASC")
     List<Map<String, Object>> selectDepartmentsDict();
 

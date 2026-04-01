@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:saleorder:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "t_sale_order"
+    "tableName": "t_sale_order",
+    "billNoField": "FBillNo"
   }', 
   '{
     "formConfig": {
@@ -505,14 +506,22 @@ INSERT INTO `erp_page_config` (
           "type": "table",  
           "dataField": "entryList",
           "tableName": "t_sale_order_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "t_sale_order",
+            "masterField": "FBillNo",
+            "detailTable": "t_sale_order_entry",
+            "detailField": "fbillno",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [
               {
                 "field": "FBillNo",
                 "operator": "eq",
-                "value": "${billNo}",
-                "description": "按订单编号查询明细"
+                "value": "${FBillNo}",
+                "description": "按订单编号查询明细 (t_sale_order.FBillNo = t_sale_order_entry.fbillno)"
               }
             ],
             "defaultOrderBy": [{"field": "FPlanMaterialId", "direction": "ASC"}]
@@ -546,14 +555,22 @@ INSERT INTO `erp_page_config` (
           "type": "form",   
           "dataField": "costData",
           "tableName": "t_sale_order_cost",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "t_sale_order",
+            "masterField": "FBillNo",
+            "detailTable": "t_sale_order_cost",
+            "detailField": "FBillNo",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [
               {
                 "field": "FBillNo",
                 "operator": "eq",
-                "value": "${billNo}",
-                "description": "按订单编号查询成本"
+                "value": "${FBillNo}",
+                "description": "按订单编号查询成本 (t_sale_order.FBillNo = t_sale_order_cost.FBillNo)"
               }
             ],
             "defaultOrderBy": [{"field": "FID", "direction": "ASC"}]

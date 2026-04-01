@@ -330,7 +330,7 @@ const loadSubTablesData = async () => {
   }
 }
 
-const loadSubTablesByBillNo = async (billNo) => {
+const loadSubTablesByBillNo = async (rowData) => {
   try {
     const moduleCode = currentConfig.value?.moduleCode
     if (!moduleCode) {
@@ -344,10 +344,11 @@ const loadSubTablesByBillNo = async (billNo) => {
       return
     }
     
+    // 直接传递整个 row 对象，让 relationConfig 可以访问所有字段
     const results = await multiTableQueryBuilder.queryAllSubTables(
       moduleCode,
       subTableConfigs,
-      { billNo }
+      rowData  // 传递整个 row 对象
     )
     
     if (results.entry) {
@@ -505,18 +506,20 @@ const handleViewDetail = async (row) => {
   const titleTemplate = businessConfig.value.drawerTitle || '{entityName}详情 - {billNo}'
   const entityName = businessConfig.value.entityName || '订单'
   
+  // 直接使用配置的编号字段获取内容
+  const fieldValue = row[billNoField] || row.FBillNo || ''
+  
+  // 替换模板中的 {entityName} 和第二个占位符（无论是什么格式）
   drawerTitle.value = titleTemplate
     .replace(/{entityName}/g, entityName)
-    .replace(/{billNo}/g, row[billNoField] || row.FBillNo || '')
+    .replace(/\{[^}]+\}/g, fieldValue)
   
   drawerLoading.value = true
   currentDetailRow.value = { ...row }
   
   try {
-    const billNoValue = row[billNoField] || row.FBillNo
-    if (billNoValue) {
-      await loadSubTablesByBillNo(billNoValue)
-    }
+    // 直接传递整个 row 对象，让 relationConfig 可以访问所有字段
+    await loadSubTablesByBillNo(row)
     detailActiveTab.value = entryList.value?.length > 0 ? 'entry' : (Object.keys(costData.value).length > 0 ? 'cost' : 'entry')
   } catch (error) {
     ElMessage.error('加载详情数据失败')

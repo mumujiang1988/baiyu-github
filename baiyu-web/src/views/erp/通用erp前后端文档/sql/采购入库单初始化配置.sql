@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:purchaseinstock:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "purchase_instock"
+    "tableName": "purchase_instock",
+    "billNoField": "f_bill_no"
   }', 
   '{
     "formConfig": {
@@ -372,6 +373,14 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "purchase_instock_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "purchase_instock",
+            "masterField": "f_bill_no",
+            "detailTable": "purchase_instock_entry",
+            "detailField": "fbillno",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [

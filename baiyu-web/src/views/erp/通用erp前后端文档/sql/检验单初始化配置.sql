@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:inspection:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "receipt_notice_full"
+    "tableName": "receipt_notice_full",
+    "billNoField": "fbill_no"
   }', 
   '{
     "formConfig": {
@@ -340,7 +341,51 @@ INSERT INTO `erp_page_config` (
       "title": "{entityName}详情 - {fbill_no}",
       "width": "60%",
       "direction": "rtl",
-      "loadStrategy": "lazy"
+      "loadStrategy": "lazy",
+      "tabs": [
+        {
+          "name": "entry",
+          "label": "检验明细",
+          "icon": "Document",
+          "type": "table",
+          "dataField": "entryList",
+          "tableName": "receipt_notice_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "receipt_notice_full",
+            "masterField": "fbill_no",
+            "detailTable": "receipt_notice_entry",
+            "detailField": "fbill_no",
+            "operator": "eq"
+          },
+          "queryConfig": {
+            "enabled": true,
+            "defaultConditions": [
+              {
+                "field": "fbill_no",
+                "operator": "eq",
+                "value": "${fbill_no}",
+                "description": "按单据编号查询明细"
+              }
+            ],
+            "defaultOrderBy": [{"field": "id", "direction": "ASC"}]
+          },
+          "table": {
+            "border": true,
+            "stripe": true,
+            "maxHeight": "500",
+            "showOverflowTooltip": true,
+            "columns": [
+              {"prop": "id", "label": "明细 ID", "width": 100, "align": "center", "sortable": true},
+              {"prop": "fmaterial_id", "label": "物料编码", "width": 120, "align": "left"},
+              {"prop": "fmaterial_name", "label": "物料名称", "width": 150, "align": "left"},
+              {"prop": "fqty", "label": "数量", "width": 100, "align": "right", "renderType": "number", "precision": 2},
+              {"prop": "fqc_result", "label": "检验结果", "width": 100, "align": "center"},
+              {"prop": "fremark", "label": "备注", "width": 200, "align": "left"}
+            ]
+          }
+        }
+      ]
     }
   }',
   1,

@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:receivebill:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "f_receivebill"
+    "tableName": "f_receivebill",
+    "billNoField": "f_bill_no"
   }', 
   '{
     "formConfig": {
@@ -105,7 +106,7 @@ INSERT INTO `erp_page_config` (
         "label": "单据类型",
         "component": "select",
         "span": 6,
-        "dictionary": "receive_bill_type",
+        "dictionary": "document_type",
         "required": true,
         "props": {"placeholder": "请选择单据类型", "clearable": true, "filterable": true}
       },
@@ -133,7 +134,7 @@ INSERT INTO `erp_page_config` (
         "label": "单据状态",
         "component": "select",
         "span": 6,
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {"placeholder": "请选择单据状态", "clearable": true},
         "defaultValue": "0"
       },
@@ -154,13 +155,49 @@ INSERT INTO `erp_page_config` (
       {"type": "expand", "width": 100, "fixed": "left", "resizable": false, "label": "详情"},
       {"prop": "f_bill_no", "label": "单据编号", "width": 150, "fixed": "left", "align": "left", "visible": true, "resizable": true, "renderType": "text"},
       {"prop": "fdate", "label": "业务日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
-      {"prop": "f_contactunit", "label": "往来单位", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "customers"},
-      {"prop": "f_bill_type_id", "label": "单据类型", "width": 120, "align": "center", "visible": true, "renderType": "tag", "dictionary": "receive_bill_type"},
+      {
+        "prop": "f_contactunit",
+        "label": "往来单位",
+        "width": 120,
+        "align": "left",
+        "visible": true,
+        "resizable": true,
+        "renderType": "text",
+        "dictionary": "customers"
+      },
+      {
+        "prop": "f_bill_type_id",
+        "label": "单据类型",
+        "width": 120,
+        "align": "center",
+        "visible": true,
+        "resizable": true,
+        "renderType": "tag",
+        "dictionary": "document_type"
+      },
       {"prop": "f_recamountfor", "label": "收款金额", "width": 140, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "f_currency_id", "label": "币别", "width": 120, "align": "center", "visible": true, "renderType": "text", "dictionary": "currency"},
-      {"prop": "f_document_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "bill_status"},
+      {
+        "prop": "f_document_status",
+        "label": "单据状态",
+        "width": 100,
+        "align": "center",
+        "visible": true,
+        "resizable": true,
+        "renderType": "tag",
+        "dictionary": "f_document_status"
+      },
       {"prop": "create_time", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "create_by", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {
+        "prop": "create_by",
+        "label": "创建人",
+        "width": 100,
+        "align": "left",
+        "visible": true,
+        "resizable": true,
+        "renderType": "text",
+        "dictionary": "users"
+      }
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -214,7 +251,7 @@ INSERT INTO `erp_page_config` (
         "field": "f_bill_type_id",
         "label": "单据类型",
         "component": "select",
-        "dictionary": "receive_bill_type",
+        "dictionary": "document_type",
         "props": {
           "placeholder": "单据类型",
           "clearable": true,
@@ -228,7 +265,7 @@ INSERT INTO `erp_page_config` (
         "field": "f_document_status",
         "label": "单据状态",
         "component": "select",
-        "dictionary": "bill_status",
+        "dictionary": "f_document_status",
         "props": {
           "placeholder": "单据状态",
           "clearable": true,
@@ -320,21 +357,30 @@ INSERT INTO `erp_page_config` (
           "cacheTTL": 86400000
         }
       },
-      "receive_bill_type": {
+      "document_type": {
         "type": "api",
         "config": {
-          "api": "/erp/engine/dict/union/receive_bill_type",
+          "api": "/erp/engine/dict/union/document_type",
           "useGlobalCache": true,
-          "cacheKey": "receive_bill_type_dict",
+          "cacheKey": "document_type_dict",
           "cacheTTL": 86400000
         }
       },
-      "bill_status": {
+      "f_document_status": {
         "type": "api",
         "config": {
-          "api": "/erp/engine/dict/union/bill_status",
+          "api": "/erp/engine/dict/union/f_document_status",
           "useGlobalCache": true,
-          "cacheKey": "bill_status_dict",
+          "cacheKey": "f_document_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "users": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/users",
+          "useGlobalCache": true,
+          "cacheKey": "users_dict",
           "cacheTTL": 86400000
         }
       }
@@ -374,6 +420,14 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "f_receivebill_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "f_receivebill",
+            "masterField": "id",
+            "detailTable": "f_receivebill_entry",
+            "detailField": "f_entry_id",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [
@@ -381,7 +435,7 @@ INSERT INTO `erp_page_config` (
                 "field": "f_entry_id",
                 "operator": "eq",
                 "value": "${id}",
-                "description": "按主键 ID 查询明细"
+                "description": "按收款单 ID 查询明细 (f_receivebill.id = f_receivebill_entry.f_entry_id)"
               }
             ],
             "defaultOrderBy": [{"field": "id", "direction": "ASC"}]

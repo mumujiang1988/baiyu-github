@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:paymentapply:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "f_rectunit_type"
+    "tableName": "f_rectunit_type",
+    "billNoField": "f_bill_no"
   }', 
   '{
     "formConfig": {
@@ -355,6 +356,14 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "f_rectunit_detail",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "f_rectunit_type",
+            "masterField": "id",
+            "detailTable": "f_rectunit_detail",
+            "detailField": "f_entry_id",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [

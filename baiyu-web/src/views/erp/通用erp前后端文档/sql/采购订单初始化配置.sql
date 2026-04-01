@@ -64,7 +64,8 @@ INSERT INTO `erp_page_config` (
     "permission": "k3:purchaseorder:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
-    "tableName": "po_order_bill_head"
+    "tableName": "po_order_bill_head",
+    "billNoField": "fbill_no"
   }', 
   '{
     "formConfig": {
@@ -350,6 +351,14 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "po_order_bill_head_entry",
+          "relationConfig": {
+            "enabled": true,
+            "masterTable": "po_order_bill_head",
+            "masterField": "fbill_no",
+            "detailTable": "po_order_bill_head_entry",
+            "detailField": "fbillNo",
+            "operator": "eq"
+          },
           "queryConfig": {
             "enabled": true,
             "defaultConditions": [
