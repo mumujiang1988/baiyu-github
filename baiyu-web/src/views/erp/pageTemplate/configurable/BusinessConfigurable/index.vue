@@ -318,13 +318,11 @@ const loadSubTablesByBillNo = async (rowData) => {
   try {
     const moduleCode = currentConfig.value?.moduleCode
     if (!moduleCode) {
-      console.error('[loadSubTablesByBillNo] Module code is empty')
       throw new Error('Module code is required for query')
     }
     
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
     if (subTableConfigs.length === 0) {
-      console.error('[loadSubTablesByBillNo] No sub-table configs found')
       return
     }
     

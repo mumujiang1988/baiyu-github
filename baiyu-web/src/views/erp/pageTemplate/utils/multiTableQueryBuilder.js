@@ -41,7 +41,7 @@ export const queryMainTable = async (params) => {
  */
 export const querySubTable = async (params) => {
   const { moduleCode, tableName, queryConfig, pageNum = 1, pageSize = 100 } = params
-   
+  
   try {
     const response = await request({
       url: '/erp/engine/query/execute',
@@ -54,10 +54,9 @@ export const querySubTable = async (params) => {
         pageSize
       }
     })
-     
+    
     return response.data || {}
   } catch (error) {
-    console.error('❌ [querySubTable] 查询失败:', error)
     throw error
   }
 }
@@ -70,38 +69,23 @@ export const querySubTable = async (params) => {
  * @returns {Promise<Object>} - All sub-table query results
  */
 export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData = {}) => {
-  console.log('\n🚀 [queryAllSubTables] 开始批量查询子表')
-  console.log('  - moduleCode:', moduleCode)
-  console.log('  - subTableConfigs:', JSON.stringify(subTableConfigs, null, 2))
-  console.log('  - contextData:', contextData)
-  
   try {
     // Build query requests for all sub-tables
     const promises = subTableConfigs.map(async (config) => {
       const { key, tableName, defaultConditions, defaultOrderBy, relationConfig } = config
       
-      console.log(`\n📋 [queryAllSubTables] 处理子表：${key}`)
-      console.log('  - tableName:', tableName)
-      console.log('  - defaultConditions:', JSON.stringify(defaultConditions, null, 2))
-      
       // 强制使用 relationConfig 关联逻辑（已移除旧兼容模式）
       let conditions = [...defaultConditions]
       
       if (!relationConfig) {
-        console.error(`❌ [queryAllSubTables] ${key}: 缺少 relationConfig 配置`)
         throw new Error(`子表 ${tableName} 必须配置 relationConfig`)
       }
       
       const masterFieldValue = contextData[relationConfig.masterField]
-      console.log(`\n🔗 [queryAllSubTables] ${key}: 使用关联配置`)
-      console.log('  - 主表字段:', `${relationConfig.masterTable}.${relationConfig.masterField}`)
-      console.log('  - 子表字段:', `${relationConfig.detailTable}.${relationConfig.detailField}`)
-      console.log('  - 关联值:', masterFieldValue)
       
       // 替换模板变量为实际的关联字段值
       conditions = conditions.map(cond => {
         if (cond.field === relationConfig.detailField && cond.value && cond.value.startsWith('${') && cond.value.endsWith('}')) {
-          console.log(`  ✅ 替换模板变量：${cond.value} -> ${masterFieldValue}`)
           return {
             ...cond,
             value: masterFieldValue
@@ -110,29 +94,19 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
         return cond
       })
       
-      console.log(`  ✅ ${key} 最终查询条件:`, JSON.stringify(conditions, null, 2))
-      
       const queryConfig = {
         conditions,
         orderBy: defaultOrderBy || []
       }
-      
-      console.log(`  📤 ${key} 完整 queryConfig:`, JSON.stringify(queryConfig, null, 2))
       
       const result = await querySubTable({
         moduleCode,
         tableName,
         queryConfig,
         pageNum: 1,
-        pageSize: 100 // Sub-tables usually don't need pagination
+        pageSize: 100
       })
       
-      console.log(`  📥 ${key} 查询结果:`, {
-        rows: result.rows?.length || 0,
-        total: result.total || 0
-      })
-      
-      // result is already response.data, containing rows and total
       return {
         key,
         data: result.rows || [],
@@ -143,8 +117,6 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
     // Wait for all queries to complete
     const results = await Promise.all(promises)
     
-    console.log('\n✅ [queryAllSubTables] 所有子表查询完成')
-    
     // Convert to object format
     const resultMap = {}
     results.forEach(result => {
@@ -152,12 +124,11 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
         data: result.data,
         total: result.total
       }
-      console.log(`  - ${result.key}: ${result.data.length} 条数据`)
     })
     
     return resultMap
   } catch (error) {
-    console.error('❌ [queryAllSubTables] 批量查询失败:', error)
+    console.error('[queryAllSubTables] 批量查询失败:', error)
     throw error
   }
 }
