@@ -504,8 +504,7 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "t_sale_order_entry",
-          "relationConfig": {
-            "enabled": true,
+          "relationConfig": { 
             "masterTable": "t_sale_order",
             "masterField": "FBillNo",
             "detailTable": "t_sale_order_entry",

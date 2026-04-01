@@ -748,6 +748,9 @@ const loadSubTablesData = async () => {
  * @param {String} billNo - Bill number
  */
 const loadSubTablesByBillNo = async (billNo) => {
+  console.log('\n💡 [loadSubTablesByBillNo] ========== 开始加载明细数据 ==========')
+  console.log('  📌 billNo:', billNo)
+  
   try {
     const moduleCode = currentConfig.value?.moduleCode
     
@@ -757,6 +760,11 @@ const loadSubTablesByBillNo = async (billNo) => {
     }
     
     const subTableConfigs = multiTableQueryBuilder.parseSubTableConfigs(currentConfig.value)
+    
+    console.log('📋 [loadSubTablesByBillNo] 解析到的子表配置:')
+    console.log('  - moduleCode:', moduleCode)
+    console.log('  - subTableConfigs:', JSON.stringify(subTableConfigs, null, 2))
+    console.log('  - subTableConfigs.length:', subTableConfigs.length)
     
     if (subTableConfigs.length === 0) {
       console.error('[loadSubTablesByBillNo] No sub-table configs found')
@@ -773,21 +781,36 @@ const loadSubTablesByBillNo = async (billNo) => {
       { billNo }
     )
     
+    console.log('\n💡 [loadSubTablesByBillNo] ========== 查询结果 ==========')
+    console.log('  results:', JSON.stringify(results, null, 2))
+    
     console.error('[loadSubTablesByBillNo] Query completed')
     
     if (results.entry) {
       entryList.value = results.entry.data
       currentDetailRow.value.entryList = results.entry.data
       console.error('[loadSubTablesByBillNo] Entry data loaded:', results.entry.data.length, 'records')
+      console.log('  ✅ entryList:', entryList.value)
+      console.log('  ✅ currentDetailRow.entryList:', currentDetailRow.value.entryList)
+    } else {
+      console.warn('⚠️ [loadSubTablesByBillNo] results.entry 不存在')
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
       currentDetailRow.value.costData = results.cost.data[0] || {}
       console.error('[loadSubTablesByBillNo] Cost data loaded')
+      console.log('  ✅ costData:', costData.value)
+    } else {
+      console.warn('⚠️ [loadSubTablesByBillNo] results.cost 不存在')
     }
+    
+    console.log('\n✅ [loadSubTablesByBillNo] 明细数据加载完成')
+    console.log('  final entryList:', entryList.value?.length || 0, '条')
+    console.log('  final costData:', costData.value ? '有数据' : '空')
   } catch (error) {
     console.error('[loadSubTablesByBillNo] Query failed:', error.message)
+    console.error('[loadSubTablesByBillNo] Error stack:', error.stack)
     ElMessage.error('Failed to load sub-table data: ' + error.message)
   }
 }
@@ -1768,16 +1791,14 @@ const preloadDictionaries = async () => {
         }
       }
       
-      if (missingDicts.length > 0) {
-        // 使用 console.warn 记录警告到浏览器控制台，不显示 UI 提示
-        console.warn('[字典预加载] 部分字典数据缺失:', missingDicts.join(', '))
-      }
+      console.log('✅ 字典加载完成，缺失的字典:', missingDicts)
     }
     
     // 步骤 4: 标记字典加载完成
     dictLoaded.value = true
-    
+
   } catch (error) {
+    console.error('预加载字典失败:', error)
     ElMessage.error(`预加载字典失败：${error.message}`)
     dictLoaded.value = true // 即使失败也允许页面渲染（降级处理）
   }

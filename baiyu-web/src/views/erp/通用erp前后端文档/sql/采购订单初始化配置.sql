@@ -142,7 +142,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "fdocument_status", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "f_zje", "label": "总金额", "width": 140, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "fcreate_date", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "fcreator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {"prop": "fcreator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -294,6 +294,24 @@ INSERT INTO `erp_page_config` (
           "api": "/erp/engine/dict/union/purchase_org",
           "useGlobalCache": true,
           "cacheKey": "purchase_org_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "f_document_status": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/f_document_status",
+          "useGlobalCache": true,
+          "cacheKey": "f_document_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "users": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/users",
+          "useGlobalCache": true,
+          "cacheKey": "users_dict",
           "cacheTTL": 86400000
         }
       },

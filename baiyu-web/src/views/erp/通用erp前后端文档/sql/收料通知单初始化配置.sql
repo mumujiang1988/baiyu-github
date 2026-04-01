@@ -143,7 +143,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "FStockId", "label": "收料仓库", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "stock"},
       {"prop": "FDocumentStatus", "label": "单据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "FCreateDate", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "FCreatorId", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {"prop": "FCreatorId", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -312,6 +312,24 @@ INSERT INTO `erp_page_config` (
           "cacheTTL": 86400000
         }
       },
+      "f_document_status": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/f_document_status",
+          "useGlobalCache": true,
+          "cacheKey": "f_document_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "users": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/users",
+          "useGlobalCache": true,
+          "cacheKey": "users_dict",
+          "cacheTTL": 86400000
+        }
+      },
       "bill_status": {
         "type": "api",
         "config": {
@@ -384,7 +402,7 @@ INSERT INTO `erp_page_config` (
                 "description": "按单据编号查询明细"
               }
             ],
-            "defaultOrderBy": [{"field": "FEntryId", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "ID", "direction": "ASC"}]
           },
           "table": {
             "border": true,
@@ -392,14 +410,14 @@ INSERT INTO `erp_page_config` (
             "maxHeight": "500",
             "showOverflowTooltip": true,
             "columns": [
-              {"prop": "FEntryId", "label": "明细ID", "width": 100, "align": "center", "sortable": true},
+              {"prop": "ID", "label": "明细ID", "width": 100, "align": "center", "sortable": true},
               {"prop": "FMaterialId", "label": "物料编码", "width": 120, "align": "left", "showOverflowTooltip": true},
               {"prop": "FMaterialName", "label": "物料名称", "width": 150, "align": "left", "showOverflowTooltip": true},
-              {"prop": "FQty", "label": "收料数量", "width": 100, "align": "right", "renderType": "number", "precision": 2, "sortable": true},
-              {"prop": "FUnitId", "label": "单位", "width": 80, "align": "center"},
-              {"prop": "FStockId", "label": "仓库", "width": 100, "align": "left", "showOverflowTooltip": true},
-              {"prop": "FPosition", "label": "仓位", "width": 100, "align": "left", "showOverflowTooltip": true},
-              {"prop": "FRemark", "label": "备注", "width": 200, "align": "left", "showOverflowTooltip": true}
+              {"prop": "FActReceiveQty", "label": "收料数量", "width": 100, "align": "right", "renderType": "number", "precision": 2, "sortable": true},
+              {"prop": "FStockUnitID", "label": "单位", "width": 80, "align": "center"},
+              {"prop": "FStockStatusId", "label": "库存状态", "width": 100, "align": "left", "showOverflowTooltip": true},
+              {"prop": "FLot", "label": "批号", "width": 100, "align": "left", "showOverflowTooltip": true},
+              {"prop": "FPreDeliveryDate", "label": "预计到货日期", "width": 120, "align": "center", "renderType": "date", "format": "YYYY-MM-DD"}
             ]
           }
         }

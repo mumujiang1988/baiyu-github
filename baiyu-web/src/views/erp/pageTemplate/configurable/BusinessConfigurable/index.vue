@@ -211,44 +211,10 @@ const markRequiredDictionaries = () => {
 // ==================== Dictionary loading ====================
 const preloadDictionaries = async () => {
   try {
-    console.error('[字典预加载] 开始加载...')
     const allDicts = await dictionaryManager.loadAll()
-    const dictStatus = dictionaryManager.getStatus()
-    
-    console.error('[字典预加载] 加载结果:', {
-      total: Object.keys(allDicts).length,
-      suppliers: allDicts.suppliers?.length || 0,
-      currency: allDicts.currency?.length || 0,
-      bill_status: allDicts.bill_status?.length || 0
-    })
-    
-    // 打印 suppliers 字典的详细内容
-    if (allDicts.suppliers && allDicts.suppliers.length > 0) {
-      console.error('[字典预加载] suppliers 字典前 3 条数据:', allDicts.suppliers.slice(0, 3))
-    } else {
-      console.error('[字典预加载] suppliers 字典数据为空或不存在')
-    }
-    
-    // 验证必填字典 - 仅记录日志，不显示 UI 警告
-    if (window._erpRequiredDicts && window._erpRequiredDicts.size > 0) {
-      const missingDicts = []
-      for (const dictName of window._erpRequiredDicts) {
-        if (!allDicts[dictName] || allDicts[dictName].length === 0) {
-          console.error(`[字典预加载] 字典 ${dictName} 数据为空`)
-          missingDicts.push(dictName)
-        }
-      }
-      
-      if (missingDicts.length > 0) {
-        // 使用 console.warn 记录警告到浏览器控制台，不干扰用户体验
-        console.warn('[字典预加载] 部分字典数据缺失:', missingDicts.join(', '))
-      }
-    }
-    
     dictLoaded.value = true
-    console.error('[字典预加载] 加载完成，dictLoaded = true')
   } catch (error) {
-    console.error('[字典预加载] 加载失败:', error)
+    console.error('预加载字典失败:', error)
     ElMessage.error(`预加载字典失败：${error.message}`)
     dictLoaded.value = true
   }

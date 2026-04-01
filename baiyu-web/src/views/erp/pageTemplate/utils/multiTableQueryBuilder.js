@@ -41,7 +41,7 @@ export const queryMainTable = async (params) => {
  */
 export const querySubTable = async (params) => {
   const { moduleCode, tableName, queryConfig, pageNum = 1, pageSize = 100 } = params
-  
+   
   try {
     const response = await request({
       url: '/erp/engine/query/execute',
@@ -54,10 +54,10 @@ export const querySubTable = async (params) => {
         pageSize
       }
     })
-    
-    // Backend returns R.ok(result), so data is in response.data
+     
     return response.data || {}
   } catch (error) {
+    console.error('❌ [querySubTable] 查询失败:', error)
     throw error
   }
 }
@@ -70,36 +70,54 @@ export const querySubTable = async (params) => {
  * @returns {Promise<Object>} - All sub-table query results
  */
 export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData = {}) => {
+  console.log('\n🚀 [queryAllSubTables] 开始批量查询子表')
+  console.log('  - moduleCode:', moduleCode)
+  console.log('  - subTableConfigs:', JSON.stringify(subTableConfigs, null, 2))
+  console.log('  - contextData:', contextData)
+  
   try {
     // Build query requests for all sub-tables
     const promises = subTableConfigs.map(async (config) => {
       const { key, tableName, defaultConditions, defaultOrderBy, relationConfig } = config
       
-      // If relation config exists, extract master field value from contextData
+      console.log(`\n📋 [queryAllSubTables] 处理子表：${key}`)
+      console.log('  - tableName:', tableName)
+      console.log('  - defaultConditions:', JSON.stringify(defaultConditions, null, 2))
+      
+      // 强制使用 relationConfig 关联逻辑（已移除旧兼容模式）
       let conditions = [...defaultConditions]
-      if (relationConfig && relationConfig.enabled) {
-        const masterFieldValue = contextData[relationConfig.masterField]
-        console.error(`[queryAllSubTables] ${key}: Using relation config, ${relationConfig.masterTable}.${relationConfig.masterField} =`, masterFieldValue)
-        
-        // Replace template variables with actual master field value
-        conditions = conditions.map(cond => {
-          if (cond.field === relationConfig.detailField && cond.value && cond.value.startsWith('${') && cond.value.endsWith('}')) {
-            return {
-              ...cond,
-              value: masterFieldValue
-            }
-          }
-          return cond
-        })
-      } else {
-        // Old method: replace template variables
-        conditions = replaceTemplateVariables(defaultConditions, contextData)
+      
+      if (!relationConfig) {
+        console.error(`❌ [queryAllSubTables] ${key}: 缺少 relationConfig 配置`)
+        throw new Error(`子表 ${tableName} 必须配置 relationConfig`)
       }
+      
+      const masterFieldValue = contextData[relationConfig.masterField]
+      console.log(`\n🔗 [queryAllSubTables] ${key}: 使用关联配置`)
+      console.log('  - 主表字段:', `${relationConfig.masterTable}.${relationConfig.masterField}`)
+      console.log('  - 子表字段:', `${relationConfig.detailTable}.${relationConfig.detailField}`)
+      console.log('  - 关联值:', masterFieldValue)
+      
+      // 替换模板变量为实际的关联字段值
+      conditions = conditions.map(cond => {
+        if (cond.field === relationConfig.detailField && cond.value && cond.value.startsWith('${') && cond.value.endsWith('}')) {
+          console.log(`  ✅ 替换模板变量：${cond.value} -> ${masterFieldValue}`)
+          return {
+            ...cond,
+            value: masterFieldValue
+          }
+        }
+        return cond
+      })
+      
+      console.log(`  ✅ ${key} 最终查询条件:`, JSON.stringify(conditions, null, 2))
       
       const queryConfig = {
         conditions,
         orderBy: defaultOrderBy || []
       }
+      
+      console.log(`  📤 ${key} 完整 queryConfig:`, JSON.stringify(queryConfig, null, 2))
       
       const result = await querySubTable({
         moduleCode,
@@ -107,6 +125,11 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
         queryConfig,
         pageNum: 1,
         pageSize: 100 // Sub-tables usually don't need pagination
+      })
+      
+      console.log(`  📥 ${key} 查询结果:`, {
+        rows: result.rows?.length || 0,
+        total: result.total || 0
       })
       
       // result is already response.data, containing rows and total
@@ -120,6 +143,8 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
     // Wait for all queries to complete
     const results = await Promise.all(promises)
     
+    console.log('\n✅ [queryAllSubTables] 所有子表查询完成')
+    
     // Convert to object format
     const resultMap = {}
     results.forEach(result => {
@@ -127,49 +152,14 @@ export const queryAllSubTables = async (moduleCode, subTableConfigs, contextData
         data: result.data,
         total: result.total
       }
+      console.log(`  - ${result.key}: ${result.data.length} 条数据`)
     })
     
     return resultMap
   } catch (error) {
+    console.error('❌ [queryAllSubTables] 批量查询失败:', error)
     throw error
   }
-}
-
-/**
- * Replace template variables in query conditions
- * @param {Array} conditions - Query condition array
- * @param {Object} contextData - Context data
- * @returns {Array} - Replaced condition array
- */
-export const replaceTemplateVariables = (conditions, contextData) => {
-  if (!Array.isArray(conditions)) {
-    return conditions
-  }
-  
-  return conditions.map(condition => {
-    let value = condition.value
-    
-    // Handle array type values
-    if (Array.isArray(value)) {
-      value = value.map(v => {
-        if (typeof v === 'string' && v.startsWith('${') && v.endsWith('}')) {
-          const varName = v.slice(2, -1)
-          return contextData[varName] || v
-        }
-        return v
-      })
-    } 
-    // Handle string type values
-    else if (typeof value === 'string' && value.startsWith('${') && value.endsWith('}')) {
-      const varName = value.slice(2, -1)
-      value = contextData[varName] || value
-    }
-    
-    return {
-      ...condition,
-      value
-    }
-  })
 }
 
 /**
@@ -196,8 +186,8 @@ export const parseSubTableConfigs = (pageConfig) => {
           type: tab.type
         }
         
-        // Parse relation config if exists
-        if (tab.relationConfig && tab.relationConfig.enabled) {
+        // Parse relation config if exists (enabled field is deprecated)
+        if (tab.relationConfig) {
           config.relationConfig = {
             masterTable: tab.relationConfig.masterTable,
             masterField: tab.relationConfig.masterField,
@@ -322,7 +312,6 @@ export default {
   queryMainTable,
   querySubTable,
   queryAllSubTables,
-  replaceTemplateVariables,
   parseSubTableConfigs,
   getMainTableQueryConfig,
   queryEntryByBillNo,

@@ -141,7 +141,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "fqc_status", "label": "质检状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "finspect_result", "label": "检验结果", "width": 120, "align": "left", "visible": true, "renderType": "text"},
       {"prop": "create_time", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "fcreator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {"prop": "fcreator_id", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -284,6 +284,24 @@ INSERT INTO `erp_page_config` (
           "api": "/erp/engine/dict/union/stock",
           "useGlobalCache": true,
           "cacheKey": "stock_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "f_document_status": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/f_document_status",
+          "useGlobalCache": true,
+          "cacheKey": "f_document_status_dict",
+          "cacheTTL": 86400000
+        }
+      },
+      "users": {
+        "type": "api",
+        "config": {
+          "api": "/erp/engine/dict/union/users",
+          "useGlobalCache": true,
+          "cacheKey": "users_dict",
           "cacheTTL": 86400000
         }
       },

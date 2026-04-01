@@ -141,7 +141,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "fdocumentstatus", "label": "数据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
       {"prop": "f_fktj", "label": "Payment terms", "width": 150, "align": "left", "visible": true, "renderType": "text"},
       {"prop": "fcreatedate", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
-      {"prop": "fcreatorid", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text"}
+      {"prop": "fcreatorid", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],
     "pagination": {
       "defaultPageSize": 10,
@@ -391,8 +391,7 @@ INSERT INTO `erp_page_config` (
           "type": "table",
           "dataField": "entryList",
           "tableName": "purchase_quotation_entry",
-          "relationConfig": {
-            "enabled": true,
+          "relationConfig": { 
             "masterTable": "purchase_quotation",
             "masterField": "fbillno",
             "detailTable": "purchase_quotation_entry",
