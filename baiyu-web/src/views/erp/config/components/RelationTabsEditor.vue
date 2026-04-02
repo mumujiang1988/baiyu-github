@@ -141,7 +141,7 @@
 
         <!-- 通用配置 -->
         <el-tab-pane label="通用配置" name="common">
-          <el-form :model="currentTab" label-width="140px" size="default">
+          <el-form v-if="currentTab" :model="currentTab" label-width="140px" size="default">
             <el-form-item label="页签 Key">
               <el-input v-model="currentTab.key" placeholder="唯一标识" />
             </el-form-item>

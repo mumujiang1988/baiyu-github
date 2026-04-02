@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
  * Business Data Management Composable
  */
 export function useBusinessData(config) {
-  // 状态管理
+  
   const loading = ref(false)
   const submitLoading = ref(false)
   const tableData = ref([])

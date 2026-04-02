@@ -1,0 +1,182 @@
+# ========================================
+# Kubernetes部署配置
+# ========================================
+
+# 命名空间
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: product-search
+
+---
+# MySQL部署
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: product-search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: product_search
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+
+---
+# MySQL服务
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: product-search
+spec:
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+
+---
+# 后端部署
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: product-search
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: product-search-backend:latest
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+
+---
+# 后端服务
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: product-search
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+
+---
+# 前端部署
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: product-search
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: product-search-frontend:latest
+        ports:
+        - containerPort: 80
+
+---
+# 前端服务
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: product-search
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer
+
+---
+# 数据库密钥
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: product-search
+type: Opaque
+data:
+  root-password: cm9vdDEyMzQ1Ng==
+  password: cHJvZHVjdDEyMzQ1Ng==
+
+---
+# 持久卷声明
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: product-search
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
