@@ -96,6 +96,10 @@ export type FormComponentType =
   | 'rate'
   | 'editor' // 富文本编辑器
   | 'json-editor'
+  | 'custom-form-fields-editor' // 自定义表单字段可视化编辑器
+  | 'custom-table-columns-editor' // 自定义表格列可视化编辑器
+  | 'custom-search-fields-editor' // 自定义查询字段可视化编辑器
+  | 'custom-relation-tabs-editor' // 自定义关系页签可视化编辑器
 
 export type DataSourceType = 'manual' | 'api' | 'dictionary' | 'database'
 

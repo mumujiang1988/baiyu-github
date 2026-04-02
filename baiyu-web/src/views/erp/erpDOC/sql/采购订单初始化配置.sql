@@ -378,16 +378,7 @@ INSERT INTO `erp_page_config` (
             "operator": "eq"
           },
           "queryConfig": {
-            "enabled": true,
-            "defaultConditions": [
-              {
-                "field": "FInterID",
-                "operator": "eq",
-                "value": "${interId}",
-                "description": "按订单ID查询明细"
-              }
-            ],
-            "defaultOrderBy": [{"field": "FEntryID", "direction": "ASC"}]
+            "enabled": false
           },
           "table": {
             "border": true,
@@ -395,15 +386,14 @@ INSERT INTO `erp_page_config` (
             "maxHeight": "500",
             "showOverflowTooltip": true,
             "columns": [
-              {"prop": "FEntryID", "label": "明细ID", "width": 100, "align": "center", "sortable": true},
-              {"prop": "FMaterialId", "label": "物料编码", "width": 120, "align": "left", "showOverflowTooltip": true},
-              {"prop": "FMaterialName", "label": "物料名称", "width": 150, "align": "left", "showOverflowTooltip": true},
-              {"prop": "FQty", "label": "采购数量", "width": 100, "align": "right", "renderType": "number", "precision": 2, "sortable": true},
-              {"prop": "FPrice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 4},
-              {"prop": "FAmount", "label": "金额", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
-              {"prop": "FUnitId", "label": "单位", "width": 80, "align": "center"},
-              {"prop": "FStockId", "label": "仓库", "width": 100, "align": "left", "showOverflowTooltip": true},
-              {"prop": "FRemark", "label": "备注", "width": 200, "align": "left", "showOverflowTooltip": true}
+              {"prop": "id", "label": "明细 ID", "width": 100, "align": "center", "sortable": true},
+              {"prop": "f_gyswlbm", "label": "物料编码", "width": 120, "align": "left", "showOverflowTooltip": true},
+              {"prop": "f_gyswlmc", "label": "物料名称", "width": 150, "align": "left", "showOverflowTooltip": true},
+              {"prop": "fqty", "label": "采购数量", "width": 100, "align": "right", "renderType": "number", "precision": 2, "sortable": true},
+              {"prop": "fprice", "label": "单价", "width": 100, "align": "right", "renderType": "currency", "precision": 4},
+              {"prop": "fentryamount", "label": "金额", "width": 120, "align": "right", "renderType": "currency", "precision": 2, "sortable": true},
+              {"prop": "funitid", "label": "单位", "width": 80, "align": "center"},
+              {"prop": "fentrynote", "label": "备注", "width": 200, "align": "left", "showOverflowTooltip": true}
             ]
           }
         }

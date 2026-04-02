@@ -27,7 +27,7 @@
     },
 
     /* Type definitions */
-    "types": ["vite/client", "element-plus/global"]
+    "types": ["vite/client"]
   },
   "include": [
     "src/**/*.ts",

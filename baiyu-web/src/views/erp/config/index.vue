@@ -10,6 +10,7 @@ import JsonEditor from './components/JsonEditor.vue'
 import VisualConfigEditor from './components/VisualConfigEditor.vue'
 import { useConfigData } from './composables/useConfigData'
 import { mergeConfigFields, splitConfigFields } from './utils/configJsonUtils'
+import { verifyFieldConsistency, generateValidationReport } from './utils/fieldValidator'
 
 // Computed Properties
 const allDictsJson = computed(() => JSON.stringify(allDictsData.value, null, 2))
@@ -39,17 +40,13 @@ const nationDictData = ref([])
 
 // Dialog 状态
 const viewDialogVisible = ref(false)
-const historyDialogVisible = ref(false)
 const visualEditorVisible = ref(false)
+const validationDialogVisible = ref(false) // 验证报告对话框
 const isEditMode = ref(false)
 const currentConfig = ref({})
 const editFormData = ref({})
 const combinedConfigContent = ref('')
-
-// 历史版本状态
-const currentHistoryConfig = ref({})
-const versionList = ref([])
-const historyLoading = ref(false)
+const validationReport = ref('') // 验证报告 HTML
 
 // Methods
 
@@ -159,8 +156,15 @@ async function handleDelete(row) {
   }
 }
 
-function handleHistory(row) {
-  // TODO: Implement history feature
+async function handleVerify(row) {
+  try {
+    const result = await verifyFieldConsistency(row.moduleCode)
+    validationReport.value = generateValidationReport(result)
+    currentConfig.value = row
+    validationDialogVisible.value = true
+  } catch (error) {
+    ElMessage.error('验证失败：' + (error.message || '未知错误'))
+  }
 }
 
 function handleCopy(row) {
@@ -204,8 +208,6 @@ async function loadAllDicts() {
     if (nationRes.data) {
       nationDictData.value = nationRes.data || []
     }
-    
-    ElMessage.success(`字典数据加载完成`)
   } catch (error) {
     console.error('加载字典失败:', error)
     ElMessage.error('加载字典数据失败')
@@ -257,10 +259,10 @@ onMounted(() => {
               :config-list="configList"
               :loading="loading"
               @view="handleView"
-              @history="handleHistory"
               @delete="handleDelete"
               @copy="handleCopy"
               @export="handleExport"
+              @verify="handleVerify"
             />
             
             <!-- 分页 -->
@@ -368,6 +370,21 @@ onMounted(() => {
         @save="handleVisualSave"
         @cancel="visualEditorVisible = false"
       />
+    </el-dialog>
+
+    <!-- 字段验证报告对话框 -->
+    <el-dialog
+      v-model="validationDialogVisible"
+      title="字段一致性验证报告"
+      width="80%"
+      top="5vh"
+      class="validation-dialog"
+    >
+      <div v-html="validationReport" class="validation-report"></div>
+      
+      <template #footer>
+        <el-button type="primary" @click="validationDialogVisible = false">关闭</el-button>
+      </template>
     </el-dialog>
 
     <!-- 历史对话框（待实现） -->
@@ -514,6 +531,16 @@ onMounted(() => {
     padding: 0;
     height: calc(100vh - 120px);
     overflow: hidden;
+  }
+}
+
+.validation-dialog {
+  .validation-report {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f5f7fa;
+    border-radius: 4px;
   }
 }
 </style>

@@ -546,20 +546,20 @@ const getResponseResult = (response, defaultValue = null) => {
   return isResponseSuccess(response) ? (response.data || defaultValue) : defaultValue
 }
 
-import multiTableQueryBuilder from '../utils/multiTableQueryBuilder'
+import multiTableQueryBuilder from '../../../pageTemplate/utils/multiTableQueryBuilder'
 import dictionaryManager from '@/views/erp/utils/DictionaryManager'
 
 import {
   executeDynamicQuery,
   buildQueryConditions,
   getAvailableQueryTypes
-} from '../../api/engine/query'
+} from '../../../api/engine/query'
 import {
   executeValidation,
   batchValidate,
   getAvailableValidationRules,
   validateField
-} from '../../api/engine/validation'
+} from '../../../api/engine/validation'
 import {
   getCurrentApprovalStep,
   executeApproval,
@@ -568,7 +568,7 @@ import {
   getWorkflowDefinition,
   transferApproval,
   withdrawApproval
-} from '../../api/engine/approval'
+} from '../../../api/engine/approval'
 import {
   getPushTargets,
   executePushDown,
@@ -578,7 +578,7 @@ import {
   validatePushData,
   cancelPushDown,
   getPushHistory
-} from '../../api/engine/push'
+} from '../../../api/engine/push'
 
 const getApiMethod = async (methodType) => {
   const apiConfig = currentConfig.value?.apiConfig

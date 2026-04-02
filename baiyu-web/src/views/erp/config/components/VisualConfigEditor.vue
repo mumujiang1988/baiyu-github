@@ -22,6 +22,18 @@ import { createConfigParser } from '../utils/ConfigParser'
 import { configCategoryMetas } from '../metadata/configMetadata'
 import { mergeConfigFields, splitConfigFields } from '../utils/configJsonUtils'
 
+/**
+ * 安全解析 JSON 字段
+ */
+function safeParseJSON(value, fieldName) {
+  try {
+    return value ? (typeof value === 'string' ? JSON.parse(value) : value) : {}
+  } catch (e) {
+    console.warn(`解析${fieldName}失败:`, e)
+    return {}
+  }
+}
+
 // ==================== Props & Emits ====================
 const props = defineProps({
   // 配置 ID（编辑模式时必填）
@@ -40,6 +52,19 @@ const emit = defineEmits(['save', 'cancel'])
 
 // ==================== State ====================
 const parser = createConfigParser()
+
+// 配置类别到数据字段的映射
+const CONFIG_FIELD_MAP = {
+  PAGE: 'pageConfig',
+  FORM: 'formConfig',
+  TABLE: 'tableConfig',
+  SEARCH: 'searchConfig',
+  ACTION: 'actionConfig',
+  API: 'apiConfig',
+  DICT: 'dictConfig',
+  BUSINESS: 'businessConfig',
+  DETAIL: 'detailConfig'
+}
 
 // 当前选中的配置类别
 const activeCategory = ref('PAGE')
@@ -136,69 +161,16 @@ async function loadConfigData() {
       
       console.log('加载配置数据 - 合并后的数据:', merged)
       
-      // 解析各个配置块，增加错误处理
-      try {
-        allConfigData.pageConfig = merged.pageConfig ? (typeof merged.pageConfig === 'string' ? JSON.parse(merged.pageConfig) : merged.pageConfig) : {}
-      } catch (e) {
-        console.warn('解析 pageConfig 失败:', e)
-        allConfigData.pageConfig = {}
-      }
-      
-      try {
-        allConfigData.formConfig = merged.formConfig ? (typeof merged.formConfig === 'string' ? JSON.parse(merged.formConfig) : merged.formConfig) : {}
-      } catch (e) {
-        console.warn('解析 formConfig 失败:', e)
-        allConfigData.formConfig = {}
-      }
-      
-      try {
-        allConfigData.tableConfig = merged.tableConfig ? (typeof merged.tableConfig === 'string' ? JSON.parse(merged.tableConfig) : merged.tableConfig) : {}
-      } catch (e) {
-        console.warn('解析 tableConfig 失败:', e)
-        allConfigData.tableConfig = {}
-      }
-      
-      try {
-        allConfigData.searchConfig = merged.searchConfig ? (typeof merged.searchConfig === 'string' ? JSON.parse(merged.searchConfig) : merged.searchConfig) : {}
-      } catch (e) {
-        console.warn('解析 searchConfig 失败:', e)
-        allConfigData.searchConfig = {}
-      }
-      
-      try {
-        allConfigData.actionConfig = merged.actionConfig ? (typeof merged.actionConfig === 'string' ? JSON.parse(merged.actionConfig) : merged.actionConfig) : {}
-      } catch (e) {
-        console.warn('解析 actionConfig 失败:', e)
-        allConfigData.actionConfig = {}
-      }
-      
-      try {
-        allConfigData.apiConfig = merged.apiConfig ? (typeof merged.apiConfig === 'string' ? JSON.parse(merged.apiConfig) : merged.apiConfig) : {}
-      } catch (e) {
-        console.warn('解析 apiConfig 失败:', e)
-        allConfigData.apiConfig = {}
-      }
-      
-      try {
-        allConfigData.dictConfig = merged.dictConfig ? (typeof merged.dictConfig === 'string' ? JSON.parse(merged.dictConfig) : merged.dictConfig) : {}
-      } catch (e) {
-        console.warn('解析 dictConfig 失败:', e)
-        allConfigData.dictConfig = {}
-      }
-      
-      try {
-        allConfigData.businessConfig = merged.businessConfig ? (typeof merged.businessConfig === 'string' ? JSON.parse(merged.businessConfig) : merged.businessConfig) : {}
-      } catch (e) {
-        console.warn('解析 businessConfig 失败:', e)
-        allConfigData.businessConfig = {}
-      }
-      
-      try {
-        allConfigData.detailConfig = merged.detailConfig ? (typeof merged.detailConfig === 'string' ? JSON.parse(merged.detailConfig) : merged.detailConfig) : {}
-      } catch (e) {
-        console.warn('解析 detailConfig 失败:', e)
-        allConfigData.detailConfig = {}
-      }
+      // ✅ 使用工具函数解析各个配置块
+      allConfigData.pageConfig = safeParseJSON(merged.pageConfig, 'pageConfig')
+      allConfigData.formConfig = safeParseJSON(merged.formConfig, 'formConfig')
+      allConfigData.tableConfig = safeParseJSON(merged.tableConfig, 'tableConfig')
+      allConfigData.searchConfig = safeParseJSON(merged.searchConfig, 'searchConfig')
+      allConfigData.actionConfig = safeParseJSON(merged.actionConfig, 'actionConfig')
+      allConfigData.apiConfig = safeParseJSON(merged.apiConfig, 'apiConfig')
+      allConfigData.dictConfig = safeParseJSON(merged.dictConfig, 'dictConfig')
+      allConfigData.businessConfig = safeParseJSON(merged.businessConfig, 'businessConfig')
+      allConfigData.detailConfig = safeParseJSON(merged.detailConfig, 'detailConfig')
       
       console.log('加载配置数据 - 解析后的 pageConfig:', allConfigData.pageConfig)
       
@@ -234,40 +206,9 @@ function switchToCategory(category) {
     activeGroup.value = meta.groups[0].name
   }
   
-  // 获取对应的配置数据
-  let configJsonData = '{}'
-  switch (category) {
-    case 'PAGE':
-      configJsonData = JSON.stringify(allConfigData.pageConfig)
-      break
-    case 'FORM':
-      configJsonData = JSON.stringify(allConfigData.formConfig)
-      break
-    case 'TABLE':
-      configJsonData = JSON.stringify(allConfigData.tableConfig)
-      break
-    case 'SEARCH':
-      configJsonData = JSON.stringify(allConfigData.searchConfig)
-      break
-    case 'ACTION':
-      configJsonData = JSON.stringify(allConfigData.actionConfig)
-      break
-    case 'API':
-      configJsonData = JSON.stringify(allConfigData.apiConfig)
-      break
-    case 'DICT':
-      configJsonData = JSON.stringify(allConfigData.dictConfig)
-      break
-    case 'BUSINESS':
-      configJsonData = JSON.stringify(allConfigData.businessConfig)
-      break
-    case 'DETAIL':
-      configJsonData = JSON.stringify(allConfigData.detailConfig)
-      break
-    default:
-      console.warn(`未处理的配置类别：${category}`)
-      configJsonData = '{}'
-  }
+  // ✅ 使用映射表获取对应的配置数据
+  const configFieldName = CONFIG_FIELD_MAP[category]
+  const configJsonData = JSON.stringify(allConfigData[configFieldName] || {})
   
   // 解析配置
   try {
@@ -351,35 +292,9 @@ function saveCurrentCategory() {
   const jsonData = parser.generateFromFormData(currentFormData.value, activeCategory.value)
   const parsedData = JSON.parse(jsonData)
   
-  switch (activeCategory.value) {
-    case 'PAGE':
-      Object.assign(allConfigData.pageConfig, parsedData)
-      break
-    case 'FORM':
-      Object.assign(allConfigData.formConfig, parsedData)
-      break
-    case 'TABLE':
-      Object.assign(allConfigData.tableConfig, parsedData)
-      break
-    case 'SEARCH':
-      Object.assign(allConfigData.searchConfig, parsedData)
-      break
-    case 'ACTION':
-      Object.assign(allConfigData.actionConfig, parsedData)
-      break
-    case 'API':
-      Object.assign(allConfigData.apiConfig, parsedData)
-      break
-    case 'DICT':
-      Object.assign(allConfigData.dictConfig, parsedData)
-      break
-    case 'BUSINESS':
-      Object.assign(allConfigData.businessConfig, parsedData)
-      break
-    case 'DETAIL':
-      Object.assign(allConfigData.detailConfig, parsedData)
-      break
-  }
+  // ✅ 使用映射表更新对应的配置数据
+  const configFieldName = CONFIG_FIELD_MAP[activeCategory.value]
+  Object.assign(allConfigData[configFieldName], parsedData)
 }
 
 /**
@@ -435,36 +350,9 @@ function handleReset() {
 function handleExportJson() {
   saveCurrentCategory()
   
-  let jsonData = '{}'
-  switch (activeCategory.value) {
-    case 'PAGE':
-      jsonData = JSON.stringify(allConfigData.pageConfig, null, 2)
-      break
-    case 'FORM':
-      jsonData = JSON.stringify(allConfigData.formConfig, null, 2)
-      break
-    case 'TABLE':
-      jsonData = JSON.stringify(allConfigData.tableConfig, null, 2)
-      break
-    case 'SEARCH':
-      jsonData = JSON.stringify(allConfigData.searchConfig, null, 2)
-      break
-    case 'ACTION':
-      jsonData = JSON.stringify(allConfigData.actionConfig, null, 2)
-      break
-    case 'API':
-      jsonData = JSON.stringify(allConfigData.apiConfig, null, 2)
-      break
-    case 'DICT':
-      jsonData = JSON.stringify(allConfigData.dictConfig, null, 2)
-      break
-    case 'BUSINESS':
-      jsonData = JSON.stringify(allConfigData.businessConfig, null, 2)
-      break
-    case 'DETAIL':
-      jsonData = JSON.stringify(allConfigData.detailConfig, null, 2)
-      break
-  }
+  // ✅ 使用映射表获取 JSON 数据
+  const configFieldName = CONFIG_FIELD_MAP[activeCategory.value]
+  const jsonData = JSON.stringify(allConfigData[configFieldName], null, 2)
   
   // 复制到剪贴板
   navigator.clipboard.writeText(jsonData)

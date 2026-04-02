@@ -40,6 +40,14 @@
             <pre class="json-preview">{{ formatJson(value) }}</pre>
           </div>
         </template>
+        <template v-if="isCustomFieldEditor">
+          <component
+            :is="getCustomEditorComponent(props.meta.component)"
+            :model-value="(value as any[]) || []"
+            :title="customEditorTitle"
+            @update:model-value="(val: any[]) => emit('update:modelValue', val)"
+          />
+        </template>
       </component>
       <div v-if="meta.helpText" class="form-item-help-text">
         {{ meta.helpText }}
@@ -53,6 +61,8 @@ import { computed } from 'vue'
 import type { PropType } from 'vue' 
 import type { ConfigFieldMeta } from '../types/config'
 import { Upload } from '@element-plus/icons-vue'
+import FieldListEditor from './FieldListEditor.vue'
+import RelationTabsEditor from './RelationTabsEditor.vue'
 
 // 引入 ElMessage 用于上传文件数量超限提示（使用全局变量绕过类型检查）
 declare global {
@@ -298,6 +308,41 @@ const isUpload = computed(() => {
 const isJsonEditor = computed(() => {
   return props.meta.component === 'json-editor'
 })
+
+// 是否是自定义字段编辑器
+const isCustomFieldEditor = computed(() => {
+  const customComponents = [
+    'custom-form-fields-editor',
+    'custom-table-columns-editor',
+    'custom-search-fields-editor',
+    'custom-relation-tabs-editor'
+  ]
+  return customComponents.includes(props.meta.component)
+})
+
+// 获取自定义编辑器标题
+const customEditorTitle = computed(() => {
+  const titleMap: Record<string, string> = {
+    'custom-form-fields-editor': '表单字段配置',
+    'custom-table-columns-editor': '表格列配置',
+    'custom-search-fields-editor': '查询字段配置',
+    'custom-relation-tabs-editor': '详情页签配置'
+  }
+  return titleMap[props.meta.component] || '字段配置'
+})
+
+/**
+ * 获取自定义编辑器组件
+ */
+const getCustomEditorComponent = (component: string) => {
+  const componentMap: Record<string, any> = {
+    'custom-form-fields-editor': FieldListEditor,
+    'custom-table-columns-editor': FieldListEditor,
+    'custom-search-fields-editor': FieldListEditor,
+    'custom-relation-tabs-editor': RelationTabsEditor
+  }
+  return componentMap[component] || FieldListEditor
+}
 
 /**
  * 格式化 JSON 用于展示

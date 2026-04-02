@@ -1,5 +1,23 @@
 import type { ConfigCategoryMeta, ConfigFieldMeta } from '../types/config'
 
+// ==================== 共享常量 ====================
+
+const COMMON_FIELD_PATTERNS = {
+  pageId: {
+    pattern: /^[a-z_]+$/,
+    message: '只能包含小写字母和下划线'
+  },
+  apiPrefix: {
+    pattern: /^\/[^\s]+$/,
+    message: '必须以/开头且不能包含空格'
+  }
+}
+
+const COMMON_VALIDATORS = {
+  required: (fieldName: string) => ({ required: true, message: `请输入${fieldName}`, trigger: 'blur' as const }),
+  pattern: (pattern: RegExp, message: string) => ({ pattern, message, trigger: 'blur' as const })
+}
+
 export const pageConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'pageId',
@@ -10,8 +28,8 @@ export const pageConfigMeta: ConfigFieldMeta[] = [
     helpText: '页面的唯一标识，使用小写字母和下划线',
     span: 12,
     validation: [
-      { required: true, message: '请输入页面 ID', trigger: 'blur' },
-      { pattern: /^[a-z_]+$/, message: '只能包含小写字母和下划线', trigger: 'blur' }
+      COMMON_VALIDATORS.required('页面 ID'),
+      COMMON_VALIDATORS.pattern(COMMON_FIELD_PATTERNS.pageId.pattern, COMMON_FIELD_PATTERNS.pageId.message)
     ]
   },
   {
@@ -21,7 +39,7 @@ export const pageConfigMeta: ConfigFieldMeta[] = [
     required: true,
     placeholder: '例如：销售订单管理',
     span: 12,
-    validation: [{ required: true, message: '请输入页面名称', trigger: 'blur' }]
+    validation: [COMMON_VALIDATORS.required('页面名称')]
   },
   {
     field: 'permission',
@@ -31,7 +49,7 @@ export const pageConfigMeta: ConfigFieldMeta[] = [
     placeholder: '例如：k3:saleorder:query',
     helpText: '格式：k3:{模块}:操作',
     span: 12,
-    validation: [{ required: true, message: '请输入权限标识', trigger: 'blur' }]
+    validation: [COMMON_VALIDATORS.required('权限标识')]
   },
   {
     field: 'layout',
@@ -55,7 +73,10 @@ export const pageConfigMeta: ConfigFieldMeta[] = [
     defaultValue: '/erp/engine',
     placeholder: '例如：/erp/engine',
     span: 12,
-    validation: [{ required: true, message: '请输入 API 前缀', trigger: 'blur' }]
+    validation: [
+      COMMON_VALIDATORS.required('API 前缀'),
+      COMMON_VALIDATORS.pattern(COMMON_FIELD_PATTERNS.apiPrefix.pattern, COMMON_FIELD_PATTERNS.apiPrefix.message)
+    ]
   },
   {
     field: 'tableName',
@@ -64,7 +85,7 @@ export const pageConfigMeta: ConfigFieldMeta[] = [
     placeholder: '例如：t_sale_order',
     span: 12,
     helpText: '对应的数据库主表名',
-    validation: [{ required: true, message: '请输入主表名', trigger: 'blur' }]
+    validation: [COMMON_VALIDATORS.required('主表名')]
   },
   {
     field: 'billNoField',
@@ -436,16 +457,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
       },
       {
         name: 'fields',
-        label: '字段列表',
+        label: '表单字段',
         icon: 'Document',
         fields: [
           {
             field: 'fields',
             label: '表单字段配置',
-            component: 'json-editor',
+            component: 'custom-form-fields-editor',
             defaultValue: [],
             span: 24,
-            helpText: '配置表单字段列表，格式为 JSON 数组'
+            helpText: '可视化配置表单字段列表'
           }
         ],
         sort: 2
@@ -468,16 +489,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
       },
       {
         name: 'columns',
-        label: '列配置',
+        label: '表格列',
         icon: 'Grid',
         fields: [
           {
             field: 'columns',
             label: '表格列配置',
-            component: 'json-editor',
+            component: 'custom-table-columns-editor',
             defaultValue: [],
             span: 24,
-            helpText: '配置表格列，格式为 JSON 数组'
+            helpText: '可视化配置表格列'
           }
         ],
         sort: 2
@@ -506,10 +527,10 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
           {
             field: 'searchFields',
             label: '查询字段配置',
-            component: 'json-editor',
+            component: 'custom-search-fields-editor',
             defaultValue: [],
             span: 24,
-            helpText: '配置查询字段列表，格式为 JSON 数组'
+            helpText: '可视化配置查询字段'
           }
         ],
         sort: 2
@@ -624,16 +645,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
       },
       {
         name: 'tabs',
-        label: '页签列表',
+        label: '页签配置',
         icon: 'Tickets',
         fields: [
           {
             field: 'relationConfig',
             label: '页签配置',
-            component: 'json-editor',
+            component: 'custom-relation-tabs-editor',
             defaultValue: [],
             span: 24,
-            helpText: '配置详情页签，格式为 JSON 数组'
+            helpText: '可视化配置详情页签'
           }
         ],
         sort: 2

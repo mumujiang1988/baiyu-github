@@ -20,6 +20,7 @@ const emit = defineEmits<{
   (e: 'delete', row: ErpConfig): void
   (e: 'copy', row: ErpConfig): void
   (e: 'export', row: ErpConfig): void
+  (e: 'verify', row: ErpConfig): void
 }>()
 
 // 下拉菜单命令处理
@@ -33,6 +34,9 @@ const handleCommand = (command: string, row: ErpConfig) => {
       break
     case 'delete':
       emit('delete', row)
+      break
+    case 'verify':
+      emit('verify', row)
       break
   }
 }
@@ -140,6 +144,15 @@ const handleCommand = (command: string, row: ErpConfig) => {
         
         <el-button
           link
+          type="success"
+          icon="CircleCheck"
+          @click="emit('verify', scope.row)"
+        >
+          验证
+        </el-button>
+        
+        <el-button
+          link
           type="primary"
           icon="Clock"
           @click="emit('history', scope.row)"
@@ -154,6 +167,9 @@ const handleCommand = (command: string, row: ErpConfig) => {
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="verify" icon="CircleCheck">
+                字段验证
+              </el-dropdown-item>
               <el-dropdown-item command="copy" icon="DocumentCopy">
                 复制配置
               </el-dropdown-item>
