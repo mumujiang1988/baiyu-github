@@ -121,7 +121,7 @@ INSERT INTO `erp_page_config` (
       },
       {
         "field": "f_fktj",
-        "label": "Payment terms",
+        "label": "付款条件",
         "component": "input",
         "span": 12,
         "props": {"maxlength": 200, "clearable": true, "placeholder": "请输入付款条件"}
@@ -139,7 +139,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "f_khjc", "label": "客户简称", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "customers"},
       {"prop": "f_xsy", "label": "销售员", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "salesman"},
       {"prop": "fdocumentstatus", "label": "数据状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "f_document_status"},
-      {"prop": "f_fktj", "label": "Payment terms", "width": 150, "align": "left", "visible": true, "renderType": "text"},
+      {"prop": "f_fktj", "label": "付款条件", "width": 150, "align": "left", "visible": true, "renderType": "text"},
       {"prop": "fcreatedate", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
       {"prop": "fcreatorid", "label": "创建人", "width": 100, "align": "left", "visible": true, "renderType": "text", "dictionary": "users"}
     ],

@@ -1,11 +1,5 @@
-/**
- * ERP 配置元数据定义 - 按 ERP 页面配置完全指南 v4.0 规范
- */
 import type { ConfigCategoryMeta, ConfigFieldMeta } from '../types/config'
 
-/**
- * 页面基础配置元数据
- */
 export const pageConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'pageId',
@@ -83,9 +77,6 @@ export const pageConfigMeta: ConfigFieldMeta[] = [
   }
 ]
 
-/**
- * 表单配置元数据
- */
 export const formConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'dialogWidth',
@@ -118,13 +109,17 @@ export const formConfigMeta: ConfigFieldMeta[] = [
         { label: '内联布局', value: 'inline' }
       ]
     }
+  },
+  {
+    field: 'fields',
+    label: '表单字段配置',
+    component: 'json-editor',
+    defaultValue: [],
+    span: 24,
+    helpText: '配置表单字段列表，格式为 JSON 数组'
   }
-  // 字段列表在可视化编辑器中动态添加
 ]
 
-/**
- * 表格配置元数据
- */
 export const tableConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'tableName',
@@ -179,13 +174,17 @@ export const tableConfigMeta: ConfigFieldMeta[] = [
     defaultValue: true,
     span: 6,
     helpText: '是否显示分页控件'
+  },
+  {
+    field: 'columns',
+    label: '表格列配置',
+    component: 'json-editor',
+    defaultValue: [],
+    span: 24,
+    helpText: '配置表格列，格式为 JSON 数组'
   }
-  // 列配置在可视化编辑器中动态添加
 ]
 
-/**
- * 查询配置元数据
- */
 export const searchConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'showSearch',
@@ -209,13 +208,17 @@ export const searchConfigMeta: ConfigFieldMeta[] = [
     defaultValue: '100px',
     placeholder: '例如：100px',
     span: 8
+  },
+  {
+    field: 'searchFields',
+    label: '查询字段配置',
+    component: 'json-editor',
+    defaultValue: [],
+    span: 24,
+    helpText: '配置查询字段列表，格式为 JSON 数组'
   }
-  // 查询字段在可视化编辑器中动态添加
 ]
 
-/**
- * 按钮操作配置元数据
- */
 export const actionConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'toolbarPosition',
@@ -240,9 +243,6 @@ export const actionConfigMeta: ConfigFieldMeta[] = [
   // 按钮配置在可视化编辑器中动态添加
 ]
 
-/**
- * API 配置元数据
- */
 export const apiConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'baseUrl',
@@ -257,9 +257,6 @@ export const apiConfigMeta: ConfigFieldMeta[] = [
   // API 方法在可视化编辑器中动态添加
 ]
 
-/**
- * 字典配置元数据
- */
 export const dictConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'enabled',
@@ -293,9 +290,6 @@ export const dictConfigMeta: ConfigFieldMeta[] = [
   // 字典数据源在可视化编辑器中动态添加
 ]
 
-/**
- * 业务配置元数据
- */
 export const businessConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'entityName',
@@ -344,9 +338,6 @@ export const businessConfigMeta: ConfigFieldMeta[] = [
   }
 ]
 
-/**
- * 详情页签配置元数据
- */
 export const detailConfigMeta: ConfigFieldMeta[] = [
   {
     field: 'enabled',
@@ -403,13 +394,17 @@ export const detailConfigMeta: ConfigFieldMeta[] = [
       ]
     },
     helpText: '懒加载：打开时才加载；预加载：列表加载时就加载'
+  },
+  {
+    field: 'relationConfig',
+    label: '页签配置',
+    component: 'json-editor',
+    defaultValue: [],
+    span: 24,
+    helpText: '配置详情页签，格式为 JSON 数组'
   }
-  // 页签配置在可视化编辑器中动态添加
 ]
 
-/**
- * 配置类别元数据映射
- */
 export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
   PAGE: {
     category: 'PAGE',
@@ -443,7 +438,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
         name: 'fields',
         label: '字段列表',
         icon: 'Document',
-        fields: [],
+        fields: [
+          {
+            field: 'fields',
+            label: '表单字段配置',
+            component: 'json-editor',
+            defaultValue: [],
+            span: 24,
+            helpText: '配置表单字段列表，格式为 JSON 数组'
+          }
+        ],
         sort: 2
       }
     ],
@@ -466,7 +470,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
         name: 'columns',
         label: '列配置',
         icon: 'Grid',
-        fields: [],
+        fields: [
+          {
+            field: 'columns',
+            label: '表格列配置',
+            component: 'json-editor',
+            defaultValue: [],
+            span: 24,
+            helpText: '配置表格列，格式为 JSON 数组'
+          }
+        ],
         sort: 2
       }
     ],
@@ -489,7 +502,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
         name: 'searchFields',
         label: '查询字段',
         icon: 'Search',
-        fields: [],
+        fields: [
+          {
+            field: 'searchFields',
+            label: '查询字段配置',
+            component: 'json-editor',
+            defaultValue: [],
+            span: 24,
+            helpText: '配置查询字段列表，格式为 JSON 数组'
+          }
+        ],
         sort: 2
       }
     ],
@@ -604,7 +626,16 @@ export const configCategoryMetas: Record<string, ConfigCategoryMeta> = {
         name: 'tabs',
         label: '页签列表',
         icon: 'Tickets',
-        fields: [],
+        fields: [
+          {
+            field: 'relationConfig',
+            label: '页签配置',
+            component: 'json-editor',
+            defaultValue: [],
+            span: 24,
+            helpText: '配置详情页签，格式为 JSON 数组'
+          }
+        ],
         sort: 2
       }
     ],

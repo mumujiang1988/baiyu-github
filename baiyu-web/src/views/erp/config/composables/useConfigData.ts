@@ -1,19 +1,14 @@
-/**
- * 配置数据管理 Composable
- * 注意：本 composable 专注于数据逻辑，错误提示由调用方处理
- */
-
 import { ref, reactive } from 'vue'
 import type { ErpConfig, ConfigQueryParams, EditFormData } from '../types/config'
 import { listConfig, delConfig, getConfig, saveConfig } from '../api'
 
 export function useConfigData() {
-  // 列表状态
+  // List state
   const loading = ref(false)
   const configList = ref<ErpConfig[]>([])
   const total = ref(0)
   
-  // 查询参数
+  // Query parameters
   const queryParams = reactive<ConfigQueryParams>({
     pageNum: 1,
     pageSize: 10,
@@ -23,7 +18,7 @@ export function useConfigData() {
     status: ''
   })
   
-  // 编辑表单初始数据
+  // Initial edit form data
   const initialEditForm: EditFormData = {
     configId: null,
     moduleCode: '',
@@ -45,38 +40,28 @@ export function useConfigData() {
     version: 1
   }
   
-  /**
-   * 加载配置列表
-   */
   const getList = async () => {
     loading.value = true
     try {
       const res = await listConfig(queryParams)
-      // res 的类型是 ApiResponse<ConfigListResponse>，所以 data 是 ConfigListResponse
-      const configData = res.data
-      configList.value = configData?.rows || []
-      total.value = configData?.total !== undefined ? configData.total : 0
+      const data = res.data as { rows: ErpConfig[]; total: number }
+      configList.value = data?.rows || []
+      total.value = data?.total !== undefined ? data.total : 0
     } catch (error: any) {
-      console.error('查询配置列表失败:', error)
+      console.error('Failed to load config list:', error)
       configList.value = []
       total.value = 0
-      // 错误提示由调用方统一处理
+      // Error handling by caller
     } finally {
       loading.value = false
     }
   }
   
-  /**
-   * 搜索
-   */
   const handleQuery = () => {
     queryParams.pageNum = 1
     getList()
   }
   
-  /**
-   * 重置查询
-   */
   const resetQuery = () => {
     queryParams.pageNum = 1
     queryParams.moduleCode = ''
@@ -86,32 +71,21 @@ export function useConfigData() {
     getList()
   }
   
-  /**
-   * 删除配置
-   */
   const handleDelete = async (row: ErpConfig) => {
     try {
       await delConfig(row.configId!)
-      // 成功提示由调用方统一处理
+      // Success handling by caller
       await getList()
     } catch (error: any) {
-      console.error('删除配置失败:', error)
-      throw error // 抛出错误，由调用方处理
+      console.error('Failed to delete config:', error)
+      throw error // Throw error for caller to handle
     }
   }
   
-  /**
-   * 加载配置详情
-   */
   const loadConfigDetail = async (configId: number): Promise<ErpConfig> => {
     try {
       const res = await getConfig(configId)
-      let data
-      if (res.code === 200 || res.code === 0) {
-        data = res.data || {}
-      } else {
-        throw new Error(res.msg || '加载配置失败')
-      }
+      const data = res.data as ErpConfig
       
       if (!data.configId) {
         throw new Error('配置不存在或已删除')
@@ -119,23 +93,20 @@ export function useConfigData() {
       
       return data
     } catch (error: any) {
-      console.error('加载配置详情失败:', error)
+      console.error('Failed to load config detail:', error)
       throw error  
     }
   }
   
-  /**
-   * 保存配置
-   */
   const handleSave = async (data: Partial<EditFormData>, isNew: boolean) => {
     try {
       await saveConfig(data)
-      // 成功提示由调用方统一处理
+      // Success handling by caller
       await getList()
       return true
     } catch (error: any) {
-      console.error('保存配置失败:', error)
-      throw error // 抛出错误，由调用方处理
+      console.error('Failed to save config:', error)
+      throw error // Throw error for caller to handle
     }
   }
   

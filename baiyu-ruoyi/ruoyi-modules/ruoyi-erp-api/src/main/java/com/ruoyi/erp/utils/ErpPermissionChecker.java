@@ -41,7 +41,7 @@ public class ErpPermissionChecker {
     }
     
     private String buildPermission(String moduleCode, String operation) {
-        return String.format("k3:%s:%s", moduleCode, operation);
+        return String.format("erp:%s:%s", moduleCode, operation);
     }
     
     public void checkPermissions(String moduleCode, String... operations) {

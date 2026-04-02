@@ -1,35 +1,21 @@
-/**
- * ERP 配置管理 - 页面容器组件
- * 职责：数据请求、状态管理、子组件调度
- * 重构后：~200 行 (原 1300+ 行 → 减少 85%)
- */
-
 <script setup name="ErpConfig">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/Pagination'
 import { getConfigTypeLabel, getConfigTypeTag, getConfigTypeOptions } from '@/constants/configTypes'
 import request from '@/utils/request'
-
-// 导入子组件
 import ConfigSearch from './components/ConfigSearch.vue'
 import ConfigTable from './components/ConfigTable.vue'
 import JsonEditor from './components/JsonEditor.vue'
 import VisualConfigEditor from './components/VisualConfigEditor.vue'
-
-// 导入 composables
 import { useConfigData } from './composables/useConfigData'
 import { mergeConfigFields, splitConfigFields } from './utils/configJsonUtils'
 
-// 导入历史 API（如需要）
-// import { getConfigHistory, rollbackToVersion } from './api'
-
-// ==================== Computed Properties ====================
-
-// 字典展示用计算属性
+// Computed Properties
 const allDictsJson = computed(() => JSON.stringify(allDictsData.value, null, 2))
 const nationDictsJson = computed(() => JSON.stringify(nationDictData.value, null, 2))
-// ==================== State ====================
+
+// State
 const {
   loading,
   configList,
@@ -47,49 +33,49 @@ const {
 const activeTab = ref('config')
 const dictActiveTab = ref('all')
 
-// 字典数据状态
+// 字典数据
 const allDictsData = ref({})
 const nationDictData = ref([])
 
 // Dialog 状态
 const viewDialogVisible = ref(false)
-const historyDialogVisible = ref(false)  // ✅ 保留历史对话框状态
-const visualEditorVisible = ref(false)  // ✨ 可视化编辑器对话框
+const historyDialogVisible = ref(false)
+const visualEditorVisible = ref(false)
 const isEditMode = ref(false)
 const currentConfig = ref({})
 const editFormData = ref({})
 const combinedConfigContent = ref('')
 
-// 历史版本相关状态（P1 - 待实现）
+// 历史版本状态
 const currentHistoryConfig = ref({})
 const versionList = ref([])
 const historyLoading = ref(false)
 
-// ==================== Methods ====================
+// Methods
 
-/**
- * 清理缓存
- */
 async function handleClearCache() {
   try {
     await ElMessageBox.confirm(
       '确定要清理所有 ERP 配置缓存吗？',
-      '警告',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      '提示',
+      { 
+        confirmButtonText: '确定', 
+        cancelButtonText: '取消', 
+        type: 'warning',
+        distinguishCancelAndClose: true
+      }
     )
     
     const res = await request({ url: '/erp/cache/clear-all', method: 'delete' })
     ElMessage.success('缓存清理成功')
   } catch (error) {
     if (error !== 'cancel') {
+      console.error('清理缓存失败:', error)
       ElMessage.error('缓存清理失败：' + (error.message || '未知错误'))
     }
   }
 }
 
-/**
- * 新增配置
- */
 function handleAdd() {
   isEditMode.value = false
   editFormData.value = {}
@@ -99,17 +85,13 @@ function handleAdd() {
   visualEditorVisible.value = true
 }
 
-/**
- * 查看配置详情
- */
 async function handleView(row) {
   isEditMode.value = false
   try {
     const data = await loadConfigDetail(row.configId)
     currentConfig.value = data
     const merged = mergeConfigFields(data)
-    combinedConfigContent.value = JSON.stringify(merged, null, 2)
-    // ✨ 优先使用可视化编辑器查看
+    combinedConfigContent.value = JSON.stringify(merged, null, 2) 
     visualEditorVisible.value = true
   } catch (error) {
     console.error('加载配置详情失败:', error)
@@ -117,16 +99,10 @@ async function handleView(row) {
   }
 }
 
-/**
- * 进入编辑模式
- */
 function enterEditMode() {
   isEditMode.value = true
 }
 
-/**
- * 保存可视化配置
- */
 async function handleVisualSave(configData) {
   try {
     const data = {
@@ -147,9 +123,6 @@ async function handleVisualSave(configData) {
   }
 }
 
-/**
- * 保存配置
- */
 async function handleEditSubmit() {
   try {
     const splitData = splitConfigFields(combinedConfigContent.value)
@@ -169,9 +142,6 @@ async function handleEditSubmit() {
   }
 }
 
-/**
- * 删除配置
- */
 async function handleDelete(row) {
   try {
     await ElMessageBox.confirm(
@@ -189,38 +159,18 @@ async function handleDelete(row) {
   }
 }
 
-/**
- * 查看配置历史（P1 - 待实现）
- */
 function handleHistory(row) {
-  // TODO: 实现历史功能
-  // 1. 调用 getConfigHistory API
-  // 2. 加载版本列表
-  // 3. 显示历史对话框
-  ElMessage.info('历史功能开发中')
-  // 临时实现：
-  // currentHistoryConfig.value = { ...row }
-  // loadHistoryData(row.configId)
-  // historyDialogVisible.value = true
+  // TODO: Implement history feature
 }
 
-/**
- * 复制配置
- */
 function handleCopy(row) {
   ElMessage.info('复制功能开发中')
 }
 
-/**
- * 导出配置
- */
 function handleExport(row) {
   ElMessage.info('导出功能开发中')
 }
 
-/**
- * 加载字典数据
- */
 async function loadAllDicts() {
   try {
     const [allRes, nationRes] = await Promise.all([
@@ -262,7 +212,7 @@ async function loadAllDicts() {
   }
 }
 
-// ==================== Lifecycle ====================
+// Lifecycle
 onMounted(() => {
   getList()
   loadAllDicts()
@@ -290,19 +240,19 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- 页签结构 -->
+      <!-- 页签 -->
       <el-tabs v-model="activeTab" class="config-tabs">
-        <!-- 第一页签：页面配置 -->
+        <!-- 页面配置 -->
         <el-tab-pane label="页面配置" name="config">
           <div class="tab-content">
-            <!-- Search Form - 子组件 -->
+            <!-- 搜索表单 -->
             <ConfigSearch
               v-model="queryParams"
               @query="handleQuery"
               @reset="resetQuery"
             />
             
-            <!-- Table - 子组件 -->
+            <!-- 表格列表 -->
             <ConfigTable
               :config-list="configList"
               :loading="loading"
@@ -313,7 +263,7 @@ onMounted(() => {
               @export="handleExport"
             />
             
-            <!-- Pagination -->
+            <!-- 分页 -->
             <Pagination
               v-show="total > 0"
               v-model:page="queryParams.pageNum"
@@ -324,7 +274,7 @@ onMounted(() => {
           </div>
         </el-tab-pane>
 
-        <!-- Dictionary Tab -->
+        <!-- 字典接口 -->
         <el-tab-pane label="字典接口" name="lowcode">
           <div class="tab-content">
             <el-card shadow="never" class="dict-card">
@@ -403,7 +353,7 @@ onMounted(() => {
       </template>
     </el-dialog>
 
-    <!-- ✨ 可视化配置编辑器对话框 -->
+    <!-- 可视化编辑器对话框 -->
     <el-dialog
       v-model="visualEditorVisible"
       :title="currentConfig?.configId ? '编辑配置' : '新增配置'"
@@ -420,7 +370,7 @@ onMounted(() => {
       />
     </el-dialog>
 
-    <!-- 配置历史对话框（P1 - 待实现） -->
+    <!-- 历史对话框（待实现） -->
     <!-- TODO: 当实现历史功能时，取消下面的注释 -->
     <!-- 
     <el-dialog

@@ -35,6 +35,11 @@
           </el-icon>
           <div class="el-upload__text">点击上传</div>
         </template>
+        <template v-if="isJsonEditor">
+          <div class="json-editor-wrapper">
+            <pre class="json-preview">{{ formatJson(value) }}</pre>
+          </div>
+        </template>
       </component>
       <div v-if="meta.helpText" class="form-item-help-text">
         {{ meta.helpText }}
@@ -48,7 +53,14 @@ import { computed } from 'vue'
 import type { PropType } from 'vue' 
 import type { ConfigFieldMeta } from '../types/config'
 import { Upload } from '@element-plus/icons-vue'
-import { ElMessageBox } from 'element-plus'
+
+// 引入 ElMessage 用于上传文件数量超限提示（使用全局变量绕过类型检查）
+declare global {
+  interface Window {
+    ElMessage: any
+  }
+}
+const ElMessage = window.ElMessage || (window as any).ELEMENT_PLUS?.message
 const props = defineProps({
   // 字段元数据
   meta: {
@@ -96,7 +108,8 @@ const currentComponent = computed(() => {
     'upload': 'el-upload',
     'cascader': 'el-cascader',
     'slider': 'el-slider',
-    'rate': 'el-rate'
+    'rate': 'el-rate',
+    'json-editor': 'div' // JSON 编辑器使用 div 展示
   }
   return componentMap[props.meta.component || 'input'] || 'el-input'
 })
@@ -193,10 +206,7 @@ const componentProps = computed(() => {
         multiple: props.meta.props?.multiple ?? false,
         limit: props.meta.props?.limit ?? 3,
         onExceed: () => {
-          ElMessageBox.alert(`最多只能上传 ${props.meta.props?.limit ?? 3} 个文件`, '提示', {
-            confirmButtonText: '确定',
-            type: 'warning'
-          })
+          ElMessage.warning(`最多只能上传 ${props.meta.props?.limit || 3} 个文件`)
         },
         onSuccess: (response: any) => {
           if (response.data && response.data.url) {
@@ -283,6 +293,25 @@ const checkboxOptions = computed(() => {
 const isUpload = computed(() => {
   return props.meta.component === 'upload'
 })
+
+// 是否是 JSON 编辑器
+const isJsonEditor = computed(() => {
+  return props.meta.component === 'json-editor'
+})
+
+/**
+ * 格式化 JSON 用于展示
+ */
+function formatJson(val: any): string {
+  if (!val) return '{}'
+  try {
+    return typeof val === 'string' 
+      ? JSON.stringify(JSON.parse(val), null, 2)
+      : JSON.stringify(val, null, 2)
+  } catch {
+    return String(val)
+  }
+}
 </script>
 
 <style scoped>
@@ -290,5 +319,24 @@ const isUpload = computed(() => {
   font-size: 12px;
   color: #999;
   margin-top: 4px;
+}
+
+.json-editor-wrapper {
+  width: 100%;
+  min-height: 200px;
+  background: #f5f7fa;
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.json-preview {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #606266;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
 }
 </style>

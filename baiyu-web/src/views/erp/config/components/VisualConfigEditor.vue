@@ -50,7 +50,7 @@ const activeGroup = ref('basic')
 // 左侧面板折叠状态
 const leftPanelCollapsed = ref(false)
 
-// 右侧预览面板折叠状态
+// 右侧预览面板默认展开
 const rightPanelCollapsed = ref(false)
 
 // 所有配置数据（9 个 JSON 字段）
@@ -134,69 +134,73 @@ async function loadConfigData() {
       // 编辑模式：合并所有配置字段
       const merged = mergeConfigFields(props.initialData)
       
+      console.log('加载配置数据 - 合并后的数据:', merged)
+      
       // 解析各个配置块，增加错误处理
       try {
-        allConfigData.pageConfig = merged.page_config ? JSON.parse(merged.page_config) : {}
+        allConfigData.pageConfig = merged.pageConfig ? (typeof merged.pageConfig === 'string' ? JSON.parse(merged.pageConfig) : merged.pageConfig) : {}
       } catch (e) {
-        console.warn('解析 page_config 失败:', e)
+        console.warn('解析 pageConfig 失败:', e)
         allConfigData.pageConfig = {}
       }
       
       try {
-        allConfigData.formConfig = merged.form_config ? JSON.parse(merged.form_config) : {}
+        allConfigData.formConfig = merged.formConfig ? (typeof merged.formConfig === 'string' ? JSON.parse(merged.formConfig) : merged.formConfig) : {}
       } catch (e) {
-        console.warn('解析 form_config 失败:', e)
+        console.warn('解析 formConfig 失败:', e)
         allConfigData.formConfig = {}
       }
       
       try {
-        allConfigData.tableConfig = merged.table_config ? JSON.parse(merged.table_config) : {}
+        allConfigData.tableConfig = merged.tableConfig ? (typeof merged.tableConfig === 'string' ? JSON.parse(merged.tableConfig) : merged.tableConfig) : {}
       } catch (e) {
-        console.warn('解析 table_config 失败:', e)
+        console.warn('解析 tableConfig 失败:', e)
         allConfigData.tableConfig = {}
       }
       
       try {
-        allConfigData.searchConfig = merged.search_config ? JSON.parse(merged.search_config) : {}
+        allConfigData.searchConfig = merged.searchConfig ? (typeof merged.searchConfig === 'string' ? JSON.parse(merged.searchConfig) : merged.searchConfig) : {}
       } catch (e) {
-        console.warn('解析 search_config 失败:', e)
+        console.warn('解析 searchConfig 失败:', e)
         allConfigData.searchConfig = {}
       }
       
       try {
-        allConfigData.actionConfig = merged.action_config ? JSON.parse(merged.action_config) : {}
+        allConfigData.actionConfig = merged.actionConfig ? (typeof merged.actionConfig === 'string' ? JSON.parse(merged.actionConfig) : merged.actionConfig) : {}
       } catch (e) {
-        console.warn('解析 action_config 失败:', e)
+        console.warn('解析 actionConfig 失败:', e)
         allConfigData.actionConfig = {}
       }
       
       try {
-        allConfigData.apiConfig = merged.api_config ? JSON.parse(merged.api_config) : {}
+        allConfigData.apiConfig = merged.apiConfig ? (typeof merged.apiConfig === 'string' ? JSON.parse(merged.apiConfig) : merged.apiConfig) : {}
       } catch (e) {
-        console.warn('解析 api_config 失败:', e)
+        console.warn('解析 apiConfig 失败:', e)
         allConfigData.apiConfig = {}
       }
       
       try {
-        allConfigData.dictConfig = merged.dict_config ? JSON.parse(merged.dict_config) : {}
+        allConfigData.dictConfig = merged.dictConfig ? (typeof merged.dictConfig === 'string' ? JSON.parse(merged.dictConfig) : merged.dictConfig) : {}
       } catch (e) {
-        console.warn('解析 dict_config 失败:', e)
+        console.warn('解析 dictConfig 失败:', e)
         allConfigData.dictConfig = {}
       }
       
       try {
-        allConfigData.businessConfig = merged.business_config ? JSON.parse(merged.business_config) : {}
+        allConfigData.businessConfig = merged.businessConfig ? (typeof merged.businessConfig === 'string' ? JSON.parse(merged.businessConfig) : merged.businessConfig) : {}
       } catch (e) {
-        console.warn('解析 business_config 失败:', e)
+        console.warn('解析 businessConfig 失败:', e)
         allConfigData.businessConfig = {}
       }
       
       try {
-        allConfigData.detailConfig = merged.detail_config ? JSON.parse(merged.detail_config) : {}
+        allConfigData.detailConfig = merged.detailConfig ? (typeof merged.detailConfig === 'string' ? JSON.parse(merged.detailConfig) : merged.detailConfig) : {}
       } catch (e) {
-        console.warn('解析 detail_config 失败:', e)
+        console.warn('解析 detailConfig 失败:', e)
         allConfigData.detailConfig = {}
       }
+      
+      console.log('加载配置数据 - 解析后的 pageConfig:', allConfigData.pageConfig)
       
       // 初始化当前类别
       switchToCategory(activeCategory.value)
@@ -601,18 +605,40 @@ onMounted(() => {
 <style scoped lang="scss">
 .visual-config-editor {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: calc(100vh - 200px);
   background: #f5f7fa;
+  overflow: hidden;
   
   .left-panel {
     width: 260px;
     background: #fff;
     border-right: 1px solid #e4e7ed;
     transition: width 0.3s;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     
     &.collapsed {
       width: 60px;
+      
+      .panel-header {
+        justify-content: center;
+        padding: 16px 8px;
+        
+        .panel-title {
+          display: none;
+        }
+        
+        .el-button {
+          padding: 8px;
+        }
+      }
+      
+      .category-menu {
+        display: none;
+      }
     }
     
     .panel-header {
@@ -621,22 +647,34 @@ onMounted(() => {
       align-items: center;
       padding: 16px;
       border-bottom: 1px solid #e4e7ed;
+      flex-shrink: 0;
       
       .panel-title {
         font-size: 16px;
         font-weight: 500;
         color: #303133;
+        white-space: nowrap;
+        overflow: hidden;
       }
     }
     
     .category-menu {
       border-right: none;
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
       
       .category-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
+        
+        span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
     }
   }
@@ -646,6 +684,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 0;
     
     .panel-header {
       display: flex;
@@ -654,6 +693,7 @@ onMounted(() => {
       padding: 16px;
       background: #fff;
       border-bottom: 1px solid #e4e7ed;
+      flex-shrink: 0;
       
       .header-left {
         display: flex;
@@ -670,7 +710,8 @@ onMounted(() => {
     
     .group-tabs {
       flex: 1;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
       padding: 16px;
       
       .form-card {
@@ -684,9 +725,25 @@ onMounted(() => {
     background: #fff;
     border-left: 1px solid #e4e7ed;
     transition: width 0.3s;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     
     &.collapsed {
       width: 60px;
+      
+      .panel-header {
+        justify-content: center;
+        
+        .panel-title {
+          display: none;
+        }
+      }
+      
+      .preview-content {
+        display: none;
+      }
     }
     
     .panel-header {
@@ -695,6 +752,7 @@ onMounted(() => {
       align-items: center;
       padding: 16px;
       border-bottom: 1px solid #e4e7ed;
+      flex-shrink: 0;
       
       .panel-title {
         font-size: 16px;
@@ -704,8 +762,10 @@ onMounted(() => {
     }
     
     .preview-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
       padding: 16px;
-      overflow: auto;
       
       .preview-card {
         margin-bottom: 16px;
@@ -724,15 +784,21 @@ onMounted(() => {
           font-size: 12px;
           color: #606266;
           max-height: 400px;
-          overflow: auto;
+          overflow-y: auto;
+          overflow-x: hidden;
           white-space: pre-wrap;
           word-wrap: break-word;
+          line-height: 1.5;
         }
       }
     }
   }
   
   .footer-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: flex-end;
     gap: 12px;

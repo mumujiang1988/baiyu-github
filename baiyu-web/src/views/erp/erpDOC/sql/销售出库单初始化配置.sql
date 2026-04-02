@@ -178,7 +178,7 @@ INSERT INTO `erp_page_config` (
         "label": "承运商",
         "component": "select",
         "span": 6,
-        "dictionary": "carriers",
+        "dictionary": "suppliers",
         "required": true,
         "props": {"placeholder": "请选择承运商", "filterable": true, "clearable": true}
       },
@@ -369,7 +369,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "f_customer_id", "label": "客户", "width": 150, "align": "left", "visible": true, "renderType": "text", "dictionary": "customers"},
       {"prop": "f_ora_baseproperty", "label": "客户简称", "width": 150, "align": "left", "visible": true},
       {"prop": "f_salesman_id", "label": "销售员", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "salespersons"},
-      {"prop": "f_carrier_id", "label": "承运商", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "carriers"},
+      {"prop": "f_carrier_id", "label": "承运商", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "f_cydh", "label": "出运单号", "width": 150, "align": "left", "visible": true},
       {"prop": "f_djbgzt", "label": "报关状态", "width": 100, "align": "center", "visible": true, "renderType": "tag", "dictionary": "customs_status"},
       {"prop": "f_create_time", "label": "创建时间", "width": 160, "align": "center", "visible": true, "renderType": "datetime", "format": "YYYY-MM-DD HH:mm:ss"},
@@ -566,12 +566,12 @@ INSERT INTO `erp_page_config` (
           "cacheTTL": 86400000
         }
       },
-      "carriers": {
+      "suppliers": {
         "type": "api",
         "config": {
-          "api": "/erp/engine/dict/union/carriers",
+          "api": "/erp/engine/dict/union/suppliers",
           "useGlobalCache": true,
-          "cacheKey": "carriers_dict",
+          "cacheKey": "suppliers_dict",
           "cacheTTL": 86400000
         }
       },
@@ -709,7 +709,7 @@ INSERT INTO `erp_page_config` (
                 "description": "按实体主键 ID 查询明细 (f_sal_outbound.id = f_sal_outbound_details.f_entry_id)"
               }
             ],
-            "defaultOrderBy": [{"field": "FMaterialID", "direction": "ASC"}]
+            "defaultOrderBy": [{"field": "f_material_id", "direction": "ASC"}]
           },
           "table": {
             "border": true,

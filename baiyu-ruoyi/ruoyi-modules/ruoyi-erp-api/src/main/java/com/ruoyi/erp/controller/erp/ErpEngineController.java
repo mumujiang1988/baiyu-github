@@ -64,7 +64,7 @@ public class ErpEngineController {
         if (moduleCode == null || moduleCode.isEmpty()) {
             throw new IllegalArgumentException("模块编码不能为空");
         }
-        return String.format("k3:%s:%s", moduleCode, action);
+        return String.format("erp:%s:%s", moduleCode, action);
     }
 
     /**

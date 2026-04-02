@@ -10,7 +10,7 @@
   >
     <div v-if="loading" class="drawer-loading">
       <el-icon class="is-loading" :size="40"><Loading /></el-icon>
-      <p>Loading data...</p>
+      <p>加载中...</p>
     </div>
     
     <!-- Drawer content -->
@@ -26,7 +26,7 @@
           <div v-if="tab.type === 'table' || !tab.type" class="tab-content">
             <template v-for="tabKey in [tab.name]" :key="tabKey">
               <div v-if="!getTabData(tab) || getTabData(tab).length === 0" class="tab-empty">
-                <el-empty :description="`No ${tab.label} data`" :image-size="120" />
+                <el-empty :description="`暂无${tab.label}数据`" :image-size="120" />
               </div>
               <el-table 
                 v-else
@@ -60,7 +60,7 @@
           <div v-else-if="tab.type === 'form'" class="tab-content">
             <template v-for="tabKey in [tab.name]" :key="tabKey">
               <div v-if="!getTabData(tab) || Object.keys(getTabData(tab)).length === 0" class="tab-empty">
-                <el-empty :description="`No ${tab.label} data`" :image-size="120" />
+                <el-empty :description="`暂无 ${tab.label} 数据`" :image-size="120" />
               </div>
               <el-form 
                 v-else 
@@ -89,7 +89,7 @@
           <div v-else-if="tab.type === 'descriptions'" class="tab-content">
             <template v-for="tabKey in [tab.name]" :key="tabKey">
               <div v-if="!getTabData(tab) || (Array.isArray(getTabData(tab)) ? getTabData(tab).length === 0 : Object.keys(getTabData(tab)).length === 0)" class="tab-empty">
-                <el-empty :description="`No ${tab.label} data`" :image-size="120" />
+                <el-empty :description="`暂无 ${tab.label} 数据`" :image-size="120" />
               </div>
               <el-descriptions 
                 v-else 

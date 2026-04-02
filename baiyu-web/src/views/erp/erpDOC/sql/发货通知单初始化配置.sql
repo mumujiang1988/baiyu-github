@@ -120,7 +120,7 @@ INSERT INTO `erp_page_config` (
         "label": "承运商",
         "component": "select",
         "span": 6,
-        "dictionary": "carriers",
+        "dictionary": "suppliers",
         "props": {"placeholder": "请选择承运商", "filterable": true, "clearable": true}
       },
       {
@@ -280,7 +280,7 @@ INSERT INTO `erp_page_config` (
       {"prop": "FDate", "label": "日期", "width": 140, "align": "center", "visible": true, "renderType": "date", "format": "YYYY-MM-DD"},
       {"prop": "FCustomerID", "label": "客户", "width": 150, "align": "left", "visible": true, "renderType": "text", "dictionary": "customers"},
       {"prop": "FSalesManID", "label": "销售员", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "salespersons"},
-      {"prop": "FCarrierID", "label": "承运商", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "carriers"},
+      {"prop": "FCarrierID", "label": "承运商", "width": 120, "align": "left", "visible": true, "renderType": "text", "dictionary": "suppliers"},
       {"prop": "FBillAmount", "label": "金额", "width": 120, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "FBillTaxAmount", "label": "税额", "width": 100, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
       {"prop": "FBillAllAmount", "label": "价税合计", "width": 120, "align": "right", "visible": true, "renderType": "currency", "precision": 2},
@@ -428,12 +428,12 @@ INSERT INTO `erp_page_config` (
       "enabled": true
     },
     "dictionaries": {
-      "customers": {
+      "suppliers": {
         "type": "api",
         "config": {
-          "api": "/erp/engine/dict/union/customers",
+          "api": "/erp/engine/dict/union/suppliers",
           "useGlobalCache": true,
-          "cacheKey": "customers_dict",
+          "cacheKey": "suppliers_dict",
           "cacheTTL": 86400000
         }
       },
@@ -443,15 +443,6 @@ INSERT INTO `erp_page_config` (
           "api": "/erp/engine/dict/union/salespersons",
           "useGlobalCache": true,
           "cacheKey": "salespersons_dict",
-          "cacheTTL": 86400000
-        }
-      },
-      "carriers": {
-        "type": "api",
-        "config": {
-          "api": "/erp/engine/dict/union/carriers",
-          "useGlobalCache": true,
-          "cacheKey": "carriers_dict",
           "cacheTTL": 86400000
         }
       },
