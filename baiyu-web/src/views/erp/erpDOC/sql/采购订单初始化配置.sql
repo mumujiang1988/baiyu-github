@@ -132,6 +132,9 @@ INSERT INTO `erp_page_config` (
   '{
     "tableName": "po_order_bill_head",
     "primaryKey": "id",
+    "orderBy": [
+      {"field": "fdate", "direction": "DESC"}
+    ],
     "columns": [
       {"type": "selection", "width": 55, "fixed": "left", "resizable": false},
       {"type": "expand", "width": 100, "fixed": "left", "resizable": false, "label": "详情"},

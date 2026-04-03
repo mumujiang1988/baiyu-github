@@ -131,6 +131,9 @@ INSERT INTO `erp_page_config` (
   '{
     "tableName": "receipt_notice_full",
     "primaryKey": "id",
+    "orderBy": [
+      {"field": "fdate", "direction": "DESC"}
+    ],
     "columns": [
       {"type": "selection", "width": 55, "fixed": "left", "resizable": false},
       {"type": "expand", "width": 100, "fixed": "left", "resizable": false, "label": "详情"},

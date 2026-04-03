@@ -360,6 +360,9 @@ INSERT INTO `erp_page_config` (
   '{
     "tableName": "f_sal_outbound",
     "primaryKey": "id",
+    "orderBy": [
+      {"field": "f_date", "direction": "DESC"}
+    ],
     "columns": [
       {"type": "selection", "width": 55, "fixed": "left", "resizable": false},
       {"type": "expand", "width": 100, "fixed": "left", "resizable": false, "label": "详情"},

@@ -249,6 +249,9 @@ INSERT INTO `erp_page_config` (
   '{
     "tableName": "t_sale_order",
     "primaryKey": "id",
+    "orderBy": [
+      {"field": "FDate", "direction": "DESC"}
+    ],
     "columns": [
       {"type": "selection", "width": 55, "fixed": "left", "resizable": false},
       {"type": "expand", "width": 100, "fixed": "left", "resizable": false, "label": "详情"},
@@ -511,18 +514,6 @@ INSERT INTO `erp_page_config` (
             "detailField": "fbillno",
             "operator": "eq"
           },
-          "queryConfig": {
-            "enabled": true,
-            "defaultConditions": [
-              {
-                "field": "FBillNo",
-                "operator": "eq",
-                "value": "${FBillNo}",
-                "description": "按订单编号查询明细 (t_sale_order.FBillNo = t_sale_order_entry.fbillno)"
-              }
-            ],
-            "defaultOrderBy": [{"field": "FPlanMaterialId", "direction": "ASC"}]
-          },
           "table": {
             "border": true,
             "stripe": true,
@@ -553,24 +544,11 @@ INSERT INTO `erp_page_config` (
           "dataField": "costData",
           "tableName": "t_sale_order_cost",
           "relationConfig": {
-            "enabled": true,
             "masterTable": "t_sale_order",
             "masterField": "FBillNo",
             "detailTable": "t_sale_order_cost",
             "detailField": "FBillNo",
             "operator": "eq"
-          },
-          "queryConfig": {
-            "enabled": true,
-            "defaultConditions": [
-              {
-                "field": "FBillNo",
-                "operator": "eq",
-                "value": "${FBillNo}",
-                "description": "按订单编号查询成本 (t_sale_order.FBillNo = t_sale_order_cost.FBillNo)"
-              }
-            ],
-            "defaultOrderBy": [{"field": "FID", "direction": "ASC"}]
           },
           "form": {
             "layout": "horizontal",
