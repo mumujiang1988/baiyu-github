@@ -229,15 +229,12 @@ const activeTool = ref(null)
 const processing = ref(false)
 const saving = ref(false)
 
-// 图片状态
 const originalImage = ref(null)
 const currentImage = ref(null)
 const ctx = ref(null)
 
-// Cropper 实例
 let cropperInstance = null
 
-// 编辑参数
 const rotateAngle = ref(0)
 const flipH = ref(false)
 const flipV = ref(false)
@@ -257,7 +254,6 @@ watch(dialogVisible, (val) => {
   emit('update:modelValue', val)
 })
 
-// 加载图片
 const loadImage = async () => {
   try {
     const img = new Image()
@@ -273,7 +269,6 @@ const loadImage = async () => {
     currentImage.value = img
     resetParams()
     
-    // 如果当前是裁剪工具，初始化 Cropper
     if (activeTool.value === 'crop') {
       await nextTick()
       initCropper()
@@ -286,53 +281,46 @@ const loadImage = async () => {
   }
 }
 
-// 初始化 Cropper
 const initCropper = () => {
   if (!cropperImgRef.value) return
   
-  // 销毁旧的 Cropper 实例
   if (cropperInstance) {
     cropperInstance.destroy()
   }
   
-  // 创建新的 Cropper 实例
   cropperInstance = new Cropper(cropperImgRef.value, {
     aspectRatio: aspectRatio.value,
-    viewMode: 1,  // 限制裁剪框不能超出图片
-    dragMode: 'move',  // 可以拖动图片
-    autoCropArea: 0.8,  // 自动裁剪区域大小
+    viewMode: 1,
+    dragMode: 'move',
+    autoCropArea: 0.8,
     restore: false,
-    guides: true,  // 显示网格线
+    guides: true,
     center: true,
     highlight: false,
-    cropBoxMovable: true,  // 可以移动裁剪框
-    cropBoxResizable: true,  // 可以调整裁剪框大小
+    cropBoxMovable: true,
+    cropBoxResizable: true,
     toggleDragModeOnDblclick: false,
   })
 }
 
-// 更改裁剪比例
 const changeAspectRatio = () => {
   if (cropperInstance) {
     cropperInstance.setAspectRatio(aspectRatio.value)
   }
 }
 
-// 重置裁剪框
 const resetCropper = () => {
   if (cropperInstance) {
     cropperInstance.reset()
   }
 }
 
-// 确认裁剪
 const confirmCrop = () => {
   if (!cropperInstance) {
     ElMessage.warning('Cropper 未初始化')
     return
   }
   
-  // 获取裁剪后的 Canvas
   const croppedCanvas = cropperInstance.getCroppedCanvas({
     fillColor: '#fff',
   })
@@ -342,12 +330,10 @@ const confirmCrop = () => {
     return
   }
   
-  // 转换为图片
   const img = new Image()
   img.onload = () => {
     currentImage.value = img
     
-    // 重置所有编辑参数
     rotateAngle.value = 0
     flipH.value = false
     flipV.value = false
@@ -355,16 +341,13 @@ const confirmCrop = () => {
     contrast.value = 100
     saturation.value = 100
     
-    // 销毁 Cropper
     if (cropperInstance) {
       cropperInstance.destroy()
       cropperInstance = null
     }
     
-    // 先切换到 Canvas 模式
     activeTool.value = null
     
-    // 等待 DOM 更新后再绘制
     nextTick(() => {
       drawImage()
       ElMessage.success('裁剪成功')
@@ -376,20 +359,17 @@ const confirmCrop = () => {
   img.src = croppedCanvas.toDataURL('image/png')
 }
 
-// 绘制图片到画布（非裁剪模式）
 const drawImage = () => {
   if (!canvasRef.value || !currentImage.value) return
   
   const canvas = canvasRef.value
   const ctx = canvas.getContext('2d')
   
-  // 设置画布尺寸
   const maxWidth = 800
   const maxHeight = 500
   let width = currentImage.value.width
   let height = currentImage.value.height
   
-  // 缩放以适应画布
   if (width > maxWidth || height > maxHeight) {
     const ratio = Math.min(maxWidth / width, maxHeight / height)
     width *= ratio
@@ -399,29 +379,22 @@ const drawImage = () => {
   canvas.width = width
   canvas.height = height
   
-  // 清除画布
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   
-  // 应用变换
   ctx.save()
   ctx.translate(canvas.width / 2, canvas.height / 2)
   ctx.rotate((rotateAngle.value * Math.PI) / 180)
   ctx.scale(flipH.value ? -1 : 1, flipV.value ? -1 : 1)
   ctx.translate(-canvas.width / 2, -canvas.height / 2)
   
-  // 应用滤镜
   ctx.filter = `brightness(${brightness.value}%) contrast(${contrast.value}%) saturate(${saturation.value}%)`
   
-  // 绘制图片
   ctx.drawImage(currentImage.value, 0, 0, canvas.width, canvas.height)
   ctx.restore()
 }
 
-// 设置工具
 const setTool = (tool) => {
-  // 切换工具时清除裁剪状态
   if (activeTool.value !== tool) {
-    // 销毁 Cropper
     if (cropperInstance) {
       cropperInstance.destroy()
       cropperInstance = null
@@ -430,18 +403,15 @@ const setTool = (tool) => {
   
   activeTool.value = tool
   
-  // 如果切换到裁剪工具，初始化 Cropper
   if (tool === 'crop') {
     nextTick(() => {
       initCropper()
     })
   } else {
-    // 其他工具使用 Canvas
     drawImage()
   }
 }
 
-// 重置参数
 const resetParams = () => {
   rotateAngle.value = 0
   flipH.value = false
@@ -452,13 +422,11 @@ const resetParams = () => {
   aspectRatio.value = NaN
 }
 
-// 重置图片
 const resetImage = () => {
   if (originalImage.value) {
     currentImage.value = originalImage.value
     resetParams()
     
-    // 销毁 Cropper
     if (cropperInstance) {
       cropperInstance.destroy()
       cropperInstance = null
@@ -476,18 +444,15 @@ const resetImage = () => {
   }
 }
 
-// 应用旋转
 const applyRotate = () => {
   drawImage()
 }
 
-// 旋转图片
 const rotateImage = (angle) => {
   rotateAngle.value += angle
   drawImage()
 }
 
-// 翻转图片
 const flipImage = (direction) => {
   if (direction === 'horizontal') {
     flipH.value = !flipH.value
@@ -497,12 +462,10 @@ const flipImage = (direction) => {
   drawImage()
 }
 
-// 应用滤镜
 const applyFilters = () => {
   drawImage()
 }
 
-// 保存图片
 const saveImage = async () => {
   if (!canvasRef.value) return
   
@@ -512,7 +475,6 @@ const saveImage = async () => {
     const canvas = canvasRef.value
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
     
-    // 转换为 Blob
     const response = await fetch(dataUrl)
     const blob = await response.blob()
     const file = new File([blob], 'edited-image.jpg', { type: 'image/jpeg' })
@@ -528,19 +490,16 @@ const saveImage = async () => {
   }
 }
 
-// 关闭对话框
 const handleClose = () => {
   dialogVisible.value = false
   activeTool.value = null
   
-  // 销毁 Cropper
   if (cropperInstance) {
     cropperInstance.destroy()
     cropperInstance = null
   }
 }
 
-// 组件卸载前清理
 onBeforeUnmount(() => {
   if (cropperInstance) {
     cropperInstance.destroy()

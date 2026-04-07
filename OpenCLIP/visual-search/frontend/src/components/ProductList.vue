@@ -95,7 +95,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { listProducts, getProduct, deleteProduct as deleteProductApi } from '../api/search'
 import { handleApiError } from '../utils/messageHandler'
 
-// 数据
 const products = ref([])
 const loading = ref(false)
 const page = ref(1)
@@ -107,7 +106,6 @@ const detailVisible = ref(false)
 const currentProduct = ref(null)
 const currentImages = ref([])
 
-// 加载产品列表
 const loadProducts = async () => {
   loading.value = true
   
@@ -125,7 +123,6 @@ const loadProducts = async () => {
   }
 }
 
-// 查看产品详情
 const viewProduct = async (row) => {
   try {
     const response = await getProduct(row.product_code)
@@ -140,7 +137,6 @@ const viewProduct = async (row) => {
   }
 }
 
-// 删除产品
 const deleteProduct = async (row) => {
   try {
     await ElMessageBox.confirm(
@@ -168,19 +164,16 @@ const deleteProduct = async (row) => {
   }
 }
 
-// 格式化日期
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
   return date.toLocaleString('zh-CN')
 }
 
-// 获取图片URL
 const getImageUrl = (path) => {
   return `/api/v1/images/${path}`
 }
 
-// 初始化加载
 onMounted(() => {
   loadProducts()
 })
@@ -189,16 +182,16 @@ onMounted(() => {
 <style scoped>
 .product-list {
   width: 100%;
-  height: 100%;  /* 占满父容器 */
+  height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
 }
 
 .main-card {
-  flex: 1;  /* 自动填充剩余空间 */
-  min-height: 0;  /* 允许收缩 */
-  overflow: hidden;  /* 防止溢出 */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }

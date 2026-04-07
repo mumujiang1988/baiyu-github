@@ -40,13 +40,12 @@ const handleMenuSelect = (index) => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
-  height: 100%;  /* 占满父容器 */
-  width: 100%;   /* 占满父容器 */
+  height: 100%;
+  width: 100%;
 }
 
-/* Element Plus 容器布局 */
 .el-container {
-  height: 100%;  /* 确保容器占满整个高度 */
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -55,8 +54,8 @@ const handleMenuSelect = (index) => {
   background-color: #409EFF;
   color: white;
   padding: 0 20px;
-  height: 60px;  /* 明确设置高度 */
-  flex-shrink: 0;  /* 防止被压缩 */
+  height: 60px;
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -92,10 +91,10 @@ const handleMenuSelect = (index) => {
 .el-main {
   padding: 20px;
   background-color: #f5f7fa;
-  height: calc(100vh - 60px);  /* 修复：从 min-height 改为 height */
-  overflow-y: auto;  /* 只在 main 区域滚动 */
-  overflow-x: hidden;  /* 禁止横向滚动 */
-  flex: 1;  /* 自动填充剩余空间 */
-  min-height: 0;  /* 允许收缩 */
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
 }
 </style>
