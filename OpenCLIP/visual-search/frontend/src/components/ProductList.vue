@@ -1,6 +1,6 @@
 <template>
   <div class="product-list">
-    <el-card>
+    <el-card class="main-card">
       <template #header>
         <div class="card-header">
           <span>产品管理</span>
@@ -189,7 +189,25 @@ onMounted(() => {
 <style scoped>
 .product-list {
   width: 100%;
+  height: 100%;  /* 占满父容器 */
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-card {
+  flex: 1;  /* 自动填充剩余空间 */
+  min-height: 0;  /* 允许收缩 */
+  overflow: hidden;  /* 防止溢出 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 让 card body 可滚动 */
+:deep(.el-card__body) {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
 .card-header {

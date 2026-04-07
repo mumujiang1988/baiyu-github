@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="图片编辑"
-    width="700px"
+    width="900px"
     :close-on-click-modal="false"
     @close="handleClose"
   >
@@ -381,14 +381,12 @@ const confirmCrop = () => {
       cropperInstance = null
     }
     
-    // 先切换到 Canvas 模式
+    // 切换到 Canvas 模式
     activeTool.value = null
     
-    // 等待 DOM 更新后再绘制
-    nextTick(() => {
-      drawImage()
-      ElMessage.success('裁剪成功')
-    })
+    // 重新绘制
+    drawImage()
+    ElMessage.success('裁剪成功')
   }
   img.src = croppedCanvas.toDataURL('image/png')
 }

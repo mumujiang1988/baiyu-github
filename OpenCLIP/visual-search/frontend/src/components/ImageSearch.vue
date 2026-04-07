@@ -328,11 +328,18 @@ onUnmounted(() => {
 <style scoped>
 .image-search {
   width: 100%;
+  height: 100%;  /* 占满父容器 */
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .main-card {
-  min-height: 100%;
+  flex: 1;  /* 自动填充剩余空间 */
+  min-height: 0;  /* 允许收缩 */
+  overflow: hidden;  /* 防止溢出 */
+  display: flex;
+  flex-direction: column;
 }
 
 .search-section,
@@ -418,8 +425,9 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: calc(100vh - 200px);
+  flex: 1;  /* 使用 flex 而不是固定高度 */
   overflow-y: auto;
+  min-height: 0;  /* 允许收缩 */
 }
 
 .product-card {

@@ -12,7 +12,9 @@
     "vue": "^3.3.8",
     "element-plus": "^2.4.2",
     "axios": "^1.6.2",
-    "@element-plus/icons-vue": "^2.3.1"
+    "@element-plus/icons-vue": "^2.3.1",
+    "vue-cropperjs": "^5.0.0",
+    "cropperjs": "^1.6.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.0",

@@ -1,6 +1,7 @@
 <template>
   <div class="product-ingest">
-    <el-tabs v-model="activeTab" type="border-card">
+    <el-card class="main-card">
+      <el-tabs v-model="activeTab" type="border-card" style="height: 100%; display: flex; flex-direction: column;">
         <!-- 单产品入库页签 -->
         <el-tab-pane label="单产品入库" name="single">
           <el-form :model="form" label-width="100px" :rules="rules" ref="formRef">
@@ -280,6 +281,7 @@
           </div>
         </template>
       </el-result>
+    </el-card>
     </el-card>
   </div>
 </template>
@@ -802,7 +804,31 @@ const removeProduct = (index) => {
 <style scoped>
 .product-ingest {
   width: 100%;
+  height: 100%;  /* 占满父容器 */
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-card {
+  flex: 1;  /* 自动填充剩余空间 */
+  min-height: 0;  /* 允许收缩 */
+  overflow: hidden;  /* 防止溢出 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 让 tabs 占满 card */
+:deep(.el-tabs) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.el-tabs__content) {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
 .batch-upload-container {
