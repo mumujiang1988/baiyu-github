@@ -84,24 +84,7 @@
       <div v-if="activeTool" class="editor-controls">
         <!-- 裁剪控制 -->
         <div v-if="activeTool === 'crop'" class="control-panel">
-          <el-alert
-            title="拖动鼠标选择裁剪区域，可调整大小和位置"
-            type="info"
-            :closable="false"
-            show-icon
-            style="margin-bottom: 12px;"
-          />
-          
-          <el-form label-width="80px" size="small">
-            <el-form-item label="裁剪比例">
-              <el-select v-model="aspectRatio" @change="changeAspectRatio">
-                <el-option label="自由裁剪" :value="NaN" />
-                <el-option label="1:1 正方形" :value="1" />
-                <el-option label="4:3" :value="4/3" />
-                <el-option label="16:9" :value="16/9" />
-                <el-option label="3:4" :value="3/4" />
-              </el-select>
-            </el-form-item>
+          <el-form size="small">
             <el-form-item>
               <el-space>
                 <el-button 
@@ -325,9 +308,6 @@ const initCropper = () => {
     cropBoxMovable: true,  // 可以移动裁剪框
     cropBoxResizable: true,  // 可以调整裁剪框大小
     toggleDragModeOnDblclick: false,
-    ready() {
-      console.log('Cropper 已就绪')
-    }
   })
 }
 
@@ -389,6 +369,9 @@ const confirmCrop = () => {
       drawImage()
       ElMessage.success('裁剪成功')
     })
+  }
+  img.onerror = () => {
+    ElMessage.error('裁剪后图片加载失败')
   }
   img.src = croppedCanvas.toDataURL('image/png')
 }
@@ -570,13 +553,13 @@ onBeforeUnmount(() => {
 .image-editor {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .editor-toolbar {
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: 8px;
   background-color: #f5f7fa;
   border-radius: 6px;
 }
@@ -585,7 +568,8 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: 300px;
+  max-height: 400px;
   background-color: #fafafa;
   border: 1px dashed #dcdfe6;
   border-radius: 6px;
@@ -605,21 +589,20 @@ onBeforeUnmount(() => {
 
 .canvas {
   max-width: 100%;
-  max-height: 500px;
+  max-height: 400px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   user-select: none;
 }
 
 .editor-controls {
-  padding: 16px;
+  padding: 12px;
   background-color: #f9fafb;
   border-radius: 6px;
   border: 1px solid #e4e7ed;
 }
 
 .control-panel {
-  max-width: 400px;
-  margin: 0 auto;
+  max-width: 100%;
 }
 
 .el-divider--vertical {
