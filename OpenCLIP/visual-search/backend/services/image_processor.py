@@ -33,7 +33,7 @@ class ImageProcessor:
         self.max_size = max_size
         self.supported_formats = supported_formats
         
-        # 图片存储根目录
+        # Image storage root directory
         self.storage_root = os.path.join(os.getcwd(), "storage", "images")
         os.makedirs(self.storage_root, exist_ok=True)
     
@@ -43,34 +43,34 @@ class ImageProcessor:
         enhance: bool = True
     ) -> Image.Image:
         """
-        图片预处理
+        Image preprocessing
         
         Args:
-            image_bytes: 图片字节数据
-            enhance: 是否增强
+            image_bytes: Image byte data
+            enhance: Whether to enhance
         
         Returns:
-            处理后的 PIL Image
+            Processed PIL Image
         """
-        # 1. 加载图片
+        # 1. Load image
         image = Image.open(io.BytesIO(image_bytes))
         
-        # 2. 转换为 RGB
+        # 2. Convert to RGB
         if image.mode != 'RGB':
             image = image.convert('RGB')
         
-        # 3. 尺寸检查
+        # 3. Size check
         width, height = image.size
         if width < self.min_size or height < self.min_size:
-            raise ValueError(f"图片尺寸过小: {width}x{height}, 最小要求 {self.min_size}x{self.min_size}")
+            raise ValueError(f"Image size too small: {width}x{height}, minimum required {self.min_size}x{self.min_size}")
         
         if width > self.max_size or height > self.max_size:
-            # 等比缩放
+            # Proportional scaling
             ratio = min(self.max_size / width, self.max_size / height)
             new_size = (int(width * ratio), int(height * ratio))
             image = image.resize(new_size, Image.LANCZOS)
         
-        # 4. 可选增强
+        # 4. Optional enhancement
         if enhance:
             image = self._enhance_image(image)
         
@@ -78,21 +78,21 @@ class ImageProcessor:
     
     def _enhance_image(self, image: Image.Image) -> Image.Image:
         """
-        图片增强
+        Image enhancement
         
         Args:
             image: PIL Image
         
         Returns:
-            增强后的图片
+            Enhanced image
         """
         from PIL import ImageEnhance
         
-        # 对比度增强
+        # Contrast enhancement
         enhancer = ImageEnhance.Contrast(image)
         image = enhancer.enhance(1.1)
         
-        # 锐化
+        # Sharpening
         enhancer = ImageEnhance.Sharpness(image)
         image = enhancer.enhance(1.2)
         
@@ -120,17 +120,11 @@ class ImageProcessor:
         
         Returns:
             感知哈希字符串
-        """
-        # 缩放到小尺寸
+        """ 
         image = image.convert('L').resize((hash_size + 1, hash_size), Image.LANCZOS)
-        
-        # 转换为 numpy 数组
-        pixels = np.array(image)
-        
-        # 计算差分
-        diff = pixels[:, 1:] > pixels[:, :-1]
-        
-        # 转换为哈希字符串
+         
+        pixels = np.array(image) 
+        diff = pixels[:, 1:] > pixels[:, :-1] 
         hash_str = ''.join(str(int(b)) for b in diff.flatten())
         
         return hash_str
@@ -155,39 +149,32 @@ class ImageProcessor:
         import logging
         logger = logging.getLogger(__name__)
 
-        try:
-            # 创建产品目录
+        try: 
             product_dir = os.path.join(self.storage_root, product_code)
             logger.info(f"创建产品目录: {product_dir}")
             os.makedirs(product_dir, exist_ok=True)
-
-            # 检查目录权限
+ 
             if not os.access(product_dir, os.W_OK):
                 logger.error(f"目录不可写: {product_dir}")
                 raise PermissionError(f"目录不可写: {product_dir}")
-
-            # 生成唯一文件名
+ 
             image_hash = self.compute_hash(image_bytes)
             ext = os.path.splitext(filename)[1] or '.jpg'
             new_filename = f"{image_hash}{ext}"
-
-            # 保存路径
+ 
             save_path = os.path.join(product_dir, new_filename)
             logger.info(f"准备保存图片到: {save_path}")
-
-            # 保存图片
+ 
             with open(save_path, 'wb') as f:
                 f.write(image_bytes)
-
-            # 验证文件是否保存成功
+ 
             if not os.path.exists(save_path):
                 logger.error(f"文件保存失败: {save_path}")
                 raise IOError(f"文件保存失败: {save_path}")
 
             file_size = os.path.getsize(save_path)
             logger.info(f"图片保存成功: {save_path}, 大小: {file_size} bytes")
-
-            # 返回相对路径
+ 
             relative_path = os.path.join(product_code, new_filename)
             logger.info(f"返回相对路径: {relative_path}")
             return relative_path

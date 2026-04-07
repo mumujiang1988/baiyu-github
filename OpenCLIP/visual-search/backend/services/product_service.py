@@ -57,7 +57,7 @@ class ProductService:
             cursor.close()
             conn.close()
 
-    # ==================== 产品操作 ====================
+    # ==================== Product Operations ====================
 
     def upsert_product(self, product_code: str, name: str, spec: Optional[str] = None, category: Optional[str] = None):
         """创建或更新产品"""
@@ -114,7 +114,7 @@ class ProductService:
             cursor.close()
             conn.close()
 
-    # ==================== 图片操作 ====================
+    # ==================== Image Operations ====================
 
     def insert_image(self, product_code: str, image_path: str, image_hash: str, milvus_id: int, image_size: int = None):
         """插入图片记录"""
@@ -136,7 +136,7 @@ class ProductService:
         results = self._execute_query("SELECT COUNT(*) as count FROM product_image")
         return results[0]["count"] if results else 0
 
-    # ==================== 检索结果聚合 ====================
+    # ==================== Search Result Aggregation ====================
 
     def aggregate_results(self, raw_results: List[Dict], aggregation: str = "max", top_k: int = 10) -> List[Dict]:
         """聚合检索结果（按产品编码）"""
@@ -165,7 +165,7 @@ class ProductService:
         aggregated.sort(key=lambda x: x["similarity"], reverse=True)
         return aggregated[:top_k]
 
-    # ==================== 日志操作 ====================
+    # ==================== Log Operations ====================
 
     def log_search(self, query_hash: str, top_product_code: str, similarity: float, search_time_ms: int, result_count: int):
         """记录检索日志"""
