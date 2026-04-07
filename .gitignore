@@ -111,3 +111,4 @@ baiyu-web/.gitignore
 /后端备份/ruoyi-modules/ruoyi-system/target
 /target
 baiyu-ruoyi/ruoyi-modules/ruoyi-erp-api/nul
+/OpenCLIP/visual-search/backend/storage/images
