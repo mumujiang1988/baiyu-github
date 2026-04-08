@@ -61,7 +61,7 @@ INSERT INTO `erp_page_config` (
   '{
     "pageId": "purchaseinstock",
     "title": "{entityName}管理",
-    "permission": "k3:purchaseinstock:query",
+    "permission": "erp:purchaseinstock:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
     "tableName": "purchase_instock",
@@ -235,12 +235,12 @@ INSERT INTO `erp_page_config` (
   }', 
   '{
     "toolbar": [
-      {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:purchaseinstock:add", "type": "primary", "position": "left", "handler": "handleAdd"},
-      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "k3:purchaseinstock:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
-      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "k3:purchaseinstock:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
-      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "k3:purchaseinstock:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
-      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "k3:purchaseinstock:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
-      {"key": "export", "label": "导出", "icon": "Download", "permission": "k3:purchaseinstock:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
+      {"key": "add", "label": "新增", "icon": "Plus", "permission": "erp:purchaseinstock:add", "type": "primary", "position": "left", "handler": "handleAdd"},
+      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "erp:purchaseinstock:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
+      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "erp:purchaseinstock:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
+      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "erp:purchaseinstock:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
+      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "erp:purchaseinstock:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
+      {"key": "export", "label": "导出", "icon": "Download", "permission": "erp:purchaseinstock:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
       {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
     "row": []

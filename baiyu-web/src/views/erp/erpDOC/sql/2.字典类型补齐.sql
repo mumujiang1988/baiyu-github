@@ -2,152 +2,149 @@
 -- 补全 sys_dict_type 字典类型表
 -- 基于 bymaterial_dictionary 表中的业务字典分类
 -- 生成时间：2026-03-27
--- 使用雪花算法 ID (19 位数字)
--- ID 结构：41 位时间戳 + 10 位机器 ID+ 序列号
+-- 使用动态雪花算法 ID (19 位数字)
+-- ID 结构：毫秒级时间戳 (13 位) + 随机数 (6 位)
 -- =====================================================
 
--- 1. 币种字典 (2026-01-09 10:00:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890123456001, '币种', 'currency', '1', '币种列表', 'admin', '2026-01-09 10:00:00')
+USE test;
+
+-- ============================================
+-- Part 0: Pre-flight Check
+-- ============================================
+
+-- 清理临时表
+DROP TEMPORARY TABLE IF EXISTS tmp_dict_types;
+
+-- 检查数据库连接
+SELECT '========================================' AS '';
+SELECT '🔍 Checking database connection...' AS step;
+SELECT DATABASE() AS current_database;
+SELECT USER() AS `current_user`;
+SELECT VERSION() AS mysql_version;
+SELECT '========================================' AS '';
+
+-- ============================================
+-- Part 1: Utility Functions
+-- ============================================
+
+-- 雪花 ID 生成函数（与菜单脚本保持一致）
+DROP FUNCTION IF EXISTS fn_snowflake_id;
+DELIMITER $$
+CREATE FUNCTION fn_snowflake_id() RETURNS bigint
+    NOT DETERMINISTIC
+    NO SQL
+BEGIN
+    -- 使用简化版的雪花算法，生成 19 位 ID
+    -- 格式：时间戳 (13 位毫秒) + 随机数 (6 位)
+    DECLARE ts BIGINT DEFAULT UNIX_TIMESTAMP(NOW(3)) * 1000;  -- 毫秒级时间戳
+    DECLARE random_part INT DEFAULT FLOOR(RAND() * 999999) + 1;
+    
+    -- 使用时间戳 * 1000000 + 随机数，确保生成 19 位 ID
+    -- 当前毫秒时间戳约 1743897600000（13位），乘以 1000000 后约 1.74e18（19位）
+    -- BIGINT 最大值 9.22e18，完全安全
+    -- 注意：随机数范围 1-999999，理论上同一毫秒内生成 <100 个 ID 时碰撞概率 <0.5%
+    RETURN ts * 1000000 + random_part;
+END$$
+DELIMITER ;
+
+-- ============================================
+-- Part 2: Business Data Layer
+-- ============================================
+
+-- 创建临时表存储字典类型数据
+CREATE TEMPORARY TABLE IF NOT EXISTS tmp_dict_types (
+    dict_name VARCHAR(50),
+    dict_type VARCHAR(50),
+    remark VARCHAR(200),
+    order_num INT
+) ENGINE=MEMORY DEFAULT CHARSET=utf8mb4;
+
+-- 插入字典类型数据（按业务逻辑排序）
+INSERT INTO tmp_dict_types VALUES
+('币种', 'currency', '币种列表', 1),
+('付款条款', 'payment_clause', '付款条款列表', 2),
+('贸易方式', 'trade_way', '贸易方式列表', 3),
+('产品分类', 'product_category', '产品分类列表', 4),
+('客户分类', 'customer_category', '客户分类列表', 5),
+('客户分组', 'customer_grouping', '客户分组列表', 6),
+('客户来源', 'customer_source', '客户来源列表', 7),
+('单据类型', 'document_type', '单据类型列表', 8),
+('库存状态', 'inventory_status', '库存状态列表', 9),
+('发票类型', 'invoice_type', '发票类型列表', 10),
+('价格类型', 'price_type', '价格类型列表', 11),
+('产品类型', 'product_type', '产品类型列表', 12),
+('供应商分类', 'supplier_classification', '供应商分类列表', 13),
+('供应类别', 'supply_category', '供应类别列表', 14),
+('包装方式', 'manner_packing', '包装方式列表', 15),
+('汇率类型', 'exchange_type', '汇率类型列表', 16),
+('收款条款', 'collection_terms', '收款条款列表', 17),
+('订单产品分类', 'order_product_category', '订单产品分类列表', 18),
+('关税名称', 'tariff_nomenclature', '关税名称列表', 19),
+('ERP 分类属性', 'erpClsId_property', 'ERP 分类属性列表', 20),
+('销售人员', 'salespersons', '销售人员列表（包含部门、角色信息）', 21),
+('订单状态', 'order_status', '订单状态：未关闭/已关闭/业务终止', 22),
+('单据状态', 'f_document_status', '单据状态：创建/审核中/已审核/重新审核/暂存', 23),
+('客户列表', 'customers', '客户信息列表（来自 bd_customer 表）', 24),
+('物料列表', 'materials', '物料信息列表（来自 by_material 表）', 25),
+('用户列表', 'users', '用户信息列表（来自 sys_user 表）', 26),
+('供应商列表', 'suppliers', '供应商信息列表（来自 supplier 表）', 27),
+('部门列表', 'departments', '部门信息列表（来自 sys_dept 表）', 28),
+('税率列表', 'tax_rates', '税率信息列表（来自 tax_rate 表）', 29);
+
+-- ============================================
+-- Part 3: Core Logic Layer
+-- ============================================
+
+-- 开启事务
+START TRANSACTION;
+
+-- 批量插入字典类型（使用动态生成的雪花 ID）
+INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time)
+SELECT 
+    fn_snowflake_id(),
+    t.dict_name,
+    t.dict_type,
+    '1',
+    t.remark,
+    'admin',
+    NOW()
+FROM tmp_dict_types t
 ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
 
--- 2. 付款条款字典 (2026-01-09 10:01:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890234567002, '付款条款', 'payment_clause', '1', '付款条款列表', 'admin', '2026-01-09 10:01:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+-- 提交事务
+COMMIT;
 
--- 3. 贸易方式字典 (2026-01-09 10:02:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890345678003, '贸易方式', 'trade_way', '1', '贸易方式列表', 'admin', '2026-01-09 10:02:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+-- ============================================
+-- Part 4: Cleanup & Verification
+-- ============================================
 
--- 4. 产品分类字典 (2026-01-09 10:03:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890456789004, '产品分类', 'product_category', '1', '产品分类列表', 'admin', '2026-01-09 10:03:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+-- 清理临时表和函数
+DROP TEMPORARY TABLE IF EXISTS tmp_dict_types;
+DROP FUNCTION IF EXISTS fn_snowflake_id;
 
--- 5. 客户分类字典 (2026-01-09 10:04:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890567890005, '客户分类', 'customer_category', '1', '客户分类列表', 'admin', '2026-01-09 10:04:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+-- 验证结果
+SELECT '========================================' AS '';
+SELECT '✅ Dictionary Types Created Successfully!' AS message;
+SELECT '========================================' AS '';
 
--- 6. 客户分组字典 (2026-01-09 10:05:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890678901006, '客户分组', 'customer_grouping', '1', '客户分组列表', 'admin', '2026-01-09 10:05:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+SELECT '===== Statistics =====' AS section;
+SELECT 
+    COUNT(*) AS total_count,
+    SUM(CASE WHEN status = '1' THEN 1 ELSE 0 END) AS active_count,
+    GROUP_CONCAT(dict_type ORDER BY dict_id SEPARATOR ', ') AS dict_types
+FROM sys_dict_type
+WHERE dict_type IN (
+    'currency', 'payment_clause', 'trade_way', 'product_category',
+    'customer_category', 'customer_grouping', 'customer_source',
+    'document_type', 'inventory_status', 'invoice_type', 'price_type',
+    'product_type', 'supplier_classification', 'supply_category',
+    'manner_packing', 'exchange_type', 'collection_terms',
+    'order_product_category', 'tariff_nomenclature', 'erpClsId_property',
+    'salespersons', 'order_status', 'f_document_status',
+    'customers', 'materials', 'users', 'suppliers', 'departments', 'tax_rates'
+);
 
--- 7. 客户来源字典 (2026-01-09 10:06:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890789012007, '客户来源', 'customer_source', '1', '客户来源列表', 'admin', '2026-01-09 10:06:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 8. 单据类型字典 (2026-01-09 10:07:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890890123008, '单据类型', 'document_type', '1', '单据类型列表', 'admin', '2026-01-09 10:07:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 9. 库存状态字典 (2026-01-09 10:08:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567890901234009, '库存状态', 'inventory_status', '1', '库存状态列表', 'admin', '2026-01-09 10:08:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 10. 发票类型字典 (2026-01-09 10:09:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891012345010, '发票类型', 'invoice_type', '1', '发票类型列表', 'admin', '2026-01-09 10:09:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 11. 价格类型字典 (2026-01-09 10:10:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891123456011, '价格类型', 'price_type', '1', '价格类型列表', 'admin', '2026-01-09 10:10:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 12. 产品类型字典 (2026-01-09 10:11:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891234567012, '产品类型', 'product_type', '1', '产品类型列表', 'admin', '2026-01-09 10:11:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 13. 供应商分类字典 (2026-01-09 10:12:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891345678013, '供应商分类', 'supplier_classification', '1', '供应商分类列表', 'admin', '2026-01-09 10:12:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 14. 供应类别字典 (2026-01-09 10:13:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891456789014, '供应类别', 'supply_category', '1', '供应类别列表', 'admin', '2026-01-09 10:13:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 15. 包装方式字典 (2026-01-09 10:14:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891567890015, '包装方式', 'manner_packing', '1', '包装方式列表', 'admin', '2026-01-09 10:14:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 16. 汇率类型字典 (2026-01-09 10:15:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891678901016, '汇率类型', 'exchange_type', '1', '汇率类型列表', 'admin', '2026-01-09 10:15:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 17. 收款条款字典 (2026-01-09 10:16:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891789012017, '收款条款', 'collection_terms', '1', '收款条款列表', 'admin', '2026-01-09 10:16:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 18. 订单产品分类字典 (2026-01-09 10:17:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891890123018, '订单产品分类', 'order_product_category', '1', '订单产品分类列表', 'admin', '2026-01-09 10:17:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 19. 关税名称字典 (2026-01-09 10:18:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567891901234019, '关税名称', 'tariff_nomenclature', '1', '关税名称列表', 'admin', '2026-01-09 10:18:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 20. ERP 分类属性字典 (2026-01-09 10:19:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892012345020, 'ERP 分类属性', 'erpClsId_property', '1', 'ERP 分类属性列表', 'admin', '2026-01-09 10:19:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 21. 销售人员字典 (2026-01-09 10:20:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892123456021, '销售人员', 'salespersons', '1', '销售人员列表（包含部门、角色信息）', 'admin', '2026-01-09 10:20:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 22. 订单状态字典 (2026-01-09 10:21:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892234567022, '订单状态', 'order_status', '1', '订单状态：未关闭/已关闭/业务终止', 'admin', '2026-01-09 10:21:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 23. 单据状态字典 (2026-01-09 10:22:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892345678023, '单据状态', 'f_document_status', '1', '单据状态：创建/审核中/已审核/重新审核/暂存', 'admin', '2026-01-09 10:22:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 24. 客户字典 (2026-01-09 10:23:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892456789024, '客户列表', 'customers', '1', '客户信息列表（来自 bd_customer 表）', 'admin', '2026-01-09 10:23:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 25. 物料字典 (2026-01-09 10:24:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892567890025, '物料列表', 'materials', '1', '物料信息列表（来自 by_material 表）', 'admin', '2026-01-09 10:24:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 26. 用户字典 (2026-01-09 10:25:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892678901026, '用户列表', 'users', '1', '用户信息列表（来自 sys_user 表）', 'admin', '2026-01-09 10:25:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 27. 供应商字典 (2026-01-09 10:26:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892789012027, '供应商列表', 'suppliers', '1', '供应商信息列表（来自 supplier 表）', 'admin', '2026-01-09 10:26:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 28. 部门字典 (2026-01-09 10:27:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892890123028, '部门列表', 'departments', '1', '部门信息列表（来自 sys_dept 表）', 'admin', '2026-01-09 10:27:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
-
--- 29. 税率字典 (2026-01-09 10:28:00)
-INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, remark, create_by, create_time) 
-VALUES (2034567892901234029, '税率列表', 'tax_rates', '1', '税率信息列表（来自 tax_rate 表）', 'admin', '2026-01-09 10:28:00')
-ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+SELECT '========================================' AS '';
+SELECT '🎉 Script execution completed!' AS final_message;
+SELECT '========================================' AS '';
 

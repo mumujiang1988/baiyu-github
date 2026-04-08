@@ -60,7 +60,7 @@ INSERT INTO `erp_page_config` (
   '{
     "pageId": "saloutbound",
     "title": "{entityName}管理",
-    "permission": "k3:saloutbound:query",
+    "permission": "erp:saloutbound:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
     "tableName": "f_sal_outbound",
@@ -472,13 +472,13 @@ INSERT INTO `erp_page_config` (
   }', 
   '{
     "toolbar": [
-      {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:saloutbound:add", "type": "primary", "position": "left", "handler": "handleAdd"},
-      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "k3:saloutbound:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
-      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "k3:saloutbound:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
-      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "k3:saloutbound:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
-      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "k3:saloutbound:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
-      {"key": "push", "label": "下推", "icon": "Download", "permission": "k3:saloutbound:push", "type": "info", "position": "left", "disabled": "single", "handler": "handleOpenPushDialog"},
-      {"key": "export", "label": "导出", "icon": "Download", "permission": "k3:saloutbound:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
+      {"key": "add", "label": "新增", "icon": "Plus", "permission": "erp:saloutbound:add", "type": "primary", "position": "left", "handler": "handleAdd"},
+      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "erp:saloutbound:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
+      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "erp:saloutbound:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
+      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "erp:saloutbound:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
+      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "erp:saloutbound:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
+      {"key": "push", "label": "下推", "icon": "Download", "permission": "erp:saloutbound:push", "type": "info", "position": "left", "disabled": "single", "handler": "handleOpenPushDialog"},
+      {"key": "export", "label": "导出", "icon": "Download", "permission": "erp:saloutbound:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
       {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
     "row": []

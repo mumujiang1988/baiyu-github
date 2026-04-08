@@ -61,7 +61,7 @@ INSERT INTO `erp_page_config` (
   '{
     "pageId": "paymentapply",
     "title": "{entityName}管理",
-    "permission": "k3:paymentapply:query",
+    "permission": "erp:paymentapply:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
     "tableName": "f_rectunit_type",
@@ -236,12 +236,12 @@ INSERT INTO `erp_page_config` (
   }', 
   '{
     "toolbar": [
-      {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:paymentapply:add", "type": "primary", "position": "left", "handler": "handleAdd"},
-      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "k3:paymentapply:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
-      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "k3:paymentapply:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
-      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "k3:paymentapply:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
-      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "k3:paymentapply:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
-      {"key": "export", "label": "导出", "icon": "Download", "permission": "k3:paymentapply:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
+      {"key": "add", "label": "新增", "icon": "Plus", "permission": "erp:paymentapply:add", "type": "primary", "position": "left", "handler": "handleAdd"},
+      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "erp:paymentapply:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
+      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "erp:paymentapply:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
+      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "erp:paymentapply:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
+      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "erp:paymentapply:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
+      {"key": "export", "label": "导出", "icon": "Download", "permission": "erp:paymentapply:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
       {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
     "row": []

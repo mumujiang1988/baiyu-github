@@ -96,13 +96,14 @@ CREATE FUNCTION fn_snowflake_id() RETURNS bigint
     NO SQL  -- ✅ 修正：函数不访问数据库表
 BEGIN
     -- 使用简化版的雪花算法，生成 19 位 ID
-    -- 格式：时间戳 (10 位) + 毫秒 (3 位) + 随机数 (6 位)
+    -- 格式：时间戳 (13 位毫秒) + 随机数 (6 位)
     DECLARE ts BIGINT DEFAULT UNIX_TIMESTAMP(NOW(3)) * 1000;  -- 毫秒级时间戳
     DECLARE random_part INT DEFAULT FLOOR(RAND() * 999999) + 1;
     
     -- 使用时间戳 * 1000000 + 随机数，确保生成 19 位 ID
     -- 当前毫秒时间戳约 1743897600000（13位），乘以 1000000 后约 1.74e18（19位）
     -- BIGINT 最大值 9.22e18，完全安全
+    -- 注意：随机数范围 1-999999，理论上同一毫秒内生成 <100 个 ID 时碰撞概率 <0.5%
     RETURN ts * 1000000 + random_part;
 END$$
 DELIMITER ;
@@ -254,7 +255,7 @@ BEGIN
             -- 清空并重新填充临时表
             DELETE FROM tmp_business_buttons;
             
-            -- 动态插入按钮
+            -- 动态插入按钮（批量生成7个按钮ID）
             INSERT INTO tmp_business_buttons
             SELECT fn_snowflake_id(), bt.button_name, v_menu_id, bt.order_num, CONCAT(v_perm_prefix, ':', bt.button_code), '1'
             FROM tmp_button_templates bt;
@@ -263,6 +264,10 @@ BEGIN
             SELECT t.menu_id, t.menu_name, v_menu_id, t.order_num, '', '', '', 0, 0, 'F', 1, 1, t.perms, '#', 'admin', NOW(), '', NULL, ''
             FROM tmp_business_buttons t
             WHERE NOT EXISTS (SELECT 1 FROM sys_menu s WHERE BINARY s.menu_name = BINARY t.menu_name AND s.parent_id = v_menu_id);
+            
+            -- ⚠️ 关键优化：每次循环后延迟 1 毫秒，确保时间戳不同
+            -- 避免同一毫秒内生成多个 ID 导致随机数碰撞
+            DO SLEEP(0.001);
         END LOOP;
         
         CLOSE cur_modules;

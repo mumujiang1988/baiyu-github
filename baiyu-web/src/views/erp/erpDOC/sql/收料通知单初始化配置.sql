@@ -61,7 +61,7 @@ INSERT INTO `erp_page_config` (
   '{
     "pageId": "receivenotice",
     "title": "{entityName}管理",
-    "permission": "k3:receivenotice:query",
+    "permission": "erp:receivenotice:query",
     "layout": "standard",
     "apiPrefix": "/erp/engine",
     "tableName": "receive_notice",
@@ -228,12 +228,12 @@ INSERT INTO `erp_page_config` (
   }', 
   '{
     "toolbar": [
-      {"key": "add", "label": "新增", "icon": "Plus", "permission": "k3:receivenotice:add", "type": "primary", "position": "left", "handler": "handleAdd"},
-      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "k3:receivenotice:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
-      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "k3:receivenotice:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
-      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "k3:receivenotice:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
-      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "k3:receivenotice:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
-      {"key": "export", "label": "导出", "icon": "Download", "permission": "k3:receivenotice:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
+      {"key": "add", "label": "新增", "icon": "Plus", "permission": "erp:receivenotice:add", "type": "primary", "position": "left", "handler": "handleAdd"},
+      {"key": "edit", "label": "修改", "icon": "Edit", "permission": "erp:receivenotice:edit", "type": "success", "position": "left", "disabled": "single", "handler": "handleUpdate"},
+      {"key": "delete", "label": "删除", "icon": "Delete", "permission": "erp:receivenotice:remove", "type": "danger", "position": "left", "disabled": "multiple", "handler": "handleDelete", "confirm": "是否确认删除选中的 {count} 条数据？"},
+      {"key": "audit", "label": "审核", "icon": "CircleCheck", "permission": "erp:receivenotice:audit", "type": "success", "position": "left", "disabled": "multiple", "handler": "handleAudit", "confirm": "是否确认审核选中的 {count} 条数据？"},
+      {"key": "unAudit", "label": "反审核", "icon": "Close", "permission": "erp:receivenotice:unAudit", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleUnAudit", "confirm": "是否确认反审核选中的 {count} 条数据？"},
+      {"key": "export", "label": "导出", "icon": "Download", "permission": "erp:receivenotice:export", "type": "warning", "position": "left", "disabled": "multiple", "handler": "handleExport"},
       {"key": "columnSetting", "label": "列设置", "icon": "Setting", "type": "info", "position": "right", "handler": "openColumnSetting"}
     ],
     "row": []
