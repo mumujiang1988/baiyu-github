@@ -1,55 +1,69 @@
 <script setup name="ErpConfig">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import Pagination from '@/components/Pagination'
-import { getConfigTypeLabel, getConfigTypeTag, getConfigTypeOptions } from '@/constants/configTypes'
 import request from '@/utils/request'
-import ConfigSearch from './components/ConfigSearch.vue'
-import ConfigTable from './components/ConfigTable.vue'
 import JsonEditor from './components/JsonEditor.vue'
-import VisualConfigEditor from './components/VisualConfigEditor.vue'
-import { useConfigData } from './composables/useConfigData'
-import { mergeConfigFields, splitConfigFields } from './utils/configJsonUtils'
-import { verifyFieldConsistency, generateValidationReport } from './utils/fieldValidator'
 
-// Computed Properties
-const allDictsJson = computed(() => JSON.stringify(allDictsData.value, null, 2))
-const nationDictsJson = computed(() => JSON.stringify(nationDictData.value, null, 2))
+// 工具函数：统一错误处理
+function getErrorMessage(error, defaultMsg) {
+  return error.response?.data?.msg || error.message || defaultMsg
+}
 
 // State
-const {
-  loading,
-  configList,
-  total,
-  queryParams,
-  getList,
-  handleQuery,
-  resetQuery,
-  handleDelete: composableDelete,
-  loadConfigDetail,
-  handleSave: composableSave
-} = useConfigData()
-
-// 页签状态
-const activeTab = ref('config')
-const dictActiveTab = ref('all')
-
-// 字典数据
-const allDictsData = ref({})
-const nationDictData = ref([])
+const loading = ref(false)
+const configList = ref([])
+const total = ref(0)
+const queryParams = ref({
+  pageNum: 1,
+  pageSize: 10,
+  moduleCode: '',
+  configName: '',
+  configType: '',
+  status: ''
+})
 
 // Dialog 状态
 const viewDialogVisible = ref(false)
-const visualEditorVisible = ref(false)
-const validationDialogVisible = ref(false) // 验证报告对话框
-const isEditMode = ref(false)
-const currentConfig = ref({})
-const editFormData = ref({})
-const combinedConfigContent = ref('')
-const validationReport = ref('') // 验证报告 HTML
+const combinedConfigContent = ref('{}')
 
-// Methods
+// 获取配置列表
+async function getList() {
+  loading.value = true
+  try {
+    const res = await request({
+      url: '/erp/config/list',
+      method: 'get',
+      params: queryParams.value
+    })
+    configList.value = res.rows || []
+    total.value = res.total || 0
+  } catch (error) {
+    console.error('获取配置列表失败:', error)
+    ElMessage.error(getErrorMessage(error, '获取配置列表失败'))
+    configList.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
+  }
+}
 
+// 搜索
+async function handleQuery() {
+  queryParams.value.pageNum = 1
+  await getList()
+}
+
+// 重置
+function resetQuery() {
+  queryParams.value.pageNum = 1
+  queryParams.value.moduleCode = ''
+  queryParams.value.configName = ''
+  queryParams.value.configType = ''
+  queryParams.value.status = ''
+  getList()
+}
+
+// 清理缓存
 async function handleClearCache() {
   try {
     await ElMessageBox.confirm(
@@ -63,161 +77,40 @@ async function handleClearCache() {
       }
     )
     
-    const res = await request({ url: '/erp/cache/clear-all', method: 'delete' })
+    await request({ url: '/erp/cache/clear-all', method: 'delete' })
     ElMessage.success('缓存清理成功')
   } catch (error) {
     if (error !== 'cancel') {
       console.error('清理缓存失败:', error)
-      ElMessage.error('缓存清理失败：' + (error.message || '未知错误'))
+      ElMessage.error(getErrorMessage(error, '缓存清理失败'))
     }
   }
 }
 
-function handleAdd() {
-  isEditMode.value = false
-  editFormData.value = {}
-  combinedConfigContent.value = '{}'
-  currentConfig.value = {} // ✅ 重置为当前配置
-  // ✨ 使用可视化编辑器
-  visualEditorVisible.value = true
-}
-
+// 查看配置JSON
 async function handleView(row) {
-  isEditMode.value = false
   try {
-    const data = await loadConfigDetail(row.configId)
-    currentConfig.value = data
-    const merged = mergeConfigFields(data)
-    combinedConfigContent.value = JSON.stringify(merged, null, 2) 
-    visualEditorVisible.value = true
+    const res = await request({
+      url: `/erp/config/${row.configId}`,
+      method: 'get'
+    })
+    
+    if (!res.data) {
+      ElMessage.warning('配置数据为空')
+      return
+    }
+    
+    combinedConfigContent.value = JSON.stringify(res.data, null, 2)
+    viewDialogVisible.value = true
   } catch (error) {
     console.error('加载配置详情失败:', error)
-    ElMessage.error('加载配置失败：' + (error.message || '未知错误'))
-  }
-}
-
-function enterEditMode() {
-  isEditMode.value = true
-}
-
-async function handleVisualSave(configData) {
-  try {
-    const data = {
-      ...currentConfig.value,
-      ...editFormData.value,
-      ...configData
-    }
-    
-    const success = await composableSave(data, !data.configId)
-    if (success) {
-      visualEditorVisible.value = false
-      ElMessage.success('保存成功')
-      getList()
-    }
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error('保存失败：' + (error.message || '未知错误'))
-  }
-}
-
-async function handleEditSubmit() {
-  try {
-    const splitData = splitConfigFields(combinedConfigContent.value)
-    const data = {
-      ...currentConfig.value,
-      ...editFormData.value,
-      ...splitData
-    }
-    
-    const success = await composableSave(data, !data.configId)
-    if (success) {
-      ElMessage.success('保存成功')
-      viewDialogVisible.value = false
-    }
-  } catch (error) {
-    ElMessage.error('保存失败：' + (error.message || '未知错误'))
-  }
-}
-
-async function handleDelete(row) {
-  try {
-    await ElMessageBox.confirm(
-      `确认要删除配置 "${row.configName}" 吗？`,
-      '警告',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    )
-    await composableDelete(row)
-    ElMessage.success('删除成功')
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除失败:', error)
-      ElMessage.error('删除失败：' + (error.message || '未知错误'))
-    }
-  }
-}
-
-async function handleVerify(row) {
-  try {
-    const result = await verifyFieldConsistency(row.moduleCode)
-    validationReport.value = generateValidationReport(result)
-    currentConfig.value = row
-    validationDialogVisible.value = true
-  } catch (error) {
-    ElMessage.error('验证失败：' + (error.message || '未知错误'))
-  }
-}
-
-function handleCopy(row) {
-  ElMessage.info('复制功能开发中')
-}
-
-function handleExport(row) {
-  ElMessage.info('导出功能开发中')
-}
-
-async function loadAllDicts() {
-  try {
-    const [allRes, nationRes] = await Promise.all([
-      request({ url: '/erp/engine/dict/all', method: 'get' }),
-      request({ url: '/erp/engine/country/search', method: 'get', params: { keyword: '', limit: 100 } })
-    ])
-    
-    // 处理 All 字典响应
-    if (allRes.data) {
-      const data = allRes.data
-      if (data.dictTypeList && Array.isArray(data.dictTypeList)) {
-        const groupedDicts = {}
-        if (data.dictDataList && Array.isArray(data.dictDataList)) {
-          data.dictDataList.forEach(item => {
-            const type = item.type
-            if (type && !groupedDicts[type]) {
-              groupedDicts[type] = []
-            }
-            if (type) {
-              groupedDicts[type].push(item)
-            }
-          })
-        }
-        allDictsData.value = groupedDicts
-      } else {
-        allDictsData.value = data
-      }
-    }
-    
-    // 处理国家字典
-    if (nationRes.data) {
-      nationDictData.value = nationRes.data || []
-    }
-  } catch (error) {
-    console.error('加载字典失败:', error)
-    ElMessage.error('加载字典数据失败')
+    ElMessage.error(getErrorMessage(error, '加载配置失败'))
   }
 }
 
 // Lifecycle
 onMounted(() => {
   getList()
-  loadAllDicts()
 })
 </script>
 
@@ -228,12 +121,9 @@ onMounted(() => {
       <template #header>
         <div class="card-header">
           <div class="header-left">
-            <span class="title">ERP 公共配置管理</span>
+            <span class="title">ERP 配置管理 - JSON 查看器</span>
           </div>
           <div class="header-right">
-            <el-button type="primary" icon="Plus" @click="handleAdd">
-              新增配置
-            </el-button>
             <el-button type="warning" icon="Delete" @click="handleClearCache">
               清理缓存
             </el-button>
@@ -242,229 +132,183 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- 页签 -->
-      <el-tabs v-model="activeTab" class="config-tabs">
-        <!-- 页面配置 -->
-        <el-tab-pane label="页面配置" name="config">
-          <div class="tab-content">
-            <!-- 搜索表单 -->
-            <ConfigSearch
-              v-model="queryParams"
-              @query="handleQuery"
-              @reset="resetQuery"
-            />
-            
-            <!-- 表格列表 -->
-            <ConfigTable
-              :config-list="configList"
-              :loading="loading"
-              @view="handleView"
-              @delete="handleDelete"
-              @copy="handleCopy"
-              @export="handleExport"
-              @verify="handleVerify"
-            />
-            
-            <!-- 分页 -->
-            <Pagination
-              v-show="total > 0"
-              v-model:page="queryParams.pageNum"
-              v-model:limit="queryParams.pageSize"
-              :total="total"
-              @pagination="getList"
-            />
-          </div>
-        </el-tab-pane>
-
-        <!-- 字典接口 -->
-        <el-tab-pane label="字典接口" name="lowcode">
-          <div class="tab-content">
-            <el-card shadow="never" class="dict-card">
-              <template #header>
-                <div class="dict-header">
-                  <span>字典接口数据展示</span>
-                  <el-button type="primary" size="small" icon="Refresh" @click="loadAllDicts">
-                    刷新数据
-                  </el-button>
-                </div>
-              </template>
-
-              <el-tabs v-model="dictActiveTab" type="card">
-                <el-tab-pane label="All 字典接口" name="all">
-                  <div class="dict-section">
-                    <div class="dict-info">
-                      <el-tag type="info" size="small">接口：/erp/engine/dict/all</el-tag>
-                      <el-tag type="success" size="small">
-                        共 {{ Object.keys(allDictsData).length }} 个字典类型
-                      </el-tag>
-                    </div>
-                    <JsonEditor
-                      v-model="allDictsJson"
-                      readonly
-                      height="400px"
-                    />
-                  </div>
-                </el-tab-pane>
-              
-                <el-tab-pane label="国家字典" name="nation">
-                  <div class="dict-section">
-                    <div class="dict-info">
-                      <el-tag type="info" size="small">接口：/erp/engine/country/search</el-tag>
-                      <el-tag type="success" size="small">
-                        共 {{ nationDictData.length }} 条数据
-                      </el-tag>
-                    </div>
-                    <JsonEditor
-                      v-model="nationDictsJson"
-                      readonly
-                      height="400px"
-                    />
-                  </div>
-                </el-tab-pane>
-              </el-tabs>
-            </el-card>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+      <!-- 搜索表单 -->
+      <el-form :model="queryParams" :inline="true" label-width="80px" class="search-form">
+        <el-row :gutter="12">
+          <el-col :span="6">
+            <el-form-item label="模块编码">
+              <el-input
+                v-model="queryParams.moduleCode"
+                placeholder="请输入模块编码"
+                clearable
+                style="width: 100%"
+                @keyup.enter="handleQuery"
+              />
+            </el-form-item>
+          </el-col>
+          
+          <el-col :span="6">
+            <el-form-item label="配置名称">
+              <el-input
+                v-model="queryParams.configName"
+                placeholder="请输入配置名称"
+                clearable
+                style="width: 100%"
+                @keyup.enter="handleQuery"
+              />
+            </el-form-item>
+          </el-col>
+          
+          <el-col :span="6">
+            <el-form-item label="配置类型">
+              <el-select
+                v-model="queryParams.configType"
+                placeholder="请选择配置类型"
+                clearable
+                style="width: 100%"
+              >
+                <el-option label="页面配置" value="PAGE" />
+                <el-option label="表单配置" value="FORM" />
+                <el-option label="表格配置" value="TABLE" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          
+          <el-col :span="6">
+            <el-form-item label="状态">
+              <el-select
+                v-model="queryParams.status"
+                placeholder="请选择状态"
+                clearable
+                style="width: 100%"
+              >
+                <el-option label="正常" value="1" />
+                <el-option label="停用" value="0" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row>
+          <el-col :span="24" style="text-align: right;">
+            <el-button type="primary" icon="Search" @click="handleQuery">
+              搜索
+            </el-button>
+            <el-button icon="Refresh" @click="resetQuery">
+              重置
+            </el-button>
+          </el-col>
+        </el-row>
+      </el-form>
+      
+      <!-- 配置列表表格 -->
+      <el-table
+        v-loading="loading"
+        :data="configList"
+        border
+        stripe
+        highlight-current-row
+        class="config-table"
+      >
+        <el-table-column label="序号" type="index" width="60" align="center" />
+        
+        <el-table-column
+          prop="configName"
+          label="配置名称"
+          min-width="200"
+          :show-overflow-tooltip="true"
+        />
+        
+        <el-table-column
+          prop="moduleCode"
+          label="模块编码"
+          width="150"
+        />
+        
+        <el-table-column
+          prop="configType"
+          label="配置类型"
+          width="120"
+          align="center"
+        />
+        
+        <el-table-column
+          prop="version"
+          label="版本号"
+          width="80"
+          align="center"
+        />
+        
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="70"
+          align="center"
+        >
+          <template #default="scope">
+            <el-tag :type="scope.row.status === '1' ? 'success' : 'danger'">
+              {{ scope.row.status === '1' ? '正常' : '停用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        
+        <el-table-column
+          prop="updateTime"
+          label="更新时间"
+          width="160"
+        />
+        
+        <el-table-column
+          label="操作"
+          width="120"
+          fixed="right"
+          align="center"
+        >
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              icon="View"
+              @click="handleView(scope.row)"
+            >
+              查看JSON
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <!-- 分页 -->
+      <el-pagination
+        v-show="total > 0"
+        v-model:current-page="queryParams.pageNum"
+        v-model:page-size="queryParams.pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="getList"
+        @current-change="getList"
+        style="margin-top: 16px; justify-content: flex-end;"
+      />
     </el-card>
 
-    <!-- 配置查看对话框 -->
+    <!-- 配置查看对话框 - 只显示JSON -->
     <el-dialog
       v-model="viewDialogVisible"
-      :title="isEditMode ? '编辑配置' : '查看配置'"
+      title="配置JSON数据"
       width="90%"
       top="5vh"
       class="config-view-dialog"
     >
       <JsonEditor
         v-model="combinedConfigContent"
-        :readonly="!isEditMode"
-        height="calc(100vh - 400px)"
-        :autofocus="isEditMode"
+        readonly
+        height="calc(100vh - 300px)"
       />
       
       <template #footer>
-        <div v-if="!isEditMode">
-          <el-button @click="viewDialogVisible = false">关闭</el-button>
-          <el-button type="primary" @click="enterEditMode">编辑配置</el-button>
-        </div>
-        <div v-else>
-          <el-button type="primary" @click="handleEditSubmit">保存配置</el-button>
-          <el-button @click="viewDialogVisible = false">取消</el-button>
-        </div>
+        <el-button @click="viewDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
-
-    <!-- 可视化编辑器对话框 -->
-    <el-dialog
-      v-model="visualEditorVisible"
-      :title="currentConfig?.configId ? '编辑配置' : '新增配置'"
-      width="95%"
-      top="2vh"
-      class="visual-editor-dialog"
-      :close-on-click-modal="false"
-    >
-      <VisualConfigEditor
-        :config-id="currentConfig?.configId"
-        :initial-data="currentConfig"
-        @save="handleVisualSave"
-        @cancel="visualEditorVisible = false"
-      />
-    </el-dialog>
-
-    <!-- 字段验证报告对话框 -->
-    <el-dialog
-      v-model="validationDialogVisible"
-      title="字段一致性验证报告"
-      width="80%"
-      top="5vh"
-      class="validation-dialog"
-    >
-      <div v-html="validationReport" class="validation-report"></div>
-      
-      <template #footer>
-        <el-button type="primary" @click="validationDialogVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 历史对话框（待实现） -->
-    <!-- TODO: 当实现历史功能时，取消下面的注释 -->
-    <!-- 
-    <el-dialog
-      v-model="historyDialogVisible"
-      title="配置历史版本"
-      width="90%"
-      top="5vh"
-      :close-on-click-modal="false"
-    >
-      <el-alert
-        title="当前配置"
-        type="info"
-        :closable="false"
-        show-icon
-        class="mb-4"
-      >
-        <template #default>
-          <el-descriptions :column="3" size="small">
-            <el-descriptions-item label="配置名称">
-              {{ currentHistoryConfig.configName }}
-            </el-descriptions-item>
-            <el-descriptions-item label="模块编码">
-              {{ currentHistoryConfig.moduleCode }}
-            </el-descriptions-item>
-            <el-descriptions-item label="当前版本">
-              <el-tag size="small">v{{ currentHistoryConfig.version }}</el-tag>
-            </el-descriptions-item>
-          </el-descriptions>
-        </template>
-      </el-alert>
-
-      <el-table
-        v-loading="historyLoading"
-        :data="versionList"
-        border
-        stripe
-        highlight-current-row
-      >
-        <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column prop="version" label="版本号" width="100" align="center">
-          <template #default="scope">
-            <el-tag :type="scope.row.version === currentHistoryConfig.version ? 'success' : 'info'">
-              v{{ scope.row.version }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="configContent" label="配置内容" min-width="400" :show-overflow-tooltip="true">
-          <template #default="scope">
-            <el-button link type="primary" @click="viewVersion(scope.row)">
-              查看
-            </el-button>
-          </template>
-        </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" width="160" />
-        <el-table-column prop="updateBy" label="更新人" width="100" />
-        <el-table-column label="操作" width="150" align="center" fixed="right">
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              icon="Clock"
-              :disabled="scope.row.version === currentHistoryConfig.version"
-              @click="rollbackVersion(scope.row)"
-            >
-              回滚
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="historyDialogVisible = false">关闭</el-button>
-        </div>
-      </template>
-    </el-dialog>
-    -->
   </div>
 </template>
 
@@ -492,55 +336,47 @@ onMounted(() => {
   }
 }
 
-.config-tabs {
-  margin-top: 16px;
-}
-
-.tab-content {
-  min-height: 400px;
-}
-
-/* 字典卡片样式 */
-.dict-card {
-  .dict-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.search-form {
+  margin-bottom: 16px;
   
-  .dict-section {
-    padding: 16px 0;
-  }
-  
-  .dict-info {
+  :deep(.el-form-item) {
+    margin-right: 0;
     margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  }
+  
+  :deep(.el-form-item__label) {
+    font-size: 13px;
+  }
+  
+  :deep(.el-input__wrapper),
+  :deep(.el-select-wrapper) {
+    height: 32px;
+    font-size: 13px;
+  }
+  
+  :deep(.el-button) {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+.config-table {
+  :deep(.el-table__header) {
+    th {
+      background-color: var(--el-fill-color-light);
+      color: var(--el-text-color-primary);
+      font-weight: 500;
+    }
+  }
+  
+  :deep(.el-table__row:hover) {
+    background-color: var(--el-fill-color-lighter);
   }
 }
 
 .config-view-dialog {
   :deep(.el-dialog__header) {
     padding-bottom: 12px;
-  }
-}
-
-.visual-editor-dialog {
-  :deep(.el-dialog__body) {
-    padding: 0;
-    height: calc(100vh - 120px);
-    overflow: hidden;
-  }
-}
-
-.validation-dialog {
-  .validation-report {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: 16px;
-    background: #f5f7fa;
-    border-radius: 4px;
   }
 }
 </style>
