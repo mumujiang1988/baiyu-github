@@ -7,8 +7,6 @@
         <id property="id" column="id"/>
         <result property="deliveryNoticeId" column="delivery_notice_id"/>
         <result property="deliveryNoticeNo" column="delivery_notice_no"/>
-        <result property="FID" column="FID"/>
-        <result property="FEntryID" column="FEntryID"/>
         <result property="FMaterialID" column="FMaterialID"/>
         <result property="FMaterialName" column="FMaterialName"/>
         <result property="FMateriaModel" column="FMateriaModel"/>
@@ -88,8 +86,6 @@
         INSERT INTO delivery_notice_entry (
             delivery_notice_id,
             delivery_notice_no,
-            FID,
-            FEntryID,
             FMaterialID,
             FMaterialName,
             FMateriaModel,
@@ -158,15 +154,10 @@
             F_cty_BaseProperty,
             Frkshrq,
             Fckshrq,
-            F_BZFS,
-            created_by,
-            created_at,
-            updated_at
+            F_BZFS
         ) VALUES (
             #{deliveryNoticeId},
             #{deliveryNoticeNo},
-            #{FID},
-            #{FEntryID},
             #{FMaterialID},
             #{FMaterialName},
             #{FMateriaModel},
@@ -235,11 +226,7 @@
             #{F_cty_BaseProperty},
             #{Frkshrq},
             #{Fckshrq},
-            #{F_BZFS},
-            #{createdBy},
-            #{createdAt},
-            #{updatedAt}
-        )
+            #{F_BZFS}
     </insert>
 
     <!-- 批量插入 -->
@@ -247,7 +234,6 @@
         INSERT INTO delivery_notice_entry (
             delivery_notice_id,
             delivery_notice_no,
-            FEntryID,
             FMaterialID,
             FMaterialName,
             FMateriaModel,
@@ -316,16 +302,12 @@
             F_cty_BaseProperty,
             Frkshrq,
             Fckshrq,
-            F_BZFS,
-            created_by,
-            created_at,
-            updated_at
+            F_BZFS
         ) VALUES
         <foreach collection="entries" item="entry" separator=",">
             (
                 #{entry.deliveryNoticeId},
                 #{entry.deliveryNoticeNo},
-                #{entry.FEntryID},
                 #{entry.FMaterialID},
                 #{entry.FMaterialName},
                 #{entry.FMateriaModel},
@@ -394,22 +376,100 @@
                 #{entry.F_cty_BaseProperty},
                 #{entry.Frkshrq},
                 #{entry.Fckshrq},
-                #{entry.F_BZFS},
-                #{entry.createdBy},
-                #{entry.createdAt},
-                #{entry.updatedAt}
+                #{entry.F_BZFS}
             )
         </foreach>
     </insert>
 
     <!-- 根据主表 ID 查询明细 -->
     <select id="selectByDeliveryNoticeId" resultMap="DeliveryNoticeEntryResult">
-        SELECT * FROM delivery_notice_entry WHERE delivery_notice_id = #{deliveryNoticeId} ORDER BY FEntryID
+        SELECT * FROM delivery_notice_entry WHERE delivery_notice_id = #{deliveryNoticeId} and FMaterialID = #{fmaterialId}
     </select>
 
     <!-- 根据主表单据编号查询明细 -->
     <select id="selectByDeliveryNoticeNo" resultMap="DeliveryNoticeEntryResult">
-        SELECT * FROM delivery_notice_entry WHERE delivery_notice_no = #{deliveryNoticeNo} ORDER BY FEntryID
+        SELECT
+            dene.delivery_notice_no,
+            bym.number as FMaterialID,
+            dene.FMaterialName,
+            dene.FMateriaModel,
+            dene.FMateriaType,
+            bymate.name as FUnitID,
+            dene.FQty,
+            bl.name as  FStockID,
+            dene.FNoteEntry,
+            bdymate.name as FBaseUnitID,
+            dene.FBaseUnitQty,
+            dene.FDeliveryLoc,
+            dene.FDeliveryLAddress,
+            dene.FOrderNo,
+            dene.FOrderSeq,
+            dene.FCustMatID,
+            dene.FLot,
+            dene.FIsFree,
+            dene.FCustMatName,
+            dene.FRemainOutQty,
+            bdl.name as FStockStatusId,
+            dene.FPriceUnitQty,
+            dene.FPrice,
+            dene.FTaxPrice,
+            dene.FTaxCombination,
+            dene.FEntryTaxRate,
+            dene.FPriceCoefficient,
+            dene.FSysPrice,
+            dene.FLimitDownPrice,
+            dene.FBefDisAmt,
+            dene.FBefDisAllAmt,
+            dene.FDiscountRate,
+            dene.F_ora_Decimal,
+            dene.F_ora_Decimal1,
+            dene.F_c,
+            dene.F_k,
+            dene.F_g,
+            dene.F_tj,
+            dene.F_mz,
+            dene.F_jz,
+            dene.F_mzz,
+            dene.F_xs,
+            dene.F_zxs,
+            dene.F_cgzj,
+            dene.F_zjzj,
+            dene.F_kpdj,
+            dene.F_kpzj,
+            dene.F_zwbgpm,
+            dene.F_ywbgpm,
+            dene.F_jzz,
+            dene.F_jcsj,
+            dene.F_khhh,
+            dene.F_sfbg,
+            dene.F_ddhsdj,
+            dene.F_tsl,
+            dene.F_bgdw,
+            dene.F_tcblNEW,
+            dene.F_BCFYNEW,
+            dene.F_GLBCFY,
+            dene.F_ffyq,
+            dene.Fddshrq,
+            dene.Fxsddh,
+            dene.Fxsddhh,
+            dene.Fbzgctg,
+            dene.Fypd,
+            dene.Fykc,
+            dene.F_cty_BaseProperty,
+            dene.Frkshrq,
+            dene.Fckshrq,
+            dene.F_BZFS,
+            dene.created_by,
+            dene.created_at,
+            dene.updated_at
+        FROM
+            delivery_notice_entry dene
+                LEFT JOIN by_material bym ON dene.FMaterialID = bym.k3_id
+                LEFT JOIN bymaterial_dictionary bymate ON dene.FUnitID = bymate.kingdee and bymate.category='unit'
+                LEFT JOIN bymaterial_dictionary bdymate ON dene.FBaseUnitID = bdymate.kingdee and bdymate.category='unit'
+                LEFT JOIN bymaterial_dictionary bl ON dene.FStockID = bl.kingdee and bl.category='warehouse'
+                LEFT JOIN bymaterial_dictionary bdl ON dene.FStockStatusId = bdl.kingdee and bdl.category='inventory_status'
+        WHERE delivery_notice_no = #{deliveryNoticeNo}
     </select>
 
     <!-- 根据主表 ID 删除明细 -->
@@ -445,7 +505,87 @@
 
     <!-- 根据物料编码查询 -->
     <select id="selectByMaterialId" resultMap="DeliveryNoticeEntryResult">
-        SELECT * FROM delivery_notice_entry WHERE FMaterialID = #{materialId} LIMIT 1
+        SELECT
+            dene.delivery_notice_no,
+            bym.number as FMaterialID,
+            dene.FMaterialName,
+            dene.FMateriaModel,
+            dene.FMateriaType,
+            bymate.name as FUnitID,
+            dene.FQty,
+            bl.name as  FStockID,
+            dene.FNoteEntry,
+            bdymate.name as FBaseUnitID,
+            dene.FBaseUnitQty,
+            dene.FDeliveryLoc,
+            dene.FDeliveryLAddress,
+            dene.FOrderNo,
+            dene.FOrderSeq,
+            dene.FCustMatID,
+            dene.FLot,
+            dene.FIsFree,
+            dene.FCustMatName,
+            dene.FRemainOutQty,
+            bdl.name as FStockStatusId,
+            dene.FPriceUnitQty,
+            dene.FPrice,
+            dene.FTaxPrice,
+            dene.FTaxCombination,
+            dene.FEntryTaxRate,
+            dene.FPriceCoefficient,
+            dene.FSysPrice,
+            dene.FLimitDownPrice,
+            dene.FBefDisAmt,
+            dene.FBefDisAllAmt,
+            dene.FDiscountRate,
+            dene.F_ora_Decimal,
+            dene.F_ora_Decimal1,
+            dene.F_c,
+            dene.F_k,
+            dene.F_g,
+            dene.F_tj,
+            dene.F_mz,
+            dene.F_jz,
+            dene.F_mzz,
+            dene.F_xs,
+            dene.F_zxs,
+            dene.F_cgzj,
+            dene.F_zjzj,
+            dene.F_kpdj,
+            dene.F_kpzj,
+            dene.F_zwbgpm,
+            dene.F_ywbgpm,
+            dene.F_jzz,
+            dene.F_jcsj,
+            dene.F_khhh,
+            dene.F_sfbg,
+            dene.F_ddhsdj,
+            dene.F_tsl,
+            dene.F_bgdw,
+            dene.F_tcblNEW,
+            dene.F_BCFYNEW,
+            dene.F_GLBCFY,
+            dene.F_ffyq,
+            dene.Fddshrq,
+            dene.Fxsddh,
+            dene.Fxsddhh,
+            dene.Fbzgctg,
+            dene.Fypd,
+            dene.Fykc,
+            dene.F_cty_BaseProperty,
+            dene.Frkshrq,
+            dene.Fckshrq,
+            dene.F_BZFS,
+            dene.created_by,
+            dene.created_at,
+            dene.updated_at
+        FROM
+            delivery_notice_entry dene
+                LEFT JOIN by_material bym ON dene.FMaterialID = bym.k3_id
+                LEFT JOIN bymaterial_dictionary bymate ON dene.FUnitID = bymate.kingdee and bymate.category='unit'
+                LEFT JOIN bymaterial_dictionary bdymate ON dene.FBaseUnitID = bdymate.kingdee and bdymate.category='unit'
+                LEFT JOIN bymaterial_dictionary bl ON dene.FStockID = bl.kingdee and bl.category='warehouse'
+                LEFT JOIN bymaterial_dictionary bdl ON dene.FStockStatusId = bdl.kingdee and bdl.category='inventory_status' WHERE FMaterialID = #{materialId} LIMIT 1
     </select>
 
 </mapper>

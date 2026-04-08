@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.RectunitDetailMapper">
+    <select id="selectByEntryId" resultType="com.ruoyi.business.k3.domain.entity.RectunitDetail">
+        SELECT
+            id,f_entry_id
+        FROM f_rectunit_detail
+        WHERE f_entry_id = #{fentryId}
+    </select>
+</mapper>

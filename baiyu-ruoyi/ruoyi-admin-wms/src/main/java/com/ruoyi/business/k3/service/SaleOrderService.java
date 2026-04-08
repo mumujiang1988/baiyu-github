@@ -3,7 +3,10 @@ package com.ruoyi.business.k3.service;
 import com.ruoyi.business.dto.CountryOrderDistributionDTO;
 import com.ruoyi.business.dto.SalesOrderDTo;
 import com.ruoyi.business.dto.SalesRankingDTO;
+import com.ruoyi.business.entity.PriceList;
 import com.ruoyi.business.entity.SaleOrder;
+import com.ruoyi.business.k3.domain.bo.PriceListBo;
+import com.ruoyi.business.k3.domain.bo.SaleOrderBo;
 import com.ruoyi.business.util.Result;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
@@ -37,7 +40,7 @@ public interface SaleOrderService {
      * @param pageQuery 分页参数
      * @return 分页结果
      */
-    TableDataInfo<SaleOrder> selectPageSaleOrder(SaleOrder saleOrder, PageQuery pageQuery);
+    TableDataInfo<SaleOrder> selectPageSaleOrder(SaleOrderBo saleOrder, PageQuery pageQuery);
 
     /**
      * 根据ID查询销售订单

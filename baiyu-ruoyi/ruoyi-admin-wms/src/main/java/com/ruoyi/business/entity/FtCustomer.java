@@ -1,20 +1,24 @@
 package com.ruoyi.business.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 富通系统客户实体
  */
 @Data
-public class FtCustomer {
+@NoArgsConstructor
+@TableName("ft_customer")
+public class FtCustomer{
 
     /**
      * 客户ID
      */
-    private String id;
+    @TableField("id")
+    private Long id;
 
     /**
      * 客户编码
@@ -22,9 +26,9 @@ public class FtCustomer {
     private String code;
 
     /**
-     * 客户名称
+     * 客户类型
      */
-    private String name;
+    private String type;
 
     /**
      * 客户简称
@@ -32,9 +36,23 @@ public class FtCustomer {
     private String shortName;
 
     /**
-     * 客户类型
+     * 客户名称
      */
-    private String type;
+    private String name;
+    /**
+     * 国家
+     * */
+    private String region;
+
+    /**
+     * 主营产品
+     * */
+    private String mainProduct;
+
+    /**
+     * 客户等级
+     * */
+    private String grade;
 
     /**
      * 客户来源
@@ -42,24 +60,14 @@ public class FtCustomer {
     private String source;
 
     /**
-     * 业务员名称
-     */
-    private String operator;
+     * 业务类型
+     * */
+    private String businessType;
 
     /**
-     * 邮箱地址
-     */
-    private String email;
-
-    /**
-     * 创建时间
-     */
-    private String createTime;
-
-    /**
-     * 修改时间
-     */
-    private String updateTime;
+     * 联系地址
+     * */
+     private String address;
 
     /**
      * 审批状态 0:草稿 3:审批完成
@@ -82,14 +90,43 @@ public class FtCustomer {
     private String extId;
 
     /**
-     * 自定义字段数据
+     * 客户联系人信息
+     * */
+    @TableField(exist = false)
+    private List<FtContact> contactList;
+
+    /**
+     * 客户银行信息
+     * */
+    @TableField(exist = false)
+    private List<Ftbank> bankList;
+
+    /**
+     * 客户自定义字段信息
      */
-    private Map<String, Object> customizeFields;
+    @TableField(exist = false)
+    private List<CustomerCustomize> customerCustomizeList;
 
     /**
      * 系统字段数据
      */
-    private Map<String, Object> baseFields;
+    @TableField(exist = false)
+    private List<BaseField> baseFieldList;
+
+    /**
+     * 业务员名称
+     */
+    private String operatorName;
+
+    /**
+     * 创建时间
+     */
+    private String createTime;
+
+    /**
+     * 修改时间
+     */
+    private String updateTime;
 
     /**
      * 删除标记

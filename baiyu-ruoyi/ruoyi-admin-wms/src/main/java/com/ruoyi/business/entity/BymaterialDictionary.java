@@ -50,12 +50,6 @@ public class BymaterialDictionary {
     //采购价目
     private String FCurrencyID;
 
-    //物料编码
-    private String FMaterialId;
-
-    //物料名称
-    private String FMaterialName;
-
     //计价单位
     private String FUnitID;
 

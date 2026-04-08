@@ -29,11 +29,6 @@
       <artifactId>ruoyi-common-excel</artifactId>
     </dependency>
     <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.ruoyi</groupId>
       <artifactId>ruoyi-common-log</artifactId>
     </dependency>

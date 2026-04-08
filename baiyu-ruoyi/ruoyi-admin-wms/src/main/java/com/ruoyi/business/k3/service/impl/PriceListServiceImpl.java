@@ -3,18 +3,17 @@ package com.ruoyi.business.k3.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 
 
 import com.ruoyi.business.Component.K3FormProcessorFactory;
-import com.ruoyi.business.Component.PriceListFormProcessor;
-import com.lark.oapi.service.vc.v1.model.Material;
 import com.ruoyi.business.entity.Bymaterial;
 import com.ruoyi.business.entity.PriceList;
 import com.ruoyi.business.entity.PriceListEntry;
 
+import com.ruoyi.business.entity.Supplier;
 import com.ruoyi.business.feishu.config.BatchGetEmployeeConfig;
 import com.ruoyi.business.k3.config.AbstractK3FormProcessor;
 import com.ruoyi.business.k3.config.k3config;
@@ -29,14 +28,19 @@ import com.ruoyi.business.util.Result;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
+import com.ruoyi.common.satoken.utils.LoginHelper;
+import com.ruoyi.system.domain.entity.SysUser;
+import com.ruoyi.system.mapper.SysUserMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +68,9 @@ public class PriceListServiceImpl implements PriceListService {
     @Resource
     private K3FormProcessorFactory k3FormProcessorFactory;
 
+    @Autowired
+    private SysUserMapper sysUserMapper;
+
 
     @Override
     public void syncPriceList(List<List<Object>> PriceLarsList) {
@@ -72,16 +79,17 @@ public class PriceListServiceImpl implements PriceListService {
             PriceList contactBase = new PriceList();
 
             contactBase.setPriceListId(Long.valueOf(list.get(0) != null ? list.get(0).toString() : null));
-            contactBase.setFName(list.get(1) != null ? list.get(1).toString() : null);
-            contactBase.setFNumber(list.get(2) != null ? list.get(2).toString() : null);
-            contactBase.setFDescription(list.get(3) != null ? list.get(3).toString() : null);
-            contactBase.setFCurrencyID(list.get(4) != null ? list.get(4).toString() : null);
-            contactBase.setFSupplierID(list.get(5) != null ? list.get(5).toString() : null);
-            contactBase.setFGYSLB(list.get(6) != null ? list.get(6).toString() : null);
-            contactBase.setFPricer(list.get(7) != null ? list.get(7).toString() : null);
-            contactBase.setFPriceObject(list.get(8) != null ? list.get(8).toString() : null);
-            contactBase.setFPriceType(list.get(9) != null ? list.get(9).toString() : null);
-            contactBase.setCreatedBy(list.get(10) != null ? list.get(10).toString() : null);
+            contactBase.setFDocumentStatus(list.get(1) != null ? list.get(1).toString() : null);
+            contactBase.setFName(list.get(2) != null ? list.get(2).toString() : null);
+            contactBase.setFNumber(list.get(3) != null ? list.get(3).toString() : null);
+            contactBase.setFDescription(list.get(4) != null ? list.get(4).toString() : null);
+            contactBase.setFCurrencyID(list.get(5) != null ? list.get(5).toString() : null);
+            contactBase.setFSupplierID(list.get(6) != null ? list.get(6).toString() : null);
+            contactBase.setFGYSLB(list.get(7) != null ? list.get(7).toString() : null);
+            contactBase.setFPricer(list.get(8) != null ? list.get(8).toString() : null);
+            contactBase.setFPriceObject(list.get(9) != null ? list.get(9).toString() : null);
+            contactBase.setFPriceType(list.get(10) != null ? list.get(10).toString() : null);
+            contactBase.setCreatedBy(list.get(11) != null ? list.get(11).toString() : null);
 
             PriceList result =   priceListMapper.selectByNumber(contactBase.getFNumber());
             if (result != null) {
@@ -137,9 +145,19 @@ public class PriceListServiceImpl implements PriceListService {
             priceParticulars.setFcpzlyq(objectList.get(34) != null ? objectList.get(34).toString() : null);
             priceParticulars.setFQDL(Integer.valueOf(objectList.get(35) != null ? objectList.get(35).toString() : null));
 
-            PriceListEntry result =   priceListEntryMapper.selectMaterialId(priceParticulars.getFMaterialId());
-            if (result != null) {
-                // 已存在 → 更新
+            // 校验必填参数，避免查询返回多条记录
+            String materialId = priceParticulars.getFMaterialId();
+            String priceListNumber = priceParticulars.getPriceListNumber();
+
+            if (materialId == null || materialId.isEmpty() || priceListNumber == null || priceListNumber.isEmpty()) {
+                log.warn("物料编码或价目表编号为空，跳过同步：materialId={}, priceListNumber={}", materialId, priceListNumber);
+                continue;
+            }
+
+            // 查询是否存在（使用 List 接收，避免 TooManyResultsException）
+            List<PriceListEntry> existList = priceListEntryMapper.selectByPriceListIdAndMaterialId(materialId, priceListNumber);
+            if (existList != null && !existList.isEmpty()) {
+                // 已存在 → 更新（取第一条）
                 priceListEntryMapper.updateEntry(priceParticulars);
             } else {
                 // 不存在 → 新增
@@ -189,7 +207,54 @@ public class PriceListServiceImpl implements PriceListService {
                     return Result.error("编码 " + priceList.getFNumber() + " 已存在");
                 }
             }
+            //新增采购价目先查看供应商是否存在如果存在不允许新增
+            if (priceList.getFSupplierID() != null && !priceList.getFSupplierID().trim().isEmpty()){
+                //新增采购价目先查看供应商是否存在如果存在不允许新增
+                PriceListBo price = new PriceListBo();
+                price.setFSupplierID(priceList.getFSupplierID());
+                List<PriceList> list = priceListMapper.selectPriceList(this.buildQueryWrapper(price));
+                if (list.size() > 0){
+                    return Result.error("供应商存在不允许新增");
+                }
+                //获取当前用户ID
+                Long userId = LoginHelper.getUserId();
+                //通过userId查询数据库获取当前用户
+                SysUser user = sysUserMapper.selectById(userId);
+                if(user.getStaffId() != null && !user.getStaffId().trim().isEmpty()){
+                    priceList.setCreatedBy(user.getStaffId());
+                }
 
+            }
+            // 6. 使用工厂模式将采购价目表数据推送到金蝶系统
+            log.info("开始推送采购价目表到金蝶系统，价目表编号：{}", priceList.getFNumber());
+
+            AbstractK3FormProcessor<Object> processor = k3FormProcessorFactory.getProcessor("PUR_PriceCategory");
+            processor.processForm(null, priceList);
+            Result pushResult = processor.processForm(null, priceList);
+            if (pushResult.isEmpty()||!pushResult.isSuccess()){
+                log.error("物料推送金蝶失败: " + pushResult);
+                return Result.error("物料推送金蝶失败: ");
+            }
+            if (pushResult.isSuccess()) {
+                log.info("采购价目表推送金蝶成功，价目表编号：{}", priceList.getFNumber());
+
+                // 推送成功后发送飞书通知
+                Map<String, String> fields = new HashMap<>();
+                fields.put("采购价目名称", priceList.getFName());
+                fields.put("采购价目编码", priceList.getFNumber());
+                fields.put("提交人", priceList.getCreatedBy());
+
+                batchGetEmployeeConfig.sendCommonPushCard(
+                    "采购价目表推送",
+                    fields,
+                    "http://113.46.194.126/k3cloud",
+                    "打开金蝶系统"
+                );
+            } else {
+                log.warn("采购价目表推送金蝶失败，价目表编号：{}，原因：{}",
+                    priceList.getFNumber());
+            }
+            //新增采购价目主表
             int result = priceListMapper.insertPriceList(priceList);
             if (result <= 0) {
                 return Result.error("价目表保存失败");
@@ -222,41 +287,30 @@ public class PriceListServiceImpl implements PriceListService {
                         return Result.error("包装说明不能为空");
                     }
 
+                    //查询物料
+                    if(entry.getFMaterialId() != null && !entry.getFMaterialId().trim().isEmpty()){
+                        String number = entry.getFMaterialId();
+                        Bymaterial material = materialMapper.selectByNumber(number);
+                        if (material != null){
+                            entry.setFMaterialId(material.getK3Id());
+                        }
+                    }
+
+                    //将最近调价日期转为string类型
+                    if (entry.getFRECENTDATE() != null && !entry.getFRECENTDATE().trim().isEmpty()){
+                        String dateStr = entry.getFRECENTDATE();
+                        Instant instant = Instant.parse(dateStr);
+                        // 转换为系统默认时区的LocalDate
+                        LocalDate date = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+                        entry.setFRECENTDATE(date.toString());
+                    }
                     entryList.add(entry);
                 }
 
                 // 批量插入明细
                 priceListEntryMapper.batchInsert(entryList);
 
-                // 6. 使用工厂模式将采购价目表数据推送到金蝶系统
-                    log.info("开始推送采购价目表到金蝶系统，价目表编号：{}", priceList.getFNumber());
 
-                    AbstractK3FormProcessor<Object> processor = k3FormProcessorFactory.getProcessor("PUR_PriceCategory");
-                    processor.processForm(null, priceList);
-                    Result pushResult = processor.processForm(null, priceList);
-                    if (pushResult.isEmpty()||!pushResult.isSuccess()){
-                        log.error("物料推送金蝶失败: " + pushResult);
-                        return Result.error("物料推送金蝶失败: ");
-                    }
-                    if (pushResult.isSuccess()) {
-                        log.info("采购价目表推送金蝶成功，价目表编号：{}", priceList.getFNumber());
-
-                        // 推送成功后发送飞书通知
-                        Map<String, String> fields = new HashMap<>();
-                        fields.put("采购价目名称", priceList.getFName());
-                        fields.put("采购价目编码", priceList.getFNumber());
-                        fields.put("提交人", priceList.getCreatedBy());
-
-                        batchGetEmployeeConfig.sendCommonPushCard(
-                            "采购价目表推送",
-                            fields,
-                            "http://113.46.194.126/k3cloud",
-                            "打开金蝶系统"
-                        );
-                    } else {
-                        log.warn("采购价目表推送金蝶失败，价目表编号：{}，原因：{}",
-                            priceList.getFNumber());
-                    }
             }
 
             return Result.success("价目表保存成功", priceList);
@@ -401,6 +455,9 @@ public class PriceListServiceImpl implements PriceListService {
                     .like(StringUtils.isNotBlank(priceList.getFSupplierID()), "sp.name",priceList.getFSupplierID())
                     .like(StringUtils.isNotBlank(priceList.getFMaterialId()), "b.number",priceList.getFMaterialId())
                     .like(StringUtils.isNotBlank(priceList.getFMaterialName()), "ple.FMaterialName",priceList.getFMaterialName())
+                    .eq(StringUtils.isNotBlank(priceList.getFDocumentStatus()), "pl.FDocumentStatus", priceList.getFDocumentStatus())
+                    .groupBy("pl.fnumber","pl.FName","sp.NAME","b.number","ple.FMaterialName","pl.priceListId","pl.FPriceType","pl.FCurrencyID","pl.FDocumentStatus",
+                    "pl.FPriceObject","pl.created_at")
                     .orderByDesc("pl.created_at");
         return wrapper;
     }
@@ -424,8 +481,8 @@ public class PriceListServiceImpl implements PriceListService {
             syncPriceList(priceListData);
 
             // 2. 从金蝶获取采购价目明细表数据
-            List<List<Object>> priceListEntryData = k3configks.PriceParticularsList();
-            syncPriceListEntry(priceListEntryData);
+//            List<List<Object>> priceListEntryData = k3configks.PriceParticularsList();
+//            syncPriceListEntry(priceListEntryData);
 
             return Result.success("从金蝶系统同步采购价目表数据成功");
         } catch (Exception e) {

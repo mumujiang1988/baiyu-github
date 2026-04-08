@@ -1,37 +1,40 @@
 /**
- * JSON 编辑器组件 - 基于 CodeMirror
- * 纯 UI 组件，无业务逻辑
+ * JSON Editor Component - Based on CodeMirror
+ * Pure UI component, no business logic
  */
 
-<script setup lang="ts">
+<script setup>
 import { computed } from 'vue'
 import { Codemirror } from 'vue-codemirror'
 import { json } from '@codemirror/lang-json'
 
-interface Props {
-  modelValue: string
-  readonly?: boolean
-  height?: string
-  placeholder?: string
-  autofocus?: boolean
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: string): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  readonly: false,
-  height: '400px',
-  placeholder: '请输入 JSON'
+const props = defineProps({
+  modelValue: {
+    type: String,
+    required: true
+  },
+  readonly: {
+    type: Boolean,
+    default: false
+  },
+  height: {
+    type: String,
+    default: '400px'
+  },
+  placeholder: {
+    type: String,
+    default: '请输入 JSON'
+  },
+  autofocus: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits(['update:modelValue'])
 
-// CodeMirror 扩展
 const extensions = [json()]
 
-// 双向绑定
 const content = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)

@@ -70,6 +70,7 @@
         <set>
             <if test="priceId != null">price_id = #{priceId},</if>
             <if test="fBzmc != null">f_bzmc = #{fBzmc},</if>
+            <if test="fNumber != null">f_number = #{fNumber},</if>
             <if test="fBzgg != null">f_bzgg = #{fBzgg},</if>
             <if test="fDw != null">f_dw = #{fDw},</if>
             <if test="fYl != null">f_yl = #{fYl},</if>
@@ -84,12 +85,12 @@
 
     <insert id="batchInsertPackage">
         insert into t_sales_price_item_package(
-            price_id, f_bzbm, f_bzmc, f_bzgg, f_dw,
+            price_id, f_number, f_bzbm, f_bzmc, f_bzgg, f_dw,
             f_yl, f_bz, f_tp, f_bcfwgys, f_cpgys, f_cty_base_property
         ) values
         <foreach collection="list" item="p" separator=",">
             (
-                #{p.priceId}, #{p.fBzbm}, #{p.fBzmc}, #{p.fBzgg}, #{p.fDw},
+                #{p.priceId}, #{p.fNumber}, #{p.fBzbm}, #{p.fBzmc}, #{p.fBzgg}, #{p.fDw},
                 #{p.fYl}, #{p.fBz}, #{p.fTp}, #{p.fBcfwgys}, #{p.fCpgys}, #{p.fCtyBaseProperty}
             )
         </foreach>

@@ -450,6 +450,13 @@
                       </el-select>
                     </el-form-item>
                   </el-col>
+
+                  <el-col :span="12">
+                    <el-form-item label="客户情况">
+                      <el-input v-model="form.remark" type="textarea" placeholder="请输入客户情况"></el-input>
+                    </el-form-item>
+                  </el-col>
+
                 </el-row>
               </el-form>
             </el-col>
@@ -1508,6 +1515,7 @@ const form = ref({
   fsettleTypeId: "",
   frecConditionId: "",
   fKfxsy1: "",
+   remark: "",
   supplierContactList: [],
   informationList: {},
   customerTransfer: [],
@@ -1546,6 +1554,7 @@ const allColumns = ref([
   { prop: "fgroupId", label: "客户分组", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
   { prop: "fkhly", label: "客户来源", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
   { prop: "fcustTypeId", label: "客户等级", visible: true, width: "100px", align: "center", showOverflowTooltip: true },
+  { prop: "remark", label: "客户情况", visible: true, width: "100px", align: "center", showOverflowTooltip: true },
   { prop: "fcreateDate", label: "创建时间", visible: true, width: "160px", align: "center", showOverflowTooltip: true },
   { prop: "fmodifyDate", label: "更新时间", visible: true, width: "160px", align: "center", showOverflowTooltip: true }
 ]);

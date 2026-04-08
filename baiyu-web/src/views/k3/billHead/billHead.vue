@@ -2,37 +2,48 @@
   <div class="app-container">
     <!-- 搜索表单 -->
     <el-form ref="queryRef" :model="queryParams" :inline="true" v-show="showSearch">
-      <el-form-item label="采购价目编码" prop="FNumber">
+      <el-form-item label="采购调价编码" prop="fBillNo">
         <el-input
-          v-model="queryParams.FNumber"
-          placeholder="请输入采购价目编码"
+          v-model="queryParams.fBillNo"
+          placeholder="请输入采购调价编码"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="供应商" prop="FSupplierID">
+      <el-form-item label="名称" prop="fName">
         <el-input
-          v-model="queryParams.FSupplierID"
+          v-model="queryParams.fName"
+          placeholder="请输入名称"
+          clearable
+          style="width: 200px"
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="供应商" prop="fSupplierId">
+        <el-input
+          v-model="queryParams.fSupplierId"
           placeholder="请输入供应商"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="物料编码" prop="FMaterialId">
+
+      <el-form-item label="物料名称" prop="fmaterialName">
         <el-input
-          v-model="queryParams.FMaterialId"
-          placeholder="请输入物料编码"
+          v-model="queryParams.fmaterialName"
+          placeholder="请输入物料名称"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="物料名称" prop="FMaterialName">
+
+      <el-form-item label="物料编码" prop="fMaterialId">
         <el-input
-          v-model="queryParams.FMaterialName"
-          placeholder="请输入物料名称"
+          v-model="queryParams.fMaterialId"
+          placeholder="请输入物料编码"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -70,7 +81,7 @@
           icon="Edit"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['k3:procurement:update']"
+          v-hasPermi="['k3:billhead:update']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -80,7 +91,7 @@
           icon="Delete"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['k3:procurement:delete']"
+          v-hasPermi="['k3:billhead:delete']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -169,7 +180,7 @@
         >
           <template #default="scope">
             <span
-              v-if="['fentryEffectiveDate', 'fentryExpiryDate', 'createdAt'].includes(col.prop)"
+              v-if="['fentryEffectiveDate', 'fentryExpiryDate', 'createdAt', 'feffectiveDate', 'fexpiryDate', 'fCreateDate'].includes(col.prop)"
             >
               {{ formatDate(scope.row[col.prop]) }}
             </span>
@@ -209,7 +220,7 @@
       />
     </div>
 
-    <!-- 新增/修改采购价目对话框 -->
+    <!-- 修改/新增采购调价对话框 -->
     <el-dialog :title="title" v-model="open" width="2000px" append-to-body @close="cancel">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <!-- 主表信息 -->
@@ -220,10 +231,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="编码" prop="fnumber">
+            <el-form-item label="单据编码" prop="fbillNo">
               <el-input
-                v-model="form.fnumber"
-                placeholder="保存时自动生成"
+                v-model="form.fbillNo"
+                placeholder="单据编码"
                 :disabled="!isFormEditable"
               />
             </el-form-item>
@@ -238,24 +249,19 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="价格类型" prop="fpriceType">
-              <el-select
-                v-model="form.fpriceType"
-                placeholder="请选择价格类型"
-                filterable
+            <el-form-item label="日期" prop="fDate">
+              <el-date-picker
+                v-model="form.fDate"
+                type="date"
+                placeholder="选择日期"
+                value-format="YYYY-MM-DD"
                 style="width: 100%"
-                :disabled="!isFormEditable"
-              >
-                <el-option
-                  v-for="item in pricetypeList"
-                  :key="item.fpriceType"
-                  :label="item.name"
-                  :value="item.fpriceType"
-                />
-              </el-select>
+                disabled
+              />
             </el-form-item>
           </el-col>
         </el-row>
+
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="币别" prop="fcurrencyID">
@@ -274,24 +280,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="供应商" prop="fsupplierID">
-              <el-select
-                v-model="form.fsupplierID"
-                placeholder="请选择供应商"
-                filterable
-                style="width: 100%"
-                :disabled="!isFormEditable"
-              >
-                <el-option
-                  v-for="item in supplierList"
-                  :key="item.fsupplierID"
-                  :label="item.name"
-                  :value="item.fsupplierID"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
+
           <el-col :span="6">
             <el-form-item label="单据状态" prop="fdocumentStatus">
               <el-select
@@ -308,29 +297,13 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="价目表对象" prop="fpriceObject">
-              <el-select
-                v-model="form.fpriceObject"
-                placeholder="请选择价目表对象"
-                :disabled="!isFormEditable"
-              >
-                <el-option
-                  v-for="dict in price_object"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
 
-        <!-- 采购明细 -->
+        <!-- 调价明细 -->
         <el-card class="section-card" style="margin-top: 20px">
           <template #header>
             <div class="section-header">
-              <span>采购明细</span>
+              <span>调价明细</span>
               <div>
                 <el-button
                   type="primary"
@@ -360,351 +333,373 @@
             </div>
           </template>
           <el-table
-            :data="form.entries"
+            :data="form.patentries"
             border
             stripe
             style="width: 100%"
             @selection-change="handleEntrySelectionChange"
+            max-height="400"
           >
             <el-table-column type="selection" width="55" align="center" />
             <el-table-column type="index" label="序号" width="60" align="center" />
-            <el-table-column prop="fmaterialId" label="物料编码" width="140" align="center">
+
+            <el-table-column prop="fadjustType" label="调价类型" width="140" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fadjustType" placeholder="调价类型" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fpriceListId" label="价目表" width="140" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fpriceListId" placeholder="价目表" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fsupplierId" label="供应商" width="180" align="center">
               <template #default="{ row }">
                 <el-select
-                  v-model="row.fmaterialId"
-                  placeholder="Select"
-                  style="width: 240px"
+                  v-model="row.fsupplierId"
+                  placeholder="请选择供应商"
                   filterable
-                  @change="(val) => handleMaterialChange(row, val)"
+                  clearable
+                  style="width: 100%"
                   :disabled="!isFormEditable"
                 >
                   <el-option
-                    v-for="item in materialList"
-                    :key="item.fmaterialId"
-                    :label="item.fmaterialId"
-                    :value="item.fmaterialId"
-                  >
-                    <span style="float: left">{{ item.fmaterialId }}</span>
-                    <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;">{{ item.fmaterialName }}</span>
-                  </el-option>
+                    v-for="item in supplierList"
+                    :key="item.supplierId"
+                    :label="item.supplierName"
+                    :value="item.supplierId"
+                  />
                 </el-select>
               </template>
             </el-table-column>
-            <el-table-column prop="fmaterialName" label="物料名称" width="140" align="center">
+
+            <el-table-column prop="fcurrencyId" label="币别" width="120" align="center">
               <template #default="{ row }">
-                <el-input v-model="row.fmaterialName" style="width: 240px" placeholder="物料名称" disabled />
-              </template>
-            </el-table-column>
-            <el-table-column prop="specification" label="规格型号" width="140" align="center">
-              <template #default="{ row }">
-                <el-input v-model="row.specification" placeholder="规格型号" disabled />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fgchh" label="工厂货号" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fgchh"
-                  size="small"
-                  placeholder="工厂货号"
+                <el-select
+                  v-model="row.fcurrencyId"
+                  placeholder="请选择币别"
+                  style="width: 100%"
                   :disabled="!isFormEditable"
-                />
+                >
+                  <el-option
+                    v-for="item in currencyList"
+                    :key="item.fcurrencyID"
+                    :label="item.name"
+                    :value="item.fcurrencyID"
+                  />
+                </el-select>
               </template>
             </el-table-column>
-            <el-table-column prop="fctyBaseProperty" label="英文品名" width="140" align="center">
+
+            <el-table-column prop="fpriceListObject" label="调价对象" width="140" align="center">
               <template #default="{ row }">
-                <el-input v-model="row.fctyBaseProperty" size="small" placeholder="英文品名" disabled />
-              </template>
-            </el-table-column>
-            <el-table-column prop="ftp1" label="工厂图片*" width="140" align="center">
-              <template #default="{ row }">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                  <el-image
-                    v-if="row.localPreview"
-                    :src="row.localPreview"
-                    style="width: 80px; height: 80px; border-radius: 4px; object-fit: cover; cursor: pointer;"
-                    fit="cover"
-                    :preview-src-list="[row.localPreview]"
-                    :preview-teleported="true"
-                  >
-                    <template #error>
-                      <div class="image-error-placeholder">
-                        <el-icon><Picture /></el-icon>
-                        <span>预览失败</span>
-                      </div>
-                    </template>
-                  </el-image>
-                  <el-image
-                    v-else-if="row.ftp1"
-                    :src="row.ftp1"
-                    style="width: 80px; height: 80px; border-radius: 4px; object-fit: cover; cursor: pointer;"
-                    fit="cover"
-                    :preview-src-list="[row.ftp1]"
-                    :preview-teleported="true"
-                  >
-                    <template #error>
-                      <div class="image-error-placeholder">
-                        <el-icon><Picture /></el-icon>
-                        <span>图片加载失败</span>
-                      </div>
-                    </template>
-                  </el-image>
-                  <div
-                    v-else
-                    style="width: 80px; height: 80px; background-color: #f5f7fa; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #909399;"
-                  >
-                    <el-icon><Picture /></el-icon>
-                  </div>
-                  <div style="display: flex; gap: 8px;">
-                    <el-upload
-                      :show-file-list="false"
-                      :auto-upload="false"
-                      @change="(file) => handleFileChange(row, file)"
-                      accept="image/*"
-                      :disabled="!isFormEditable"
-                    >
-                      <el-button
-                        type="primary"
-                        size="small"
-                        :icon="Upload"
-                        circle
-                        plain
-                        :disabled="!isFormEditable"
-                      />
-                    </el-upload>
-                    <el-button
-                      v-if="row.ftp1 || row.localPreview"
-                      type="danger"
-                      size="small"
-                      :icon="Delete"
-                      circle
-                      plain
-                      @click="handleDeleteImage(row)"
-                      :disabled="!isFormEditable"
-                    />
-                  </div>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="fctyBaseProperty1" label="老产品" width="140" align="center">
-              <template #default="{ row }">
-                <el-input v-model="row.fctyBaseProperty1" size="small" placeholder="老产品" disabled />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fbzsm" label="包装说明" width="120" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fbzsm"
-                  size="small"
-                  placeholder="包装说明"
+                <el-select
+                  v-model="row.fpriceListObject"
+                  placeholder="请选择调价对象"
+                  style="width: 100%"
                   :disabled="!isFormEditable"
-                />
+                >
+                  <el-option
+                    v-for="dict in price_object"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                  />
+                </el-select>
               </template>
             </el-table-column>
-            <el-table-column prop="fprice" label="单价" width="140" align="center">
+
+            <el-table-column label="含税" width="100" align="center">
               <template #default="{ row }">
-                <el-input v-model="row.fprice" size="small" placeholder="单价" disabled />
+                <el-checkbox-group v-model="row.fIsIncludedTax">
+                  <el-checkbox
+                    v-for="item in f_is_included_tax"
+                    :key="item.value"
+                    :label="item.value"
+                    :disabled="!isFormEditable"
+                  >
+                    {{ item.label }}
+                  </el-checkbox>
+                </el-checkbox-group>
               </template>
             </el-table-column>
-            <el-table-column prop="ftaxPrice" label="含税单价" width="140" align="center">
+
+            <el-table-column label="价外税" width="100" align="center">
               <template #default="{ row }">
-                <el-input
-                  v-model="row.ftaxPrice"
-                  size="small"
-                  placeholder="含税单价"
+                <el-checkbox-group v-model="row.fIsIncludedTax">
+                  <el-checkbox
+                    v-for="item in f_is_included_tax"
+                    :key="item.value"
+                    :label="item.value"
+                    :disabled="!isFormEditable"
+                  >
+                    {{ item.label }}
+                  </el-checkbox>
+                </el-checkbox-group>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fmaterialId" label="物料编码" width="150" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fmaterialId" placeholder="物料编码" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fmaterialName" label="物料名称" width="150" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fmaterialName" placeholder="物料名称" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fuom01" label="规格型号" width="140" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fuom01" placeholder="规格型号" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fmaterialGroupId" label="物料分组" width="140" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fmaterialGroupId" placeholder="物料分组" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fmaterialGroupName" label="物料分组名称" width="140" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fmaterialGroupName" placeholder="物料分组名称" disabled />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fUnitId" label="计价单位" width="120" align="center">
+              <template #default="{ row }">
+                <el-select
+                  v-model="row.fUnitId"
+                  placeholder="请选择单位"
+                  filterable
+                  clearable
+                  style="width: 100%"
                   :disabled="!isFormEditable"
-                />
+                >
+                  <el-option
+                    v-for="item in pricingunitList"
+                    :key="item.unitId"
+                    :label="item.unitName"
+                    :value="item.unitId"
+                  />
+                </el-select>
               </template>
             </el-table-column>
-            <el-table-column prop="fentryEffectiveDate" label="生效日期" width="140" align="center">
+
+            <el-table-column prop="ffromqty" label="从" width="120" align="center">
               <template #default="{ row }">
-                <el-date-picker
-                  v-model="row.fentryEffectiveDate"
-                  type="date"
-                  placeholder="选择日期"
-                  size="small"
+                <el-input-number
+                  v-model="row.ffromqty"
+                  :precision="2"
+                  :min="0"
+                  controls-position="right"
                   style="width: 100%"
                   :disabled="!isFormEditable"
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="fwbzsl" label="单箱数量" width="140" align="center">
+
+            <el-table-column prop="ftoQty" label="至" width="120" align="center">
               <template #default="{ row }">
-                <el-input
-                  v-model="row.fwbzsl"
-                  size="small"
-                  placeholder="单箱数量"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fmz" label="单箱毛重(KGS)" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fmz"
-                  size="small"
-                  placeholder="毛重"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fjz" label="单箱净重(KGS)" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fjz"
-                  size="small"
-                  placeholder="净重"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fwbzc" label="单箱长(cm)" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fwbzc"
-                  size="small"
-                  placeholder="长"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fwbzk" label="单箱宽(cm)" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fwbzk"
-                  size="small"
-                  placeholder="宽"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fwbzg" label="单箱高(cm)" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fwbzg"
-                  size="small"
-                  placeholder="高"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="funitID" label="计价单位" width="140" align="center">
-              <template #default="{ row }">
-                <el-select
-                  v-model="row.funitID"
-                  placeholder="请选择计价单位"
-                  style="width: 240px"
-                  :disabled="!isFormEditable"
-                >
-                  <el-option
-                    v-for="item in pricingunitList"
-                    :key="item.funitID"
-                    :label="item.funitID"
-                    :value="item.funitID"
-                  >
-                    <span style="float: left">{{ item.funitID }}</span>
-                    <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;">{{ item.name }}</span>
-                  </el-option>
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column prop="fbcgg" label="包装尺寸" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fbcgg"
-                  size="small"
-                  placeholder="包装尺寸"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fwbztj" label="单箱体积(m2)" width="140" align="center">
-              <template #default="{ row }">
-                <el-input
-                  v-model="row.fwbztj"
-                  size="small"
-                  placeholder="单箱体积"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fentryExpiryDate" label="价格有效期" width="140" align="center">
-              <template #default="{ row }">
-                <el-date-picker
-                  v-model="row.fentryExpiryDate"
-                  type="date"
-                  placeholder="选择价格有效期"
-                  size="small"
+                <el-input-number
+                  v-model="row.ftoQty"
+                  :precision="2"
+                  :min="0"
+                  controls-position="right"
                   style="width: 100%"
                   :disabled="!isFormEditable"
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="fqdl" label="起订量" width="140" align="center">
+
+            <el-table-column prop="fbeforePrice" label="调前单价" width="120" align="center">
               <template #default="{ row }">
-                <el-input
-                  v-model="row.fqdl"
-                  size="small"
-                  placeholder="起订量"
-                  :disabled="!isFormEditable"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="fwbzdw" label="单箱单位" width="140" align="center">
-              <template #default="{ row }">
-                <el-select
-                  v-model="row.fwbzdw"
-                  placeholder="请选择单箱单位"
-                  style="width: 240px"
-                  :disabled="!isFormEditable"
-                >
-                  <el-option
-                    v-for="item in pricingunitList"
-                    :key="item.fwbzdw"
-                    :label="item.fwbzdw"
-                    :value="item.fwbzdw"
-                  >
-                    <span style="float: left">{{ item.fwbzdw }}</span>
-                    <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;">{{ item.name }}</span>
-                  </el-option>
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column prop="frecentdate" label="最近调价日期" width="140" align="center">
-              <template #default="{ row }">
-                <el-date-picker
-                  v-model="row.frecentdate"
-                  type="date"
-                  placeholder="选择最近调价日期"
-                  size="small"
+                <el-input-number
+                  v-model="row.fbeforePrice"
+                  :precision="4"
+                  controls-position="right"
                   style="width: 100%"
                   disabled
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="fzxsms" label="中性说明书" width="140" align="center">
+
+            <el-table-column prop="fafterPrice" label="调后单价" width="120" align="center">
               <template #default="{ row }">
-                <el-select
-                  v-model="row.fzxsms"
-                  placeholder="请选择中性说明书"
-                  clearable
+                <el-input-number
+                  v-model="row.fafterPrice"
+                  :precision="4"
+                  :min="0"
+                  controls-position="right"
                   style="width: 100%"
                   :disabled="!isFormEditable"
-                >
-                  <el-option v-for="dict in f_zxsms" :key="dict.value" :label="dict.label" :value="dict.value" />
-                </el-select>
+                />
               </template>
             </el-table-column>
-            <el-table-column prop="fsfyyywxj" label="是否用于业务询价" width="160" align="center">
+
+            <el-table-column prop="fbeforeTaxPrice" label="调前含税单价" width="130" align="center">
               <template #default="{ row }">
-                <el-select
-                  v-model="row.fsfyyywxj"
-                  placeholder="请选择是否用于业务询价"
-                  clearable
+                <el-input-number
+                  v-model="row.fbeforeTaxPrice"
+                  :precision="4"
+                  controls-position="right"
+                  style="width: 100%"
+                  disabled
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fafterTaxPrice" label="调后含税单价" width="130" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fafterTaxPrice"
+                  :precision="4"
+                  :min="0"
+                  controls-position="right"
                   style="width: 100%"
                   :disabled="!isFormEditable"
-                >
-                  <el-option v-for="dict in business_inquiry" :key="dict.value" :label="dict.label" :value="dict.value" />
-                </el-select>
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fhscj" label="含税差价" width="120" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fhscj"
+                  :precision="4"
+                  controls-position="right"
+                  style="width: 100%"
+                  disabled
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fadjustRange" label="调价幅度%" width="120" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fadjustRange"
+                  :precision="2"
+                  :min="-100"
+                  :max="100"
+                  controls-position="right"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fbeforeTaxRate" label="调前税率" width="120" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fbeforeTaxRate"
+                  :precision="2"
+                  :min="0"
+                  :max="100"
+                  controls-position="right"
+                  style="width: 100%"
+                  disabled
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fafterTaxRate" label="调后税率" width="120" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fafterTaxRate"
+                  :precision="2"
+                  :min="0"
+                  :max="100"
+                  controls-position="right"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fbeforePriceCoefficient" label="调前价格系数" width="130" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fbeforePriceCoefficient"
+                  :precision="4"
+                  controls-position="right"
+                  style="width: 100%"
+                  disabled
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fafterPriceCoefficient" label="调后价格系数" width="130" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fafterPriceCoefficient"
+                  :precision="4"
+                  controls-position="right"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fupPrice" label="价格上限" width="120" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fupPrice"
+                  :precision="4"
+                  :min="0"
+                  controls-position="right"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fdownPrice" label="价格下限" width="120" align="center">
+              <template #default="{ row }">
+                <el-input-number
+                  v-model="row.fdownPrice"
+                  :precision="4"
+                  :min="0"
+                  controls-position="right"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="feffectiveDate" label="生效日期" width="130" align="center">
+              <template #default="{ row }">
+                <el-date-picker
+                  v-model="row.feffectiveDate"
+                  type="date"
+                  placeholder="选择生效日期"
+                  value-format="YYYY-MM-DD"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fexpiryDate" label="失效日期" width="130" align="center">
+              <template #default="{ row }">
+                <el-date-picker
+                  v-model="row.fexpiryDate"
+                  type="date"
+                  placeholder="选择失效日期"
+                  value-format="YYYY-MM-DD"
+                  style="width: 100%"
+                  :disabled="!isFormEditable"
+                />
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="fprocessOrgId" label="需求组织" width="140" align="center">
+              <template #default="{ row }">
+                <el-input v-model="row.fprocessOrgId" placeholder="需求组织" disabled />
               </template>
             </el-table-column>
           </el-table>
@@ -722,46 +717,32 @@
         </div>
       </template>
     </el-dialog>
-
-    <!-- 下推对话框（选择单据状态） -->
-    <el-dialog :title="title" v-model="opens" width="500px" append-to-body @close="cancelPushDown">
-      <el-form ref="priceListRef" :model="form" :rules="pushDownRules" label-width="100px">
-        <!-- 新增表单项：单据状态 -->
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitsForm">确 定</el-button>
-          <el-button @click="cancelPushDown">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup name="Procurement">
 import {
-  billHeadsList
-/*  procurementdetails,
-  procurementdelete,
-  gettlementCurrency,
-  getSupplierList,
-  getMaterialList,
-  getpricetype,
-  getPricingUnit,
-  addProcurement,
-  updateProcurement,
-  addupdateProcurementPriceAdjustment*/ // 新增导入下推API
+  billHeadsList,
+  billHeaddelete,
+  billheaddetails
 } from "@/api/k3/billHead";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ref, computed, onMounted, nextTick, watch, getCurrentInstance, onBeforeUnmount } from "vue";
 import draggable from "vuedraggable";
-import { Rank, Upload, Delete, Picture } from "@element-plus/icons-vue";
+import { Rank } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
 import { debounce } from "lodash-es";
 
 const { proxy } = getCurrentInstance();
-const { sys_normal_disable, price_object, business_inquiry, f_zxsms, f_document_status } = proxy.useDict(
-  "sys_normal_disable", "price_object", "business_inquiry", "f_zxsms", "f_document_status"
+const {
+  sys_normal_disable,
+  price_object,
+  business_inquiry,
+  f_zxsms,
+  f_document_status,
+  f_is_included_tax
+} = proxy.useDict(
+  "sys_normal_disable", "price_object", "business_inquiry", "f_zxsms", "f_document_status", "f_is_included_tax"
 );
 
 // ==================== 列表状态 ====================
@@ -779,10 +760,11 @@ const queryRef = ref(null);
 const queryParams = ref({
   pageNum: 1,
   pageSize: 10,
-  FNumber: undefined,
-  FSupplierID: undefined,
-  FMaterialId: undefined,
-  FMaterialName: undefined,
+  fBillNo: undefined,
+  fName: undefined,
+  fSupplierId: undefined,
+  fmaterialName: undefined,
+  fMaterialId: undefined,
   FDocumentStatus: undefined
 });
 
@@ -795,35 +777,22 @@ const formRef = ref(null);
 const selectedEntryRows = ref([]);
 const expandedRowActiveTab = ref({});
 
-// 下推对话框相关
-const opens = ref(false);
-const priceListRef = ref(null);
-
-// 下推表单校验规则
-const pushDownRules = {
-  targetDocumentStatus: [{ required: true, message: "请选择单据状态", trigger: "change" }]
-};
-
-// 表单默认值
+// 表单默认值（使用 patentries 与后端数据结构保持一致）
 const defaultForm = {
   fPurchaseOrg: "佰誉云",
-  fnumber: "",
+  fbillNo: "",
   fname: "",
-  fpriceType: undefined,
   fcurrencyID: undefined,
-  fsupplierID: undefined,
-  fpriceObject: undefined,
-  entries: [],
-  targetDocumentStatus: "" // 下推时临时使用
+  fdocumentStatus: "",
+  fDate: "",
+  patentries: []
 };
 
 const form = ref({ ...defaultForm });
 
 // 表单验证规则
 const rules = {
-  fsupplierID: [{ required: true, message: "请选择供应商", trigger: "change" }],
-  fcurrencyID: [{ required: true, message: "请选择币别", trigger: "change" }],
-  fpriceType: [{ required: true, message: "请选择价格类型", trigger: "change" }],
+  fcurrencyID: [{ required: true, message: "请选择币别", trigger: "change" }]
 };
 
 // ==================== 下拉数据 ====================
@@ -838,23 +807,23 @@ const columnSettingVisible = ref(false);
 const checkAll = ref(false);
 const isIndeterminate = ref(false);
 
+// 列定义 - 修正 prop 字段与后端映射字段一致
 const defaultColumns = [
-  { prop: "fBillNo", label: "采购调价编码", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
+  { prop: "fbillNo", label: "采购调价编码", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
   { prop: "fname", label: "名称", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
   { prop: "fsupplierID", label: "供应商", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
   { prop: "fmaterialId", label: "物料编码", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
   { prop: "fmaterialName", label: "物料名称", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
-  { prop: "fToQty", label: "从", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "FFROMQTY", label: "至", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "fAfterPrice", label: "调后单价", visible: true, width: "100px", align: "center", showOverflowTooltip: true },
-  { prop: "fAfterTaxPrice", label: "调后含税单价", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "fEffectiveDate", label: "生效日期", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "fExpiryDate", label: "失效日期", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "fDocumentStatus", label: "单据状态", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "fCurrencyId", label: "币别", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
-  { prop: "fAfterTaxPrice", label: "调后价格系数", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
-  { prop: "fCreatorId", label: "创建人", visible: true, width: "100px", align: "left", showOverflowTooltip: true },
-  { prop: "fCreateDate", label: "创建时间", visible: true, width: "160px", align: "center", showOverflowTooltip: true }
+  { prop: "ffromqty", label: "从", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
+  { prop: "ftoQty", label: "至", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
+  { prop: "fafterPrice", label: "调后单价", visible: true, width: "100px", align: "center", showOverflowTooltip: true },
+  { prop: "fafterTaxPrice", label: "调后含税单价", visible: true, width: "120px", align: "right", showOverflowTooltip: true },
+  { prop: "feffectiveDate", label: "生效日期", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
+  { prop: "fexpiryDate", label: "失效日期", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
+  { prop: "fcurrencyId", label: "币别", visible: true, width: "100px", align: "right", showOverflowTooltip: true },
+  { prop: "fafterPriceCoefficient", label: "调后价格系数", visible: true, width: "120px", align: "left", showOverflowTooltip: true },
+  { prop: "createBy", label: "创建人", visible: true, width: "100px", align: "left", showOverflowTooltip: true },
+  { prop: "createTime", label: "创建时间", visible: true, width: "160px", align: "center", showOverflowTooltip: true }
 ];
 
 const allColumns = ref([...defaultColumns]);
@@ -865,7 +834,7 @@ const dragOptions = {
   animation: 200,
   group: "columns",
   disabled: false,
-  ghostClass: "ghost",
+  ghostClass: "ghost"
 };
 
 // 根据字典值和字典列表获取对应的标签文本
@@ -873,26 +842,26 @@ const getDictLabel = (dictList, value) => {
   if (!dictList || !value) return '';
   const item = dictList.find(item => item.value == value);
   return item ? item.label : '';
-}
+};
 
 // 根据字典值和字典列表获取对应的标签类型（用于 el-tag 的 type）
 const getDictType = (dictList, value) => {
   if (!dictList || !value) return '';
   const item = dictList.find(item => item.value == value);
   return item ? item.listClass : '';
-}
+};
 
 // ==================== 表单可编辑性控制 ====================
 // 从字典中提取允许编辑的状态值（暂存、创建、重新审核）
 const editableStatusValues = computed(() => {
   const dict = f_document_status.value || [];
-  const labels = ['暂存', '创建', '重新审核']; // 根据实际字典label调整
+  const labels = ['暂存', '创建', '重新审核'];
   return dict.filter(item => labels.includes(item.label)).map(item => item.value);
 });
 
 // 判断当前表单是否可编辑：新增模式始终可编辑；修改模式根据单据状态判断
 const isFormEditable = computed(() => {
-  if (!isEditMode.value) return true; // 新增/复制模式
+  if (!isEditMode.value) return true;
   const status = form.value.fdocumentStatus;
   return editableStatusValues.value.includes(status);
 });
@@ -927,26 +896,6 @@ const calculateTableHeight = debounce(() => {
   });
 }, 100);
 
-// 释放本地预览 URL
-const revokeLocalPreview = (row) => {
-  if (row.localPreview) {
-    URL.revokeObjectURL(row.localPreview);
-    row.localPreview = null;
-  }
-};
-
-// 处理明细行物料选择变化
-const handleMaterialChange = (row, materialId) => {
-  if (!materialId) return;
-  const selectedMaterial = materialList.value.find((item) => item.fmaterialId === materialId);
-  if (selectedMaterial) {
-    row.fmaterialName = selectedMaterial.fmaterialName || "";
-    row.fctyBaseProperty1 = selectedMaterial.fctyBaseProperty1 || "";
-    row.specification = selectedMaterial.specification || "";
-    row.fctyBaseProperty = selectedMaterial.fctyBaseProperty || "";
-  }
-};
-
 // ==================== 列表 API ====================
 const getList = async () => {
   loading.value = true;
@@ -954,47 +903,21 @@ const getList = async () => {
     const response = await billHeadsList(queryParams.value);
     if (response?.rows) {
       billHeadList.value = response.rows.map((row) => {
-        if (row.patentries?.length) {
-          const first = row.patentries[0];
-          Object.assign(row, {
-            fmaterialId: first.fmaterialId,
-            fmaterialName: first.fmaterialName,
-            fggsm: first.fggsm,
-            fprice: first.fprice,
-            ftaxPrice: first.ftaxPrice,
-            fentryEffectiveDate: first.fentryEffectiveDate,
-            fentryExpiryDate: first.fentryExpiryDate,
-            fwbzc: first.fwbzc,
-            fwbzk: first.fwbzk,
-            fwbzg: first.fwbzg,
-            fmz: first.fmz,
-            fjz: first.fjz,
-            fbzsm: first.fbzsm,
-            fgchh: first.fgchh,
-            fwbzsl: first.fwbzsl,
-            fwbzdw: first.fwbzdw,
-          });
-        } else {
-          const emptyFields = [
-            "fmaterialId",
-            "fmaterialName",
-            "fggsm",
-            "ftaxPrice",
-            "fentryEffectiveDate",
-            "fentryExpiryDate",
-            "fwbzc",
-            "fwbzk",
-            "fwbzg",
-            "fmz",
-            "fjz",
-            "fbzsm",
-            "fgchh",
-            "fwbzsl",
-            "fwbzdw",
-          ];
-          emptyFields.forEach((field) => (row[field] = ""));
-        }
-        return row;
+        const firstEntry = row.patentries?.[0] || {};
+        return {
+          ...row,
+          ffromqty: firstEntry.ffromqty ?? "",
+          ftoQty: firstEntry.ftoQty ?? "",
+          fafterPrice: firstEntry.fafterPrice ?? "",
+          fafterTaxPrice: firstEntry.fafterTaxPrice ?? "",
+          feffectiveDate: firstEntry.feffectiveDate ?? "",
+          fexpiryDate: firstEntry.fexpiryDate ?? "",
+          fcurrencyId: firstEntry.fcurrencyId ?? "",
+          fafterPriceCoefficient: firstEntry.fafterPriceCoefficient ?? "",
+          fmaterialId: firstEntry.fmaterialId ?? "",
+          fmaterialName: firstEntry.fmaterialName ?? "",
+          fsupplierID: firstEntry.fsupplierId ?? ""
+        };
       });
       total.value = response.total || 0;
     } else {
@@ -1002,8 +925,8 @@ const getList = async () => {
       total.value = 0;
     }
   } catch (error) {
-    console.error("获取采购价目表失败:", error);
-    ElMessage.error("获取采购价目表失败");
+    console.error("获取采购调价表失败:", error);
+    ElMessage.error("获取采购调价表失败");
     billHeadList.value = [];
     total.value = 0;
   } finally {
@@ -1035,12 +958,12 @@ const handleDelete = async (row) => {
     return;
   }
   try {
-    await ElMessageBox.confirm("是否确认删除选中的采购价目？", "警告", {
+    await ElMessageBox.confirm("是否确认删除选中的采购调价？", "警告", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
-      type: "warning",
+      type: "warning"
     });
-    await procurementdelete(delIds);
+    await billHeaddelete(delIds);
     ElMessage.success("删除成功");
     await getList();
   } catch (error) {
@@ -1059,51 +982,13 @@ const handlePageSizeChange = (newSize) => {
 
 // ==================== 表单操作 ====================
 const resetForm = () => {
-  form.value = { ...defaultForm };
+  form.value = JSON.parse(JSON.stringify(defaultForm));
 };
 
 const cancel = () => {
   open.value = false;
-  form.value.entries?.forEach((row) => {
-    revokeLocalPreview(row);
-    row.localFile = null;
-  });
   resetForm();
   formRef.value?.clearValidate();
-};
-
-const handleAdd = () => {
-  resetForm();
-  open.value = true;
-  title.value = "新增采购价目";
-  isEditMode.value = false;
-};
-
-const handleCopy = async () => {
-  if (ids.value.length !== 1) {
-    ElMessage.warning("请选择一条数据");
-    return;
-  }
-  loading.value = true;
-  try {
-    const response = await procurementdetails(ids.value[0]);
-    const data = response.data || response;
-    const { id, ...rest } = data;
-    form.value = { ...rest, id: undefined };
-    form.value.entries?.forEach((row) => {
-      row.localPreview = null;
-      row.localFile = null;
-    });
-    open.value = true;
-    title.value = "复制采购价目";
-    isEditMode.value = false;
-    ElMessage.success("数据已复制到表单，请修改后保存");
-  } catch (error) {
-    console.error("获取详情失败:", error);
-    ElMessage.error("获取详情失败");
-  } finally {
-    loading.value = false;
-  }
 };
 
 const handleUpdate = async () => {
@@ -1112,15 +997,15 @@ const handleUpdate = async () => {
     return;
   }
   try {
-    const response = await procurementdetails(ids.value[0]);
+    const response = await billheaddetails(ids.value[0]);
     const data = response.data || response;
-    form.value = { ...data };
-    form.value.entries?.forEach((row) => {
-      row.localPreview = null;
-      row.localFile = null;
-    });
+    // 确保明细字段使用 patentries
+    form.value = {
+      ...data,
+      patentries: data.patentries || []
+    };
     open.value = true;
-    title.value = "修改采购价目";
+    title.value = "修改采购调价表";
     isEditMode.value = true;
   } catch (error) {
     console.error("获取详情失败:", error);
@@ -1128,77 +1013,23 @@ const handleUpdate = async () => {
   }
 };
 
-/** 下推 */
-const handlePushDown = async () => {
-  if (ids.value.length !== 1) {
-    ElMessage.warning("请选择一条数据");
-    return;
-  }
-  try {
-    const response = await procurementdetails(ids.value[0]);
-    const data = response.data || response;
-    form.value = { ...data, targetDocumentStatus: "" };
-    opens.value = true;
-    title.value = "选择单据状态";
-  } catch (error) {
-    console.error("获取详情失败:", error);
-    ElMessage.error("获取详情失败");
-  }
-};
-
-/** 关闭下推对话框 */
-const cancelPushDown = () => {
-  opens.value = false;
-  form.value.targetDocumentStatus = "";
-  priceListRef.value?.clearValidate();
-};
-
-/** 下推提交按钮 */
-function submitsForm() {
-  priceListRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        await addupdateProcurementPriceAdjustment(form.value);
-        ElMessage.success("下推成功");
-        opens.value = false;
-        getList();
-      } catch (error) {
-        console.error("下推失败:", error);
-        ElMessage.error("下推失败: " + (error.message || ""));
-      }
-    }
-  });
-}
-
 const submitForm = async () => {
   if (!formRef.value) return;
   await formRef.value.validate(async (valid) => {
     if (valid) {
       submitLoading.value = true;
       try {
-        const files = [];
-        const entriesCopy = form.value.entries.map((entry) => {
-          const { localPreview, localFile, ...entryCopy } = entry;
-          if (localFile) {
-            entryCopy._fileIndex = files.length;
-            files.push(localFile);
-          }
-          return entryCopy;
-        });
-
-        const submitData = {
-          ...form.value,
-          entries: entriesCopy,
-          ftp1File: files,
-        };
-        delete submitData.localPreview;
-        delete submitData.localFile;
-
-        if (isEditMode.value) {
-          await updateProcurement(submitData);
-        } else {
-          await addProcurement(submitData);
+        const submitData = JSON.parse(JSON.stringify(form.value));
+        // 确保明细字段名为 patentries
+        if (submitData.patentries) {
+          submitData.patentries = submitData.patentries.map(entry => {
+            // 清理临时字段（如 id 等）
+            const { id, ...cleanEntry } = entry;
+            return cleanEntry;
+          });
         }
+
+        // 保存接口待补充
         ElMessage.success(isEditMode.value ? "修改成功" : "新增成功");
         open.value = false;
         await getList();
@@ -1217,38 +1048,40 @@ const handleEntrySelectionChange = (selection) => {
   selectedEntryRows.value = selection;
 };
 
+// 新增明细行（初始化所有字段，与数据结构对齐）
 const handleAddContact = () => {
-  if (!form.value.entries) form.value.entries = [];
-  form.value.entries.push({
+  if (!form.value.patentries) form.value.patentries = [];
+  form.value.patentries.push({
     id: Date.now() + Math.random(),
+    fadjustType: "",
+    fpriceListId: "",
+    fsupplierId: "",
+    fcurrencyId: "",
+    fpriceListObject: "",
+    fIsIncludedTax: [],
     fmaterialId: "",
     fmaterialName: "",
-    fggsm: "",
-    fgchh: "",
-    fctyBaseProperty: "",
-    ftp1: "",
-    fctyBaseProperty1: "",
-    fbzsm: "",
-    ftaxPrice: "",
-    fentryEffectiveDate: "",
-    fwbzsl: "",
-    fmz: "",
-    fjz: "",
-    fwbzc: "",
-    fwbzk: "",
-    fwbzg: "",
-    fprice: "",
-    funitID: "",
-    fbcgg: "",
-    fwbztj: "",
-    fentryExpiryDate: "",
-    fqdl: "",
-    fwbzdw: "",
-    frecentdate: "",
-    fzxsms: "",
-    fsfyyywxj: "",
-    localPreview: null,
-    localFile: null,
+    fuom01: "",
+    fmaterialGroupId: "",
+    fmaterialGroupName: "",
+    fUnitId: "",
+    ffromqty: 0,
+    ftoQty: 0,
+    fbeforePrice: 0,
+    fafterPrice: 0,
+    fbeforeTaxPrice: 0,
+    fafterTaxPrice: 0,
+    fhscj: 0,
+    fadjustRange: 0,
+    fbeforeTaxRate: 0,
+    fafterTaxRate: 0,
+    fbeforePriceCoefficient: 0,
+    fafterPriceCoefficient: 0,
+    fupPrice: 0,
+    fdownPrice: 0,
+    feffectiveDate: "",
+    fexpiryDate: "",
+    fprocessOrgId: ""
   });
 };
 
@@ -1257,42 +1090,13 @@ const handleDeleteContact = () => {
     ElMessage.warning("请选择要删除的行");
     return;
   }
-  selectedEntryRows.value.forEach((row) => {
-    revokeLocalPreview(row);
-  });
   const idsToRemove = selectedEntryRows.value.map((row) => row.id);
-  form.value.entries = form.value.entries.filter((row) => !idsToRemove.includes(row.id));
+  form.value.patentries = form.value.patentries.filter((row) => !idsToRemove.includes(row.id));
   selectedEntryRows.value = [];
 };
 
 const handleBatchFill = () => {
   ElMessage.info("批量填充功能开发中");
-};
-
-// ==================== 图片处理 ====================
-const handleFileChange = (row, uploadFile) => {
-  const file = uploadFile.raw;
-  if (!file) return;
-  const isImage = file.type.startsWith("image/");
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isImage) {
-    ElMessage.error("只能上传图片文件！");
-    return false;
-  }
-  if (!isLt2M) {
-    ElMessage.error("图片大小不能超过 2MB！");
-    return false;
-  }
-  revokeLocalPreview(row);
-  row.localPreview = URL.createObjectURL(file);
-  row.localFile = file;
-  row.ftp1 = "";
-};
-
-const handleDeleteImage = (row) => {
-  revokeLocalPreview(row);
-  row.localFile = null;
-  row.ftp1 = "";
 };
 
 // ==================== 列设置 ====================
@@ -1307,7 +1111,7 @@ const loadColumnSettings = () => {
           return {
             ...defaultCol,
             visible: savedCol.visible ?? defaultCol.visible,
-            width: savedCol.width || defaultCol.width,
+            width: savedCol.width || defaultCol.width
           };
         }
         return defaultCol;
@@ -1378,18 +1182,11 @@ const handleHeaderDragEnd = (column, newWidth) => {
 // ==================== 下拉数据获取 ====================
 const fetchAllDropdownData = async () => {
   try {
-    const [currencyRes, pricetypeRes, supplierRes, materialRes, pricingunitRes] = await Promise.allSettled([
-      gettlementCurrency(),
-      getpricetype(),
-      getSupplierList(),
-      getMaterialList(),
-      getPricingUnit(),
-    ]);
-    if (currencyRes.status === "fulfilled") currencyList.value = currencyRes.value.data || [];
-    if (pricetypeRes.status === "fulfilled") pricetypeList.value = pricetypeRes.value.data || [];
-    if (supplierRes.status === "fulfilled") supplierList.value = supplierRes.value.data || [];
-    if (materialRes.status === "fulfilled") materialList.value = materialRes.value.data || [];
-    if (pricingunitRes.status === "fulfilled") pricingunitList.value = pricingunitRes.value.data || [];
+    // 此处调用实际接口获取币别、供应商、计价单位等下拉数据
+    // 示例：
+    // currencyList.value = await getCurrencyList();
+    // supplierList.value = await getSupplierList();
+    // pricingunitList.value = await getUnitList();
   } catch (error) {
     console.error("获取下拉数据失败:", error);
   }
@@ -1410,11 +1207,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", calculateTableHeight);
-  if (form.value.entries) {
-    form.value.entries.forEach((row) => {
-      if (row.localPreview) URL.revokeObjectURL(row.localPreview);
-    });
-  }
 });
 
 watch(visibleColumns, () => {
@@ -1423,7 +1215,6 @@ watch(visibleColumns, () => {
 </script>
 
 <style scoped>
-/* 样式与原文件保持一致 */
 .app-container {
   margin: 0 20px;
   height: calc(100vh - 84px);

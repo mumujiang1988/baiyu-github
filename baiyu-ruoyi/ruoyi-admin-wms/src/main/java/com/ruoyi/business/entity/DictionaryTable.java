@@ -13,8 +13,8 @@ import java.util.Date;
 @TableName(value = "dictionary_table")
 public class DictionaryTable {
 
-    // DictionaryTable 实体类应包含的字段
-    private Long id;           // 主键 ID
+    // DictionaryTable实体类应包含的字段
+    private Long id;           // 主键ID
     @TableField("dict_name")
     private String dictName;   // 字典名称
     @TableField("bilhead")
@@ -30,8 +30,6 @@ public class DictionaryTable {
     @TableField("createBy")
     private Integer status;    // 状态
     private Integer sortOrder; // 排序
-    @TableField(exist = false)
-    private String sourceType; // 来源类型：system=系统字典，business=业务字典
 
     public String getDictName() {
         if (dictName != null) {

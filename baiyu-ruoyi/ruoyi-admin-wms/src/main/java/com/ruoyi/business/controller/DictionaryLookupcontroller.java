@@ -571,7 +571,7 @@ public class DictionaryLookupcontroller {
      * */
     @GetMapping("/material")
     public Result getmaterial() {
-        List<BymaterialDictionary> materials = dictionaryLookupServicel.selectmaterial();
+        List<MaterialDictionary> materials = dictionaryLookupServicel.selectmaterial();
         return Result.success(materials);
     }
 

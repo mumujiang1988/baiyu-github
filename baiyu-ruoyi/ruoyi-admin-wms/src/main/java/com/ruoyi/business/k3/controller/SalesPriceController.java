@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.business.entity.SaleChangeBillFlat;
 import com.ruoyi.business.entity.SalesPrice;
 import com.ruoyi.business.k3.config.Dictionaryconfig;
+import com.ruoyi.business.k3.domain.bo.SalesPricesBo;
 import com.ruoyi.business.k3.service.SalesPriceService;
 import com.ruoyi.business.util.Result;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -103,17 +105,15 @@ public class SalesPriceController {
     }
 
     /**
-     * 分页查询价目列表
+     * 查询销售价目表列表
      * @param price 查询条件
      * @param pageQuery 分页参数
      * @return 分页数据
      */
     @SaCheckPermission("k3:salesPrice:list")
     @GetMapping("/page")
-    public Page<SalesPrice> list(SalesPrice price, PageQuery pageQuery) {
-        int pageSize = pageQuery.getPageSize();
-        int pageNumber = pageQuery.getPageNum();
-        return salesPriceService.listSalesPrices(price, pageNumber, pageSize);
+    public TableDataInfo<SalesPrice> list(SalesPricesBo price, PageQuery pageQuery) {
+        return salesPriceService.listSalesPrices(price, pageQuery);
     }
 
     /**

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.business.mapper.KdSalesStockoutFeeMapper">
+
+    <!-- 根据主表 ID 查询费用明细列表 -->
+    <select id="selectByMainId" resultType="com.ruoyi.business.entity.KdSalesStockoutFee">
+        SELECT
+            t.FEntryID,
+            t.FID,
+            t.F_ora_Entity,
+            t.F_fyxm,
+            t.F_je,
+            t.F_glfkje,
+            t.FBillStatus,
+            t.F_cdfs,
+            t.F_ywy,
+            t.F_gys,
+            t.F_sqfkje,
+            t.Fsqfkzz,
+            t.create_time,
+            t.update_time
+        FROM t_kd_sales_stockout_fee t
+        WHERE t.FID = #{fid}
+        ORDER BY t.create_time DESC
+    </select>
+
+    <!-- 批量插入费用明细 -->
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO t_kd_sales_stockout_fee (
+            FEntryID,
+            FID,
+            F_ora_Entity,
+            F_fyxm,
+            F_je,
+            F_glfkje,
+            FBillStatus,
+            F_cdfs,
+            F_ywy,
+            F_gys,
+            F_sqfkje,
+            Fsqfkzz,
+            create_time,
+            update_time
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.fentryID},
+                #{item.fid},
+                #{item.fOraEntity},
+                #{item.fFyxm},
+                #{item.fJe},
+                #{item.fGlfkje},
+                #{item.fBillStatus},
+                #{item.fCdfs},
+                #{item.fYwy},
+                #{item.fGys},
+                #{item.fSqfkje},
+                #{item.fsqfkzz},
+                NOW(),
+                NOW()
+            )
+        </foreach>
+    </insert>
+
+</mapper>

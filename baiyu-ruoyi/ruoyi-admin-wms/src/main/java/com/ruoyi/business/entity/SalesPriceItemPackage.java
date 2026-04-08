@@ -12,6 +12,8 @@ public class SalesPriceItemPackage {
 
     /** 价目主表编码 */
     private Long priceId;
+  /** 价目主表编码 */
+    private String fNumber;;
 
     /** 包装编码(F_BZBM) */
     private String fBzbm;

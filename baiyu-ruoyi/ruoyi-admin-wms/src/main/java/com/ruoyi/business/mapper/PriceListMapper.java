@@ -2,15 +2,12 @@ package com.ruoyi.business.mapper;
 
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.business.dto.PriceListDTO;
-import com.ruoyi.business.entity.Customer;
 import com.ruoyi.business.entity.PriceList;
-import com.ruoyi.business.k3.domain.vo.CustomerVo;
 import com.ruoyi.business.k3.domain.vo.PriceListVo;
 import com.ruoyi.common.mybatis.annotation.DataColumn;
 import com.ruoyi.common.mybatis.annotation.DataPermission;
@@ -50,10 +47,18 @@ public interface PriceListMapper extends BaseMapperPlus<PriceList, PriceListVo> 
 
     /**
      * 根据编码查询价目表
-     * @param id 价目表编码
+     * @param FNumber 价目表编码
      * @return 价目表信息
      */
-    PriceList selectByNumber(@Param("id") String id);
+    PriceList selectByNumber(@Param("FNumber") String FNumber);
+
+    /**
+     * 根据条件分页查询采购价目列表
+     *
+     * @param queryWrapper 查询条件
+     * @return 采购价目集合信息
+     */
+    List<PriceList> selectPriceList(@Param(Constants.WRAPPER) Wrapper<PriceList> queryWrapper);
 
     /**
      * 分页查询价目表

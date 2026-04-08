@@ -112,7 +112,7 @@
             tnf.fnhk,
             tnf.fnhg
         FROM
-            t_receipt_notice_full tnf
+            receipt_notice_full tnf
                 LEFT JOIN sys_user su on tnf.fapprover_id=su.k3_key
                 LEFT JOIN sys_user sys on tnf.fmodifier_id=sys.k3_key
                 LEFT JOIN sys_user sysu on tnf.fcreator_id=sysu.k3_key
@@ -120,7 +120,7 @@
                 LEFT JOIN by_material bym on tnf.fmaterial_id=bym.k3_id
                 LEFT JOIN bymaterial_dictionary byd on tnf.funit_id=byd.kingdee and byd.category='unit'
                 LEFT JOIN bymaterial_dictionary bydy on tnf.fbase_unit_id=byd.kingdee and bydy.category='unit'
-            FROM t_receipt_notice_full
+            FROM receipt_notice_full
         WHERE id = #{id}
     </select>
     <select id="selectReceiptNoticeFullByPage" parameterType="com.ruoyi.business.entity.ReceiptNoticeFull" resultMap="ReceiptNoticeFullResultMap">
@@ -174,7 +174,7 @@
         tnf.fnhk,
         tnf.fnhg
         FROM
-        t_receipt_notice_full tnf
+        receipt_notice_full tnf
         LEFT JOIN sys_user su on tnf.fapprover_id=su.k3_key
         LEFT JOIN sys_user sys on tnf.fmodifier_id=sys.k3_key
         LEFT JOIN sys_user sysu on tnf.fcreator_id=sysu.k3_key
@@ -271,7 +271,7 @@
             tnf.fnhk,
             tnf. fnhg
         FROM
-            t_receipt_notice_full tnf
+            receipt_notice_full tnf
 
                 LEFT JOIN sys_user su  on tnf.fapprover_id=su.k3_key
                 LEFT JOIN sys_user sys  on tnf.fmodifier_id=sys.k3_key
@@ -283,7 +283,7 @@
 
     <!-- 新增完整检验单数据 -->
     <insert id="insertReceiptNotice" parameterType="com.ruoyi.business.entity.ReceiptNoticeFull" useGeneratedKeys="true" keyProperty="fid">
-        INSERT INTO t_receipt_notice_full (
+        INSERT INTO receipt_notice_full (
             fbill_no,
             fdocument_status,
             fapprover_id,
@@ -388,7 +388,7 @@
 
     <!-- 修改完整检验单数据 -->
     <update id="updateReceiptNotice" parameterType="com.ruoyi.business.entity.ReceiptNoticeFull">
-        UPDATE t_receipt_notice_full
+        UPDATE receipt_notice_full
         <set>
             <if test="fBillNo != null and fBillNo != ''">
                 fbill_no = #{fBillNo},
@@ -431,12 +431,12 @@
 
     <!-- 删除完整检验单数据 -->
     <delete id="deleteReceiptNoticeById" parameterType="java.lang.Long">
-        DELETE FROM t_receipt_notice_full WHERE fid = #{fid}
+        DELETE FROM receipt_notice_full WHERE fid = #{fid}
     </delete>
 
     <!-- 批量删除完整检验单数据 -->
     <delete id="deleteReceiptNoticeBatch" parameterType="java.util.List">
-        DELETE FROM t_receipt_notice_full WHERE fid IN
+        DELETE FROM receipt_notice_full WHERE fid IN
         <foreach collection="list" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -444,7 +444,7 @@
 
     <!-- 根据单据编号删除 -->
     <delete id="deleteReceiptNoticeByBillNo" parameterType="java.lang.String">
-        DELETE FROM t_receipt_notice_full WHERE fbill_no = #{fBillNo}
+        DELETE FROM receipt_notice_full WHERE fbill_no = #{fBillNo}
     </delete>
 
 </mapper>

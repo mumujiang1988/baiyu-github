@@ -46,6 +46,6 @@ public interface DictionaryLookupServicel {
      /**
       * 物料
       * */
-    List<BymaterialDictionary> selectmaterial();
+    List<MaterialDictionary> selectmaterial();
 
 }

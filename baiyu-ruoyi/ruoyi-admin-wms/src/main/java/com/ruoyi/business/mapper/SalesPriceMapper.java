@@ -1,11 +1,20 @@
 package com.ruoyi.business.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.business.entity.PriceList;
 import com.ruoyi.business.entity.SalesPrice;
+import com.ruoyi.business.k3.domain.vo.SalesPricesVo;
+import com.ruoyi.common.mybatis.annotation.DataColumn;
+import com.ruoyi.common.mybatis.annotation.DataPermission;
+import com.ruoyi.common.mybatis.core.mapper.BaseMapperPlus;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-public interface SalesPriceMapper {
+@Mapper
+public interface SalesPriceMapper extends BaseMapperPlus<SalesPrice, SalesPricesVo> {
 
     /** 新增价目主表 */
     int insertSalesPrice(SalesPrice price);
@@ -27,12 +36,14 @@ public interface SalesPriceMapper {
 
     /**
      * 分页查询价目列表
-     * @param offset 偏移量
-     * @param size 每页数量
-     * @param price 查询条件
+     * @param page 查询条件
      * @return 价目列表
      */
-    List<SalesPrice> selectByCondition(@Param("offset") int offset, @Param("size") int size, @Param("price") SalesPrice price);
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "d.dept_id"),
+        @DataColumn(key = "userName", value = "su.user_id")
+    })
+    Page<SalesPrice> selectPage(@Param("page") Page<SalesPrice> page, @Param(Constants.WRAPPER) Wrapper<SalesPrice> queryWrapper);
 
     /**
      * 统计价目总数

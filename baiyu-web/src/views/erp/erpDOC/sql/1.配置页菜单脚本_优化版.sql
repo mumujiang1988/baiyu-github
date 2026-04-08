@@ -95,13 +95,14 @@ CREATE FUNCTION fn_snowflake_id() RETURNS bigint
     NOT DETERMINISTIC
     NO SQL  -- ✅ 修正：函数不访问数据库表
 BEGIN
-    -- 使用简化版的雪花算法，避免 BIGINT 溢出
-    -- 格式：时间戳 (10 位) + 随机数 (6 位)
-    DECLARE ts BIGINT DEFAULT UNIX_TIMESTAMP(NOW());
+    -- 使用简化版的雪花算法，生成 19 位 ID
+    -- 格式：时间戳 (10 位) + 毫秒 (3 位) + 随机数 (6 位)
+    DECLARE ts BIGINT DEFAULT UNIX_TIMESTAMP(NOW(3)) * 1000;  -- 毫秒级时间戳
     DECLARE random_part INT DEFAULT FLOOR(RAND() * 999999) + 1;
     
-    -- 使用时间戳 * 1000000 + 随机数，确保在 BIGINT 范围内
-    -- 当前时间戳约 1700000000，乘以 1000000 后约 1.7e15，远小于 BIGINT 最大值 9.22e18
+    -- 使用时间戳 * 1000000 + 随机数，确保生成 19 位 ID
+    -- 当前毫秒时间戳约 1743897600000（13位），乘以 1000000 后约 1.74e18（19位）
+    -- BIGINT 最大值 9.22e18，完全安全
     RETURN ts * 1000000 + random_part;
 END$$
 DELIMITER ;

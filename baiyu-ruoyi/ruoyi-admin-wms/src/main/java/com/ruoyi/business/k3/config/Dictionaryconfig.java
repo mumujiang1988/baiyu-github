@@ -103,7 +103,7 @@ public class Dictionaryconfig {
         try {
             String jsonData = "{" +
                 "\"FormId\":\"BD_SAL_PriceList\"," +
-                "\"FieldKeys\":\"FID,F_BZBM,F_BZMC,F_BZGG,F_DW,F_YL,F_BZ,F_TP,F_BCFWGYS,F_CPGYS,F_cty_BaseProperty\"," +
+                "\"FieldKeys\":\"FID,FNumber,F_BZBM,F_BZMC,F_BZGG,F_DW,F_YL,F_BZ,F_TP,F_BCFWGYS,F_CPGYS,F_cty_BaseProperty\"," +
                 "\"OrderString\":\"\"," +
                 "\"TopRowCount\":0,\"StartRow\":" + startRow + "," +
                 "\"Limit\":" + limit + ",\"SubSystemId\":\"\"}";
@@ -124,7 +124,7 @@ public class Dictionaryconfig {
         try {
             String jsonData = "{" +
                 "\"FormId\":\"BD_SAL_PriceList\"," +
-                "\"FieldKeys\":\"FID,FMaterialId,F_khhh,FPrice,F_bzyq,F_BZMX,F_ywpm,Fzxzlxgrq,F_c,F_k,F_g,F_mz,F_cptp2,F_cptp3,F_jgdztp,\n" +
+                "\"FieldKeys\":\"FID,FNumber,FMaterialId,F_khhh,FPrice,F_bzyq,F_BZMX,F_ywpm,Fzxzlxgrq,F_c,F_k,F_g,F_mz,F_cptp2,F_cptp3,F_jgdztp,\n" +
                 "F_wxtm,F_wxzm,F_wxcm,F_nxzm,F_nxcm,F_CTT,F_SMST,F_CTAOT,F_CHT,F_dkczz,F_zxczz,Ftm,F_bzt,F_gys,F_jz,Fbgrq,F_ywbzfs\"," +
                 "\"OrderString\":\"\"," +
                 "\"TopRowCount\":0,\"StartRow\":" + startRow + "," +
@@ -169,7 +169,7 @@ public class Dictionaryconfig {
         try {
             String jsonData = "{" +
                 "\"FormId\":\"SAL_SaleOrder\"," +
-                "\"FieldKeys\":\"FBillTypeID,FID,FMrpCloseStatus,FBillNo,FDate,FCustId,F_ora_BaseProperty,F_khhth,F_kglxr,F_cty_BaseProperty1,FSettleCurrId,F_tcbl,F_KHSD,FIsIncludedTax,F_sfbg,FSalerId,F_lrl,\n" +
+                "\"FieldKeys\":\"FBillTypeID,FID,FDocumentStatus,FMrpCloseStatus,FBillNo,FDate,FCustId,F_ora_BaseProperty,F_khhth,F_kglxr,F_cty_BaseProperty1,FSettleCurrId,F_tcbl,F_KHSD,FIsIncludedTax,F_sfbg,FSalerId,F_lrl,\n" +
                 "F_jlrl,F_gj,F_PEUU_BaseProperty_qtr,F_myfs,F_zyxb,F_yhzh,F_cty_Date,F_sygs,FRecConditionId,Fbzfs,FReceiveId,FSettleId,FSettleAddress,FChargeId,F_shhl,F_shzt,F_shje,F_cty_Date1,\n" +
                 "FCreatorId,FModifierId,FModifyDate,FAllDisCount,F_ysbl1,FBillTaxAmount,FLocalCurrId,FExchangeTypeId,FExchangeRate,FPLANNOTRECAMOUNT,FPLANALLRECAMOUNT,FPLANREFUNDAMOUNT,FBillAmount\"," +
                 "\"OrderString\":\"\"," +
@@ -455,6 +455,60 @@ public class Dictionaryconfig {
             String jsonData = "{" +
                 "\"FormId\":\"BD_STOCK\"," +
                 "\"FieldKeys\":\"FStockId,FNumber,FName,FFlexEntryId,FFlexEntryName\",\n" +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0,\"StartRow\":" + startRow + "," +
+                "\"Limit\":" + limit + ",\"SubSystemId\":\"\"}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 获取发货通知单主表数据
+     * @param startRow 起始行
+     * @param limit 每页数量
+     */
+    public List<List<Object>> queryDeliveryNoticeList(int startRow, int limit) {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"SAL_DELIVERYNOTICE\"," +
+                "\"FieldKeys\":\"FID,FBillNo,FDocumentStatus,FDate,FCustomerID,FSalesManID,FCarrierID," +
+                "FReceiverID,FSettleID,FPayerID,FCreatorId,FCreateDate,FModifyDate,FApproveDate,FCancelDate," +
+                "FModifierId,FBillTypeID,FApproverID,FCancellerID,FCancelStatus,FOwnerIdHead,FRECEIPTCONDITIONID," +
+                "FHeadDeliveryWay,FReceiveAddress,FHeadLocId,FLocalCurrID,FExchangeTypeID,FExchangeRate," +
+                "FSettleTypeID,FSettleCurrID,FBillTaxAmount,FBillAmount,FBillAllAmount,FIsIncludedTax,FAllDisCount\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0,\"StartRow\":" + startRow + "," +
+                "\"Limit\":" + limit + ",\"SubSystemId\":\"\"}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 获取发货通知单明细表数据
+     * @param startRow 起始行
+     * @param limit 每页数量
+     */
+    public List<List<Object>> queryDeliveryNoticeEntryList(int startRow, int limit) {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"SAL_DELIVERYNOTICE\"," +
+                "\"FieldKeys\":\"FID,FBillNo,FMaterialID,FMaterialName,FMateriaModel,FMateriaType," +
+                "FUnitID,FQty,FStockID,FNoteEntry,FBaseUnitID,FBaseUnitQty,FDeliveryLoc,FDeliveryLAddress," +
+                "FOrderNo,FOrderSeq,FCustMatID,FLot,FIsFree,FCustMatName,FRemainOutQty,FStockStatusId," +
+                "FPriceUnitQty,FPrice,FTaxPrice,FTaxCombination,FEntryTaxRate,FPriceCoefficient,FSysPrice," +
+                "FLimitDownPrice,FBefDisAmt,FBefDisAllAmt,FDiscountRate,F_ora_Decimal,F_ora_Decimal1," +
+                "F_c,F_k,F_g,F_tj,F_mz,F_jz,F_mzz,F_xs,F_zxs,F_cgzj,F_zjzj,F_kpdj,F_kpzj," +
+                "F_zwbgpm,F_ywbgpm,F_jzz,F_jcsj,F_khhh,F_sfbg,F_ddhsdj,F_tsl,F_bgdw,F_tcblNEW," +
+                "F_BCFYNEW,F_GLBCFY,F_ffyq,Fddshrq,Fxsddh,Fxsddhh,Fbzgctg,Fypd,Fykc,F_cty_BaseProperty," +
+                "Frkshrq,Fckshrq,F_BZFS\"," +
                 "\"OrderString\":\"\"," +
                 "\"TopRowCount\":0,\"StartRow\":" + startRow + "," +
                 "\"Limit\":" + limit + ",\"SubSystemId\":\"\"}";

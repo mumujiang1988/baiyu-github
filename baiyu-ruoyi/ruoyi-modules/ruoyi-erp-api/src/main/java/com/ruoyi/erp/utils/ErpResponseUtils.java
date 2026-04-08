@@ -3,10 +3,7 @@ package com.ruoyi.erp.utils;
 import com.ruoyi.erp.domain.response.ErpResponse;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * ERP Response Utility Class
- * 
- * Provides convenient methods for building responses
+/** 
  * 
  * @author JMH
  * @date 2026-03-27

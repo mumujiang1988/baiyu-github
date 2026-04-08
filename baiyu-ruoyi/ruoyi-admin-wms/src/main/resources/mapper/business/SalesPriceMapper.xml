@@ -108,7 +108,7 @@
     </update>
 
     <!-- 分页查询价目列表 -->
-    <select id="selectByCondition" resultMap="SalesPriceMap">
+    <select id="selectPage" resultMap="SalesPriceMap">
         SELECT
             t.id,
             t.k3_id,
@@ -133,17 +133,7 @@
         LEFT JOIN sys_employee u2 ON t.f_xsy = u2.fid
         LEFT JOIN sys_user u3 ON t.f_modifier_id = u3.k3_key
         LEFT JOIN bymaterial_dictionary d ON t.f_currency_id = d.kingdee AND d.category_name = '币别'
-        <where>
-            <if test="price.fNumber != null and price.fNumber != ''">AND t.f_number = #{price.fNumber}</if>
-            <if test="price.fName != null and price.fName != ''">AND t.f_name LIKE CONCAT('%', #{price.fName}, '%')</if>
-            <if test="price.fKhjc != null and price.fKhjc != ''">AND t.f_khjc LIKE CONCAT('%', #{price.fKhjc}, '%')</if>
-            <if test="price.fPriceType != null and price.fPriceType != ''">AND t.f_price_type = #{price.fPriceType}</if>
-            <if test="price.fCurrencyId != null and price.fCurrencyId != ''">AND t.f_currency_id = #{price.fCurrencyId}</if>
-            <if test="price.fEffectiveDate != null">AND t.f_effective_date = #{price.fEffectiveDate}</if>
-            <if test="price.fExpiryDate != null">AND t.f_expiry_date = #{price.fExpiryDate}</if>
-        </where>
-        ORDER BY t.f_create_date DESC
-        LIMIT #{offset}, #{size}
+        ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
     </select>
 
     <!-- 统计价目总数 -->

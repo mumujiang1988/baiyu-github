@@ -16,5 +16,5 @@ public interface FtApiService {
     FtApiResponse<List<FtCustomer>> getCustomers(FtCustomerQueryRequest queryRequest);
     String getAccessTokenWithTgt();
 
-    void saveOrUpdateLocalCustomer(Customer customer);
+    void saveOrUpdateLocalCustomer(FtCustomer customer);
 }

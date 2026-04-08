@@ -5,24 +5,22 @@
 <mapper namespace="com.ruoyi.business.mapper.PriceListMapper">
 
     <!-- 新增价目表 -->
-    <insert id="insertPriceList"
-            parameterType="com.ruoyi.business.entity.PriceList"
-            useGeneratedKeys="true"
-            keyProperty="id">
+    <insert id="insertPriceList" parameterType="com.ruoyi.business.entity.PriceList" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO price_list
         (
-            priceListId, FName, FNumber, FDescription, FCurrencyID, FSupplierID, F_GYSLB,
+            priceListId,FDocumentStatus, FName, FNumber, FDescription, FCurrencyID, FSupplierID, F_GYSLB,
             FPricer, FPriceObject, FPriceType, created_at, updated_at
         )
         VALUES
         (
             #{priceListId},
             <if test="FName != null">#{FName}</if><if test="FName == null">NULL</if>,
+            <if test="FDocumentStatus != null">#{FDocumentStatus}</if><if test="FDocumentStatus == null">NULL</if>,
             <if test="FNumber != null">#{FNumber}</if><if test="FNumber == null">NULL</if>,
             <if test="FDescription != null">#{FDescription}</if><if test="FDescription == null">NULL</if>,
             <if test="FCurrencyID != null">#{FCurrencyID}</if><if test="FCurrencyID == null">NULL</if>,
             <if test="FSupplierID != null">#{FSupplierID}</if><if test="FSupplierID == null">NULL</if>,
-            <if test="F_GYSLB != null">#{F_GYSLB}</if><if test="F_GYSLB == null">NULL</if>,
+            <if test="FGYSLB != null">#{FGYSLB}</if><if test="FGYSLB == null">NULL</if>,
             <if test="FPricer != null">#{FPricer}</if><if test="FPricer == null">NULL</if>,
             <if test="FPriceObject != null">#{FPriceObject}</if><if test="FPriceObject == null">NULL</if>,
             <if test="FPriceType != null">#{FPriceType}</if><if test="FPriceType == null">NULL</if>,
@@ -36,16 +34,17 @@
         <set>
             <if test="FName != null and FName != ''">FName = #{FName},</if>
             <if test="FNumber != null and FNumber != ''">FNumber = #{FNumber},</if>
+            <if test="FDocumentStatus != null and FDocumentStatus != ''">FDocumentStatus = #{FDocumentStatus},</if>
             <if test="FDescription != null and FDescription != ''">FDescription = #{FDescription},</if>
             <if test="FCurrencyID != null">FCurrencyID = #{FCurrencyID},</if>
             <if test="FSupplierID != null">FSupplierID = #{FSupplierID},</if>
-            <if test="F_GYSLB != null">F_GYSLB = #{F_GYSLB},</if>
+            <if test="FGYSLB != null">F_GYSLB = #{FGYSLB},</if>
             <if test="FPricer != null">FPricer = #{FPricer},</if>
             <if test="FPriceObject != null and FPriceObject != ''">FPriceObject = #{FPriceObject},</if>
             <if test="FPriceType != null and FPriceType != ''">FPriceType = #{FPriceType},</if>
             updated_at = NOW()
         </set>
-        WHERE priceListId = #{priceList.priceListId}
+        WHERE priceListId = #{priceListId}
     </update>
 
 
@@ -55,10 +54,10 @@
         DELETE FROM price_list WHERE FNumber = #{FNumber}
     </delete>
 
-    <!-- 根据ID查询价目表 -->
+    <!-- 根据 ID 查询价目表 -->
     <select id="selectById" resultType="com.ruoyi.business.entity.PriceList">
         SELECT
-            id, FName, FNumber, FDescription, FCurrencyID, FSupplierID, F_GYSLB,
+            id, FName,FDocumentStatus, FNumber, FDescription, FCurrencyID, FSupplierID, F_GYSLB AS FGYSLB,
             FPricer, FPriceObject, FPriceType, updated_at AS updatedAt
         FROM price_list
         WHERE id = #{id}
@@ -70,6 +69,7 @@
         pl.id,
         pl.fnumber,
         pl.FName,
+        pl.FDocumentStatus,
         sp.NAME AS FSupplierID,
         b.number as FMaterialId,
         ple.FMaterialName,
@@ -101,21 +101,22 @@
         AND bld.category = 'price_type'
         LEFT JOIN supplier sp ON pl.FSupplierID = sp.supplierid
         WHERE
-        pl.id = #{id}
+        pl.fnumber = #{FNumber}
         LIMIT 1
     </select>
 
-    <!-- 根据供应商ID查询价目表 -->
+    <!-- 根据供应商 ID 查询价目表 -->
     <select id="selectBySupplierId" resultType="com.ruoyi.business.entity.PriceList">
         SELECT
             pl.id,
             pl.priceListId,
             pl.FName,
+            pl.FDocumentStatus,
             pl.FNumber,
             pl.FDescription,
             bm.NAME AS FCurrencyID,
             sp.NAME AS FSupplierID,
-            bd.name AS F_GYSLB,
+            bd.name AS FGYSLB,
             pl.FPricer,
             pl.FPriceObject,
             bld.name as FPriceType,
@@ -143,11 +144,11 @@
             pl.id,
             pl.priceListId,
             pl.FName,
-            pl.FNumber,
+            pl.FDocumentStatus,
             pl.FDescription,
             bm.NAME AS FCurrencyID,
             sp.NAME AS FSupplierID,
-            bd.name AS F_GYSLB,
+            bd.name AS FGYSLB,
             pl.FPricer,
             pl.FPriceObject,
             bld.name as FPriceType,
@@ -171,9 +172,8 @@
 
     <!-- 分页查询价目表 -->
     <select id="selectPage" resultType="com.ruoyi.business.entity.PriceList">
-        WITH ranked AS (
         SELECT
-        pl.id,
+        MIN(pl.id) AS id,
         pl.fnumber,
         pl.FName,
         sp.NAME AS FSupplierID,
@@ -183,34 +183,56 @@
         pl.FPriceType,
         pl.FCurrencyID,
         pl.FPriceObject,
-        ple.F_GGSM,
-        ple.FTaxPrice,
-        ple.F_WBZC,
-        ple.F_WBZK,
-        ple.F_WBZG,
-        ple.F_MZ,
-        ple.F_JZ,
-        ple.F_GCHH,
-        ple.F_bzsm,
-        ple.FEntryEffectiveDate,
-        ple.FEntryExpiryDate,
-        ROW_NUMBER() OVER (PARTITION BY pl.id ORDER BY ple.FEntryEffectiveDate DESC) AS rn
+        pl.FDocumentStatus,
+        MIN(ple.F_GGSM) AS F_GGSM,
+        MIN(ple.FPrice) AS FPrice,
+        MIN(ple.FTaxPrice) AS FTaxPrice,
+        MIN(ple.F_WBZC) AS F_WBZC,
+        MIN(ple.F_WBZK) AS F_WBZK,
+        MIN(ple.F_WBZG) AS F_WBZG,
+        MIN(ple.F_MZ) AS F_MZ,
+        MIN(ple.F_JZ) AS F_JZ,
+        MIN(ple.F_GCHH) AS F_GCHH,
+        MIN(ple.F_bzsm) AS F_bzsm,
+        MIN(ple.FEntryEffectiveDate) AS FEntryEffectiveDate,
+        MIN(ple.FEntryExpiryDate) AS FEntryExpiryDate
         FROM price_list pl
-        LEFT JOIN price_list_entry ple ON pl.FNumber = ple.price_list_number
-        LEFT JOIN by_material b ON ple.FMaterialId = b.k3_id
-        LEFT JOIN bymaterial_dictionary bm ON pl.FCurrencyID = bm.kingdee AND bm.category = 'currency'
-        LEFT JOIN bymaterial_dictionary bd ON pl.F_GYSLB = bd.kingdee AND bd.category = 'Supply_category'
-        LEFT JOIN bymaterial_dictionary bld ON pl.FPriceType = bld.kingdee AND bld.category = 'price_type'
+        INNER JOIN price_list_entry ple ON pl.FNumber = ple.price_list_number
+        INNER JOIN by_material b ON ple.FMaterialId = b.k3_id
         LEFT JOIN supplier sp ON pl.FSupplierID = sp.supplierid
         ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
-        )
+    </select>
+
+
+    <select id="selectPriceList" resultType="com.ruoyi.business.entity.PriceList">
         SELECT
-        id, fnumber, FName, FSupplierID, FMaterialId, FMaterialName,
-        priceListId, FPriceType, FCurrencyID, FPriceObject,
-        F_GGSM, FTaxPrice, F_WBZC, F_WBZK, F_WBZG, F_MZ, F_JZ,
-        F_GCHH, F_bzsm, FEntryEffectiveDate, FEntryExpiryDate
-        FROM ranked
-        WHERE rn = 1;
+        MIN(pl.id) AS id,
+        pl.fnumber,
+        pl.FName,
+        sp.NAME AS FSupplierID,
+        b.number AS FMaterialId,
+        ple.FMaterialName,
+        pl.priceListId,
+        pl.FPriceType,
+        pl.FCurrencyID,
+        pl.FPriceObject,
+        MIN(ple.F_GGSM) AS F_GGSM,
+        MIN(ple.FPrice) AS FPrice,
+        MIN(ple.FTaxPrice) AS FTaxPrice,
+        MIN(ple.F_WBZC) AS F_WBZC,
+        MIN(ple.F_WBZK) AS F_WBZK,
+        MIN(ple.F_WBZG) AS F_WBZG,
+        MIN(ple.F_MZ) AS F_MZ,
+        MIN(ple.F_JZ) AS F_JZ,
+        MIN(ple.F_GCHH) AS F_GCHH,
+        MIN(ple.F_bzsm) AS F_bzsm,
+        MIN(ple.FEntryEffectiveDate) AS FEntryEffectiveDate,
+        MIN(ple.FEntryExpiryDate) AS FEntryExpiryDate
+        FROM price_list pl
+        INNER JOIN price_list_entry ple ON pl.FNumber = ple.price_list_number
+        INNER JOIN by_material b ON ple.FMaterialId = b.k3_id
+        LEFT JOIN supplier sp ON pl.FSupplierID = sp.supplierid
+        ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
     </select>
 
     <select id="selectByMaterialId" resultType="com.ruoyi.business.dto.PriceListDTO">
@@ -224,7 +246,7 @@
             ple.FDownPrice,
             ple.F_dzshqdl,
             ple.F_QDL,
-            byd.name as F_GYSLB,
+            byd.name as FGYSLB,
             ple.F_BCGG,
             ple.FEntryExpiryDate,
             ple.fentryEffectiveDate,

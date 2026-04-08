@@ -80,17 +80,9 @@
         SELECT <include refid="field_list"/> FROM <include refid="table_name"/> WHERE id = #{id}
     </select>
 
-    <!-- 查询所有系统字典项（不包含业务字典） -->
+    <!-- 查询所有字典项 -->
     <select id="selectAll" resultMap="DictionaryTableResult">
-        SELECT 
-            id, 
-            bilhead, 
-            CONCAT(dict_code,'(',dict_name,')') AS dict_name, 
-            dict_code, 
-            parent_code,
-            'system' AS source_type
-        FROM <include refid="table_name"/> 
-        ORDER BY sort_order, create_date
+        SELECT id, bilhead, CONCAT(dict_code,'(',dict_name,')') AS dict_name, dict_code, parent_code FROM <include refid="table_name"/> ORDER BY sort_order, create_date
     </select>
 
     <!-- 查询所有供应商分组 -->

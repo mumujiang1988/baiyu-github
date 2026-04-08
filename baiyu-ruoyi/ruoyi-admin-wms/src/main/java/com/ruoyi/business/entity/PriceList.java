@@ -23,7 +23,8 @@ public class PriceList {
     private Long priceListId;
     /** 名称（必填） → 对应金蝶字段：FName */
     private String FName;
-
+    /** 单据状态 */
+    private String FDocumentStatus;
     /** 编码 → FNumber */
     private String FNumber;
 
@@ -50,9 +51,6 @@ public class PriceList {
 
     /** 默认价目表 → FDefPriceListId */
     private Long FDefPriceListId;
-
-    /** 工厂图片 */
-    private String FTP1;
 
     /** 备注（另一字段）→ FNote */
     private String FNote;

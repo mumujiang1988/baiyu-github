@@ -216,8 +216,7 @@ export default {
               { default: () => renderDescriptionFields(tab.fields, data) }
             )
           )
-        } else {
-          // Table - wrapped with expand-section and expand-content
+        } else { 
           content = h(
             'div',
             { class: 'expand-section' },

@@ -13,7 +13,7 @@ import java.util.Date;
  * 收料通知单（检验单）完整实体（主表+明细表字段合并）
  */
 @Data
-@TableName("t_receipt_notice_full")
+@TableName("receipt_notice_full")
 public class ReceiptNoticeFull {
 
     /**

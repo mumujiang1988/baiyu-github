@@ -14,6 +14,8 @@ public class SaleOrder {
 
     /**单据类型*/
     private String documentType;
+    /**单据状态*/
+    private String fdocumentStatus;
     /**订单状态*/
     private String orderStatus; //A:未关闭 B:已关闭 C:业务终止手动关闭
     /** 金蝶主键 */

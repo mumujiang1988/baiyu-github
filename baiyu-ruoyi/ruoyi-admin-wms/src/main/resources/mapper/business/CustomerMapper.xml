@@ -205,12 +205,12 @@
             fnumber, fname, fdocumentStatus, fshort_name, f_khqc, fcreate_org_id, fcreator_id,fseller, f_kfxsy1, fsal_dept_id, fsal_group_id,
             f_dygj, fcountry, faddress, ftel, f_khyx, fwebsite, ftrading_curr_id, frec_condition_id, fgroup_id, f_khly, fbzfs,fsbsq,f_khzy,flegal_person,f_khgm,
             f_fhyq,f_cty_decimal,f_mjll,f_youtube,f_linkedin,f_facebook,f_twitter,f_instagram,f_vk,fcustTypeId,f_bzyq,fZmmttp1,fZmmttp2,fZmmttpMs,fcmmttp1,fcmmttp2,fCmmttpMs,f_khlogo,f_ly,
-            fsettle_type_id,zmmtwx,zmmtnx,fcmmtwx,fcmmtnx,fcreate_date
+            fsettle_type_id,zmmtwx,zmmtnx,fcmmtwx,fcmmtnx,fcreate_date,remark
         ) VALUES (
                      #{fnumber}, #{fname}, #{fdocumentStatus}, #{fshortName}, #{fKhqc}, #{fcreateOrgId}, #{fcreatorId}, #{fseller}, #{fKfxsy1}, #{fsalDeptId}, #{fsalGroupId},
                      #{fdygj}, #{fcountry}, #{faddress}, #{ftel}, #{fKhyx}, #{fwebsite}, #{ftradingCurrId}, #{frecConditionId}, #{fgroupId}, #{fKhly}, #{fBzfs},#{fsbsq},#{fKhzy},
                      #{flegalPerson},#{fKhgm},#{fFhyq},#{fCtyDecimal},#{fMjll},#{fYoutube},#{fLinkedin},#{fFacebook},#{fTwitter},#{fInstagram},#{fVk},#{fcustTypeId},#{fBzyq},
-                     #{fZmmttp1},#{fZmmttp2},#{fZmmttpMs},#{fcmmttp1},#{fcmmttp2},#{fCmmttpMs},#{fKhlogo},#{fLy},#{fsettleTypeId},#{zmmtwx},#{zmmtnx},#{fcmmtwx},#{fcmmtnx},#{fcreateDate}
+                     #{fZmmttp1},#{fZmmttp2},#{fZmmttpMs},#{fcmmttp1},#{fcmmttp2},#{fCmmttpMs},#{fKhlogo},#{fLy},#{fsettleTypeId},#{zmmtwx},#{zmmtnx},#{fcmmtwx},#{fcmmtnx},#{fcreateDate},#{remark}
                  )
     </insert>
 
@@ -260,7 +260,8 @@
             zmmtwx = #{zmmtwx},
             zmmtnx = #{zmmtnx},
             fcmmtwx = #{fcmmtwx},
-            fcmmtnx = #{fcmmtnx}
+            fcmmtnx = #{fcmmtnx},
+            remark = #{remark}
         WHERE Id = #{Id}
     </update>
 
@@ -269,7 +270,7 @@
         bcr.id,bcr.fnumber,bcr.fname,se.fname as fseller,bcr.fshort_name,bcr.f_cty_decimal,
         bcr.fdocumentStatus,c.name_zh as fcountry,cy.name_en as f_dygj,bcr.fsal_dept_id,d.dept_name as fsal_dept_name,
         bcr.fcreate_date,sr.user_name as fapprover_id,bcr.fapperober_date,b.name as fgroup_id,
-        bdy.name as f_khly,bds.name as fcustTypeId,bcr.fmodify_date
+        bdy.name as f_khly,bds.name as fcustTypeId,bcr.fmodify_date,bcr.remark
         FROM
         bd_customer bcr
         LEFT JOIN sys_employee se ON bcr.fseller = se.salesman_id

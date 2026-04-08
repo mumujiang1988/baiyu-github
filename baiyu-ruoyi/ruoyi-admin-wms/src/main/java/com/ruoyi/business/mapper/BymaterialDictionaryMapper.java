@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.business.entity.AiLlmModer;
 import com.ruoyi.business.entity.Bymaterial;
 import com.ruoyi.business.entity.BymaterialDictionary;
+import com.ruoyi.business.entity.MaterialDictionary;
 import com.ruoyi.business.k3.domain.vo.SupplierVo;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
@@ -129,19 +130,12 @@ public interface BymaterialDictionaryMapper extends BaseMapper<BymaterialDiction
     /**
      * 供应商
      * */
-    @Select(" SELECT id as FSupplierID, name FROM supplier")
+    @Select(" SELECT supplierid as FSupplierID, name FROM supplier")
     List<SupplierVo> listSuppliers();
 
     /**
      * 物料
      * */
-    @Select(" SELECT number as FMaterialId,name as FMaterialName FROM by_material")
-    List<BymaterialDictionary> selectmaterial();
-    
-    /**
-     * 查询所有业务字典项
-     * @return 业务字典列表
-     */
-    @Select("SELECT id, code, kingdee, name, category, category_name FROM bymaterial_dictionary ORDER BY create_time")
-    List<BymaterialDictionary> selectMaterialAll();
+    @Select(" SELECT number as FMaterialId,b.name as FMaterialName,bd.`name` as fctyBaseProperty1 ,specification,english_product_name as FctyBaseProperty FROM by_material b INNER JOIN bymaterial_dictionary bd ON b.fxlcp = bd.kingdee ")
+    List<MaterialDictionary> selectmaterial();
 }

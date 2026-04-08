@@ -56,6 +56,8 @@ public class PriceListVo {
     /** 备注（另一字段）→ FNote */
     private String FNote;
 
+    private String FDocumentStatus;
+
     /** 明细列表，一对多关系,不存数据库 */
     // @Column(ignore = true) // MyBatis-Flex 默认不会映射 List 类型，无需标注
     private List<PriceListEntry> entries;

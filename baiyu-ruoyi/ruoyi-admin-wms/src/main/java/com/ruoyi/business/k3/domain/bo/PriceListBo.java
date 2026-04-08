@@ -57,11 +57,14 @@ public class PriceListBo extends BaseEntity {
     private String FPriceType;
 
     /** 默认价目表 → FDefPriceListId */
-    private Long FDefPriceListId;
+    private Long FdefPriceListId;
 
 
     /** 备注（另一字段）→ FNote */
     private String FNote;
+
+    /** 单据状态 */
+    private String FDocumentStatus;
 
     /** 明细列表，一对多关系,不存数据库 */
     // @Column(ignore = true) // MyBatis-Flex 默认不会映射 List 类型，无需标注

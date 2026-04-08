@@ -1,13 +1,23 @@
 package com.ruoyi.business.k3.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.ruoyi.business.dto.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.business.entity.*;
+import com.ruoyi.business.k3.domain.bo.PriceListBo;
+import com.ruoyi.business.k3.domain.bo.SalesPricesBo;
+import com.ruoyi.business.k3.domain.vo.SalesPricesVo;
 import com.ruoyi.business.k3.service.SalesPriceService;
 
 import com.ruoyi.business.k3.util.K3DataUtils;
 import com.ruoyi.business.mapper.*;
 import com.ruoyi.business.util.Result;
+import com.ruoyi.common.core.utils.StringUtils;
+import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.system.domain.vo.SysUserVo;
 import com.ruoyi.system.mapper.SysUserMapper;
@@ -101,8 +111,8 @@ public class SalesPriceServiceImpl implements SalesPriceService {
                                       List<List<Object>> querySalesPriceItemPackageList) {
         try {
             // 1. 解析主表数据
-            List<SalesPrice> salesPriceList = parseSalesPriceList(querySalesPriceList);
-            log.info("解析销售价目表主表数据，共{}条", salesPriceList.size());
+//            List<SalesPrice> salesPriceList = parseSalesPriceList(querySalesPriceList);
+//            log.info("解析销售价目表主表数据，共{}条", salesPriceList.size());
 
             // 2. 解析物料明细数据
             Map<Long, List<SalesPriceItem>> itemMap = parseSalesPriceItemMap(querySalesPriceItemList);
@@ -113,36 +123,36 @@ public class SalesPriceServiceImpl implements SalesPriceService {
             log.info("解析销售价目表包材明组数据，共{}个K3主键", packageMap.size());
 
             // 4. 批量查询现有数据
-            List<String> fNumbers = salesPriceList.stream()
-                .map(SalesPrice::getFNumber)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-            Map<String, SalesPrice> existingPriceMap = new HashMap<>();
-            if (!fNumbers.isEmpty()) {
-                List<SalesPrice> existingList = salesPriceMapper.selectByFNumbers(fNumbers);
-                existingPriceMap = existingList.stream()
-                    .collect(Collectors.toMap(SalesPrice::getFNumber, p -> p, (a, b) -> a));
-            }
-            log.info("查询到{}条现有主表数据", existingPriceMap.size());
-
-            // 4. 同步主表数据
-            Map<Long, Long> k3IdToPriceIdMap = new HashMap<>();
-
-            for (SalesPrice salesPrice : salesPriceList) {
-                String fNumber = salesPrice.getFNumber();
-                Long k3Id = salesPrice.getFId();
-
-                SalesPrice existing = existingPriceMap.get(fNumber);
-                if (existing != null) {
-                    salesPriceMapper.updateSalesPrice(salesPrice);
-                    k3IdToPriceIdMap.put(k3Id, existing.getFId());
-                } else {
-                    salesPriceMapper.insertSalesPrice(salesPrice);
-                    k3IdToPriceIdMap.put(k3Id, salesPrice.getFId());
-                }
-            }
-            log.info("同步主表{}条数据", salesPriceList.size());
+//            List<String> fNumbers = salesPriceList.stream()
+//                .map(SalesPrice::getFNumber)
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList());
+//
+//            Map<String, SalesPrice> existingPriceMap = new HashMap<>();
+//            if (!fNumbers.isEmpty()) {
+//                List<SalesPrice> existingList = salesPriceMapper.selectByFNumbers(fNumbers);
+//                existingPriceMap = existingList.stream()
+//                    .collect(Collectors.toMap(SalesPrice::getFNumber, p -> p, (a, b) -> a));
+//            }
+//            log.info("查询到{}条现有主表数据", existingPriceMap.size());
+//
+//            // 4. 同步主表数据
+//            Map<Long, Long> k3IdToPriceIdMap = new HashMap<>();
+//
+//            for (SalesPrice salesPrice : salesPriceList) {
+//                String fNumber = salesPrice.getFNumber();
+//                Long k3Id = salesPrice.getFId();
+//
+//                SalesPrice existing = existingPriceMap.get(fNumber);
+//                if (existing != null) {
+//                    salesPriceMapper.updateSalesPrice(salesPrice);
+//                    k3IdToPriceIdMap.put(k3Id, existing.getFId());
+//                } else {
+//                    salesPriceMapper.insertSalesPrice(salesPrice);
+//                    k3IdToPriceIdMap.put(k3Id, salesPrice.getFId());
+//                }
+//            }
+//            log.info("同步主表{}条数据", salesPriceList.size());
 
             // 5. 同步物料明细
             List<SalesPriceItem> itemsToInsert = new ArrayList<>();
@@ -150,7 +160,7 @@ public class SalesPriceServiceImpl implements SalesPriceService {
 
             for (Map.Entry<Long, List<SalesPriceItem>> entry : itemMap.entrySet()) {
                 Long k3Id = entry.getKey();
-                Long priceId = k3IdToPriceIdMap.get(k3Id);
+                Long priceId = itemMap.get(k3Id).get(0).getPriceId();
                 if (priceId == null) {
                     continue;
                 }
@@ -197,7 +207,7 @@ public class SalesPriceServiceImpl implements SalesPriceService {
 
             for (Map.Entry<Long, List<SalesPriceItemPackage>> entry : packageMap.entrySet()) {
                 Long k3Id = entry.getKey();
-                Long priceId = k3IdToPriceIdMap.get(k3Id);
+                Long priceId = itemMap.get(k3Id).get(0).getPriceId();
                 if (priceId == null) {
                     continue;
                 }
@@ -303,37 +313,39 @@ public class SalesPriceServiceImpl implements SalesPriceService {
             }
 
             SalesPriceItem item = new SalesPriceItem();
-            item.setFMaterialId(getString(rowData, 1));      // 物料编码
-            item.setFKhhh(getString(rowData, 2));            // 客户货号
-            item.setFPrice(getBigDecimal(rowData, 3));       // 价格
-            item.setFBzyq(getString(rowData, 4));            // 包装要求
-            item.setFBzmx(getString(rowData, 5));            // 售后调整
-            item.setFYwpm(getString(rowData, 6));            // 英文品名
-            item.setFzxzlxgrq(getLocalDate(rowData, 7));     // 装箱资料修改日期
-            item.setFC(getBigDecimal(rowData, 8));          // 长
-            item.setFK(getBigDecimal(rowData, 9));          // 宽
-            item.setFG(getBigDecimal(rowData, 10));          // 高
-            item.setFMz(getBigDecimal(rowData, 11));         // 毛重
-            item.setFCptp2(getString(rowData, 12));          // 产品图片2
-            item.setFCptp3(getString(rowData, 13));          // 产品图片3
-            item.setFJgdztp(getString(rowData, 14));         // 激光打字图片
-            item.setFWxtm(getString(rowData, 15));           // 外箱条码
-            item.setFWxzm(getString(rowData, 16));           // 外箱正唛
-            item.setFWxcm(getString(rowData, 17));           // 外箱侧唛
-            item.setFNxzm(getString(rowData, 18));           // 内箱正唛
-            item.setFNxcm(getString(rowData, 19));           // 内箱侧唛
-            item.setFCtt(getString(rowData, 20));            // 彩贴图
-            item.setFSmst(getString(rowData, 21));           // 说明书图
-            item.setFCtaot(getString(rowData, 22));          // 彩套图
-            item.setFCht(getString(rowData, 23));            // 彩盒图
-            item.setFDkczz(getString(rowData, 24));          // 单款称重照
-            item.setFZxczz(getString(rowData, 25));          // 整箱称重照
-            item.setFtm(getString(rowData, 26));             // 条码
-            item.setFBzt(getString(rowData, 27));            // 包装图
-            item.setFGys(getString(rowData, 28));            // 供应商
-            item.setFJz(getBigDecimal(rowData, 29));         // 净重
-            item.setFbgrq(getLocalDate(rowData, 30));        // 变更日期
-            item.setFYwbzfs(getString(rowData, 31));         // 英文包装方式
+            item.setPriceId(getLong(rowData, 0));      // 单据编号
+            item.setFNumber(getString(rowData, 1));      // 单据编号
+            item.setFMaterialId(getString(rowData, 2));      // 物料编码
+            item.setFKhhh(getString(rowData, 3));            // 客户货号
+            item.setFPrice(getBigDecimal(rowData, 4));       // 价格
+            item.setFBzyq(getString(rowData, 5));            // 包装要求
+            item.setFBzmx(getString(rowData, 6));            // 售后调整
+            item.setFYwpm(getString(rowData, 7));            // 英文品名
+            item.setFzxzlxgrq(getLocalDate(rowData, 8));     // 装箱资料修改日期
+            item.setFC(getBigDecimal(rowData, 9));          // 长
+            item.setFK(getBigDecimal(rowData, 10));          // 宽
+            item.setFG(getBigDecimal(rowData, 11));          // 高
+            item.setFMz(getBigDecimal(rowData, 12));         // 毛重
+            item.setFCptp2(getString(rowData, 13));          // 产品图片2
+            item.setFCptp3(getString(rowData, 14));          // 产品图片3
+            item.setFJgdztp(getString(rowData, 15));         // 激光打字图片
+            item.setFWxtm(getString(rowData, 16));           // 外箱条码
+            item.setFWxzm(getString(rowData, 17));           // 外箱正唛
+            item.setFWxcm(getString(rowData, 18));           // 外箱侧唛
+            item.setFNxzm(getString(rowData, 19));           // 内箱正唛
+            item.setFNxcm(getString(rowData, 20));           // 内箱侧唛
+            item.setFCtt(getString(rowData, 21));            // 彩贴图
+            item.setFSmst(getString(rowData, 22));           // 说明书图
+            item.setFCtaot(getString(rowData, 23));          // 彩套图
+            item.setFCht(getString(rowData, 24));            // 彩盒图
+            item.setFDkczz(getString(rowData, 25));          // 单款称重照
+            item.setFZxczz(getString(rowData, 26));          // 整箱称重照
+            item.setFtm(getString(rowData, 27));             // 条码
+            item.setFBzt(getString(rowData, 28));            // 包装图
+            item.setFGys(getString(rowData, 29));            // 供应商
+            item.setFJz(getBigDecimal(rowData, 30));         // 净重
+            item.setFbgrq(getLocalDate(rowData, 31));        // 变更日期
+            item.setFYwbzfs(getString(rowData, 32));         // 英文包装方式
 
             result.computeIfAbsent(k3Id, k -> new ArrayList<>()).add(item);
         }
@@ -357,16 +369,17 @@ public class SalesPriceServiceImpl implements SalesPriceService {
 
             SalesPriceItemPackage pkg = new SalesPriceItemPackage();
             pkg.setPriceId(getLong(rowData, 0));
-            pkg.setFBzbm(getString(rowData, 1));
-            pkg.setFBzmc(getString(rowData, 2));
-            pkg.setFBzgg(getString(rowData, 3));
-            pkg.setFDw(getString(rowData, 4));
-            pkg.setFYl(getInteger(rowData, 5));
-            pkg.setFBz(getString(rowData, 6));
-            pkg.setFTp(getString(rowData, 7));
-            pkg.setFBcfwgys(getString(rowData, 8));
-            pkg.setFCpgys(getString(rowData, 9));
-            pkg.setFCtyBaseProperty(getInteger(rowData, 10));
+            pkg.setFNumber(getString(rowData, 1));      // 单据编号
+            pkg.setFBzbm(getString(rowData, 2));
+            pkg.setFBzmc(getString(rowData, 3));
+            pkg.setFBzgg(getString(rowData, 4));
+            pkg.setFDw(getString(rowData, 5));
+            pkg.setFYl(getInteger(rowData, 6));
+            pkg.setFBz(getString(rowData, 7));
+            pkg.setFTp(getString(rowData, 8));
+            pkg.setFBcfwgys(getString(rowData, 9));
+            pkg.setFCpgys(getString(rowData, 10));
+            pkg.setFCtyBaseProperty(getInteger(rowData, 11));
 
             result.computeIfAbsent(k3Id, k -> new ArrayList<>()).add(pkg);
         }
@@ -575,39 +588,43 @@ public class SalesPriceServiceImpl implements SalesPriceService {
      * 分页查询价目列表
      */
     @Override
-    public Page<SalesPrice> listSalesPrices(SalesPrice price, int page, int size) {
-        try {
-            int offset = (page - 1) * size;
-
+    public TableDataInfo<SalesPrice> listSalesPrices(SalesPricesBo price, PageQuery pageQuery) {
             // 调用 Mapper 层的分页查询
-            List<SalesPrice> records = salesPriceMapper.selectByCondition(offset, size, price);
-            long total = salesPriceMapper.countByCondition(price);
-
+            Page<SalesPrice> records = salesPriceMapper.selectPage(pageQuery.build(),this.buildQueryWrapper(price));
             // 查询每个价目的明细和包材信息
-            if (!records.isEmpty()) {
-                for (SalesPrice record : records) {
+            if (!records.getRecords().isEmpty()) {
+                records.getRecords().forEach(en ->{
                     // 查询物料明细
-                    List<SalesPriceItem> items = itemMapper.selectByPriceId(record.getFId());
-                    if (items != null && !items.isEmpty()) {
-                        record.setItemList(items);
+                    List<SalesPriceItem> items = itemMapper.selectByPriceId(en.getId());
+                    if (!items.isEmpty()){
+                        en.setItemList(items);
                     }
-
                     // 查询包材明细
-                    List<SalesPriceItemPackage> packageList = packageMapper.selectByPriceId(record.getFId());
-                    if (packageList != null && !packageList.isEmpty()) {
-                        record.setItemPackageList(packageList);
+                    List<SalesPriceItemPackage> packageList = packageMapper.selectByPriceId(en.getFId());
+                    if (!packageList.isEmpty()){
+                        en.setItemPackageList(packageList);
                     }
-                }
-            }
 
-            Page<SalesPrice> result = Page.of(page, size, total);
-            result.setRecords(records);
-            return result;
-        } catch (Exception e) {
-            log.error("查询价目列表失败", e);
-            return Page.of(0, size);
-        }
+                });
+            }
+            return TableDataInfo.build(records);
     }
+
+
+    /**
+     * @param price 查询条件对象
+     * @return 销售价目列表
+     */
+    private Wrapper<SalesPrice> buildQueryWrapper(SalesPricesBo price) {
+        QueryWrapper<SalesPrice> wrapper = Wrappers.query();
+        //查询条件
+        wrapper
+            .eq(ObjectUtil.isNotNull(price.getId()),"t.id", price.getId())
+            .like(StringUtils.isNotBlank(price.getFNumber()), "t.FNumber", price.getFNumber())
+            .orderByDesc("t.f_create_date");
+        return wrapper;
+    }
+
 
     /**
      * 新增销售价目表变更表

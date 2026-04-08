@@ -24,10 +24,10 @@ public interface DeliveryNoticeMapper extends BaseMapper<DeliveryNotice> {
 
     /**
      * 根据 ID 查询发货通知单
-     * @param id 发货通知单 ID
+     * @param fid 发货通知单 ID
      * @return 发货通知单信息
      */
-    DeliveryNotice selectById(@Param("id") Long id);
+    DeliveryNotice selectById(@Param("fid") Long fid);
 
     /**
      * 根据单据编号查询发货通知单

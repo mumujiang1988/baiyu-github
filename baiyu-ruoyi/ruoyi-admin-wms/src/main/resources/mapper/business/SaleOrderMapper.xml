@@ -9,6 +9,7 @@
         <result column="FBillNo" property="fBillNo"/>
         <result column="Document_type" property="documentType"/>
         <result column="FDate" property="fDate"/>
+        <result column="FDocumentStatus" property="fdocumentStatus"/>
         <result column="FCustId" property="fCustId"/>
         <result column="orderStatus" property="orderStatus"/>
         <result column="F_ora_BaseProperty" property="fOraBaseProperty"/>
@@ -233,7 +234,7 @@
     <!-- 插入销售订单 -->
     <insert id="insert" parameterType="com.ruoyi.business.entity.SaleOrder">
         INSERT INTO t_sale_order (
-            FID, FBillNo,orderStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
+            FID, FBillNo,FDocumentStatus,orderStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
             F_cty_BaseProperty1, FSettleCurrId, F_tcbl, F_KHSD, FIsIncludedTax,
             F_sfbg, FSalerId, F_lrl, F_jlrl, F_gj,fstate, F_myfs, F_zyxb, F_yhzh,
             F_cty_Date, F_sygs, FRecConditionId, Fbzfs, FReceiveId,
@@ -244,7 +245,7 @@
             FExchangeTypeId, FExchangeRate,
             fplannotrecamount, fplanallrecamount, fplanrefundamount
         ) VALUES (
-            #{fid}, #{fBillNo},#{orderStatus}, #{documentType}, #{fDate}, #{fCustId}, #{fOraBaseProperty}, #{fKhhth}, #{fKglxr},
+            #{fid}, #{fBillNo},#{orderStatus},#{orderStatus}, #{documentType}, #{fDate}, #{fCustId}, #{fOraBaseProperty}, #{fKhhth}, #{fKglxr},
             #{fCtyBaseProperty1}, #{fSettleCurrId}, #{fTcbl}, #{fKhsd}, #{fIsIncludedTax},
             #{fSfbg}, #{fSalerId}, #{fLrl}, #{fJlrl}, #{fGj},#{fstate}, #{fMyfs}, #{fZyxb}, #{fYhzh},
             #{fCtyDate}, #{fSygs}, #{fRecConditionId}, #{fbzfs}, #{fReceiveId},
@@ -265,7 +266,7 @@
     <!-- 批量插入销售订单 -->
     <insert id="batchInsert" parameterType="java.util.List">
         INSERT INTO t_sale_order (
-            FID, FBillNo,orderStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
+            FID, FBillNo,orderStatus,FDocumentStatus,Document_type, FDate, FCustId, F_ora_BaseProperty, F_khhth, F_kglxr,
             F_cty_BaseProperty1, FSettleCurrId, F_tcbl, F_KHSD, FIsIncludedTax,
             F_sfbg, FSalerId, F_lrl, F_jlrl, F_gj,fstate, F_myfs, F_zyxb, F_yhzh,
             F_cty_Date, F_sygs, FRecConditionId, Fbzfs, FReceiveId,
@@ -278,7 +279,7 @@
         ) VALUES
         <foreach collection="list" item="item" separator=",">
             (
-                #{item.fid}, #{item.fBillNo},#{item.orderStatus}, #{item.documentType}, #{item.fDate}, #{item.fCustId}, #{item.fOraBaseProperty}, #{item.fKhhth}, #{item.fKglxr},
+                #{item.fid}, #{item.fBillNo},#{item.FDocumentStatus},#{item.orderStatus}, #{item.documentType}, #{item.fDate}, #{item.fCustId}, #{item.fOraBaseProperty}, #{item.fKhhth}, #{item.fKglxr},
                 #{item.fCtyBaseProperty1}, #{item.fSettleCurrId}, #{item.fTcbl}, #{item.fKhsd}, #{item.fIsIncludedTax},
                 #{item.fSfbg}, #{item.fSalerId}, #{item.fLrl}, #{item.fJlrl}, #{item.fGj}, #{item.fstate}, #{item.fMyfs}, #{item.fZyxb}, #{item.fYhzh},
                 #{item.fCtyDate}, #{item.fSygs}, #{item.fRecConditionId}, #{item.fbzfs}, #{item.fReceiveId},
@@ -316,6 +317,7 @@
         UPDATE t_sale_order
         <set>
             FBillNo = #{fBillNo},
+            FDocumentStatus = #{fdocumentStatus},
             Document_type = #{documentType},
             orderStatus = #{orderStatus},
             FDate = #{fDate},
@@ -373,7 +375,7 @@
     </delete>
 
     <!-- 分页查询销售订单 -->
-    <select id="selectPage" resultMap="SaleOrderMap">
+    <select id="selectPage" resultType="com.ruoyi.business.entity.SaleOrder">
         SELECT
         t.id,
         t.FID,
@@ -495,40 +497,7 @@
         ON su.k3_key = t.FCreatorId
         LEFT JOIN sys_user sur
         ON sur.k3_key = t.FModifierId
-
-        <where>
-            <if test="query != null">
-                <if test="query.fBillNo != null and query.fBillNo != ''">
-                    AND t.FBillNo LIKE CONCAT('%', #{query.fBillNo}, '%')
-                </if>
-                <if test="query.fOraBaseProperty != null and query.fOraBaseProperty != ''">
-                    AND t.F_ora_BaseProperty LIKE CONCAT('%', #{query.fOraBaseProperty}, '%')
-                </if>
-                <if test="query.fSalerId != null and query.fSalerId != ''">
-                    AND se.fname LIKE CONCAT('%', #{query.fSalerId}, '%')
-                </if>
-                <if test="query.fKhhth != null and query.fKhhth != ''">
-                    AND t.F_khhth LIKE CONCAT('%', #{query.fKhhth}, '%')
-                </if>
-                <if test="query.fKglxr != null and query.fKglxr != ''">
-                    AND sc.contact_name LIKE CONCAT('%', #{query.fKglxr}, '%')
-                </if>
-                <if test="query.fSfbg != null">
-                    AND t.F_sfbg = #{query.fSfbg}
-                </if>
-                <if test="query.documentType != null">
-                    AND t.Document_type = #{query.documentType}
-                </if>
-                <if test="query.fShzt != null">
-                    AND t.F_shzt = #{query.fShzt}
-                </if>
-                <if test="query.fDate != null">
-                    AND DATE(t.FDate) = DATE(#{query.fDate})
-                </if>
-            </if>
-        </where>
-
-        ORDER BY t.FID DESC
+        ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
     </select>
 
     <!-- 查询指定月份的销售员订单数量排行榜 -->

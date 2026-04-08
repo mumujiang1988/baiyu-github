@@ -18,12 +18,12 @@ public class FtApiConfig {
     /**
      * 登录名
      */
-    private String loginName;
+    private String loginName = "johny12";
 
     /**
      * 密钥
      */
-    private String secretKey;
+    private String secretKey = "ODMxMQ==oep7W0aR055UJrpP";
 
     public String getBaseUrl() {
         return baseUrl;

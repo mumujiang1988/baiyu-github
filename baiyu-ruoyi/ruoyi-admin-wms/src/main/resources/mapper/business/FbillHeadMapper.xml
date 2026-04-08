@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.business.mapper.FbillHeadMapper">
+
+    <select id="selectByCondition" parameterType="com.ruoyi.business.k3.domain.entity.FbillHead" resultType="com.ruoyi.business.k3.domain.entity.FbillHead">
+        SELECT
+        f.id,f.f_bill_no,f.f_name,s.name as f_supplierId,b.number as f_materialId,fp.fmaterial_name,fp.FFROMQTY,fp.f_to_qty,fp.f_after_price,fp.f_after_tax_price,
+        fp.f_effective_date,fp.f_expiry_date,f.f_document_status,bd.name as f_currency_id,fp.f_after_price_coefficient,su.user_name as create_by,f.create_time
+        FROM f_billhead f
+        INNER JOIN f_fpur_patentry fp on f.f_bill_no = fp.f_number
+        INNER JOIN supplier s ON fp.f_supplier_id = s.supplierid
+        INNER JOIN by_material b on fp.f_material_id = b.k3_id
+        INNER JOIN bymaterial_dictionary bd ON fp.f_currency_id = bd.kingdee and bd.category= 'currency'
+        INNER JOIN sys_user su ON f.create_by = su.k3_key
+        ${ew.customSqlSegment}  <!-- 动态条件，由Wrapper构建 -->
+    </select>
+
+    <select id="selectByIds" resultType="com.ruoyi.business.k3.domain.entity.FbillHead">
+        SELECT
+        id,f_id,f_bill_no,f_document_status,f_date,f_purchase_org_id,f_name,f_description,f_pa_reason,f_use_org_id,
+        create_by,create_time,update_by,update_time,f_approver_id,f_approve_date,f_effective_userId,fforbider_id,
+        fforbid_date,feffectivestatus,feffectiveuserid,feffectivedatehead,f_forbid_status
+        FROM f_billhead WHERE id = #{id}
+    </select>
+
+
+</mapper>

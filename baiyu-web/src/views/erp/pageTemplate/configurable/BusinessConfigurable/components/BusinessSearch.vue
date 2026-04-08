@@ -262,7 +262,7 @@ const handleAction = (handlerName) => {
 }
 
 .search-form :deep(.el-form-item) {
-  margin-bottom: 2px;  /* Changed from 4px to 2px, more compact */
-  margin-right: 8px;  /* Changed from 16px to 12px, reduce horizontal spacing */
+  margin-bottom: 2px;   
+  margin-right: 8px;  
 }
 </style>

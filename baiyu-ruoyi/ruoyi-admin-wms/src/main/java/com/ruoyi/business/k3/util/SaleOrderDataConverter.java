@@ -36,11 +36,11 @@ public class SaleOrderDataConverter {
             order.setDocumentType(K3DataUtils.getString(row, index++));
             // FID
             order.setFid(K3DataUtils.getLong(row, index++));
+            order.setFdocumentStatus(K3DataUtils.getString(row, index++));
             order.setOrderStatus(K3DataUtils.getString(row, index++));
 
             // FBillNo - 单据编号
             order.setFBillNo(K3DataUtils.getString(row, index++));
-
             // FDate - 销售合同日期
             order.setFDate(convertToLocalDateToDate(DateUtils.getLocalDate(row, index++)));
 

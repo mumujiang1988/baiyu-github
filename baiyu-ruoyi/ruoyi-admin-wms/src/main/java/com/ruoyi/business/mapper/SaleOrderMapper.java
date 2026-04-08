@@ -1,9 +1,16 @@
 package com.ruoyi.business.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.business.dto.CountryOrderDistributionDTO;
+import com.ruoyi.business.entity.PriceList;
 import com.ruoyi.business.entity.SaleOrder;
+import com.ruoyi.business.k3.domain.vo.SaleOrderVo;
+import com.ruoyi.common.mybatis.annotation.DataColumn;
+import com.ruoyi.common.mybatis.annotation.DataPermission;
+import com.ruoyi.common.mybatis.core.mapper.BaseMapperPlus;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mapper
-public interface SaleOrderMapper {
+public interface SaleOrderMapper extends BaseMapperPlus<SaleOrder, SaleOrderVo> {
     /**
      * 根据主键查询销售订单
      * @param fid 主键ID
@@ -76,12 +83,14 @@ public interface SaleOrderMapper {
 
     /**
      * 分页查询销售订单
-     *
-     * @param page 分页对象
-     * @param query 查询条件
+     * @param page 查询条件
      * @return 分页结果
      */
-    IPage<SaleOrder> selectPage(Page<SaleOrder> page, SaleOrder query);
+    @DataPermission({
+        @DataColumn(key = "deptName", value = "d.dept_id"),
+        @DataColumn(key = "userName", value = "su.user_id")
+    })
+    Page<SaleOrder> selectPage(@Param("page") Page<SaleOrder> page, @Param(Constants.WRAPPER) Wrapper<SaleOrder> queryWrapper);
 
     /**
      * 查询指定月份的销售员订单数量排行榜

@@ -1,21 +1,25 @@
 package com.ruoyi.business.k3.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.ruoyi.business.dto.SalesOrderDTo;
 import com.ruoyi.business.dto.SalesRankingDTO;
-import com.ruoyi.business.entity.SaleOrder;
-import com.ruoyi.business.entity.SaleOrderCost;
-import com.ruoyi.business.entity.SaleOrderEntry;
+import com.ruoyi.business.entity.*;
 import com.ruoyi.business.feishu.config.BatchGetEmployeeConfig;
 import com.ruoyi.business.k3.config.Dictionaryconfig;
+import com.ruoyi.business.k3.domain.bo.PriceListBo;
+import com.ruoyi.business.k3.domain.bo.SaleOrderBo;
 import com.ruoyi.business.k3.service.SaleOrderService;
 import com.ruoyi.business.k3.util.SaleOrderDataConverter;
-import com.ruoyi.business.entity.BymaterialDictionary;
 import com.ruoyi.business.mapper.*;
 
 import com.ruoyi.business.util.Result;
 import com.ruoyi.business.util.ThreadPoolUtil;
 
 import com.ruoyi.business.util.SaleOrderCostCalculator;
+import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -88,14 +92,14 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             totalCount += mainTableCount;
             log.info("销售订单主表同步完成，共处理 {} 条数据", mainTableCount);
 
-            // ============ 2. 同步销售订单明细表 ============
-            int detailTableCount = syncSaleOrderDetailTable(pageSize, detailPages);
-            totalCount += detailTableCount;
-            log.info("销售订单明细表同步完成，共处理 {} 条数据", detailTableCount);
-
-            // ============ 3. 同步销售订单成本表 ============
-            int costTableCount = syncSaleOrderCostTable(pageSize, costPages);
-           totalCount += costTableCount;
+//            // ============ 2. 同步销售订单明细表 ============
+//            int detailTableCount = syncSaleOrderDetailTable(pageSize, detailPages);
+//            totalCount += detailTableCount;
+//            log.info("销售订单明细表同步完成，共处理 {} 条数据", detailTableCount);
+//
+//            // ============ 3. 同步销售订单成本表 ============
+//            int costTableCount = syncSaleOrderCostTable(pageSize, costPages);
+//           totalCount += costTableCount;
 
             log.info("销售订单数据同步完成，总计处理 {} 条数据", totalCount);
             return totalCount;
@@ -546,12 +550,29 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         return processedCount;
     }
 
+    /**
+     * 分页查询销售订单
+     */
     @Override
-    public TableDataInfo<SaleOrder> selectPageSaleOrder(SaleOrder saleOrder, PageQuery pageQuery) {
-        Page<SaleOrder> page = pageQuery.build();
-        // 使用MyBatis-Plus的分页查询，传入查询条件
-        IPage<SaleOrder> result = saleOrderMapper.selectPage(page, saleOrder);
+    public TableDataInfo<SaleOrder> selectPageSaleOrder(SaleOrderBo saleOrder, PageQuery pageQuery) {
+        Page<SaleOrder> result = saleOrderMapper.selectPage(pageQuery.build(),this.buildQueryWrapper(saleOrder));
         return TableDataInfo.build(result);
+    }
+
+    /**
+     * @param saleorder 查询条件对象
+     * @return 销售订单列表
+     */
+    private Wrapper<SaleOrder> buildQueryWrapper(SaleOrderBo saleorder) {
+        QueryWrapper<SaleOrder> wrapper = Wrappers.query();
+        //查询条件
+        wrapper
+            .eq(ObjectUtil.isNotNull(saleorder.getId()),"t.id", saleorder.getId())
+       /*     .like(StringUtils.isNotBlank(saleorder.getFBillNo()), "pl.FNumber", saleorder.getFBillNo())
+            .like(StringUtils.isNotBlank(saleorder.getFOraBaseProperty()), "sp.name",saleorder.getFOraBaseProperty())
+            .like(StringUtils.isNotBlank(saleorder.getOrderStatus()), "b.number",saleorder.getOrderStatus())*/
+            .orderByDesc("t.fCreateDate");
+        return wrapper;
     }
 
     @Override
@@ -600,6 +621,11 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
     }
 
+
+    /**
+     * 查询指定月份的国家订单分布
+     *
+     */
     @Override
     public SalesOrderDTo getCountryOrderDistributionByMonth(SalesOrderDTo query) {
 

@@ -18,8 +18,7 @@
       @reset="resetQuery"
       @action="handleToolbarAction"
     />
-    
-    <!-- Main table area -->
+     
     <BusinessTable
       :table-config="parsedConfig.table"
       :table-data="tableData"
@@ -33,8 +32,7 @@
       @page-size-change="handlePageSizeChange"
       @page-change="handlePageChange"
     />
-    
-    <!-- Form dialog -->
+     
     <BusinessForm
       v-model:visible="dialogVisible"
       :form-config="parsedConfig.form"
@@ -73,8 +71,7 @@ import dictionaryManager from '@/views/erp/utils/DictionaryManager'
 import multiTableQueryBuilder from '../../utils/multiTableQueryBuilder'
 import { formatCurrency, formatDate, formatDateTime, formatPercent, formatAmount } from '@/views/erp/utils/index.js'
 import { isSuccessResponse, getResponseData } from '@/views/erp/utils/index.js'
-
-// Import business components
+ 
 import BusinessSearch from './components/BusinessSearch.vue'
 import BusinessTable from './components/BusinessTable.vue'
 import BusinessForm from './components/BusinessForm.vue'
@@ -95,8 +92,7 @@ const props = defineProps({
 const getModuleCode = () => {
   return route.query.moduleCode || props.moduleCode  
 }
-
-// Configuration related
+ 
 const currentConfig = ref(null)
 const parsedConfig = reactive({
   page: {},
@@ -106,15 +102,13 @@ const parsedConfig = reactive({
   drawer: {},
   actions: {}
 })
-
-  // Business template (computed property)
+ 
 const BusinessTemplate = computed(() => ({
   apiConfig: currentConfig.value?.apiConfig || {},
   dictionaryConfig: currentConfig.value?.dictionaryConfig || {},
   pageConfig: currentConfig.value?.pageConfig || {}
 }))
-
-// State management
+ 
 const dictLoaded = ref(false)
 const loading = ref(true)
 const submitLoading = ref(false)
@@ -144,7 +138,7 @@ const queryRef = ref(null)
 const detailActiveTab = ref('entry')
 const formActiveTab = ref('entry')
 
-// Computed properties
+ 
 const businessConfig = computed(() => currentConfig.value?.businessConfig || {})
 const pageTitle = computed(() => {
   const titleTemplate = parsedConfig.page?.title || '{entityName}管理'
@@ -325,12 +319,11 @@ const loadSubTablesByBillNo = async (rowData) => {
     if (subTableConfigs.length === 0) {
       return
     }
-    
-    // 直接传递整个 row 对象，让 relationConfig 可以访问所有字段
+     
     const results = await multiTableQueryBuilder.queryAllSubTables(
       moduleCode,
       subTableConfigs,
-      rowData  // 传递整个 row 对象
+      rowData   
     )
     
     if (results.entry) {
@@ -499,8 +492,7 @@ const handleViewDetail = async (row) => {
   drawerLoading.value = true
   currentDetailRow.value = { ...row }
   
-  try {
-    // 直接传递整个 row 对象，让 relationConfig 可以访问所有字段
+  try { 
     await loadSubTablesByBillNo(row)
     detailActiveTab.value = entryList.value?.length > 0 ? 'entry' : (Object.keys(costData.value).length > 0 ? 'cost' : 'entry')
   } catch (error) {
@@ -985,11 +977,10 @@ const initDateRange = () => {
       dateRange.value = [startDate, endDate]
       queryParams.value.beginDate = startDate
       queryParams.value.endDate = endDate
-      return  // ✅ 提前返回，不再执行后面的 beginDate/endDate 逻辑
+      return   
     }
   }
-  
-  // === 原有逻辑保持不变（兼容旧格式）===
+   
   const beginDateField = searchFields.find(f => f.field === 'beginDate')
   const endDateField = searchFields.find(f => f.field === 'endDate')
   
@@ -1006,8 +997,7 @@ const initDateRange = () => {
   
   if (beginDateValue && endDateValue) {
     dateRange.value = [beginDateValue, endDateValue]
-  } else {
-    // Fallback: 本月 1 号到今天
+  } else { 
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     dateRange.value = [

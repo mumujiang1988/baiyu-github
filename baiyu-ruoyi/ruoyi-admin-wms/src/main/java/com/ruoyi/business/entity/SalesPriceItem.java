@@ -13,6 +13,8 @@ public class SalesPriceItem {
 
     /** 价目主表ID */
     private Long priceId;
+    /** 价目主表编码 */
+    private String fNumber;
 
     /** 物料编码(FMaterialId) */
     private String fMaterialId;

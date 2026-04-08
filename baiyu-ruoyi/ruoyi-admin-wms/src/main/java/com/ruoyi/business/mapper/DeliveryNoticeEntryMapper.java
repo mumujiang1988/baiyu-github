@@ -32,7 +32,7 @@ public interface DeliveryNoticeEntryMapper extends BaseMapper<DeliveryNoticeEntr
      * @param deliveryNoticeId 主表 ID
      * @return 明细列表
      */
-    List<DeliveryNoticeEntry> selectByDeliveryNoticeId(@Param("deliveryNoticeId") Long deliveryNoticeId);
+    DeliveryNoticeEntry selectByDeliveryNoticeId(@Param("deliveryNoticeId") String deliveryNoticeId, @Param("fmaterialId") String fmaterialId);
 
     /**
      * 根据主表单据编号查询明细列表
@@ -43,10 +43,10 @@ public interface DeliveryNoticeEntryMapper extends BaseMapper<DeliveryNoticeEntr
 
     /**
      * 根据主表 ID 删除明细
-     * @param deliveryNoticeId 主表 ID
+     * @param deliveryNoticeNo 主表 ID
      * @return 影响行数
      */
-    int deleteByDeliveryNoticeId(@Param("deliveryNoticeId") Long deliveryNoticeId);
+    int deleteByDeliveryNoticeId(@Param("deliveryNoticeNo") String deliveryNoticeNo);
 
     /**
      * 根据主表单据编号删除明细

@@ -392,6 +392,8 @@ public class Customer {
     @TableField("f_viber")
     private String fViber;
 
+    private String remark;
+
     /** 用户信息 */
     @TableField(exist = false)
     private SysUser user;

@@ -36,6 +36,7 @@ public class PriceListController extends BaseController {
     @Autowired
     private MinioUtil minioUtil;
 
+
     /**
      * 同步金蝶采购价目表信息
      */
@@ -45,7 +46,7 @@ public class PriceListController extends BaseController {
         //获取采购价目主表数据
         List<List<Object>> PriceLarsList =  k3configks.PriceLarsList() ;
         priceListService.syncPriceList(PriceLarsList);
-        //获取采购价目明细表
+//        //获取采购价目明细表
         List<List<Object>> PriceParticularsList =  k3configks.PriceParticularsList() ;
         priceListService.syncPriceListEntry(PriceParticularsList);
         return Result.success();
@@ -69,6 +70,7 @@ public class PriceListController extends BaseController {
                 priceList.getEntries().forEach(en ->{
                     en.setFTP1(businessLicenseUrl);
                 });
+
             }
             return priceListService.save(priceList);
         } catch (Exception e) {
@@ -84,17 +86,8 @@ public class PriceListController extends BaseController {
     @SaCheckPermission("k3:pricelist:update")
     @PostMapping(value = "/update",produces = "application/json;charset=UTF-8")
     @Transactional(rollbackFor = Exception.class)
-    public Result update(
-        @RequestPart("priceList") PriceList priceList,
-        @RequestPart(value = "ftp1File", required = false) MultipartFile ftp1File) {
+    public Result update(@RequestPart("priceList") PriceList priceList) {
         try {
-            //1.如果有工厂图片，先上传到MinIO（本地备份）
-            if (ftp1File != null && !ftp1File.isEmpty()){
-                String businessLicenseUrl = minioUtil.uploadFile(ftp1File);
-                priceList.getEntries().forEach(en ->{
-                    en.setFTP1(businessLicenseUrl);
-                });
-            }
             return priceListService.update(priceList);
         } catch (Exception e) {
             return Result.error("更新价目表失败: " + e.getMessage());
@@ -174,7 +167,7 @@ public class PriceListController extends BaseController {
     @GetMapping("/query")
     public Result getByNumber(@RequestParam("id") String id) {
         try {
-            PriceList priceList = priceListService.getByNumber(id);
+            PriceList priceList = priceListService.getById(Long.valueOf(id));
             if (priceList != null) {
                 return Result.success(priceList);
             } else {

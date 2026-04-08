@@ -5,7 +5,10 @@ import com.ruoyi.business.dto.SalesPriceItemDto;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.business.entity.SaleChangeBillFlat;
 import com.ruoyi.business.entity.SalesPrice;
+import com.ruoyi.business.k3.domain.bo.SalesPricesBo;
 import com.ruoyi.business.util.Result;
+import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 
 import java.util.List;
 
@@ -42,12 +45,11 @@ public interface SalesPriceService {
 
     /**
      * 分页查询价目列表
-     * @param price 查询条件
-     * @param page 页码
-     * @param size 每页数量
+     * @param pageQuery 查询条件
+
      * @return 分页数据
      */
-    Page<SalesPrice> listSalesPrices(SalesPrice price, int page, int size);
+    TableDataInfo<SalesPrice> listSalesPrices(SalesPricesBo price, PageQuery pageQuery);
 
     /**
      * 新增销售价目表变更表

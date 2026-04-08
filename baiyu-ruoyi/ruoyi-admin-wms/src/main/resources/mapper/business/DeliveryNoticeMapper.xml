@@ -130,7 +130,7 @@
 
     <!-- 根据 ID 查询 -->
     <select id="selectById" resultMap="DeliveryNoticeResult">
-        SELECT * FROM delivery_notice WHERE id = #{id}
+        SELECT * FROM delivery_notice WHERE fid = #{fid}
     </select>
 
     <!-- 根据单据编号查询 -->
@@ -192,7 +192,60 @@
 
     <!-- 分页查询 -->
     <select id="selectPage" resultMap="DeliveryNoticeResult">
-        SELECT * FROM delivery_notice
+        SELECT
+        dn.FID,
+        dn.FBillNo,
+        dn.FDocumentStatus,
+        dn.FDate,
+        bdc.fname as FCustomerID,
+        se.fname as FSalesManID,
+        ser.name as FCarrierID,
+        cer.fname as FReceiverID,
+        cus.fname as FSettleID,
+        bd.fname as FPayerID,
+        su.user_name as FCreatorId,
+        dn.FCreateDate,
+        dn.FModifyDate,
+        dn.FApproveDate,
+        dn.FCancelDate,
+        sue.user_name as FModifierId,
+        dn.FBillTypeID,
+        sys.user_name as FApproverID,
+        dn.FCancellerID,
+        dn.FCancelStatus,
+        dn.FOwnerIdHead,
+        bym.name as FRECEIPTCONDITIONID,
+        dn.FHeadDeliveryWay,
+        dn.FReceiveAddress,
+        dn.FHeadLocId,
+        blym.name as FLocalCurrID,
+        bdry.name as FExchangeTypeID,
+        dn.FExchangeRate,
+        mate.name as FSettleTypeID,
+        bdicty.name as FSettleCurrID,
+        dn.FBillTaxAmount,
+        dn.FBillAmount,
+        dn.FBillAllAmount,
+        dn.FIsIncludedTax,
+        dn.FAllDisCount
+        FROM
+        delivery_notice  dn
+
+        LEFT JOIN bd_customer bdc on dn.FCustomerID=bdc.fcustid
+        LEFT JOIN bd_customer cer on dn.FReceiverID=cer.fcustid
+        LEFT JOIN bd_customer cus on dn.FSettleID=cus.fcustid
+        LEFT JOIN bd_customer bd on dn.FPayerID=bd.fcustid
+        LEFT JOIN supplier ser on dn.FCarrierID=ser.supplierid
+        LEFT JOIN sys_employee se on dn.FSalesManID=se.salesman_id
+        LEFT JOIN sys_user su on dn.FCreatorId=su.k3_key
+        LEFT JOIN sys_user sue on dn.FModifierId=sue.k3_key
+        LEFT JOIN sys_user sys on dn.FApproverID=sys.k3_key
+        LEFT JOIN bymaterial_dictionary bym on dn.FRECEIPTCONDITIONID=bym.kingdee and bym.category='collection_terms'
+        LEFT JOIN bymaterial_dictionary blym on dn.FLocalCurrID=blym.kingdee and blym.category='currency'
+        LEFT JOIN bymaterial_dictionary bdry on dn.FExchangeTypeID=bdry.kingdee and bdry.category='exchange_type'
+        LEFT JOIN bymaterial_dictionary bdicty on dn.FSettleCurrID=bdicty.kingdee and bdry.category='currency'
+        LEFT JOIN settlement_method mate on dn.FSettleTypeID=mate.id
+
         <where>
             <if test="deliveryNotice.FBillNo != null and deliveryNotice.FBillNo != ''">
                 AND FBillNo LIKE CONCAT('%', #{deliveryNotice.FBillNo}, '%')
@@ -215,12 +268,121 @@
 
     <!-- 根据客户 ID 查询 -->
     <select id="selectByCustomerId" resultMap="DeliveryNoticeResult">
-        SELECT * FROM delivery_notice WHERE FCustomerID = #{customerId} ORDER BY created_at DESC
+        SELECT
+            dn.FID,
+            dn.FBillNo,
+            dn.FDocumentStatus,
+            dn.FDate,
+            bdc.fname as FCustomerID,
+            se.fname as FSalesManID,
+            ser.name as FCarrierID,
+            cer.fname as FReceiverID,
+            cus.fname as FSettleID,
+            bd.fname as FPayerID,
+            su.user_name as FCreatorId,
+            dn.FCreateDate,
+            dn.FModifyDate,
+            dn.FApproveDate,
+            dn.FCancelDate,
+            sue.user_name as FModifierId,
+            dn.FBillTypeID,
+            sys.user_name as FApproverID,
+            dn.FCancellerID,
+            dn.FCancelStatus,
+            dn.FOwnerIdHead,
+            bym.name as FRECEIPTCONDITIONID,
+            dn.FHeadDeliveryWay,
+            dn.FReceiveAddress,
+            dn.FHeadLocId,
+            blym.name as FLocalCurrID,
+            bdry.name as FExchangeTypeID,
+            dn.FExchangeRate,
+            mate.name as FSettleTypeID,
+            bdicty.name as FSettleCurrID,
+            dn.FBillTaxAmount,
+            dn.FBillAmount,
+            dn.FBillAllAmount,
+            dn.FIsIncludedTax,
+            dn.FAllDisCount
+        FROM
+            delivery_notice  dn
+
+                LEFT JOIN bd_customer bdc on dn.FCustomerID=bdc.fcustid
+                LEFT JOIN bd_customer cer on dn.FReceiverID=cer.fcustid
+                LEFT JOIN bd_customer cus on dn.FSettleID=cus.fcustid
+                LEFT JOIN bd_customer bd on dn.FPayerID=bd.fcustid
+                LEFT JOIN supplier ser on dn.FCarrierID=ser.supplierid
+                LEFT JOIN sys_employee se on dn.FSalesManID=se.salesman_id
+                LEFT JOIN sys_user su on dn.FCreatorId=su.k3_key
+                LEFT JOIN sys_user sue on dn.FModifierId=sue.k3_key
+                LEFT JOIN sys_user sys on dn.FApproverID=sys.k3_key
+                LEFT JOIN bymaterial_dictionary bym on dn.FRECEIPTCONDITIONID=bym.kingdee and bym.category='collection_terms'
+                LEFT JOIN bymaterial_dictionary blym on dn.FLocalCurrID=blym.kingdee and blym.category='currency'
+                LEFT JOIN bymaterial_dictionary bdry on dn.FExchangeTypeID=bdry.kingdee and bdry.category='exchange_type'
+                LEFT JOIN bymaterial_dictionary bdicty on dn.FSettleCurrID=bdicty.kingdee and bdry.category='currency'
+                LEFT JOIN settlement_method mate on dn.FSettleTypeID=mate.id
+
+
+        WHERE FCustomerID = #{customerId} ORDER BY created_at DESC
     </select>
 
     <!-- 根据单据状态查询 -->
     <select id="selectByStatus" resultMap="DeliveryNoticeResult">
-        SELECT * FROM delivery_notice WHERE FDocumentStatus = #{status} ORDER BY created_at DESC
+        SELECT
+            dn.FID,
+            dn.FBillNo,
+            dn.FDocumentStatus,
+            dn.FDate,
+            bdc.fname as FCustomerID,
+            se.fname as FSalesManID,
+            ser.name as FCarrierID,
+            cer.fname as FReceiverID,
+            cus.fname as FSettleID,
+            bd.fname as FPayerID,
+            su.user_name as FCreatorId,
+            dn.FCreateDate,
+            dn.FModifyDate,
+            dn.FApproveDate,
+            dn.FCancelDate,
+            sue.user_name as FModifierId,
+            dn.FBillTypeID,
+            sys.user_name as FApproverID,
+            dn.FCancellerID,
+            dn.FCancelStatus,
+            dn.FOwnerIdHead,
+            bym.name as FRECEIPTCONDITIONID,
+            dn.FHeadDeliveryWay,
+            dn.FReceiveAddress,
+            dn.FHeadLocId,
+            blym.name as FLocalCurrID,
+            bdry.name as FExchangeTypeID,
+            dn.FExchangeRate,
+            mate.name as FSettleTypeID,
+            bdicty.name as FSettleCurrID,
+            dn.FBillTaxAmount,
+            dn.FBillAmount,
+            dn.FBillAllAmount,
+            dn.FIsIncludedTax,
+            dn.FAllDisCount
+        FROM
+            delivery_notice  dn
+
+                LEFT JOIN bd_customer bdc on dn.FCustomerID=bdc.fcustid
+                LEFT JOIN bd_customer cer on dn.FReceiverID=cer.fcustid
+                LEFT JOIN bd_customer cus on dn.FSettleID=cus.fcustid
+                LEFT JOIN bd_customer bd on dn.FPayerID=bd.fcustid
+                LEFT JOIN supplier ser on dn.FCarrierID=ser.supplierid
+                LEFT JOIN sys_employee se on dn.FSalesManID=se.salesman_id
+                LEFT JOIN sys_user su on dn.FCreatorId=su.k3_key
+                LEFT JOIN sys_user sue on dn.FModifierId=sue.k3_key
+                LEFT JOIN sys_user sys on dn.FApproverID=sys.k3_key
+                LEFT JOIN bymaterial_dictionary bym on dn.FRECEIPTCONDITIONID=bym.kingdee and bym.category='collection_terms'
+                LEFT JOIN bymaterial_dictionary blym on dn.FLocalCurrID=blym.kingdee and blym.category='currency'
+                LEFT JOIN bymaterial_dictionary bdry on dn.FExchangeTypeID=bdry.kingdee and bdry.category='exchange_type'
+                LEFT JOIN bymaterial_dictionary bdicty on dn.FSettleCurrID=bdicty.kingdee and bdry.category='currency'
+                LEFT JOIN settlement_method mate on dn.FSettleTypeID=mate.id
+
+        WHERE FDocumentStatus = #{status} ORDER BY created_at DESC
     </select>
 
 </mapper>

@@ -20,7 +20,7 @@ public class DeliveryNoticeEntry {
 
     /** 关联主表 ID */
     @TableField("delivery_notice_id")
-    private Long deliveryNoticeId;
+    private String deliveryNoticeId;
 
     /** 关联主表单据编号 */
     @TableField("delivery_notice_no")
@@ -30,9 +30,6 @@ public class DeliveryNoticeEntry {
     @TableField("FID")
     private Long FID;
 
-    /** 分录内码 (必填项) */
-    @TableField("FEntryID")
-    private Integer FEntryID;
 
     // ================= 物料基本信息 =================
 
@@ -96,7 +93,6 @@ public class DeliveryNoticeEntry {
     @TableField("FCustMatID")
     private String FCustMatID;
 
-    // ================= 库存与价格信息 =================
 
     /** 批号 */
     @TableField("FLot")
@@ -162,7 +158,6 @@ public class DeliveryNoticeEntry {
     @TableField("FDiscountRate")
     private BigDecimal FDiscountRate;
 
-    // ================= 扩展字段 =================
 
     /** 采购价 */
     @TableField("F_ora_Decimal")

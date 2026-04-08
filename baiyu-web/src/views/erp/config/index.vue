@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 import JsonEditor from './components/JsonEditor.vue'
 
-// 工具函数：统一错误处理
+// Utility: unified error handling
 function getErrorMessage(error, defaultMsg) {
   return error.response?.data?.msg || error.message || defaultMsg
 }
@@ -22,11 +22,11 @@ const queryParams = ref({
   status: ''
 })
 
-// Dialog 状态
+// Dialog state
 const viewDialogVisible = ref(false)
 const combinedConfigContent = ref('{}')
 
-// 获取配置列表
+// Fetch config list
 async function getList() {
   loading.value = true
   try {
@@ -35,10 +35,12 @@ async function getList() {
       method: 'get',
       params: queryParams.value
     })
-    configList.value = res.rows || []
-    total.value = res.total || 0
+    // ERP module returns ErpResponse<TableDataInfo>, access res.data
+    const data = res.data || res
+    configList.value = data.rows || []
+    total.value = data.total || 0
   } catch (error) {
-    console.error('获取配置列表失败:', error)
+    console.error('Failed to fetch config list:', error)
     ElMessage.error(getErrorMessage(error, '获取配置列表失败'))
     configList.value = []
     total.value = 0
@@ -47,13 +49,13 @@ async function getList() {
   }
 }
 
-// 搜索
+// Search
 async function handleQuery() {
   queryParams.value.pageNum = 1
   await getList()
 }
 
-// 重置
+// Reset
 function resetQuery() {
   queryParams.value.pageNum = 1
   queryParams.value.moduleCode = ''
@@ -63,11 +65,11 @@ function resetQuery() {
   getList()
 }
 
-// 清理缓存
+// Clear cache
 async function handleClearCache() {
   try {
     await ElMessageBox.confirm(
-      '确定要清理所有 ERP 配置缓存吗？',
+      '确定要清理所有 ERP 配置缓存吗1？',
       '提示',
       { 
         confirmButtonText: '确定', 
@@ -81,13 +83,13 @@ async function handleClearCache() {
     ElMessage.success('缓存清理成功')
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('清理缓存失败:', error)
+      console.error('Failed to clear cache:', error)
       ElMessage.error(getErrorMessage(error, '缓存清理失败'))
     }
   }
 }
 
-// 查看配置JSON
+// View config JSON
 async function handleView(row) {
   try {
     const res = await request({
@@ -103,12 +105,11 @@ async function handleView(row) {
     combinedConfigContent.value = JSON.stringify(res.data, null, 2)
     viewDialogVisible.value = true
   } catch (error) {
-    console.error('加载配置详情失败:', error)
+    console.error('Failed to load config details:', error)
     ElMessage.error(getErrorMessage(error, '加载配置失败'))
   }
 }
 
-// Lifecycle
 onMounted(() => {
   getList()
 })
@@ -132,7 +133,7 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- 搜索表单 -->
+      <!-- Search form -->
       <el-form :model="queryParams" :inline="true" label-width="80px" class="search-form">
         <el-row :gutter="12">
           <el-col :span="6">
@@ -201,7 +202,7 @@ onMounted(() => {
         </el-row>
       </el-form>
       
-      <!-- 配置列表表格 -->
+      <!-- Config list table -->
       <el-table
         v-loading="loading"
         :data="configList"
@@ -215,7 +216,7 @@ onMounted(() => {
         <el-table-column
           prop="configName"
           label="配置名称"
-          min-width="200"
+          min-width="100"
           :show-overflow-tooltip="true"
         />
         
@@ -242,7 +243,7 @@ onMounted(() => {
         <el-table-column
           prop="status"
           label="状态"
-          width="70"
+          width="100"
           align="center"
         >
           <template #default="scope">
@@ -260,7 +261,7 @@ onMounted(() => {
         
         <el-table-column
           label="操作"
-          width="120"
+          width="150"
           fixed="right"
           align="center"
         >
@@ -277,7 +278,7 @@ onMounted(() => {
         </el-table-column>
       </el-table>
       
-      <!-- 分页 -->
+      <!-- Pagination -->
       <el-pagination
         v-show="total > 0"
         v-model:current-page="queryParams.pageNum"
@@ -291,7 +292,7 @@ onMounted(() => {
       />
     </el-card>
 
-    <!-- 配置查看对话框 - 只显示JSON -->
+    <!-- Config view dialog - JSON only -->
     <el-dialog
       v-model="viewDialogVisible"
       title="配置JSON数据"

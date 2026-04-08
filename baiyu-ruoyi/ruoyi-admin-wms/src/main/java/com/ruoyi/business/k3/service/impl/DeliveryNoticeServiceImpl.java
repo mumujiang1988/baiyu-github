@@ -96,14 +96,9 @@ public class DeliveryNoticeServiceImpl implements DeliveryNoticeService {
                     }
 
                     // 设置关联关系
-                    entry.setDeliveryNoticeId(deliveryNotice.getId());
+                    entry.setDeliveryNoticeId(deliveryNotice.getFID());
                     if (deliveryNotice.getFBillNo() != null) {
                         entry.setDeliveryNoticeNo(deliveryNotice.getFBillNo());
-                    }
-
-                    // 设置分录内码（从 1 开始）
-                    if (entry.getFEntryID() == null) {
-                        entry.setFEntryID(entryList.size() + 1);
                     }
 
                     entryList.add(entry);
@@ -130,7 +125,7 @@ public class DeliveryNoticeServiceImpl implements DeliveryNoticeService {
             }
 
             // 2. 检查是否存在
-            DeliveryNotice existing = deliveryNoticeMapper.selectById(deliveryNotice.getId());
+            DeliveryNotice existing = deliveryNoticeMapper.selectById(deliveryNotice.getFID());
             if (existing == null) {
                 return Result.error("发货通知单不存在");
             }
@@ -143,13 +138,13 @@ public class DeliveryNoticeServiceImpl implements DeliveryNoticeService {
             // 4. 更新明细（先删除后新增）
             if (deliveryNotice.getEntries() != null) {
                 // 删除原有明细
-                deliveryNoticeEntryMapper.deleteByDeliveryNoticeId(deliveryNotice.getId());
+                deliveryNoticeEntryMapper.deleteByDeliveryNoticeId(deliveryNotice.getFBillNo());
 
                 // 新增明细
                 if (!deliveryNotice.getEntries().isEmpty()) {
                     List<DeliveryNoticeEntry> entryList = new ArrayList<>();
                     for (DeliveryNoticeEntry entry : deliveryNotice.getEntries()) {
-                        entry.setDeliveryNoticeId(deliveryNotice.getId());
+                        entry.setDeliveryNoticeId(deliveryNotice.getFID());
                         if (deliveryNotice.getFBillNo() != null) {
                             entry.setDeliveryNoticeNo(deliveryNotice.getFBillNo());
                         }
@@ -166,24 +161,7 @@ public class DeliveryNoticeServiceImpl implements DeliveryNoticeService {
         }
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean deleteById(Long id) {
-        // 先删除明细
-        deliveryNoticeEntryMapper.deleteByDeliveryNoticeId(id);
-        // 再删除主表
-        return deliveryNoticeMapper.deleteById(id) > 0;
-    }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean deleteByBillNo(String billNo) {
-        DeliveryNotice deliveryNotice = deliveryNoticeMapper.selectByBillNo(billNo);
-        if (deliveryNotice != null) {
-            return deleteById(deliveryNotice.getId());
-        }
-        return false;
-    }
 
     @Override
     public DeliveryNotice getById(Long id) {
@@ -191,7 +169,7 @@ public class DeliveryNoticeServiceImpl implements DeliveryNoticeService {
         DeliveryNotice deliveryNotice = deliveryNoticeMapper.selectById(id);
         if (deliveryNotice != null) {
             // 查询明细
-            List<DeliveryNoticeEntry> entries = deliveryNoticeEntryMapper.selectByDeliveryNoticeId(id);
+            List<DeliveryNoticeEntry> entries = deliveryNoticeEntryMapper.selectByDeliveryNoticeNo(deliveryNotice.getFBillNo());
             deliveryNotice.setEntries(entries);
         }
         return deliveryNotice;
@@ -230,16 +208,4 @@ public class DeliveryNoticeServiceImpl implements DeliveryNoticeService {
         return deliveryNoticeMapper.selectByStatus(status);
     }
 
-    @Override
-    public Result syncFromKingdee() {
-        try {
-            // TODO: 实现从金蝶同步发货通知单的逻辑
-            // 这里需要根据实际的金蝶 API 接口来实现
-            log.info("从金蝶系统同步发货通知单数据");
-            return Result.success("从金蝶系统同步发货通知单数据成功");
-        } catch (Exception e) {
-            log.error("从金蝶系统同步发货通知单数据失败", e);
-            return Result.error("从金蝶系统同步发货通知单数据失败：" + e.getMessage());
-        }
-    }
 }

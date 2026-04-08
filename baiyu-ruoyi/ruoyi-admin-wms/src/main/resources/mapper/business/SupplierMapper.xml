@@ -271,6 +271,7 @@
             <if test="taxCategory != null and taxCategory != ''">AND tax_category = #{taxCategory}</if>
             <if test="settlementParty != null and settlementParty != ''">AND settlement_party = #{settlementParty}</if>
             <if test="defaultTaxRate != null and defaultTaxRate != ''">AND default_tax_rate = #{defaultTaxRate}</if>
+            <if test="supplierid != null and supplierid != ''">AND supplierid = #{supplierid}</if>
         </where>
         ORDER BY created_at DESC
     </select>

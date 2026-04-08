@@ -17,8 +17,8 @@ import static cn.dev33.satoken.SaManager.log;
 
 /**
  * 采购价目表单处理器
- * 负责处理PUR_PriceCategory表单的构建和提交
- * 继承AbstractK3FormProcessor，实现采购价目表特定的业务逻辑
+ * 负责处理 PUR_PriceCategory 表单的构建和提交
+ * 继承 AbstractK3FormProcessor，实现采购价目表特定的业务逻辑
  */
 @Component
 public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
@@ -27,7 +27,7 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
     private MinioUtil minioUtil;
 
     /**
-     * 返回采购价目表单ID
+     * 返回采购价目表单 ID
      * @return 固定返回"PUR_PriceCategory"
      */
     @Override
@@ -49,7 +49,7 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
 
     /**
      * 获取采购价目表单据编号
-     * 用于文件上传时的BillNO字段
+     * 用于文件上传时的 BillNO 字段
      */
     @Override
     protected String getDocumentNumber(PriceList formData) {
@@ -58,8 +58,8 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
 
     /**
      * 上传条目级文件（针对子表中的文件字段）
-     * 处理价目表明细中的F_TP1字段文件上传
-     * 需要先暂存主表和明细表，然后使用返回的明细表FID作为上传文件的绑定FId
+     * 处理价目表明细中的 F_TP1 字段文件上传
+     * 需要先暂存主表和明细表，然后使用返回的明细表 FID 作为上传文件的绑定 FId
      */
     @Override
     protected List<String> uploadEntryLevelFiles(Map<String, Object> model, String fid, PriceList formData) throws Exception {
@@ -71,7 +71,7 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
             return uploadedFileIds;
         }
 
-        // 获取FPriceListEntry（明细列表）
+        // 获取 FPriceListEntry（明细列表）
         Object fEntityObj = model.get("FPriceListEntry");
         if (!(fEntityObj instanceof List)) {
             return uploadedFileIds;
@@ -85,18 +85,18 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
             PriceListEntry entry = entries.get(i);
             Map<String, Object> entryMap = fEntityList.get(i);
 
-            // 检查该明细是否有文件URL需要上传到金蝶
+            // 检查该明细是否有文件 URL 需要上传到金蝶
             if (entry.getFTP1() != null && !entry.getFTP1().isEmpty()) {
                 try {
-                    // 获取条目中的FEntryID（根据金蝶API文档，这是实际的条目ID）
+                    // 获取条目中的 FEntryID（根据金蝶 API 文档，这是实际的条目 ID）
                     Object entryIdObj = entryMap.get("FEntryID");
                     if (entryIdObj == null) {
-                        log.warn("价目表明细缺少FEntryID，跳过文件上传: 条目索引={}", i);
+                        log.warn("价目表明细缺少 FEntryID，跳过文件上传：条目索引={}", i);
                         continue;
                     }
 
                     // 上传文件到金蝶，指定条目键
-                    // 条目键格式：FPriceListEntry_FEntryID（根据金蝶API文档）
+                    // 条目键格式：FPriceListEntry_FEntryID（根据金蝶 API 文档）
                     String entryKey = "FPriceListEntry_" + entryIdObj.toString();
                     String fileId = uploadFileWithEntryKey(
                         createMultipartFileFromUrl(entry.getFTP1(), entry.getFMaterialId()),
@@ -107,13 +107,13 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
                     );
 
                     if (fileId != null) {
-                        // 将文件ID绑定到条目模型中（替换原来的URL）
+                        // 将文件 ID 绑定到条目模型中（替换原来的 URL）
                         entryMap.put("F_TP1", fileId);
                         uploadedFileIds.add(fileId);
-                        log.info("价目表明细文件上传成功: 条目ID={}, FileId={}", entryIdObj, fileId);
+                        log.info("价目表明细文件上传成功：条目 ID={}, FileId={}", entryIdObj, fileId);
                     }
                 } catch (Exception e) {
-                    log.error("上传价目表明细文件失败: 条目索引={}, 错误={}", i, e.getMessage(), e);
+                    log.error("上传价目表明细文件失败：条目索引={}, 错误={}", i, e.getMessage(), e);
                 }
             }
         }
@@ -122,22 +122,22 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
     }
 
     /**
-     * 根据文件URL创建MultipartFile对象
-     * 从MinIO下载文件内容并创建MultipartFile
+     * 根据文件 URL 创建 MultipartFile 对象
+     * 从 MinIO 下载文件内容并创建 MultipartFile
      */
     private MultipartFile createMultipartFileFromUrl(String fileUrl, String materialId) {
         try {
-            // 从URL中提取对象名称
+            // 从 URL 中提取对象名称
             String objectName = minioUtil.extractObjectNameFromUrl(fileUrl);
             if (objectName == null || objectName.isEmpty()) {
-                log.warn("无法从URL提取对象名称: {}", fileUrl);
+                log.warn("无法从 URL 提取对象名称：{}", fileUrl);
                 return null;
             }
 
-            // 从MinIO下载文件
+            // 从 MinIO 下载文件
             InputStream inputStream = minioUtil.downloadFile(objectName);
             if (inputStream == null) {
-                log.warn("无法从MinIO下载文件: {}", objectName);
+                log.warn("无法从 MinIO 下载文件：{}", objectName);
                 return null;
             }
 
@@ -152,13 +152,13 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
 
             return new ByteArrayMultipartFile(fileBytes, fileName, fileName, "image/jpeg");
         } catch (Exception e) {
-            log.error("从URL创建MultipartFile失败: url={}, materialId={}", fileUrl, materialId, e);
+            log.error("从 URL 创建 MultipartFile 失败：url={}, materialId={}", fileUrl, materialId, e);
             return null;
         }
     }
 
     /**
-     * 将InputStream转换为字节数组
+     * 将 InputStream 转换为字节数组
      */
     private byte[] inputStreamToBytes(InputStream inputStream) throws Exception {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -172,7 +172,7 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
     }
 
     /**
-     * ByteArrayMultipartFile - 用于从字节数组创建MultipartFile
+     * ByteArrayMultipartFile - 用于从字节数组创建 MultipartFile
      */
     private static class ByteArrayMultipartFile implements MultipartFile {
         private final byte[] content;
@@ -230,16 +230,16 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
 
     /**
      * 构建采购价目表模型数据
-     * 将前端传入的PriceList对象转换为金蝶K3所需的格式
+     * 将前端传入的 PriceList 对象转换为金蝶 K3 所需的格式
      */
     @Override
     protected Map<String, Object> buildModel(PriceList priceList) {
-        log.info("开始构建采购价目表模型数据，价目表编号: {}", priceList.getFNumber());
+        log.info("开始构建采购价目表模型数据，价目表编号：{}", priceList.getFNumber());
 
         Map<String, Object> model = new HashMap<>();
 
         // ================= 基础字段 =================
-        model.put("FID", priceList.getPriceListId() != null ? priceList.getPriceListId() : 0); // 新增时为0，更新时为实际ID
+        model.put("FID", priceList.getPriceListId() != null ? priceList.getPriceListId() : 0); // 新增时为 0，更新时为实际 ID
         model.put("FName", priceList.getFName() != null ? priceList.getFName() : "");
         model.put("FNumber", priceList.getFNumber() != null ? priceList.getFNumber() : "");
         model.put("FDescription", priceList.getFDescription() != null ? priceList.getFDescription() : "");
@@ -253,10 +253,10 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
         }
 
         // 供应商字段处理
-            Map<String, Object> supplierObj = new HashMap<>();
-        if (priceList.getFSupplierID() != null&& priceList.getFSupplierID().isEmpty()) {
+        Map<String, Object> supplierObj = new HashMap<>();
+        if (priceList.getFSupplierID() != null && !priceList.getFSupplierID().isEmpty()) {
             supplierObj.put("FNumber", priceList.getFSupplierID());
-        }else {
+        } else {
             supplierObj.put("FNumber", "");
         }
 
@@ -288,7 +288,7 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
             model.put("FPriceListEntry", new ArrayList<Map<String, Object>>());
         }
 
-        log.debug("采购价目表模型构建完成: {}", model);
+        log.debug("采购价目表模型构建完成：{}", model);
         return model;
     }
 
@@ -306,17 +306,17 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
             PriceListEntry entry = entries.get(i);
             Map<String, Object> entryMap = new HashMap<>();
 
-            // 子表序号（从1开始）
+            // 子表序号（从 1 开始）
             entryMap.put("FEntryID", i + 1);
 
-            // 物料相关信息
-            if (entry.getFMaterialId() != null) {
-                Map<String, Object> materialObj = new HashMap<>();
+            // 物料相关信息（必须是对象格式）
+            Map<String, Object> materialObj = new HashMap<>();
+            if (entry.getFMaterialId() != null && !entry.getFMaterialId().isEmpty()) {
                 materialObj.put("FNumber", entry.getFMaterialId());
-                entryMap.put("FMaterialId", materialObj);
             } else {
-                entryMap.put("FMaterialId", "");
+                materialObj.put("FNumber", "");
             }
+            entryMap.put("FMaterialId", materialObj);
             entryMap.put("FMaterialName", entry.getFMaterialName() != null ? entry.getFMaterialName() : "");
 
             // 价格信息
@@ -346,14 +346,14 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
             // 税率
             entryMap.put("FTaxRate", entry.getFTaxRate() != null ? entry.getFTaxRate() : 0);
 
-            // 计价单位
-            if (entry.getFUnitID() != null) {
-                Map<String, Object> unitObj = new HashMap<>();
+            // 计价单位（必须是对象格式）
+            Map<String, Object> unitObj = new HashMap<>();
+            if (entry.getFUnitID() != null && !entry.getFUnitID().isEmpty()) {
                 unitObj.put("FNumber", entry.getFUnitID());
-                entryMap.put("FUnitID", unitObj);
             } else {
-                entryMap.put("FUnitID", "");
+                unitObj.put("FNumber", "");
             }
+            entryMap.put("FUnitID", unitObj);
 
 
             // 生效日期和失效日期
@@ -376,7 +376,7 @@ public class PriceListFormProcessor extends AbstractK3FormProcessor<PriceList> {
             }
 
             entryList.add(entryMap);
-            log.debug("添加价目表明细: 物料={}, 价格={}", entry.getFMaterialName(), entry.getFPrice());
+            log.debug("添加价目表明细：物料={}, 价格={}", entry.getFMaterialName(), entry.getFPrice());
         }
 
         return entryList;

@@ -27,19 +27,7 @@ public interface DeliveryNoticeService {
      */
     Result update(DeliveryNotice deliveryNotice);
 
-    /**
-     * 根据 ID 删除发货通知单（级联删除明细）
-     * @param id 发货通知单 ID
-     * @return 是否删除成功
-     */
-    boolean deleteById(Long id);
 
-    /**
-     * 根据单据编号删除发货通知单（级联删除明细）
-     * @param billNo 单据编号
-     * @return 是否删除成功
-     */
-    boolean deleteByBillNo(String billNo);
 
     /**
      * 根据 ID 查询发货通知单（包含明细）
@@ -77,9 +65,5 @@ public interface DeliveryNoticeService {
      */
     List<DeliveryNotice> listByStatus(String status);
 
-    /**
-     * 同步金蝶发货通知单数据
-     * @return 操作结果
-     */
-    Result syncFromKingdee();
+
 }

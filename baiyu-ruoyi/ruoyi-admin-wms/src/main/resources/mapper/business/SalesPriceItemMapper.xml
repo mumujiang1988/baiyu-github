@@ -5,6 +5,7 @@
     <resultMap id="ItemMap" type="com.ruoyi.business.entity.SalesPriceItem">
         <id column="id" property="id"/>
         <result column="price_id" property="priceId"/>
+        <result column="f_number" property="fNumber"/>
         <result column="f_material_id" property="fMaterialId"/>
         <result column="fMaterialName" property="fMaterialName"/>
         <result column="fMaterialModel" property="fMaterialModel"/>
@@ -101,14 +102,14 @@
 
     <insert id="insertItem" useGeneratedKeys="true" keyProperty="id">
         insert into t_sales_price_item(
-            price_id, f_material_id, f_khhh,
+            price_id,f_number, f_material_id, f_khhh,
             f_price, f_bzyq, f_bzmx, f_ywpm, fzxzlxgrq,
             f_c, f_k, f_g, f_mz, f_jz, fbgrq, f_ywbzfs,
             f_cptp2, f_cptp3, f_jgdztp, f_wxtm, f_wxzm, f_wxcm,
             f_nxzm, f_nxcm, f_ctt, f_smst, f_ctaot, f_cht,
             f_dkczz, f_zxczz, f_tm, f_bzt, f_gys, packaging_categories
         ) values(
-            #{priceId}, #{fMaterialId}, #{fKhhh},
+            #{priceId},#{fNumber}, #{fMaterialId}, #{fKhhh},
             #{fPrice}, #{fBzyq}, #{fBzmx}, #{fYwpm}, #{fzxzlxgrq},
             #{fC}, #{fK}, #{fG}, #{fMz}, #{fJz}, #{fbgrq}, #{fYwbzfs},
             #{fCptp2}, #{fCptp3}, #{fJgdztp}, #{fWxtm}, #{fWxzm}, #{fWxcm},
@@ -123,6 +124,7 @@
             <if test="priceId != null">price_id = #{priceId},</if>
             <if test="fMaterialId != null">f_material_id = #{fMaterialId},</if>
             <if test="fKhhh != null">f_khhh = #{fKhhh},</if>
+            <if test="fNumber != null">f_number = #{fNumber},</if>
             <if test="fPrice != null">f_price = #{fPrice},</if>
             <if test="fBzyq != null">f_bzyq = #{fBzyq},</if>
             <if test="fBzmx != null">f_bzmx = #{fBzmx},</if>
@@ -159,7 +161,7 @@
 
     <insert id="batchInsertItem">
         insert into t_sales_price_item(
-            price_id, f_material_id, f_khhh,
+            price_id,f_number, f_material_id, f_khhh,
             f_price, f_bzyq, f_bzmx, f_ywpm, fzxzlxgrq,
             f_c, f_k, f_g, f_mz, f_jz, fbgrq, f_ywbzfs,
             f_cptp2, f_cptp3, f_jgdztp, f_wxtm, f_wxzm, f_wxcm,
@@ -168,7 +170,7 @@
         ) values
         <foreach collection="list" item="i" separator=",">
             (
-                #{i.priceId}, #{i.fMaterialId}, #{i.fKhhh},
+                #{i.priceId},#{i.fNumber},  #{i.fMaterialId}, #{i.fKhhh},
                 #{i.fPrice}, #{i.fBzyq}, #{i.fBzmx}, #{i.fYwpm}, #{i.fzxzlxgrq},
                 #{i.fC}, #{i.fK}, #{i.fG}, #{i.fMz}, #{i.fJz}, #{i.fbgrq}, #{i.fYwbzfs},
                 #{i.fCptp2}, #{i.fCptp3}, #{i.fJgdztp}, #{i.fWxtm}, #{i.fWxzm}, #{i.fWxcm},

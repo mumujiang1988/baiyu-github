@@ -46,6 +46,14 @@ public interface PriceListEntryMapper  {
     PriceListEntry selectMaterialId(@Param("FMaterialId") String FMaterialId);
 
     /**
+     * 根据物料编码+主表ID查询明细
+     * @param FMaterialId 物料编码
+     * @param priceListNumber 主表编号
+     * @return 价目表明细列表
+     */
+    List<PriceListEntry> selectByPriceListIdAndMaterialId(@Param("FMaterialId") String FMaterialId, @Param("priceListNumber") String priceListNumber);
+
+    /**
      * 根据主表ID查询所有明细
      * @param priceListNumber 主表ID
      * @return 价目表明细列表
@@ -63,8 +71,8 @@ public interface PriceListEntryMapper  {
 
     /**
      * 批量插入价目表明细
-     * @param entries 价目表明细列表
+     * @param entryList 价目表明细列表
      * @return 影响行数
      */
-    int batchInsert(@Param("entries") List<PriceListEntry> entries);
+    int batchInsert(@Param("entryList") List<PriceListEntry> entryList);
 }

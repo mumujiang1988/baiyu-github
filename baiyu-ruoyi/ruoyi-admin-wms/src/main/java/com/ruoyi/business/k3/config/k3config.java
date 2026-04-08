@@ -68,6 +68,53 @@ public class k3config {
     @Autowired
     private BymaterialDictionaryMapper bymaterialDictionaryMapper;
 
+    /**
+     * 查询采购调价主体表
+     */
+    public List<List<java.lang.Object>> billHeadList( ) {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"PUR_PAT\"," +
+                "\"FieldKeys\":\"FID,FBillNo,FDocumentStatus,FDate,FPurchaseOrgId,FName ,FDescription,FPaReason,FUseOrgId,FForbidStatus,\n" +
+                "FCreatorId,FCreateDate,FModifierId,FModifyDate,FApproverId,FApproveDate,FForbiderId,FForbidDate,FEffectiveStatus,FEffectiveUserId,FEffectiveDateHead\n\"," +
+                "\"FilterString\":\"\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+    /**
+     * 查询采购调价详情表
+     */
+
+    public List<List<java.lang.Object>> fpurpatentryList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"PUR_PAT\"," +
+                "\"FieldKeys\":\"FMaterialId,FMaterialName,FUOM_01,FToQty,FBeforePrice,FAfterPrice,FAdjustRange,FUpPrice,FDownPrice,FEffectiveDate,FExpiryDate,FPriceListId,FSupplierId,FCurrencyId,FAuxpropId,FMATERIALTYPEID,FIsPriceListPush,FUnitID,FPATIdentity,FPriceListObject,FAdjustType,FBeforeTaxRate,FAfterTaxRate,FBeforeTaxPrice,FAfterTaxPrice,FIsIncludedTax ,FProcessOrgId,FPROCESSID,FSrcEntryID,FNote,FBeforePriceCoefficient,FAfterPriceCoefficient,FFROMQTY ,FDefBaseDataO,FDefBaseDataT,FDefAssistantO,FDefAssistantT,FDefTextO,FDefTextT,FDefaultPriceO,FDefaultPriceT,FIsPriceExcludeTax,FMaterialGroupId,FMATERIALGROUPNAME,F_HSCJ,F_HSCJ,FID,FBillNo\n\"," +
+                "\"FilterString\":\"\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+
 
     /**
      * 查询采购价目主体表
@@ -77,7 +124,7 @@ public class k3config {
         try {
             String jsonData = "{" +
                     "\"FormId\":\"PUR_PriceCategory\"," +
-                    "\"FieldKeys\":\"FID,FName,FNumber,FDescription,FCurrencyID,FSupplierID,F_GYSLB,FPricer,FPriceObject,FPriceType,FCreatorId\n\"," +
+                    "\"FieldKeys\":\"FID,FDocumentStatus,FName,FNumber,FDescription,FCurrencyID,FSupplierID,F_GYSLB,FPricer,FPriceObject,FPriceType,FCreatorId\n\"," +
                     "\"OrderString\":\"\"," +
                     "\"TopRowCount\":0,\"StartRow\":0," +
                     "\"Limit\":5000000,\"SubSystemId\":\"\"}";
@@ -1163,4 +1210,141 @@ public class k3config {
         }
         return new ArrayList<>(); // 返回空列表而不是null
     }
+
+    /**
+     * 查询收款单列表
+     */
+    public List<List<Object>> ReceiveBillList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"AR_RECEIVEBILL\"," +
+                "\"FieldKeys\":\"FID,FBillNo,FDOCUMENTSTATUS,FCreatorId,FAPPROVERID,FCreateDate,FSETTLEORGID,FApproveDate,FSALEORGID,FEXCHANGETYPE,FRECEIVEAMOUNTFOR_H,FMAINBOOKCURID,FRECEIVEAMOUNT_H,FCURRENCYID,FDATE,FModifyDate,FModifierId,FEXCHANGERATE,FWRITTENOFFSTATUS,FSALEERID,FSALEGROUPID,FSALEDEPTID,FBillTypeID,FREALRECAMOUNTFOR,FREALRECAMOUNT_H,FACCOUNTSYSTEM,FCancelDate,FCancelStatus,FCancellerId,FCONTACTUNITTYPE,FCONTACTUNIT,FPAYUNITTYPE,FPAYUNIT,FBUSINESSTYPE,FCreditCheckResult,FISINIT,FDepartment,FPAYORGID,FIsSameOrg,FSOURCESYSTEM,FCASHSALE,FSETTLECUR,FSETTLERATE,FRECAMOUNTFOR,FRECAMOUNT,FISB2C,FWBSETTLENO,FIsWriteOff,FMatchMethodID,FScanPoint,FKDPAYNO,FREMARK,FTHIRDBILLNO,FSETTLEMAINBOOKID,FSETTLEEXCHANGETYPE,FOUTCONTACTID,FOUTCONTACTTYPE,FGYACCOUNTWATERID,FISCARRYRATE,FPRESETBASE1,FPRESETBASE2,FPRESETASSISTANT1,FPRESETASSISTANT2,FPRESETTEXT1,FPRESETTEXT2,FISFROMSALORDER,FVirIsSameAcctOrg,FSourceBillNumber,F_CYDH,F_yhsddh,F_YSHL,F_khdm,F_cty_BaseProperty,F_sd\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"" +
+                "}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+    /**
+     * 查询收款单明细列表
+     */
+    public List<List<Object>> ReceivebillEntryList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"AR_RECEIVEBILL\"," +
+                "\"FieldKeys\":\"FID,FSETTLETYPEID,FSETTLERECAMOUNTFOR,FSETTLEDISTAMOUNTFOR,FRECTOTALAMOUNTFOR,FSETTLERECAMOUNT,FSETTLEDISTAMOUNT,FRECTOTALAMOUNT,FWRITTENOFFSTATUS_D,FWRITTENOFFAMOUNTFOR_D,FCOMMENT,FOPPOSITEBANKACCOUNT,FOPPOSITECCOUNTNAME,FRECEIVEITEM,FHANDLINGCHARGEFOR,FHANDLINGCHARGE,FREALRECAMOUNTFOR_D,FREALRECAMOUNT_D,FASSTOTALAMOUNTFOR,FRECEIVEITEMTYPE,FSaleOrderID,FACCOUNTID,FRECACCOUNTNAME,FRECBANKID,FOVERUNDERAMOUNTFOR,FOPPOSITEBANKNAME,FSETTLENO,FBLEND,FPURPOSEID,FOVERUNDERAMOUNT,FINNERACCOUNTID,FINNERACCOUNTNAME,FReFundAmount,FCashAccount,FRECAMOUNTFOR_E,FRECAMOUNT_E,FPOSTDATE,FISPOST,FMATERIALID,FMATERIALNAME,FSALEORDERNO,FMATERIALSEQ,FORDERENTRYID,FTOPAYMENTAMOUNTFOR,FWRITTENOFFAMOUNT,FNOTVERIFICATEAMOUNT,FPRICEUNITID,FPrice,FQty,FCOSTID,FCOSTDEPARTMENTID,FCOSTNAME,FLinkRowId,FSALEORDERBase,FRelateReFundAmount,FENTRYTAXRATE,FTAXAMOUNTFOR,FTAXAMOUNT,FRECNOTAXAMOUNTFOR,FRECNOTAXAMOUNT,FWRITTENOFFTAXAMOUNTFOR,FWRITTENOFFTAXAMOUNT,F_cydh_djt,F_DXFYX,F_FYCDBM,Fkh\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"" +
+                "}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+    /**
+     * 同步金蝶付款申请单表信息
+     */
+    public List<List<Object>> PaymentApplicationList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"CN_PAYAPPLY\"," +
+                "\"FieldKeys\":\"FID,FBillNo,FDOCUMENTSTATUS,FCREATORID,FAPPROVERID,FCREATEDATE,FSETTLEORGID,FAPPROVEDATE,FPURCHASEORGID,FPAYAMOUNTFOR_H,FCURRENCYID,FDATE,FMODIFYDATE,FMODIFIERID,FBILLTYPEID,FPURCHASERID,FPURCHASEDEPTID,FAPPLYAMOUNTFOR_H,FACCOUNTSYSTEM,FCANCELLERID,FCANCELSTATUS,FCANCELDATE,FCONTACTUNITTYPE,FCONTACTUNIT,FRECTUNITTYPE,FRECTUNIT,FBUSINESSTYPE,FDEPARTMENT,FPAYORGID,FSALEORGID,FSALEDEPTID,FSALEERID,FMAINBOOKID,FEXCHANGERATE,FEXCHANGETYPE,FSOURCESYSTEM,FIsCredit,FBankActID,FAPPLYORGID,FScanPoint,FCLOSESTATUS,FCLOSERID,FCLOSEDATE,FSETTLECUR,FREALAPPLYAMOUNTFOR,FSETTLERATE,FAPPLYAMOUNT,FPURCHASERGROUPID,FSALEGROUPID,FIsBorrow,FISCARRYRATE,FMoreReceive,FPRESETBASE1,FPRESETBASE2,FPRESETASSISTANT1,FPRESETASSISTANT2,FPRESETTEXT1,FPRESETTEXT2,FRealPay,F_xsgxht,F_cydh,F_btbz,F_ora_Base,F_ora_Base1,F_bcdd,F_fkgs,F_fyl\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"" +
+                "}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+
+    /**
+     * 同步金蝶付款申请单明细表信息
+     */
+    public List<List<Object>> RectunitDetailList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"CN_PAYAPPLY\"," +
+                "\"FieldKeys\":\"FID,FSETTLETYPEID,FPAYAMOUNTFOR,FEACHBANKACCOUNT,FAPPLYAMOUNTFOR,FPAYPURPOSEID,FARPURPOSEID,FSOURCETYPE,FSRCBILLNO,FENDDATE,FEXPECTPAYDATE,FEACHCCOUNTNAME,FEACHBANKNAME,FCOMMENT,FSRCROWID,FRELATEPAYAMOUNT,FRELATEREFUNDAMOUNT,FCOSTID,FApplyPclAmount,FApplyInstAmount,FWritePclAmount,FDescription,FMATERIALID,FMATERIALNAME,FPURCHASEORDERNO,FMATERIALSEQ,FORDERENTRYID,FPRICE,FQTY,FPRICEUNITID,FRELATEPAYQTY,FUnpaidAmount,FSwiftCode,FTAXAMOUNT,FBankDetail,FEXPENSEDEPTID,F_YFBL,F_cydh1,F_cgddh,F_FYCDBM,F_cty_Decimal,F_cdfs,F_kpzt,Fkh,F_cty_BaseProperty,F_PEUU_Date_83g\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"" +
+                "}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+
+    /**
+     * 同步金蝶销售出库单主表信息
+     */
+    public List<List<Object>> SalOutboundList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"SAL_OUTSTOCK\"," +
+                "\"FieldKeys\":\"FID,FBillNo,FDocumentStatus,FSaleOrgId,FDate,FStockOrgId,FCustomerID,FDeliveryDeptID,FSaleDeptID,FStockerGroupID,FStockerID,FSalesGroupID,FSalesManID,FCarrierID,FCarriageNO,FReceiverID,FSettleID,FPayerID,FCreateDate,FModifierId,FModifyDate,FCreatorId,FApproverID,FApproveDate,FCancelStatus,FCancellerID,FCancelDate,FBillTypeID,FOwnerTypeIdHead,FOwnerIdHead,FBussinessType,FReceiveAddress,FHeadLocationId,FCreditCheckResult,FTransferBizType,FCorrespondOrgId,FReceiverContactID,FIsInterLegalPerson,FGenFromPOS_CMK,FLinkPhone,FLinkMan,FBranchId,FPlanRecAddress,FIsTotalServiceOrCost,FNote,FDisassemblyFlag,FSHOPNUMBER,FGYDATE,FSALECHANNEL,FLogisticsNos,FPRESETBASE2,FPRESETBASE1,FPRESETASSISTANT1,FPRESETASSISTANT2,FARStatus,F_cydh,F_ora_BaseProperty,F_mysy,F_gkmc,F_qyg,F_khqc,F_djbgzt,F_ora_Attachment,F_ora_Attachment1,F_ora_Attachment2,F_ora_Attachment3,F_ora_Attachment4,F_khdz,F_tcbl,F_zxd,F_jhdz,Fhdzt,F_fhqd,F_tssl,F_bcfy,F_cty_Decimal1,F_shdd,F_shhl,F_shje,F_jhrq,Fshzt,F_cty_BaseProperty,Fbzfycd,Ftpf\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"" +
+                "}";
+
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+    /**
+     * 同步金蝶销售出库单明细表信息
+     */
+    public List<List<Object>> SalOutboundDetailsList() {
+        try {
+            String jsonData = "{" +
+                "\"FormId\":\"SAL_OUTSTOCK\"," +
+                "\"FieldKeys\":\"FID,FCustMatID,FMaterialID,FMaterialName,FMateriaModel,FMateriaType,FUnitID,FMustQty,FRealQty,FStockID,FStockStatusID,FOwnerTypeID,FOwnerID,FKeeperTypeID,FKeeperID,FEntrynote,FBomID,FBaseUnitQty,FAuxUnitID,FAuxUnitQty,FCostPrice,FEntryCostAmount,FCostAmount_LC,FReturnQty,FSumRetNoticeQty,FSumRetStockQty,FInvoicedQty,FSumInvoicedQty,FSumInvoicedAMT,FSumReceivedAMT,FBaseReturnQty,FBaseInvoicedQty,FStockFlag,FSoorDerno,FAuxPropId,FBaseSumRetNoticeQty,FSrcType,FBaseSumRetstockQty,FStockLocID,FProduceDate,FExpiryDate,FJoinedQty,FUNJOINQTY,FJoinedAmount,FUnJoinAmount,FFullyJoined,FJoinStatus,FLot,FExpiryPeriodUnit,FExpiryPeriod,FIsFree,FBaseSumInvoicedQty,FBaseMustQty,FBaseUnitID,FArrivalStatus,FArrivalConfirmor,FValidateDate,FValidateStatus,FValidateConfirmor,FPriceUnitId,FPriceUnitQty,FPrice,FTaxPrice,FLot,FExpiryPeriodUnit,FExpiryPeriod,FIsFree,FBaseSumInvoicedQty,FBaseMustQty,FBaseUnitID,FArrivalStatus,FArrivalConfirmor,FValidateDate,FValidateStatus,FValidateConfirmor,FPriceUnitId,FPriceUnitQty,FPrice,FTaxPrice,FTaxCombination,FEntryTaxRate,FPriceCoefficient,FSysPrice,FLimitDownPrice,FBefDisAmt,FBefDisAllAmt,FDiscountRate,FDiscount,FAmount,FAmount_LC,FEntryTaxAmount,FTaxAmount_LC,FAllAmount,FAllAmount_LC,FTaxNetPrice,FBaseARJoinQty,FArrivalDate,FBFLowId,FBASEARQTY,FARJOINAMOUNT,FARAMOUNT,FSalCostPrice,FSrcBillNo,FActQty,FBaseJoinInStockQty,FJoinInStockQty,FSNUnitID,FSNQty,FMtoNo,FProjectNo,FRefuseQty,FRepairQty,FIsRepair,FSECJOININSTOCKQTY,FSECRETURNQTY,FIsConsumeSum,FARJoinQty,FOUTCONTROL,FAuxUnitId,FExtAuxUnitId,FExtAuxUnitQty,FBarcode,FProPrice,FProAmount,FRetailSaleProm,FSalUnitID,FSALUNITQTY,FSALBASEQTY,FPRICEBASEQTY,FQualifyType,FSalBaseNum,FStockBaseDen,FStockBaseReturnQty,FStockBaseSumRetStockQty,FStockBaseARJoinQty,FSRCBIZUNITID,FIsCreateProDoc,FEOwnerSupplierId,FIsOverLegalOrg,FESettleCustomerId,FSalBaseARJoinQty,FPURBASEJOININSTOCKQTY,,FPriceListEntry,FARNOTJOINQTY,FQmEntryID,FConvertEntryID,FB2CORDERDETAILID,FSOEntryId,FReserveEntryId,FRowType,FParentMatId,FRowId,FParentRowId,FSignQty,FThirdEntryId,FCheckDelivery,FETHIRDBILLID,FETHIRDBILLNO,FGYFINSTATUS,FGYFINDate,FPriceDiscount,FTailDiffFlag,FWRITEOFFPRICEBASEQTY,FWRITEOFFSALEBASEQTY,FWRITEOFFSTOCKBASEQTY,FWRITEOFFAMOUNT,FSettleBySon,FBOMEntryId,FAllAmountExceptDisCount,FGYENTERTIME,FMaterialID_Sal,FInStockBillno,FInStockEntryId,FVmiBusinessStatus,FReceiveBillno,FReceiveEntryId,FIsReplaceOut,FReplaceMaterialID,FRowARStatus,F_c,F_k,F_g,F_tj,F_mz,F_jz,F_mzz,F_xs,F_zxs,F_gys,F_cghth,F_cgdj,F_cgzj,F_jdj,F_jdzj,F_fpdj,F_fpzj,F_zwbgpm,F_ywbgpm,F_HSBM,F_jzz,F_bgsl,F_BGZT,F_khhh,F_sfbg,F_HYJSSL,F_ddhsdj,F_tsl,F_djbwb,F_hsdjbwb,F_tcblNEW,F_BCFYNEW,Fddshrq,Fckzq,Fzdrq,Fbcgctg,Fbcykc,Fypd,F_cty_BaseProperty1,F_PEUU_Text_apv,F_PEUU_BaseProperty_83g\"," +
+                "\"OrderString\":\"\"," +
+                "\"TopRowCount\":0," +
+                "\"StartRow\":0," +
+                "\"Limit\":2000," +
+                "\"SubSystemId\":\"\"" +
+                "}";
+            return getK3CloudApiClient().executeBillQuery(jsonData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>(); // 返回空列表而不是null
+    }
+
+
+
+
 }

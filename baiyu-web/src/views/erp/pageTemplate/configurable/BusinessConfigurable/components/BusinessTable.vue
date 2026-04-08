@@ -255,8 +255,7 @@ const handleCurrentChange = (page) => {
 }
 </script>
 
-<style scoped>
-/* ✅ Use parent global styles */
+<style scoped> 
 
 /* Table card */
 .table-card {

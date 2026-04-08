@@ -1,18 +1,19 @@
 package com.ruoyi.business.servicel.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.ruoyi.business.config.FtApiConfig;
-import com.ruoyi.business.entity.Customer;
-import com.ruoyi.business.entity.FtApiResponse;
-import com.ruoyi.business.entity.FtCustomer;
-import com.ruoyi.business.entity.FtCustomerQueryRequest;
-import com.ruoyi.business.mapper.CustomerMapper;
+import com.ruoyi.business.entity.*;
+import com.ruoyi.business.mapper.FtContactMapper;
+import com.ruoyi.business.mapper.FtCustomerMapper;
+import com.ruoyi.business.mapper.Ftbank.FtbankMapper;
 import com.ruoyi.business.servicel.FtApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,14 @@ public class FtApiServiceimpl implements FtApiService {
     @Autowired
     private FtApiConfig ftApiConfig;
     @Autowired
-    private CustomerMapper customerMapper;
+    private FtCustomerMapper customerMapper;
+
+    @Autowired
+    private FtContactMapper contactMapper;
+
+    @Autowired
+    private FtbankMapper ftbankMapper;
+
     /**
      * 获取免登token
      *
@@ -57,25 +65,24 @@ public class FtApiServiceimpl implements FtApiService {
     }
 
     /**
-     * 获取accessToken
+     * 获取 accessToken
      *
-     * @param tgtToken tgtToken
+     * @param tgtToken tgtToken（实际上这个接口需要的是 secretKey）
      * @return accessToken
      */
     public FtApiResponse<String> getAccessToken(String tgtToken) {
         try {
-            String url = ftApiConfig.getBaseUrl() + "/secret/getAccessToken";
+            // 根据富通 API 文档，getAccessToken 需要将 secretKey 作为路径参数
+            String url = ftApiConfig.getBaseUrl() + "/secret/getAccessToken/" + ftApiConfig.getSecretKey();
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("tgtToken", tgtToken);
+            String response = HttpUtil.get(url, (Charset) null);
+            log.info("获取 accessToken 请求 URL: {}, 响应：{}", url, response);
 
-            String response = HttpUtil.get(url, params);
-            log.info("获取accessToken请求URL: {}, 参数: {}, 响应: {}", url, params, response);
-
+            // 解析并返回结果
             FtApiResponse<String> result = JSONUtil.toBean(response, FtApiResponse.class);
             return result;
         } catch (Exception e) {
-            log.error("获取accessToken失败", e);
+            log.error("获取 accessToken 失败", e);
             FtApiResponse<String> errorResult = new FtApiResponse<>();
             errorResult.setSuccess(false);
             errorResult.setCode("-1");
@@ -115,6 +122,62 @@ public class FtApiServiceimpl implements FtApiService {
                 try {
                     // 尝试解析客户列表
                     List<FtCustomer> customers = JSONUtil.toList(JSONUtil.toJsonStr(rawResponse.getData()), FtCustomer.class);
+                    //同步富通数据
+                    if (CollectionUtil.isNotEmpty(customers)){
+                        //同步
+                        customers.forEach(en ->{
+                            //客户主表
+                            FtCustomer ftCustomer = customerMapper.selectByIds(en.getId());
+                            if (ftCustomer != null){
+                                customerMapper.updateById(en);
+                            }else {
+                                customerMapper.insert(en);
+                            }
+
+                            // 客户联系人信息
+                            if (en.getContactList() != null && !en.getContactList().isEmpty()){
+                                en.getContactList().forEach(ens ->{
+                                    List<FtContact> contacts = contactMapper.selectByIds(ens.getFtId());
+                                    if(contacts != null && !contacts.isEmpty()){
+                                        customers.forEach(cu ->{
+                                            contactMapper.updateById(ens);
+                                        });
+
+                                    }else {
+                                        FtContact contact = new FtContact();
+                                        if (ens.getId() != null && !ens.getId().toString().isEmpty()){
+                                            contact.setFtId(ens.getId().toString());
+                                        }
+                                        contact.setOperatorName(ens.getOperatorName());
+                                        contact.setName(ens.getName());
+                                        contact.setSex(ens.getSex());
+                                        contact.setJob(ens.getJob());
+                                        contact.setEmail(ens.getEmail());
+                                        contact.setBirthday(ens.getBirthday());
+                                        contact.setMobile(ens.getMobile());
+                                        contact.setFax(ens.getFax());
+                                        contact.setQq(ens.getQq());
+                                        contact.setMsn(ens.getMsn());
+                                        contact.setSkype(ens.getSkype());
+                                        contact.setAddress(ens.getAddress());
+                                        contactMapper.insert(contact);
+
+                                    }
+                                });
+                            }
+                            //客户银行信息
+                            if (en.getBankList() != null && !en.getBankList().isEmpty()){
+                                en.getBankList().forEach(es ->{
+                                    Ftbank bank = ftbankMapper.selectById(es.getId());
+                                    if (bank != null){
+                                        ftbankMapper.updateById(es);
+                                    }else {
+                                        ftbankMapper.insert(es);
+                                    }
+                                });
+                            }
+                        });
+                    }
                     result.setData(customers);
                 } catch (Exception e) {
                     log.warn("解析客户数据失败，尝试其他方式解析", e);
@@ -122,7 +185,6 @@ public class FtApiServiceimpl implements FtApiService {
                     result.setData(null);
                 }
             }
-
             return result;
         } catch (Exception e) {
             log.error("查询客户列表失败", e);
@@ -158,17 +220,17 @@ public class FtApiServiceimpl implements FtApiService {
     /**
      * 保存或更新本地客户数据
      */
-    public void saveOrUpdateLocalCustomer(Customer customer) {
+    public void saveOrUpdateLocalCustomer(FtCustomer customer) {
         // 检查客户是否已存在
-        Customer existingCustomer = customerMapper.selectById(customer.getId());
+        FtCustomer existingCustomer = customerMapper.selectById(customer.getId());
         if (existingCustomer != null) {
             // 如果存在则更新
-            customerMapper.updateById(customer);
-            log.debug("更新客户数据: {}", customer.getFname());
+            customerMapper.updateById(existingCustomer);
+            log.debug("更新客户数据: {}", customer.getId());
         } else {
             // 如果不存在则插入
-            customerMapper.insert(customer);
-            log.debug("插入新客户数据: {}", customer.getFname());
+            customerMapper.insert(existingCustomer);
+            log.debug("插入新客户数据: {}", existingCustomer.getName());
         }
     }
 }

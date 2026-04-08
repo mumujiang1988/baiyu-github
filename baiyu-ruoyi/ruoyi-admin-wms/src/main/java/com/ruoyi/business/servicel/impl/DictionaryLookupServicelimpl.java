@@ -8,13 +8,11 @@ import com.ruoyi.business.mapper.DictionaryTableMapper;
 import com.ruoyi.business.mapper.SettlementMethodMapper;
 import com.ruoyi.business.mapper.TaxRateMapper;
 import com.ruoyi.business.servicel.DictionaryLookupServicel;
+import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DictionaryLookupServicelimpl implements DictionaryLookupServicel {
@@ -29,45 +27,8 @@ public class DictionaryLookupServicelimpl implements DictionaryLookupServicel {
 
     @Override
     public List<DictionaryTable> getDictionaryLookup() {
-        // 1. 分别查询系统字典和业务字典
-        List<DictionaryTable> systemDictionaries = dictionaryLookupMapper.selectAll();
-        List<BymaterialDictionary> businessDictionaries = bymaterialDictionaryMapper.selectMaterialAll();
-        
-        // 2. 将业务字典转换为 DictionaryTable 格式
-        List<DictionaryTable> businessDictTables = convertToDictionaryTables(businessDictionaries);
-        
-        // 3. 合并两个列表
-        List<DictionaryTable> allDictionaries = new ArrayList<>();
-        if (systemDictionaries != null) {
-            allDictionaries.addAll(systemDictionaries);
-        }
-        if (businessDictTables != null) {
-            allDictionaries.addAll(businessDictTables);
-        }
-        
-        return allDictionaries;
-    }
-    
-    /**
-     * 将业务字典转换为 DictionaryTable 格式
-     */
-    private List<DictionaryTable> convertToDictionaryTables(List<BymaterialDictionary> businessDictionaries) {
-        if (businessDictionaries == null || businessDictionaries.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        return businessDictionaries.stream()
-            .map(businessDict -> {
-                DictionaryTable dictTable = new DictionaryTable();
-                dictTable.setId(Long.valueOf(businessDict.getId()));
-                dictTable.setBilhead(businessDict.getKingdee());
-                dictTable.setDictName(businessDict.getName());
-                dictTable.setDictCode(businessDict.getCode());
-                dictTable.setParentCode(null); // 业务字典暂无父级概念
-                dictTable.setSourceType("business"); // 标记为业务字典
-                return dictTable;
-            })
-            .collect(Collectors.toList());
+        List<DictionaryTable> dictionaryLookup = dictionaryLookupMapper.selectAll();
+        return dictionaryLookup;
     }
 
     /**
@@ -128,7 +89,7 @@ public class DictionaryLookupServicelimpl implements DictionaryLookupServicel {
     * 物料
     * */
     @Override
-    public List<BymaterialDictionary> selectmaterial() {
+    public List<MaterialDictionary> selectmaterial() {
         return bymaterialDictionaryMapper.selectmaterial();
     }
 

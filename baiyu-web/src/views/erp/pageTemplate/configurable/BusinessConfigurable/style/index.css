@@ -1,11 +1,10 @@
 /**
- * Configurable Generic Business Page Styles
- * 完整复制自 BusinessConfigurable.styles.css
+ * Configurable Generic Business Page Styles 
  */
 
 .app-container {
   padding: 8px;
-  height: calc(100vh - 84px);  /* Subtract top nav (50px) + breadcrumb (34px) = 84px */
+  height: calc(100vh - 84px);   
   max-height: calc(100vh - 84px);
   display: flex;
   flex-direction: column;

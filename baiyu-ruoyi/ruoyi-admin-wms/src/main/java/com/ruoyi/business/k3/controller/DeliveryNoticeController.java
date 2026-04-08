@@ -4,11 +4,14 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.ruoyi.business.entity.DeliveryNotice;
 import com.ruoyi.business.k3.config.k3config;
 import com.ruoyi.business.k3.service.DeliveryNoticeService;
+import com.ruoyi.business.k3.service.impl.KingdeeDeliveryNoticeSyncService;
 import com.ruoyi.business.util.Result;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.web.core.BaseController;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,21 +20,34 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/k3/delivery-notice")
+@Slf4j
 public class DeliveryNoticeController extends BaseController {
 
     @Resource
     private DeliveryNoticeService deliveryNoticeService;
-
-    @Resource
-    private k3config k3configks;
+    @Autowired
+    private KingdeeDeliveryNoticeSyncService syncService;
 
     /**
-     * 同步金蝶发货通知单数据
+     * 同步金蝶发货通知单数据到本地数据库
+     *
+     * @return 同步结果
      */
     @PostMapping("/sync")
-    @Transactional(rollbackFor = Exception.class)
-    public Result syncFromKingdee() {
-        return deliveryNoticeService.syncFromKingdee();
+    public Result syncDeliveryNoticesFromK3() {
+        try {
+            log.info("开始执行金蝶发货通知单数据同步...");
+
+            int totalCount = syncService.syncDeliveryNoticesFromK3();
+
+            log.info("金蝶发货通知单数据同步完成，共处理 {} 条数据", totalCount);
+
+            return Result.success("发货通知单数据同步成功，共处理 " + totalCount + " 条数据");
+
+        } catch (Exception e) {
+            log.error("同步金蝶发货通知单数据失败", e);
+            return Result.error("同步发货通知单数据失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -67,25 +83,6 @@ public class DeliveryNoticeController extends BaseController {
         }
     }
 
-    /**
-     * 根据 ID 删除发货通知单（级联删除明细）
-     * @param id 发货通知单 ID
-     * @return 操作结果
-     */
-    @DeleteMapping("/delete/{id}")
-    @SaCheckPermission("/api/v1/delivery-notice/delete/{id}")
-    public Result deleteById(@PathVariable Long id) {
-        try {
-            boolean result = deliveryNoticeService.deleteById(id);
-            if (result) {
-                return Result.success("删除成功");
-            } else {
-                return Result.error("删除失败");
-            }
-        } catch (Exception e) {
-            return Result.error("删除发货通知单失败：" + e.getMessage());
-        }
-    }
 
 
     /**

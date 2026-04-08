@@ -22,7 +22,7 @@ public class DeliveryNotice {
 
     /** 金蝶主键 ID */
     @TableField("FID")
-    private Long FID;
+    private String FID;
 
     /** 单据编号 */
     @TableField("FBillNo")

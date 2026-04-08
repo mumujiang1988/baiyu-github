@@ -5,6 +5,7 @@ import com.ruoyi.business.dto.CountryOrderDistributionDTO;
 import com.ruoyi.business.dto.SalesOrderDTo;
 import com.ruoyi.business.dto.SalesRankingDTO;
 import com.ruoyi.business.entity.SaleOrder;
+import com.ruoyi.business.k3.domain.bo.SaleOrderBo;
 import com.ruoyi.business.k3.service.SaleOrderService;
 import com.ruoyi.business.util.Result;
 import com.ruoyi.common.core.domain.R;
@@ -63,7 +64,7 @@ public class SaleOrderController extends BaseController {
      */
     @SaCheckPermission("k3:saleOrder:list")
     @GetMapping("/list")
-    public TableDataInfo<SaleOrder> list(SaleOrder saleOrder, PageQuery pageQuery) {
+    public TableDataInfo<SaleOrder> list(SaleOrderBo saleOrder, PageQuery pageQuery) {
         return saleOrderService.selectPageSaleOrder(saleOrder, pageQuery);
     }
 
