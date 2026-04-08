@@ -1,15 +1,5 @@
 /**
  * ERP Generic Engine API
- * Applicable to all configurable modules, no need to create separate API files for each module
- * 
- * Usage:
- * import { EngineAPI } from '@/views/erp/api/engine'
- * 
- * // Query sales order list
- * EngineAPI.query('saleOrder', { pageNum: 1, pageSize: 10 })
- * 
- * // Query purchase order list
- * EngineAPI.query('purchaseOrder', { pageNum: 1, pageSize: 10 })
  */
 
 import request from '@/utils/request'

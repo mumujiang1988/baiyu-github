@@ -182,130 +182,23 @@ CREATE TABLE `erp_push_relation` (
 -- 说明：配置数据已移至【销售订单初始化配置.sql】，包含完整的 9 字段配置
 
 -- ============================================
--- 第四步：创建菜单和权限配置
+-- 第四步：验证表结构
 -- ============================================
 
--- 1. 创建 ERP 业务菜单目录
-INSERT INTO `sys_menu` (
-  `menu_id`,
-  `menu_name`,
-  `parent_id`,
-  `order_num`,
-  `path`,
-  `component`,
-  `is_frame`,
-  `is_cache`,
-  `menu_type`,
-  `visible`,
-  `status`,
-  `perms`,
-  `icon`,
-  `remark`,
-  `create_by`,
-  `create_time`
-) SELECT 
-  '1943362205047062529',
-  'ERP 业务菜单',
-  0,
-  5,
-  'business',
-  '',
-  0,
-  0,
-  'M',
-  1,
-  1,
-  '',
-  'document',
-  'ERP 业务菜单目录',
-  'admin',
-  NOW()
-WHERE NOT EXISTS (
-  SELECT 1 FROM sys_menu WHERE menu_id = '1943362205047062529'
-);
-
--- 2. 创建销售订单管理菜单
-INSERT INTO `sys_menu` (
-  `menu_id`,
-  `menu_name`,
-  `parent_id`,
-  `order_num`,
-  `path`,
-  `component`,
-  `query_param`,
-  `is_frame`,
-  `is_cache`,
-  `menu_type`,
-  `visible`,
-  `status`,
-  `perms`,
-  `icon`,
-  `create_by`,
-  `create_time`,
-  `remark`
-) SELECT 
-  '1943362205181280258',
-  '销售订单管理',
-  '1943362205047062529',
-  1,
-  'saleorder',
-  'erp/pageTemplate/configurable/BusinessConfigurable',
-  '{"moduleCode":"saleorder"}',
-  0,
-  0,
-  'C',
-  1,
-  1,
-  'k3:saleorder:query',
-  'document',
-  'admin',
-  NOW(),
-  '销售订单管理 配置化页面'
-WHERE NOT EXISTS (
-  SELECT 1 FROM sys_menu WHERE menu_id = '1943362205181280258'
-);
-
--- 3. 创建按钮权限
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362205315497989', '查询', '1943362205181280258', 1, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:query', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362205315497989');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362205449715718', '新增', '1943362205181280258', 2, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:add', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362205449715718');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362205583933447', '修改', '1943362205181280258', 3, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:edit', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362205583933447');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362205718151176', '删除', '1943362205181280258', 4, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:remove', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362205718151176');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362205852368905', '审核', '1943362205181280258', 5, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:audit', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362205852368905');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362205986586634', '反审核', '1943362205181280258', 6, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:unAudit', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362205986586634');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362206120804363', '下推', '1943362205181280258', 7, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:push', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362206120804363');
-
-INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`, `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`, `create_time`, `remark`)
-SELECT '1943362206255022092', '导出', '1943362205181280258', 8, '', '', '', 0, 0, 'F', 1, 1, 'k3:saleorder:export', '#', 'admin', NOW(), ''
-WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE menu_id = '1943362206255022092');
+-- 查看已创建的表
+SELECT '========================================' AS '';
+SELECT '✅ ERP Table Structure Created!' AS message;
+SELECT '========================================' AS '';
+SHOW TABLES LIKE 'erp_%';
 
 -- ============================================
 -- 第五步：创建触发器（自动记录历史 - 支持 9 字段）
 -- ============================================
 
-DELIMITER $
+DELIMITER $$
 
--- 先删除已存在的触发器（幂等性保证）
-DROP TRIGGER IF EXISTS `trg_erp_config_history`$
+-- Drop existing trigger (idempotency)
+DROP TRIGGER IF EXISTS `trg_erp_config_history`$$
 
 CREATE TRIGGER `trg_erp_config_history`
 AFTER UPDATE ON `erp_page_config`
@@ -340,11 +233,11 @@ BEGIN
     NEW.dict_config,
     NEW.business_config,
     NEW.detail_config,
-    CONCAT('版本更新：', NEW.remark),
+    CONCAT('Version update: ', NEW.remark),
     'UPDATE',
     NEW.update_by
   );
-END$
+END$$
 
 DELIMITER ;
 
@@ -354,48 +247,28 @@ DELIMITER ;
 
 -- 查看表结构
 SELECT '========================================' AS '';
-SELECT '✅ 表结构验证' AS '';
+SELECT '✅ ERP Table Structure Verified!' AS message;
 SELECT '========================================' AS '';
 SHOW TABLES LIKE 'erp_%';
 
--- 查看菜单数据
 SELECT '========================================' AS '';
-SELECT '✅ 菜单权限验证' AS '';
+SELECT '📋 Next Steps:' AS next_steps;
 SELECT '========================================' AS '';
-SELECT 
-  menu_id,
-  menu_name,
-  parent_id,
-  menu_type,
-  perms
-FROM sys_menu 
-WHERE menu_id IN (
-  '1943362205047062529',
-  '1943362205181280258',
-  '1943362205315497989',
-  '1943362205449715718',
-  '1943362205583933447',
-  '1943362205718151176',
-  '1943362205852368905',
-  '1943362205986586634',
-  '1943362206120804363',
-  '1943362206255022092'
-);
+SELECT '  1. Execute: 1.配置页菜单脚本_优化版.sql (Menu initialization)' AS step1;
+SELECT '  2. Execute: 2.字典类型补齐.sql (Dictionary types)' AS step2;
+SELECT '  3. Execute: Business module init scripts (e.g., 销售订单初始化配置.sql)' AS step3;
+SELECT '========================================' AS '';
 
 -- ============================================
 -- 执行完成提示
 -- ============================================
 
 SELECT '========================================' AS '';
-SELECT '🎉 ERP 配置化表结构初始化完成！' AS '';
+SELECT '🎉 ERP Table Structure Initialization Complete!' AS message;
 SELECT '========================================' AS '';
-SELECT '已创建：' AS summary;
-SELECT '  ✅ 5 个核心表（9 字段强制拆分版）' AS tables;
-SELECT '  ✅ 10 个菜单权限' AS menus;
-SELECT '  ✅ 自动历史触发器（支持 9 字段）' AS triggers;
+SELECT 'Created:' AS summary;
+SELECT '  ✅ 5 core tables (9-field split architecture)' AS tables;
+SELECT '  ✅ Auto-history trigger (supports 9 fields)' AS triggers;
 SELECT '========================================' AS '';
-SELECT '下一步操作：' AS next_steps;
-SELECT '  1. 执行【销售订单初始化配置.sql】导入配置' AS step1;
-SELECT '  2. 编译后端：mvn clean package -DskipTests' AS step2;
-SELECT '  3. 启动服务：java -jar ruoyi-admin-wms.jar' AS step3;
+SELECT 'Note: Menu data should be initialized by separate scripts.' AS note;
 SELECT '========================================' AS '';
