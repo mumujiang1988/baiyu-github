@@ -112,3 +112,5 @@ baiyu-web/.gitignore
 /target
 baiyu-ruoyi/ruoyi-modules/ruoyi-erp-api/nul
 /OpenCLIP/visual-search/backend/storage/images
+/OpenCLIP/visual-search/frontend/node_modules
+*.pyc

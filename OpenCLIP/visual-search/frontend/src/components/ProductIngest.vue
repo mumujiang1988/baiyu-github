@@ -36,6 +36,23 @@
                 <el-icon><Plus /></el-icon>
               </el-upload>
               <div class="upload-tip">支持上传多张图片，建议上传不同角度的产品图片</div>
+              
+              <!-- 一键抠图按钮 -->
+              <div v-if="fileList.length > 0" style="margin-top: 10px;">
+                <el-button 
+                  type="success" 
+                  size="small"
+                  @click="removeBackgroundForAllImages"
+                  :loading="removingBg"
+                  :disabled="submitting"
+                >
+                  <el-icon><MagicStick /></el-icon>
+                  一键抠图 ({{ fileList.length }} 张图片)
+                </el-button>
+                <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+                  使用 AI 自动移除图片背景，提高检索准确度
+                </span>
+              </div>
             </el-form-item>
             
             <el-form-item>
@@ -289,6 +306,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { MagicStick } from '@element-plus/icons-vue'
 import { ingestProduct } from '../api/search'
 import { showSuccess, handleApiError } from '../utils/messageHandler'
 
@@ -306,6 +324,7 @@ const activeTab = ref('single')
 // 文件列表
 const fileList = ref([])
 const submitting = ref(false)
+const removingBg = ref(false) // 抠图加载状态
 const ingestResult = ref(null)
 const formRef = ref(null)
 

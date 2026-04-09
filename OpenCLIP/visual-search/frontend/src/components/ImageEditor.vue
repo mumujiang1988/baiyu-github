@@ -170,19 +170,37 @@
           </el-form>
         </div>
         
-        <!-- 去背景提示 -->
+        <!-- 去背景控制面板 -->
         <div v-if="activeTool === 'removeBg'" class="control-panel">
           <el-alert
-            title="AI 去背景功能需要后端支持"
+            title="AI 智能抠图"
             type="info"
             :closable="false"
             show-icon
+            style="margin-bottom: 15px;"
           >
             <template #default>
-              <p>此功能需要配置后端 AI 服务（如 remove.bg API）</p>
-              <p>当前版本暂不支持自动去背景</p>
+              <p>🎨 使用 Rembg AI 模型自动移除图片背景</p>
+              <p style="margin-top: 5px; font-size: 12px; color: #909399;">处理时间约 2-5 秒，请耐心等待</p>
             </template>
           </el-alert>
+          
+          <el-button 
+            type="primary" 
+            size="large"
+            @click="removeBackground"
+            :loading="processing"
+            style="width: 100%;"
+          >
+            <el-icon v-if="!processing"><MagicStick /></el-icon>
+            {{ processing ? '正在抠图中...' : '✨ 开始抠图' }}
+          </el-button>
+          
+          <el-divider />
+          
+          <el-text size="small" type="info">
+            💡 提示：抠图后的图片将保留透明背景，适合用于产品展示和检索
+          </el-text>
         </div>
       </div>
     </div>
@@ -464,6 +482,84 @@ const flipImage = (direction) => {
 
 const applyFilters = () => {
   drawImage()
+}
+
+// 调用后端 Rembg 服务去除背景
+const removeBackground = async () => {
+  if (!currentImage.value) {
+    ElMessage.warning('请先加载图片')
+    return
+  }
+  
+  processing.value = true
+  
+  try {
+    // 将当前图片转换为 Blob
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = currentImage.value.width
+    canvas.height = currentImage.value.height
+    ctx.drawImage(currentImage.value, 0, 0)
+    
+    const blob = await new Promise(resolve => {
+      canvas.toBlob(resolve, 'image/png')
+    })
+    
+    // 创建 FormData
+    const formData = new FormData()
+    formData.append('file', blob, 'image.png')
+    
+    // 调用后端 API
+    const response = await fetch('http://localhost:8000/api/v1/rembg/remove', {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.detail || '抠图失败')
+    }
+    
+    // 获取抠图后的图片
+    const resultBlob = await response.blob()
+    const resultUrl = URL.createObjectURL(resultBlob)
+    
+    // 加载抠图后的图片
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      currentImage.value = img
+      originalImage.value = img // 更新原始图片引用
+      
+      // 重置所有参数
+      resetParams()
+      
+      // 销毁 cropper（如果存在）
+      if (cropperInstance) {
+        cropperInstance.destroy()
+        cropperInstance = null
+      }
+      
+      // 取消激活的工具
+      activeTool.value = null
+      
+      // 重新绘制
+      nextTick(() => {
+        drawImage()
+        ElMessage.success('背景移除成功')
+      })
+    }
+    img.onerror = () => {
+      ElMessage.error('抠图后图片加载失败')
+    }
+    img.src = resultUrl
+    
+  } catch (error) {
+    console.error('抠图失败:', error)
+    ElMessage.error(error.message || '抠图失败，请检查后端服务是否正常运行')
+  } finally {
+    processing.value = false
+  }
 }
 
 const saveImage = async () => {

@@ -63,6 +63,21 @@ services:
       - etcd
       - minio
 
+  # ==========================
+  # Rembg 抠图服务
+  # ==========================
+  rembg:
+    image: danielgatis/rembg
+    container_name: visual-search-rembg
+    restart: always
+    ports:
+      - "5000:7000"         # 对外API端口5000映射到容器内7000
+    command: s             # 启动 API 服务
+    volumes:
+      - rembg_models:/root/.u2net  # 模型缓存（避免重复下载）
+    environment:
+      - U2NET_HOME=/root/.u2net
+
   # FastAPI 后端服务
   backend:
     build:
@@ -86,6 +101,14 @@ services:
       - HF_HUB_CACHE=/app/models_cache
       - TRANSFORMERS_CACHE=/app/models_cache
       - MODEL_CACHE_DIR=/app/models_cache
+      - REMBG_API_URL=http://rembg:5000  # 给后端用的内部地址
+      # MinIO 配置
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_SECURE=false
+      - MINIO_BUCKET=product-images
+      - USE_MINIO=true
     volumes:
       - ./backend:/app  # 挂载后端代码目录 (包含代码和storage目录)
       - backend_models:/app/models_cache  # 模型缓存使用命名卷
@@ -93,6 +116,8 @@ services:
     depends_on:
       - mysql
       - milvus
+      - minio  # 确保 minio 先启动
+      - rembg  # 确保 rembg 先启动
 
   # Vue3 前端服务
   frontend:
@@ -112,3 +137,4 @@ volumes:
   minio_data:
   milvus_data:
   backend_models:
+  rembg_models:  # 新增这个卷

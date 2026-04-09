@@ -6,6 +6,7 @@
           <h1>以图搜品系统</h1>
           <el-menu mode="horizontal" :default-active="activeMenu" @select="handleMenuSelect">
             <el-menu-item index="search">图像检索</el-menu-item>
+            <el-menu-item index="text-search">文本搜索</el-menu-item>
             <el-menu-item index="ingest">产品入库</el-menu-item>
             <el-menu-item index="products">产品管理</el-menu-item>
           </el-menu>
@@ -14,6 +15,7 @@
       
       <el-main>
         <ImageSearch v-if="activeMenu === 'search'" />
+        <TextSearch v-if="activeMenu === 'text-search'" />
         <ProductIngest v-if="activeMenu === 'ingest'" />
         <ProductList v-if="activeMenu === 'products'" />
       </el-main>
@@ -24,6 +26,7 @@
 <script setup>
 import { ref } from 'vue'
 import ImageSearch from './components/ImageSearch.vue'
+import TextSearch from './components/TextSearch.vue'
 import ProductIngest from './components/ProductIngest.vue'
 import ProductList from './components/ProductList.vue'
 

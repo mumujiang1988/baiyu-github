@@ -7,7 +7,7 @@ import logging
 from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from slowapi import Limiter
@@ -26,6 +26,9 @@ from services.clip_service import ClipService
 from services.milvus_service import MilvusService
 from services.product_service import ProductService
 from services.image_processor import ImageProcessor
+from services.rembg_service import RembgService
+from services.minio_service import MinioService
+from services.image_optimizer import ImageOptimizer
 from utils.error_handler import ErrorHandler
 
 
@@ -40,6 +43,15 @@ class Settings(BaseSettings):
     milvus_port: int = 19530
     openclip_model: str = "ViT-B-32"
     openclip_pretrained: str = "laion2b_s34b_b79k"
+    rembg_api_url: str = "http://rembg:5000"  # Rembg API 地址
+    
+    # MinIO 配置
+    minio_endpoint: str = "minio:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_secure: bool = False
+    minio_bucket: str = "product-images"
+    use_minio: bool = True  # 是否使用 MinIO
 
     class Config:
         env_file = ".env"
@@ -71,16 +83,41 @@ clip_service = None
 milvus_service = None
 product_service = None
 image_processor = None
+rembg_service = None
+minio_service = None
+image_optimizer = None
 
 
 @app.on_event("startup")
 async def startup_event():
     """应用启动时初始化服务"""
-    global clip_service, milvus_service, product_service, image_processor
+    global clip_service, milvus_service, product_service, image_processor, rembg_service, minio_service
 
     print("🚀 正在初始化服务...")
 
     try:
+        # 初始化 MinIO 服务（如果启用）
+        if settings.use_minio:
+            try:
+                minio_service = MinioService(
+                    endpoint=settings.minio_endpoint,
+                    access_key=settings.minio_access_key,
+                    secret_key=settings.minio_secret_key,
+                    secure=settings.minio_secure,
+                    bucket_name=settings.minio_bucket
+                )
+                if minio_service.health_check():
+                    print("✅ MinIO 对象存储服务连接成功")
+                else:
+                    print("⚠️ MinIO 服务不可用，将使用本地存储")
+                    minio_service = None
+            except Exception as e:
+                print(f"⚠️ MinIO 初始化失败: {str(e)}，将使用本地存储")
+                minio_service = None
+        else:
+            print("ℹ️ MinIO 未启用，使用本地存储")
+            minio_service = None
+
         clip_service = ClipService(
             model_name=settings.openclip_model,
             pretrained=settings.openclip_pretrained,
@@ -101,8 +138,25 @@ async def startup_event():
         )
         print("✅ MySQL 连接成功")
 
-        image_processor = ImageProcessor()
-        print("✅ 图片处理器初始化完成")
+        # 初始化图片处理器（传入 MinIO 服务）
+        image_processor = ImageProcessor(
+            use_minio=(minio_service is not None),
+            minio_service=minio_service
+        )
+        storage_type = "MinIO 对象存储" if minio_service else "本地文件系统"
+        print(f"✅ 图片处理器初始化完成（使用 {storage_type}）")
+
+        # 初始化 Rembg 服务
+        rembg_service = RembgService(api_url=settings.rembg_api_url)
+        if rembg_service.health_check():
+            print("✅ Rembg 抠图服务连接成功")
+        else:
+            print("⚠️ Rembg 抠图服务不可用，将使用原始图片")
+            rembg_service = None
+
+        # 初始化图片优化器
+        image_optimizer = ImageOptimizer()
+        print("✅ 图片优化器初始化完成（支持压缩、缩略图、WebP）")
 
         print("🎉 所有服务初始化完成！")
 
@@ -144,7 +198,8 @@ async def health_check():
     checks = {
         "mysql": product_service is not None,
         "milvus": milvus_service is not None,
-        "clip": clip_service is not None
+        "clip": clip_service is not None,
+        "minio": minio_service is not None and minio_service.health_check() if minio_service else False
     }
     return {"status": "healthy" if all(checks.values()) else "unhealthy", "checks": checks}
 
@@ -230,7 +285,8 @@ async def ingest_product(
     name: str = Form(...),
     spec: Optional[str] = Form(None),
     category: Optional[str] = Form(None),
-    files: List[UploadFile] = File(...)
+    files: List[UploadFile] = File(...),
+    remove_bg: bool = Form(False)  # 是否移除背景
 ):
     """产品入库接口"""
     start_time = time.time()
@@ -239,7 +295,7 @@ async def ingest_product(
         if not files:
             raise HTTPException(status_code=400, detail="至少需要上传一张图片")
 
-        logger.info(f"产品入库请求: product_code={product_code}, name={name}, spec={spec}, category={category}, 图片数量={len(files)}")
+        logger.info(f"产品入库请求: product_code={product_code}, name={name}, spec={spec}, category={category}, 图片数量={len(files)}, 移除背景={remove_bg}")
         product_service.upsert_product(product_code=product_code, name=name, spec=spec, category=category)
         logger.info(f"产品信息已保存/更新: {product_code}")
 
@@ -250,6 +306,20 @@ async def ingest_product(
         for file in files:
             try:
                 image_bytes = await file.read()
+                
+                # 如果需要移除背景且 rembg 服务可用
+                if remove_bg and rembg_service:
+                    logger.info(f"对图片 {file.filename} 进行背景移除")
+                    try:
+                        # 调用 rembg 服务移除背景
+                        transparent_bytes = rembg_service.remove_background(image_bytes)
+                        # 使用抠图后的图片
+                        image_bytes = transparent_bytes
+                        logger.info(f"图片 {file.filename} 背景移除成功")
+                    except Exception as e:
+                        logger.warning(f"背景移除失败，使用原始图片: {str(e)}")
+                        # 背景移除失败，继续使用原始图片
+                
                 processed_image = image_processor.preprocess(image_bytes)
                 image_hash = image_processor.compute_hash(image_bytes)
 
@@ -270,10 +340,24 @@ async def ingest_product(
                 # 插入到 Milvus
                 milvus_id = milvus_service.insert(product_code=product_code, embedding=embedding)
                 
-                # 保存图片文件
-                image_path = image_processor.save_image(
-                    image_bytes=image_bytes, product_code=product_code, filename=file.filename
-                )
+                # 优化并保存图片（压缩、WebP转换、生成缩略图）
+                if image_optimizer:
+                    optimize_result = image_optimizer.optimize_and_save(
+                        image_bytes=image_bytes,
+                        product_code=product_code,
+                        filename=file.filename,
+                        image_processor=image_processor,
+                        generate_thumb=True
+                    )
+                    image_path = optimize_result['main_path']
+                    compressed_size = optimize_result['compressed_size']
+                    logger.info(f"图片优化完成: {file.filename}, 压缩率: {(1 - compressed_size/len(image_bytes))*100:.1f}%")
+                else:
+                    # 降级：直接保存
+                    image_path = image_processor.save_image(
+                        image_bytes=image_bytes, product_code=product_code, filename=file.filename
+                    )
+                    compressed_size = len(image_bytes)
                 
                 # 保存图片记录到数据库
                 product_service.insert_image(
@@ -281,7 +365,7 @@ async def ingest_product(
                     image_path=image_path,
                     image_hash=image_hash,
                     milvus_id=milvus_id,
-                    image_size=len(image_bytes)
+                    image_size=compressed_size
                 )
                 success_count += 1
                 logger.debug(f"图片入库成功: {file.filename}")
@@ -326,6 +410,183 @@ async def ingest_product(
         }
 
 
+@app.post("/api/v1/products/batch-ingest")
+@limiter.limit("2/minute")
+async def batch_ingest_products(
+    request: Request,
+    products_json: str = Form(...),
+    files_map: str = Form(...),
+    files: List[UploadFile] = File(...),
+    remove_bg: bool = Form(False)
+):
+    """批量产品入库接口
+    
+    Args:
+        products_json: JSON 数组，如 [{"code":"P001","name":"产品1","spec":"规格1","category":"分类1"},...]
+        files_map: JSON 对象，如 {"P001":[0,1],"P002":[2]} 表示 P001 对应 files[0]和files[1]
+        files: 所有图片文件列表
+        remove_bg: 是否移除背景
+    """
+    import json
+    
+    start_time = time.time()
+    
+    try:
+        # 解析参数
+        products = json.loads(products_json)
+        files_mapping = json.loads(files_map)
+        
+        if not isinstance(products, list) or len(products) == 0:
+            raise HTTPException(status_code=400, detail="products_json 必须是非空数组")
+        
+        if len(products) > 50:
+            raise HTTPException(status_code=400, detail="单次最多导入50个产品")
+        
+        results = {
+            "success": [],
+            "failed": [],
+            "total_images": 0,
+            "total_success_images": 0,
+            "total_failed_images": 0
+        }
+        
+        # 逐个处理产品（复用单个产品入库逻辑）
+        for product_info in products:
+            code = product_info.get("code") or product_info.get("product_code")
+            name = product_info.get("name")
+            spec = product_info.get("spec", "")
+            category = product_info.get("category", "")
+            
+            if not code or not name:
+                results["failed"].append({
+                    "product_code": code,
+                    "error": "缺少必填字段 code 或 name"
+                })
+                continue
+            
+            # 获取该产品的文件索引
+            file_indices = files_mapping.get(code, [])
+            if not file_indices:
+                results["failed"].append({
+                    "product_code": code,
+                    "error": "未找到对应的图片文件"
+                })
+                continue
+            
+            # 提取该产品的文件
+            product_files = [files[idx] for idx in file_indices if idx < len(files)]
+            
+            if not product_files:
+                results["failed"].append({
+                    "product_code": code,
+                    "error": "有效的图片文件为空"
+                })
+                continue
+            
+            # 调用单个产品入库逻辑
+            try:
+                # 保存产品信息
+                product_service.upsert_product(
+                    product_code=code,
+                    name=name,
+                    spec=spec,
+                    category=category
+                )
+                
+                success_count = 0
+                fail_count = 0
+                errors = []
+                
+                for file in product_files:
+                    try:
+                        image_bytes = await file.read()
+                        
+                        # 移除背景
+                        if remove_bg and rembg_service:
+                            try:
+                                transparent_bytes = rembg_service.remove_background(image_bytes)
+                                image_bytes = transparent_bytes
+                            except Exception as e:
+                                logger.warning(f"背景移除失败: {str(e)}")
+                        
+                        processed_image = image_processor.preprocess(image_bytes)
+                        image_hash = image_processor.compute_hash(image_bytes)
+                        
+                        # 检查重复
+                        if product_service.image_exists(image_hash):
+                            continue
+                        
+                        # 提取特征
+                        embedding = clip_service.extract_features(processed_image)
+                        milvus_id = milvus_service.insert(product_code=code, embedding=embedding)
+                        
+                        # 优化并保存图片
+                        if image_optimizer:
+                            optimize_result = image_optimizer.optimize_and_save(
+                                image_bytes=image_bytes,
+                                product_code=code,
+                                filename=file.filename,
+                                image_processor=image_processor,
+                                generate_thumb=True
+                            )
+                            image_path = optimize_result['main_path']
+                            compressed_size = optimize_result['compressed_size']
+                        else:
+                            image_path = image_processor.save_image(
+                                image_bytes=image_bytes, product_code=code, filename=file.filename
+                            )
+                            compressed_size = len(image_bytes)
+                        
+                        # 记录
+                        product_service.insert_image(code, image_path, image_hash, milvus_id, compressed_size)
+                        success_count += 1
+                        
+                    except Exception as e:
+                        errors.append(f"{file.filename}: {str(e)}")
+                        fail_count += 1
+                
+                if success_count > 0:
+                    results["success"].append({
+                        "product_code": code,
+                        "success_count": success_count,
+                        "fail_count": fail_count
+                    })
+                    results["total_success_images"] += success_count
+                    results["total_failed_images"] += fail_count
+                else:
+                    results["failed"].append({
+                        "product_code": code,
+                        "error": "所有图片入库失败",
+                        "details": errors
+                    })
+                
+                results["total_images"] += len(product_files)
+                
+            except Exception as e:
+                results["failed"].append({
+                    "product_code": code,
+                    "error": str(e)
+                })
+                logger.error(f"批量入库产品失败 - {code}: {str(e)}")
+        
+        total_time = int((time.time() - start_time) * 1000)
+        
+        return {
+            "success": True,
+            "message": f"批量入库完成: 成功 {len(results['success'])} 个产品, 失败 {len(results['failed'])} 个",
+            "results": results,
+            "total_time_ms": total_time
+        }
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="JSON 格式错误")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"批量入库异常: {str(e)}", exc_info=True)
+        return {"success": False, "message": ErrorHandler.format_error(error=e, context="批量产品入库")}
+
+
 @app.delete("/api/v1/product/{product_code}")
 async def delete_product(product_code: str):
     """删除产品及其所有图片"""
@@ -344,6 +605,68 @@ async def delete_product(product_code: str):
 
     except Exception as e:
         return {"success": False, "message": ErrorHandler.format_error(error=e, context="删除产品")}
+
+
+@app.delete("/api/v1/products/batch")
+async def batch_delete_products(product_codes: str = Form(...)):
+    """批量删除产品
+    
+    Args:
+        product_codes: 逗号分隔的产品编码列表，如 "P001,P002,P003"
+    """
+    try:
+        codes = [code.strip() for code in product_codes.split(",") if code.strip()]
+        
+        if not codes:
+            raise HTTPException(status_code=400, detail="请提供至少一个产品编码")
+        
+        if len(codes) > 100:
+            raise HTTPException(status_code=400, detail="单次最多删除100个产品")
+        
+        results = {
+            "success": [],
+            "failed": [],
+            "total_deleted_images": 0
+        }
+        
+        for code in codes:
+            try:
+                # 获取产品信息
+                images = product_service.get_product_images(code)
+                milvus_ids = [img["milvus_id"] for img in images if img["milvus_id"]]
+                
+                # 删除 Milvus 向量
+                if milvus_ids:
+                    milvus_service.delete(milvus_ids)
+                
+                # 删除 MinIO 图片
+                for img in images:
+                    image_processor.delete_image(img["image_path"])
+                
+                # 删除 MySQL 记录
+                product_service.delete_product(code)
+                
+                results["success"].append(code)
+                results["total_deleted_images"] += len(images)
+                
+            except Exception as e:
+                results["failed"].append({
+                    "product_code": code,
+                    "error": str(e)
+                })
+                logger.error(f"批量删除失败 - {code}: {str(e)}")
+        
+        return {
+            "success": True,
+            "message": f"批量删除完成: 成功 {len(results['success'])} 个, 失败 {len(results['failed'])} 个",
+            "results": results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"批量删除异常: {str(e)}", exc_info=True)
+        return {"success": False, "message": ErrorHandler.format_error(error=e, context="批量删除产品")}
 
 
 @app.get("/api/v1/product/{product_code}")
@@ -386,21 +709,343 @@ async def get_stats():
 @app.get("/api/v1/images/{image_path:path}")
 async def get_image(image_path: str):
     """获取图片文件"""
-    file_path = os.path.join("storage", "images", image_path)
+    try:
+        if minio_service:
+            # 从 MinIO 获取图片
+            image_bytes = minio_service.download_image(image_path)
+            
+            # 确定内容类型
+            content_type = "image/jpeg"
+            if image_path.endswith('.png'):
+                content_type = "image/png"
+            elif image_path.endswith('.gif'):
+                content_type = "image/gif"
+            elif image_path.endswith('.webp'):
+                content_type = "image/webp"
+            
+            return Response(
+                content=image_bytes,
+                media_type=content_type,
+                headers={
+                    "Cache-Control": "public, max-age=31536000",
+                    "Content-Disposition": f"inline; filename={os.path.basename(image_path)}"
+                }
+            )
+        else:
+            # 从本地文件系统获取
+            file_path = os.path.join("storage", "images", image_path)
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="图片不存在")
-    if not os.path.isfile(file_path):
-        raise HTTPException(status_code=400, detail="无效的图片路径")
+            if not os.path.exists(file_path):
+                raise HTTPException(status_code=404, detail="图片不存在")
+            if not os.path.isfile(file_path):
+                raise HTTPException(status_code=400, detail="无效的图片路径")
 
-    return FileResponse(
-        file_path,
-        media_type="image/jpeg",
-        headers={
-            "Cache-Control": "public, max-age=31536000",
-            "Content-Disposition": f"inline; filename={os.path.basename(file_path)}"
+            return FileResponse(
+                file_path,
+                media_type="image/jpeg",
+                headers={
+                    "Cache-Control": "public, max-age=31536000",
+                    "Content-Disposition": f"inline; filename={os.path.basename(file_path)}"
+                }
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"获取图片失败: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"获取图片失败: {str(e)}")
+
+
+@app.post("/api/v1/rembg/remove")
+@limiter.limit("10/minute")
+async def remove_background(request: Request, file: UploadFile = File(...)):
+    """移除图片背景（单独调用）"""
+    if not rembg_service:
+        raise HTTPException(status_code=503, detail="Rembg 服务不可用")
+    
+    try:
+        image_bytes = await file.read()
+        logger.info(f"接收背景移除请求: {file.filename}, 大小: {len(image_bytes)} bytes")
+        
+        # 调用 rembg 服务
+        transparent_bytes = rembg_service.remove_background(image_bytes)
+        
+        logger.info(f"背景移除成功，返回大小: {len(transparent_bytes)} bytes")
+        
+        # 返回抠图后的图片
+        return Response(
+            content=transparent_bytes,
+            media_type="image/png",
+            headers={
+                "Content-Disposition": f"attachment; filename={os.path.splitext(file.filename)[0]}_nobg.png"
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"背景移除失败: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"背景移除失败: {str(e)}")
+
+
+@app.post("/api/v1/search/text")
+@limiter.limit("20/minute")
+async def search_by_text(
+    request: Request,
+    keyword: str = Form(...),
+    category: Optional[str] = Form(None),
+    top_k: int = Form(10)
+):
+    """文本关键词搜索
+    
+    Args:
+        keyword: 搜索关键词
+        category: 分类筛选（可选）
+        top_k: 返回数量
+    """
+    import jieba
+    
+    start_time = time.time()
+    
+    try:
+        if not keyword or len(keyword.strip()) == 0:
+            raise HTTPException(status_code=400, detail="请提供搜索关键词")
+        
+        # 分词
+        keywords = list(jieba.cut(keyword.strip()))
+        keywords = [kw.strip() for kw in keywords if kw.strip() and len(kw) > 1]
+        
+        if not keywords:
+            raise HTTPException(status_code=400, detail="关键词太短")
+        
+        logger.info(f"文本搜索: keyword={keyword}, keywords={keywords}, category={category}")
+        
+        # 构建 SQL 查询
+        if category:
+            sql = """
+                SELECT DISTINCT p.* FROM product p
+                WHERE p.status = 1 AND p.category = %s
+                AND (p.name LIKE %s OR p.spec LIKE %s OR p.product_code LIKE %s)
+                ORDER BY p.created_at DESC
+                LIMIT %s
+            """
+            like_pattern = f"%{keywords[0]}%"
+            params = (category, like_pattern, like_pattern, like_pattern, top_k)
+        else:
+            sql = """
+                SELECT DISTINCT p.* FROM product p
+                WHERE p.status = 1
+                AND (p.name LIKE %s OR p.spec LIKE %s OR p.product_code LIKE %s)
+                ORDER BY p.created_at DESC
+                LIMIT %s
+            """
+            like_pattern = f"%{keywords[0]}%"
+            params = (like_pattern, like_pattern, like_pattern, top_k)
+        
+        # 执行查询
+        products = product_service._execute_query(sql, params, dictionary=True)
+        
+        # 为每个产品获取图片
+        results = []
+        for product in products:
+            images = product_service.get_product_images(product['product_code'])
+            results.append({
+                "product_code": product['product_code'],
+                "product_name": product['name'],
+                "spec": product.get('spec'),
+                "category": product.get('category'),
+                "similarity": 1.0,  # 文本搜索无相似度
+                "image_paths": [img['image_path'] for img in images]
+            })
+        
+        search_time = int((time.time() - start_time) * 1000)
+        
+        # 记录日志
+        if results:
+            product_service.log_search(
+                query_hash=f"text:{keyword}",
+                top_product_code=results[0]['product_code'],
+                similarity=1.0,
+                search_time_ms=search_time,
+                result_count=len(results)
+            )
+        
+        return {
+            "success": True,
+            "message": f"找到 {len(results)} 个产品",
+            "results": results,
+            "search_time_ms": search_time,
+            "keyword": keyword,
+            "keywords": keywords
         }
-    )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"文本搜索失败: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "message": ErrorHandler.format_error(error=e, context="文本搜索")
+        }
+
+
+@app.post("/api/v1/search/hybrid")
+@limiter.limit("10/minute")
+async def hybrid_search(
+    request: Request,
+    file: Optional[UploadFile] = File(None),
+    keyword: Optional[str] = Form(None),
+    category: Optional[str] = Form(None),
+    top_k: int = Form(10),
+    image_weight: float = Form(0.7),  # 图像权重
+    text_weight: float = Form(0.3)    # 文本权重
+):
+    """图像+文本组合搜索
+    
+    Args:
+        file: 查询图片（可选）
+        keyword: 搜索关键词（可选）
+        category: 分类筛选
+        top_k: 返回数量
+        image_weight: 图像相似度权重 (0-1)
+        text_weight: 文本匹配权重 (0-1)
+    """
+    start_time = time.time()
+    
+    try:
+        if not file and not keyword:
+            raise HTTPException(status_code=400, detail="请提供图片或关键词至少一项")
+        
+        image_results = []
+        text_results = []
+        
+        # 1. 图像搜索
+        if file:
+            image_bytes = await file.read()
+            processed_image = image_processor.preprocess(image_bytes)
+            embedding = clip_service.extract_features(processed_image)
+            
+            raw_results = milvus_service.search(embedding=embedding, top_k=top_k * 2)
+            
+            if raw_results:
+                aggregated = product_service.aggregate_results(raw_results, aggregation="max", top_k=top_k)
+                image_results = aggregated
+        
+        # 2. 文本搜索
+        if keyword:
+            import jieba
+            keywords = list(jieba.cut(keyword.strip()))
+            keywords = [kw.strip() for kw in keywords if kw.strip() and len(kw) > 1]
+            
+            if keywords:
+                like_pattern = f"%{keywords[0]}%"
+                if category:
+                    sql = """
+                        SELECT DISTINCT p.product_code, p.name, p.spec, p.category
+                        FROM product p
+                        WHERE p.status = 1 AND p.category = %s
+                        AND (p.name LIKE %s OR p.spec LIKE %s OR p.product_code LIKE %s)
+                        LIMIT %s
+                    """
+                    params = (category, like_pattern, like_pattern, like_pattern, top_k * 2)
+                else:
+                    sql = """
+                        SELECT DISTINCT p.product_code, p.name, p.spec, p.category
+                        FROM product p
+                        WHERE p.status = 1
+                        AND (p.name LIKE %s OR p.spec LIKE %s OR p.product_code LIKE %s)
+                        LIMIT %s
+                    """
+                    params = (like_pattern, like_pattern, like_pattern, top_k * 2)
+                
+                products = product_service._execute_query(sql, params, dictionary=True)
+                
+                for product in products:
+                    text_results.append({
+                        "product_code": product['product_code'],
+                        "product_name": product['name'],
+                        "spec": product.get('spec'),
+                        "category": product.get('category'),
+                        "similarity": 1.0,
+                        "image_paths": []
+                    })
+        
+        # 3. 合并结果（加权融合）
+        merged_results = {}
+        
+        # 添加图像结果
+        for result in image_results:
+            code = result['product_code']
+            merged_results[code] = {
+                **result,
+                'image_score': result['similarity'],
+                'text_score': 0.0,
+                'final_score': result['similarity'] * image_weight
+            }
+        
+        # 添加/更新文本结果
+        for result in text_results:
+            code = result['product_code']
+            if code in merged_results:
+                # 已存在，更新分数
+                merged_results[code]['text_score'] = 1.0
+                merged_results[code]['final_score'] = (
+                    merged_results[code]['image_score'] * image_weight +
+                    1.0 * text_weight
+                )
+            else:
+                # 新增
+                merged_results[code] = {
+                    **result,
+                    'image_score': 0.0,
+                    'text_score': 1.0,
+                    'final_score': 1.0 * text_weight
+                }
+                # 获取图片
+                images = product_service.get_product_images(code)
+                merged_results[code]['image_paths'] = [img['image_path'] for img in images]
+        
+        # 按最终分数排序
+        sorted_results = sorted(
+            merged_results.values(),
+            key=lambda x: x['final_score'],
+            reverse=True
+        )[:top_k]
+        
+        # 格式化输出
+        final_results = []
+        for result in sorted_results:
+            final_results.append({
+                "product_code": result['product_code'],
+                "product_name": result['product_name'],
+                "spec": result.get('spec'),
+                "category": result.get('category'),
+                "similarity": result['final_score'],
+                "image_score": result['image_score'],
+                "text_score": result['text_score'],
+                "image_paths": result.get('image_paths', [])
+            })
+        
+        search_time = int((time.time() - start_time) * 1000)
+        
+        return {
+            "success": True,
+            "message": f"组合搜索完成: 找到 {len(final_results)} 个产品",
+            "results": final_results,
+            "search_time_ms": search_time,
+            "has_image": file is not None,
+            "has_keyword": keyword is not None,
+            "weights": {
+                "image": image_weight,
+                "text": text_weight
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"组合搜索失败: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "message": ErrorHandler.format_error(error=e, context="组合搜索")
+        }
 
 
 if __name__ == "__main__":
