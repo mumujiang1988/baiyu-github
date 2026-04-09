@@ -107,6 +107,15 @@ export async function getStats() {
 }
 
 /**
+ * 检查数据一致性
+ * @returns {Promise}
+ */
+export async function checkDataConsistency() {
+  const response = await axios.get(`${API_BASE}/products/data-consistency`)
+  return response.data
+}
+
+/**
  * 批量删除产品
  * @param {string[]} productCodes - 产品编码数组
  * @returns {Promise}
@@ -179,6 +188,34 @@ export async function searchByText(keyword, category = '', topK = 10) {
     }
   )
   
+  return response.data
+}
+
+/**
+ * 重试失败的产品入库
+ * @param {string} productCode - 产品编码
+ * @returns {Promise}
+ */
+export async function retryProductIngest(productCode) {
+  const response = await axios.post(`${API_BASE}/product/${productCode}/retry`)
+  return response.data
+}
+
+/**
+ * 查询孤儿数据
+ * @returns {Promise}
+ */
+export async function queryOrphanData() {
+  const response = await axios.get(`${API_BASE}/products/orphan-data`)
+  return response.data
+}
+
+/**
+ * 清理所有孤儿数据
+ * @returns {Promise}
+ */
+export async function cleanOrphanData() {
+  const response = await axios.post(`${API_BASE}/products/clean-orphans`)
   return response.data
 }
 

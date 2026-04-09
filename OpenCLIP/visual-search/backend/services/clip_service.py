@@ -7,6 +7,9 @@ from PIL import Image
 import numpy as np
 from typing import Union
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ClipService:
@@ -41,8 +44,8 @@ class ClipService:
         # 确保缓存目录存在
         os.makedirs(cache_dir, exist_ok=True)
 
-        print(f"📦 加载 OpenCLIP 模型: {model_name} ({pretrained}) on {self.device}")
-        print(f"📂 模型缓存目录: {cache_dir}")
+        logger.info(f"📦 加载 OpenCLIP 模型: {model_name} ({pretrained}) on {self.device}")
+        logger.info(f"📂 模型缓存目录: {cache_dir}")
 
         try:
             # 加载模型，指定缓存目录
@@ -53,8 +56,8 @@ class ClipService:
                 cache_dir=cache_dir
             )
         except Exception as e:
-            print(f"❌ 模型加载失败: {str(e)}")
-            print("🔄 尝试使用默认配置重新加载...")
+            logger.error(f"❌ 模型加载失败: {str(e)}")
+            logger.info("🔄 尝试使用默认配置重新加载...")
             try:
                 # 尝试不指定缓存目录重新加载
                 self.model, self.preprocess, self.tokenizer = open_clip.create_model_and_transforms(
@@ -63,7 +66,7 @@ class ClipService:
                     device=self.device
                 )
             except Exception as e2:
-                print(f"❌ 模型加载彻底失败: {str(e2)}")
+                logger.error(f"❌ 模型加载彻底失败: {str(e2)}")
                 raise RuntimeError(f"无法加载OpenCLIP模型: {str(e2)}")
         
         # 设置为评估模式
@@ -74,7 +77,7 @@ class ClipService:
             dummy_input = torch.randn(1, 3, 224, 224).to(self.device)
             dummy_output = self.model.encode_image(dummy_input)
             self.embedding_dim = dummy_output.shape[-1]
-        print(f"✅ 向量维度: {self.embedding_dim}")
+        logger.info(f"✅ 向量维度: {self.embedding_dim}")
     
     def extract_features(self, image: Union[Image.Image, np.ndarray]) -> np.ndarray:
         """

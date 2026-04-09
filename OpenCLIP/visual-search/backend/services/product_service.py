@@ -5,6 +5,9 @@ import mysql.connector
 from mysql.connector import pooling
 from typing import List, Dict, Optional
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProductService:
@@ -12,7 +15,7 @@ class ProductService:
 
     def __init__(self, host: str, port: int, user: str, password: str, database: str, pool_size: int = 5):
         """初始化 MySQL 连接池"""
-        print(f"🔌 连接 MySQL: {host}:{port}/{database}")
+        logger.info(f"🔌 连接 MySQL: {host}:{port}/{database}")
 
         dbconfig = {
             "host": host, "port": port, "user": user, "password": password,
@@ -24,7 +27,7 @@ class ProductService:
         except AttributeError:
             self.connection_pool = pooling.PooledMySQLConnection(pool_name="mysql_pool", pool_size=pool_size, **dbconfig)
 
-        print("✅ MySQL 连接池创建成功")
+        logger.info("✅ MySQL 连接池创建成功")
 
     def _get_connection(self):
         """获取数据库连接"""
@@ -109,7 +112,7 @@ class ProductService:
             cursor.execute(sql1, (product_code,))
             cursor.execute(sql2, (product_code,))
             conn.commit()
-            print(f"✅ 产品 {product_code} 彻底删除成功")
+            logger.info(f"✅ 产品 {product_code} 彻底删除成功")
         finally:
             cursor.close()
             conn.close()
@@ -139,13 +142,34 @@ class ProductService:
     # ==================== Search Result Aggregation ====================
 
     def aggregate_results(self, raw_results: List[Dict], aggregation: str = "max", top_k: int = 10) -> List[Dict]:
-        """聚合检索结果（按产品编码）"""
+        """聚合检索结果（按产品编码）- 优化版：批量查询避免 N+1 问题"""
+        from collections import defaultdict
+        
+        # 1. 按产品编码分组
         product_results = defaultdict(list)
         for result in raw_results:
             product_results[result["product_code"]].append(result)
 
+        # 2. 收集所有产品编码
+        product_codes = list(product_results.keys())
+        
+        # 3. 批量查询所有产品的图片（1次 SQL 替代 N 次）
+        if product_codes:
+            placeholders = ','.join(['%s'] * len(product_codes))
+            sql = f"SELECT * FROM product_image WHERE product_code IN ({placeholders}) ORDER BY created_at"
+            all_images = self._execute_query(sql, tuple(product_codes), dictionary=True)
+            
+            # 构建产品编码 -> 图片列表的映射
+            images_map = defaultdict(list)
+            for img in all_images:
+                images_map[img['product_code']].append(img)
+        else:
+            images_map = {}
+
+        # 4. 聚合结果
         aggregated = []
         for product_code, results in product_results.items():
+            # 计算相似度
             if aggregation == "max":
                 similarity = max(results, key=lambda x: x["similarity"])["similarity"]
             elif aggregation == "avg":
@@ -153,7 +177,9 @@ class ProductService:
             else:
                 similarity = results[0]["similarity"]
 
-            image_paths = [img["image_path"] for img in self.get_product_images(product_code)]
+            # 从缓存中获取图片路径
+            product_images = images_map.get(product_code, [])
+            image_paths = [img["image_path"] for img in product_images]
 
             aggregated.append({
                 "product_code": product_code,
@@ -162,6 +188,7 @@ class ProductService:
                 "image_paths": image_paths
             })
 
+        # 5. 按相似度排序并返回 top_k
         aggregated.sort(key=lambda x: x["similarity"], reverse=True)
         return aggregated[:top_k]
 
@@ -173,7 +200,7 @@ class ProductService:
         try:
             self._execute_update(sql, (query_hash, top_product_code, similarity, search_time_ms, result_count))
         except Exception as e:
-            print(f"记录检索日志失败: {e}")
+            logger.error(f"记录检索日志失败: {e}")
 
     def log_ingest(self, product_code: str, image_count: int, success_count: int, fail_count: int, ingest_time_ms: int, error_msg: str = None):
         """记录入库日志"""
@@ -181,7 +208,7 @@ class ProductService:
         try:
             self._execute_update(sql, (product_code, image_count, success_count, fail_count, ingest_time_ms, error_msg))
         except Exception as e:
-            print(f"记录入库日志失败: {e}")
+            logger.error(f"记录入库日志失败: {e}")
 
     def count_searches(self) -> int:
         """统计检索次数"""

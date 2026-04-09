@@ -60,6 +60,33 @@
                 </el-form-item>
               </el-form>
             </div>
+            
+            <!-- 分隔线 -->
+            <el-divider content-position="center">或</el-divider>
+            
+            <!-- 文本搜索区域 -->
+            <div class="text-search-section">
+              <div class="section-header">
+                <span class="section-title">文本搜索</span>
+              </div>
+              
+              <el-input
+                v-model="textKeyword"
+                placeholder="输入产品名称、规格或编码"
+                size="default"
+                clearable
+                @keyup.enter="handleTextSearch"
+              >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+                <template #append>
+                  <el-button type="primary" @click="handleTextSearch" :loading="textSearching">
+                    搜索
+                  </el-button>
+                </template>
+              </el-input>
+            </div>
           </div>
         </el-col>
         
@@ -67,7 +94,7 @@
         <el-col :span="18">
           <div class="result-section">
             <div class="section-header">
-              <span class="section-title">检索结果</span>
+              <span class="section-title">{{ searchMode === 'image' ? '图像检索结果' : '文本搜索结果' }}</span>
               <el-tag v-if="searchResults.length > 0" type="success">{{ searchResults.length }} 个，{{ searchTime }}ms</el-tag>
             </div>
         
@@ -142,7 +169,10 @@
             
             <!-- 空状态提示 -->
             <div v-else class="empty-state">
-              <el-empty description="请上传图片开始检索" :image-size="120" />
+              <el-empty 
+                :description="searchMode === 'image' ? '请上传图片开始检索' : '请输入关键词开始搜索'" 
+                :image-size="120" 
+              />
             </div>
           </div>
         </el-col>
@@ -170,8 +200,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled, Search, Delete, ArrowLeft, ArrowRight, Edit } from '@element-plus/icons-vue'
-import { searchImage } from '../api/search'
+import { searchImage, searchByText } from '../api/search'
 import { showSuccess, handleApiError } from '../utils/messageHandler'
+import { getImageUrl } from '../utils/imageHelper'
 import { ElImageViewer } from 'element-plus'
 import ImageEditor from './ImageEditor.vue'
 
@@ -188,6 +219,11 @@ const showImageViewer = ref(false)
 const currentImageList = ref([])
 const currentImageIndex = ref(0)
 const showImageEditor = ref(false)
+
+// 文本搜索相关
+const textKeyword = ref('')
+const textSearching = ref(false)
+const searchMode = ref('image') // 'image' | 'text'
 
 // 处理文件选择
 const handleFileChange = (file) => {
@@ -261,9 +297,9 @@ const handleSearch = async () => {
 
 
 // 获取图片URL
-const getImageUrl = (path) => {
-  return `/api/v1/images/${path}`
-}
+// const getImageUrl = (path) => {
+//   return `/api/v1/images/${path}`
+// }
 
 // 相似度颜色
 const getSimilarityColor = (similarity) => {

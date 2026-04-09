@@ -11,6 +11,10 @@ from pymilvus import (
 )
 import numpy as np
 from typing import List, Dict, Optional
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 
 class MilvusService:
@@ -39,7 +43,7 @@ class MilvusService:
         self.collection = None
         
         # 连接 Milvus（带重试机制）
-        print(f"🔌 连接 Milvus: {host}:{port}")
+        logger.info(f"🔌 连接 Milvus: {host}:{port}")
         max_retries = 5
         retry_delay = 3
         
@@ -50,26 +54,28 @@ class MilvusService:
                     host=host,
                     port=port
                 )
-                print("✅ Milvus 连接成功")
+                logger.info("✅ Milvus 连接成功")
                 break
             except Exception as e:
                 if attempt < max_retries - 1:
-                    print(f"⚠️ Milvus 连接失败，{retry_delay}秒后重试 ({attempt + 1}/{max_retries})")
-                    import time
+                    logger.warning(f"⚠️ Milvus 连接失败，{retry_delay}秒后重试 ({attempt + 1}/{max_retries})")
                     time.sleep(retry_delay)
                 else:
                     raise Exception(f"Milvus 连接失败: {str(e)}")
+        
+        # 创建或加载集合
+        self.create_collection()
     
     def create_collection(self):
         """创建集合（如果不存在）"""
         # 检查集合是否存在
         if utility.has_collection(self.collection_name):
-            print(f"📦 集合 {self.collection_name} 已存在")
+            logger.info(f"📦 集合 {self.collection_name} 已存在")
             self.collection = Collection(self.collection_name)
             self.collection.load()
             return
         
-        print(f"📦 创建集合: {self.collection_name}")
+        logger.info(f"📦 创建集合: {self.collection_name}")
         
         # 定义字段
         fields = [
@@ -106,7 +112,7 @@ class MilvusService:
         )
         
         # 创建索引
-        print("🔍 创建向量索引...")
+        logger.info("🔍 创建向量索引...")
         index_params = {
             "metric_type": "COSINE",
             "index_type": "IVF_FLAT",
@@ -119,7 +125,7 @@ class MilvusService:
         
         # 加载集合到内存
         self.collection.load()
-        print("✅ 集合创建完成")
+        logger.info("✅ 集合创建完成")
     
     def insert(
         self,
@@ -138,6 +144,10 @@ class MilvusService:
         Returns:
             Milvus ID
         """
+        # 检查 collection 是否初始化
+        if self.collection is None:
+            raise Exception("Milvus collection 未初始化，请检查服务启动日志")
+        
         # 准备数据
         data = [
             [product_code],
@@ -171,6 +181,10 @@ class MilvusService:
         Returns:
             Milvus ID 列表
         """
+        # 检查 collection 是否初始化
+        if self.collection is None:
+            raise Exception("Milvus collection 未初始化，请检查服务启动日志")
+        
         if image_ids is None:
             image_ids = [0] * len(product_codes)
         
@@ -245,9 +259,19 @@ class MilvusService:
         Args:
             ids: Milvus ID 列表
         """
+        # 检查 collection 是否初始化
+        if self.collection is None:
+            raise Exception("Milvus collection 未初始化")
+        
+        # 检查 ids 是否为空
+        if not ids:
+            logger.warning("⚠️ 没有需要删除的向量 ID")
+            return
+        
         expr = f"id in {ids}"
         self.collection.delete(expr)
         self.collection.flush()
+        logger.info(f"✅ 成功删除 {len(ids)} 个向量")
     
     def delete_by_product(self, product_code: str):
         """
@@ -256,12 +280,19 @@ class MilvusService:
         Args:
             product_code: 产品编码
         """
+        # 检查 collection 是否初始化
+        if self.collection is None:
+            raise Exception("Milvus collection 未初始化")
+        
         expr = f'product_code == "{product_code}"'
         self.collection.delete(expr)
         self.collection.flush()
+        logger.info(f"✅ 成功删除产品 {product_code} 的所有向量")
     
     def count(self) -> int:
         """获取向量数量"""
+        if self.collection is None:
+            return 0
         return self.collection.num_entities
     
     def get_stats(self) -> Dict:

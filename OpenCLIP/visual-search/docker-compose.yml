@@ -71,7 +71,7 @@ services:
     container_name: visual-search-rembg
     restart: always
     ports:
-      - "5000:7000"         # 对外API端口5000映射到容器内7000
+      - "7000:7000"         # 对外API端口7000映射到容器内7000
     command: s             # 启动 API 服务
     volumes:
       - rembg_models:/root/.u2net  # 模型缓存（避免重复下载）
@@ -101,7 +101,7 @@ services:
       - HF_HUB_CACHE=/app/models_cache
       - TRANSFORMERS_CACHE=/app/models_cache
       - MODEL_CACHE_DIR=/app/models_cache
-      - REMBG_API_URL=http://rembg:5000  # 给后端用的内部地址
+      - REMBG_API_URL=http://rembg:7000  # 给后端用的内部地址
       # MinIO 配置
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=minioadmin

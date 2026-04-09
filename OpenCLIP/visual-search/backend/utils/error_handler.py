@@ -203,11 +203,13 @@ class ErrorHandler:
             'image_too_small': '建议: 请上传尺寸更大的清晰图片',
             'database': '建议: 请检查数据库连接状态，或联系管理员',
             'model': '建议: 请稍后重试，或联系管理员检查模型服务',
+            'milvus': '建议: 请检查向量数据库服务是否正常运行',
+            'rembg': '建议: 请检查 Rembg 抠图服务是否已启动且网络通畅',
         }
 
-        if 'duplicate' in error_msg.lower():
+        if 'duplicate' in error_msg.lower() or '已存在' in error_msg:
             return suggestions['duplicate']
-        elif 'invalid' in error_msg.lower() or '格式' in error_msg:
+        elif 'invalid' in error_msg.lower() or '格式' in error_msg or 'cannot identify' in error_msg.lower():
             return suggestions['invalid_image']
         elif 'large' in error_msg.lower() or '过大' in error_msg:
             return suggestions['image_too_large']
@@ -215,7 +217,11 @@ class ErrorHandler:
             return suggestions['image_too_small']
         elif 'database' in error_msg.lower() or 'mysql' in error_msg.lower():
             return suggestions['database']
-        elif 'model' in error_msg.lower():
+        elif 'milvus' in error_msg.lower():
+            return suggestions['milvus']
+        elif 'rembg' in error_msg.lower() or '抠图' in error_msg:
+            return suggestions['rembg']
+        elif 'model' in error_msg.lower() or 'clip' in error_msg.lower():
             return suggestions['model']
 
         return None

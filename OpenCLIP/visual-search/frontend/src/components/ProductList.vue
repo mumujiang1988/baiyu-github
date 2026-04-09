@@ -4,36 +4,301 @@
       <template #header>
         <div class="card-header">
           <span>产品管理</span>
-          <el-form inline>
-            <el-form-item>
-              <el-input v-model="searchCategory" placeholder="分类筛选" clearable @clear="loadProducts" @keyup.enter="loadProducts" />
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="loadProducts">
-                <el-icon><Search /></el-icon>
-                查询
-              </el-button>
-            </el-form-item>
-          </el-form>
+          <el-space>
+            <el-button type="success" @click="checkConsistency" :loading="checking">
+              <el-icon><DataAnalysis /></el-icon>
+              数据一致性检查
+            </el-button>
+            <el-button 
+              type="warning" 
+              @click="queryOrphanDataHandler"
+              :loading="queryingOrphan"
+            >
+              <el-icon><Warning /></el-icon>
+              孤儿数据查询
+            </el-button>
+            <el-form inline>
+              <el-form-item>
+                <el-input v-model="searchCategory" placeholder="分类筛选" clearable @clear="loadProducts" @keyup.enter="loadProducts" />
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="loadProducts">
+                  <el-icon><Search /></el-icon>
+                  查询
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </el-space>
         </div>
       </template>
+      
+      <!-- 数据一致性检查结果 -->
+      <el-alert
+        v-if="consistencyResult"
+        :title="`数据一致性检查报告`"
+        type="info"
+        :closable="true"
+        show-icon
+        style="margin-bottom: 16px"
+      >
+        <template #default>
+          <div class="consistency-summary">
+            <el-descriptions :column="3" border size="small">
+              <el-descriptions-item label="MySQL 产品数">{{ consistencyResult.summary.total_mysql_products }}</el-descriptions-item>
+              <el-descriptions-item label="Milvus 向量数">{{ consistencyResult.summary.total_milvus_products }}</el-descriptions-item>
+              <el-descriptions-item label="MinIO 文件数">{{ consistencyResult.summary.total_minio_products }}</el-descriptions-item>
+              <el-descriptions-item label="完整产品">
+                <el-tag type="success">{{ consistencyResult.summary.complete_products }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="残缺产品">
+                <el-tag type="danger">{{ 
+                  consistencyResult.summary.mysql_only_count + 
+                  consistencyResult.summary.milvus_only_count + 
+                  consistencyResult.summary.minio_only_count 
+                }}</el-tag>
+              </el-descriptions-item>
+            </el-descriptions>
+            
+            <el-divider />
+            
+            <!-- 问题详情 -->
+            <div v-if="hasIssues" class="issues-section">
+              <el-tabs type="border-card">
+                <el-tab-pane v-if="consistencyResult.mysql_only.length > 0" :label="`只在 MySQL (${consistencyResult.mysql_only.length})`">
+                  <el-table :data="consistencyResult.mysql_only" size="small" max-height="200">
+                    <el-table-column prop="product_code" label="产品编码" width="150" />
+                    <el-table-column prop="issue" label="问题描述" />
+                    <el-table-column label="严重程度" width="100">
+                      <template #default="{ row }">
+                        <el-tag :type="row.severity === 'high' ? 'danger' : 'warning'" size="small">
+                          {{ row.severity === 'high' ? '高' : '中' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+                
+                <el-tab-pane v-if="consistencyResult.milvus_only.length > 0" :label="`只在 Milvus (${consistencyResult.milvus_only.length})`">
+                  <el-table :data="consistencyResult.milvus_only" size="small" max-height="200">
+                    <el-table-column prop="product_code" label="产品编码" width="150" />
+                    <el-table-column prop="issue" label="问题描述" />
+                    <el-table-column label="严重程度" width="100">
+                      <template #default="{ row }">
+                        <el-tag :type="row.severity === 'high' ? 'danger' : 'warning'" size="small">
+                          {{ row.severity === 'high' ? '高' : '中' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+                
+                <el-tab-pane v-if="consistencyResult.minio_only.length > 0" :label="`只在 MinIO (${consistencyResult.minio_only.length})`">
+                  <el-table :data="consistencyResult.minio_only" size="small" max-height="200">
+                    <el-table-column prop="product_code" label="产品编码" width="150" />
+                    <el-table-column prop="issue" label="问题描述" />
+                    <el-table-column label="严重程度" width="100">
+                      <template #default="{ row }">
+                        <el-tag :type="row.severity === 'high' ? 'danger' : 'warning'" size="small">
+                          {{ row.severity === 'high' ? '高' : '中' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+              </el-tabs>
+            </div>
+            
+            <div v-else class="no-issues">
+              <el-empty description="所有数据一致，没有发现问题" :image-size="80" />
+            </div>
+          </div>
+        </template>
+      </el-alert>
+      
+      <!-- 孤儿数据查询结果 -->
+      <el-alert
+        v-if="orphanDataResult"
+        title="孤儿数据查询结果"
+        type="warning"
+        :closable="true"
+        @close="orphanDataResult = null"
+        show-icon
+        style="margin-bottom: 16px"
+      >
+        <template #default>
+          <div class="orphan-data-summary">
+            <el-descriptions :column="3" border size="small">
+              <el-descriptions-item label="MySQL 孤儿记录">
+                <el-tag type="danger">{{ orphanDataResult.mysql_orphans || 0 }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="Milvus 孤儿向量">
+                <el-tag type="danger">{{ orphanDataResult.milvus_orphans || 0 }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="MinIO 孤儿文件">
+                <el-tag type="danger">{{ orphanDataResult.minio_orphans || 0 }}</el-tag>
+              </el-descriptions-item>
+            </el-descriptions>
+            
+            <el-divider />
+            
+            <!-- 孤儿数据详情 -->
+            <div v-if="hasOrphanData" class="orphan-details">
+              <el-tabs type="border-card">
+                <el-tab-pane v-if="orphanDataResult.mysql_orphan_details && orphanDataResult.mysql_orphan_details.length > 0" 
+                  :label="`MySQL 孤儿记录 (${orphanDataResult.mysql_orphan_details.length})`">
+                  <el-table :data="orphanDataResult.mysql_orphan_details" size="small" max-height="300">
+                    <el-table-column prop="product_code" label="产品编码" width="150" />
+                    <el-table-column prop="name" label="产品名称" width="200" />
+                    <el-table-column prop="reason" label="原因" />
+                    <el-table-column label="操作" width="100" align="center">
+                      <template #default="{ row }">
+                        <el-button 
+                          type="danger" 
+                          size="small" 
+                          link
+                          @click="deleteOrphanRecord('mysql', row)"
+                        >
+                          删除
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+                
+                <el-tab-pane v-if="orphanDataResult.milvus_orphan_details && orphanDataResult.milvus_orphan_details.length > 0" 
+                  :label="`Milvus 孤儿向量 (${orphanDataResult.milvus_orphan_details.length})`">
+                  <el-table :data="orphanDataResult.milvus_orphan_details" size="small" max-height="300">
+                    <el-table-column prop="product_code" label="产品编码" width="150" />
+                    <el-table-column prop="milvus_id" label="Milvus ID" width="120" />
+                    <el-table-column prop="reason" label="原因" />
+                    <el-table-column label="操作" width="100" align="center">
+                      <template #default="{ row }">
+                        <el-button 
+                          type="danger" 
+                          size="small" 
+                          link
+                          @click="deleteOrphanRecord('milvus', row)"
+                        >
+                          删除
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+                
+                <el-tab-pane v-if="orphanDataResult.minio_orphan_details && orphanDataResult.minio_orphan_details.length > 0" 
+                  :label="`MinIO 孤儿文件 (${orphanDataResult.minio_orphan_details.length})`">
+                  <el-table :data="orphanDataResult.minio_orphan_details" size="small" max-height="300">
+                    <el-table-column prop="object_name" label="文件路径" min-width="300" />
+                    <el-table-column prop="size" label="文件大小" width="120" />
+                    <el-table-column label="操作" width="100" align="center">
+                      <template #default="{ row }">
+                        <el-button 
+                          type="danger" 
+                          size="small" 
+                          link
+                          @click="deleteOrphanRecord('minio', row)"
+                        >
+                          删除
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+              </el-tabs>
+              
+              <!-- 批量清理按钮 -->
+              <div style="margin-top: 16px; text-align: right;">
+                <el-button 
+                  type="danger" 
+                  @click="cleanAllOrphanData"
+                  :loading="cleaningOrphan"
+                >
+                  <el-icon><Delete /></el-icon>
+                  批量清理所有孤儿数据
+                </el-button>
+              </div>
+            </div>
+            
+            <div v-else class="no-orphan">
+              <el-empty description="未发现孤儿数据" :image-size="80" />
+            </div>
+          </div>
+        </template>
+      </el-alert>
       
       <el-table :data="products" v-loading="loading" stripe>
         <el-table-column prop="product_code" label="产品编码" width="150" />
         <el-table-column prop="name" label="产品名称" min-width="200" />
         <el-table-column prop="spec" label="规格" width="150" />
         <el-table-column prop="category" label="分类" width="120" />
+        <el-table-column label="图片数量" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag size="small" type="info">{{ row.image_count || 0 }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Milvus ID" width="120" align="center">
+          <template #default="{ row }">
+            <span v-if="row.milvus_ids && row.milvus_ids.length > 0">
+              {{ row.milvus_ids.length }} 个
+            </span>
+            <el-tag v-else size="small" type="danger">缺失</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="MinIO 文件" width="120" align="center">
+          <template #default="{ row }">
+            <span v-if="row.minio_files && row.minio_files.length > 0">
+              {{ row.minio_files.length }} 个
+            </span>
+            <el-tag v-else size="small" type="danger">缺失</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据状态" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag 
+              v-if="row.data_status === 'complete'" 
+              size="small" 
+              type="success"
+            >
+              完整
+            </el-tag>
+            <el-tag 
+              v-else-if="row.data_status === 'incomplete'" 
+              size="small" 
+              type="warning"
+            >
+              残缺
+            </el-tag>
+            <el-tag 
+              v-else 
+              size="small" 
+              type="info"
+            >
+              未知
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="180">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right" align="center">
+        <el-table-column label="操作" width="250" fixed="right" align="center">
           <template #default="{ row }">
             <el-space :size="8">
               <el-button type="primary" size="small" @click="viewProduct(row)" link>
                 <el-icon><View /></el-icon>
                 查看
+              </el-button>
+              <el-button 
+                type="warning" 
+                size="small" 
+                @click="handleRetry(row.product_code)"
+                :loading="retrying && retryingProductCode === row.product_code"
+                link
+              >
+                <el-icon><RefreshRight /></el-icon>
+                重试
               </el-button>
               <el-button type="danger" size="small" @click="deleteProduct(row)" link>
                 <el-icon><Delete /></el-icon>
@@ -90,10 +355,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listProducts, getProduct, deleteProduct as deleteProductApi } from '../api/search'
+import { listProducts, getProduct, deleteProduct as deleteProductApi, checkDataConsistency, queryOrphanData, cleanOrphanData } from '../api/search'
 import { handleApiError } from '../utils/messageHandler'
+import { getImageUrl } from '../utils/imageHelper'
+import { useRetry } from './ProductIngest/composables/useRetry'
 
 const products = ref([])
 const loading = ref(false)
@@ -105,6 +372,39 @@ const searchCategory = ref('')
 const detailVisible = ref(false)
 const currentProduct = ref(null)
 const currentImages = ref([])
+
+// 数据一致性检查相关
+const checking = ref(false)
+const consistencyResult = ref(null)
+
+// Orphan data query related
+const queryingOrphan = ref(false)
+const orphanDataResult = ref(null)
+const cleaningOrphan = ref(false)
+
+// Retry functionality
+const { retrying, handleRetry: retryIngest } = useRetry()
+const retryingProductCode = ref(null)
+
+// 计算是否有问题
+const hasIssues = computed(() => {
+  if (!consistencyResult.value) return false
+  return (
+    consistencyResult.value.mysql_only.length > 0 ||
+    consistencyResult.value.milvus_only.length > 0 ||
+    consistencyResult.value.minio_only.length > 0
+  )
+})
+
+// 计算是否有孤儿数据
+const hasOrphanData = computed(() => {
+  if (!orphanDataResult.value) return false
+  return (
+    (orphanDataResult.value.mysql_orphan_details && orphanDataResult.value.mysql_orphan_details.length > 0) ||
+    (orphanDataResult.value.milvus_orphan_details && orphanDataResult.value.milvus_orphan_details.length > 0) ||
+    (orphanDataResult.value.minio_orphan_details && orphanDataResult.value.minio_orphan_details.length > 0)
+  )
+})
 
 const loadProducts = async () => {
   loading.value = true
@@ -120,6 +420,31 @@ const loadProducts = async () => {
     handleApiError(error.response || error, '加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+const checkConsistency = async () => {
+  checking.value = true
+  
+  try {
+    const response = await checkDataConsistency()
+    
+    if (response.success) {
+      consistencyResult.value = response.data
+      
+      // 显示统计信息
+      const summary = response.data.summary
+      ElMessage.success(
+        `检查完成！完整产品: ${summary.complete_products}, ` +
+        `残缺产品: ${summary.mysql_only_count + summary.milvus_only_count + summary.minio_only_count}`
+      )
+    } else {
+      handleApiError(response, '检查失败')
+    }
+  } catch (error) {
+    handleApiError(error.response || error, '检查失败')
+  } finally {
+    checking.value = false
   }
 }
 
@@ -154,6 +479,8 @@ const deleteProduct = async (row) => {
     if (response.success) {
       ElMessage.success(response.message)
       loadProducts()
+      // 清除一致性检查结果，需要重新检查
+      consistencyResult.value = null
     } else {
       handleApiError(response, '删除失败')
     }
@@ -164,14 +491,130 @@ const deleteProduct = async (row) => {
   }
 }
 
+// Handle retry for failed product
+const handleRetry = async (productCode) => {
+  retryingProductCode.value = productCode
+  
+  const success = await retryIngest(productCode, () => {
+    // Reload products after successful retry
+    loadProducts()
+    // Clear consistency check result
+    consistencyResult.value = null
+  })
+  
+  retryingProductCode.value = null
+}
+
+// Query orphan data
+const queryOrphanDataHandler = async () => {
+  queryingOrphan.value = true
+  
+  try {
+    const response = await queryOrphanData()
+    
+    if (response.success) {
+      orphanDataResult.value = response.data
+      
+      const total = 
+        (response.data.mysql_orphans || 0) +
+        (response.data.milvus_orphans || 0) +
+        (response.data.minio_orphans || 0)
+      
+      if (total === 0) {
+        ElMessage.success('未发现孤儿数据')
+      } else {
+        ElMessage.warning(`发现 ${total} 条孤儿数据`)
+      }
+    } else {
+      handleApiError(response, '查询失败')
+    }
+  } catch (error) {
+    handleApiError(error.response || error, '查询失败')
+  } finally {
+    queryingOrphan.value = false
+  }
+}
+
+// Delete single orphan record
+const deleteOrphanRecord = async (type, row) => {
+  try {
+    let message = ''
+    if (type === 'mysql') {
+      message = `确定要删除 MySQL 中的孤儿记录 "${row.product_code}" 吗？`
+    } else if (type === 'milvus') {
+      message = `确定要删除 Milvus 中的孤儿向量 ID=${row.milvus_id} 吗？`
+    } else if (type === 'minio') {
+      message = `确定要删除 MinIO 中的孤儿文件 "${row.object_name}" 吗？`
+    }
+    
+    await ElMessageBox.confirm(message, '删除确认', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    // TODO: Implement actual deletion API call
+    ElMessage.info('删除功能待实现')
+    
+    // After deletion, re-query
+    // await queryOrphanDataHandler()
+    
+  } catch (error) {
+    if (error !== 'cancel') {
+      handleApiError(error.response || error, '删除失败')
+    }
+  }
+}
+
+// Clean all orphan data
+const cleanAllOrphanData = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要批量清理所有孤儿数据吗？此操作不可恢复！\n\n将清理：\n- MySQL 中引用不存在产品的图片记录\n- Milvus 中没有对应 MySQL 记录的向量\n- MinIO 中没有对应 MySQL 记录的图片文件',
+      '批量清理确认',
+      {
+        confirmButtonText: '确定清理',
+        cancelButtonText: '取消',
+        type: 'error',
+        distinguishCancelAndClose: true
+      }
+    )
+    
+    cleaningOrphan.value = true
+    
+    const response = await cleanOrphanData()
+    
+    if (response.success) {
+      const { mysql_count, milvus_count, minio_count } = response.cleaned
+      const total = mysql_count + milvus_count + minio_count
+      
+      ElMessage.success({
+        message: response.message,
+        duration: 5000
+      })
+      
+      // 重新查询孤儿数据
+      await queryOrphanDataHandler()
+      
+      // 刷新产品列表
+      loadProducts()
+    } else {
+      handleApiError(response, '清理失败')
+    }
+    
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      handleApiError(error.response || error, '清理失败')
+    }
+  } finally {
+    cleaningOrphan.value = false
+  }
+}
+
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
   return date.toLocaleString('zh-CN')
-}
-
-const getImageUrl = (path) => {
-  return `/api/v1/images/${path}`
 }
 
 onMounted(() => {
@@ -207,6 +650,18 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.consistency-summary {
+  padding: 10px 0;
+}
+
+.issues-section {
+  margin-top: 16px;
+}
+
+.no-issues {
+  padding: 20px 0;
 }
 
 .image-grid {

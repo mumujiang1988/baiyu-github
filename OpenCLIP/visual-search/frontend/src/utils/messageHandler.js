@@ -227,17 +227,13 @@ export function showLoading(message = '加载中...') {
  * @param {string} defaultMessage - 默认错误消息
  */
 export function handleApiError(response, defaultMessage = '操作失败') {
-  if (response && response.message) {
-    showError(response.message)
-  } else {
-    showError(defaultMessage)
-  }
+  const message = response?.data?.message || response?.message || defaultMessage
+  const suggestion = response?.data?.suggestion || response?.suggestion
 
-  // 如果有建议，显示带建议的错误
-  if (response && response.suggestion) {
-    setTimeout(() => {
-      showErrorWithSuggestion(response.message, response.suggestion)
-    }, 500)
+  if (suggestion) {
+    showErrorWithSuggestion(message, suggestion)
+  } else {
+    showError(message)
   }
 }
 

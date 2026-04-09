@@ -19,42 +19,6 @@
             </el-button>
           </template>
         </el-input>
-        
-        <!-- 高级选项 -->
-        <el-collapse-transition>
-          <div v-show="showAdvanced" class="advanced-options">
-            <el-form :inline="true" size="small">
-              <el-form-item label="分类筛选">
-                <el-select 
-                  v-model="category" 
-                  placeholder="全部分类" 
-                  clearable
-                  style="width: 150px"
-                >
-                  <el-option label="服装" value="服装" />
-                  <el-option label="电子产品" value="电子产品" />
-                  <el-option label="家居用品" value="家居用品" />
-                  <el-option label="其他" value="其他" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="返回数量">
-                <el-input-number 
-                  v-model="topK" 
-                  :min="1" 
-                  :max="50" 
-                  style="width: 120px"
-                />
-              </el-form-item>
-            </el-form>
-          </div>
-        </el-collapse-transition>
-        
-        <div class="search-actions">
-          <el-button text @click="showAdvanced = !showAdvanced">
-            <el-icon><ArrowDown v-if="!showAdvanced" /><ArrowUp v-else /></el-icon>
-            {{ showAdvanced ? '收起' : '高级选项' }}
-          </el-button>
-        </div>
       </div>
       
       <!-- 搜索结果 -->
@@ -137,15 +101,12 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search, ArrowDown, ArrowUp, Picture } from '@element-plus/icons-vue'
+import { Search, Picture } from '@element-plus/icons-vue'
 import { searchByText } from '../api/search'
 import { handleApiError } from '../utils/messageHandler'
 
 const keyword = ref('')
-const category = ref('')
-const topK = ref(10)
 const searching = ref(false)
-const showAdvanced = ref(false)
 const searchResults = ref([])
 const searchTime = ref(0)
 const hasSearched = ref(false)
@@ -162,7 +123,7 @@ const handleSearch = async () => {
   
   try {
     const startTime = Date.now()
-    const response = await searchByText(keyword.value, category.value, topK.value)
+    const response = await searchByText(keyword.value, '', 20)
     
     searchTime.value = Date.now() - startTime
     
@@ -184,7 +145,6 @@ const handleSearch = async () => {
 // 清空搜索
 const clearSearch = () => {
   keyword.value = ''
-  category.value = ''
   searchResults.value = []
   hasSearched.value = false
   searchTime.value = 0
@@ -215,18 +175,6 @@ const handleImageError = (event) => {
 
 .search-input-section {
   margin-bottom: 20px;
-}
-
-.advanced-options {
-  margin-top: 16px;
-  padding: 16px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-}
-
-.search-actions {
-  margin-top: 12px;
-  text-align: right;
 }
 
 .results-section {

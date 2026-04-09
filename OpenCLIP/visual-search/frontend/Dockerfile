@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npm run build
+RUN rm -rf node_modules && npm install && npm run build
 
 # 生产阶段
 FROM nginx:alpine as production-stage

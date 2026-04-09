@@ -27,7 +27,7 @@
 import { ref } from 'vue'
 import ImageSearch from './components/ImageSearch.vue'
 import TextSearch from './components/TextSearch.vue'
-import ProductIngest from './components/ProductIngest.vue'
+import ProductIngest from './components/ProductIngest/index.vue'
 import ProductList from './components/ProductList.vue'
 
 const activeMenu = ref('search')

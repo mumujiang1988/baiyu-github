@@ -12,8 +12,11 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # 安装Python依赖（分层安装以利用缓存）
-RUN pip install --no-cache-dir torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt
+# 先安装 torch（从官方源）
+RUN pip install --no-cache-dir --timeout=300 torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+
+# 再安装其他依赖（使用阿里云镜像源，更快更稳定）
+RUN pip install --no-cache-dir --timeout=300 --retries=10 -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 
 # 生产阶段
 FROM python:3.10-slim
