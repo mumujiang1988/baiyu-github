@@ -3,6 +3,15 @@
 
 集中管理所有魔法数字和配置值，提高代码可维护性。
 """
+import os
+
+# ==================== MinIO 配置 ====================
+
+# MinIO Bucket 名称
+MINIO_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "product-images")
+
+# MinIO 路径前缀（用于数据库存储）
+MINIO_PATH_PREFIX = f"minio://{MINIO_BUCKET_NAME}/"
 
 # ==================== 批量操作限制 ====================
 
@@ -11,6 +20,14 @@ MAX_BATCH_INGEST_SIZE = 50
 
 # 批量删除最大产品数
 MAX_BATCH_DELETE_SIZE = 100
+
+# ==================== 并发控制 ====================
+
+# 图片入库最大并发数
+MAX_CONCURRENT_INGEST = int(os.getenv("MAX_CONCURRENT_INGEST", "4"))
+
+# 图片删除最大并发数
+MAX_CONCURRENT_DELETE = int(os.getenv("MAX_CONCURRENT_DELETE", "2"))
 
 
 # ==================== 搜索限制 ====================

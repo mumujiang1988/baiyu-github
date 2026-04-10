@@ -11,6 +11,7 @@ from datetime import datetime
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from config.constants import MAX_CONCURRENT_INGEST
 from dependencies import (
     get_milvus_service,
     get_product_service,
@@ -187,8 +188,8 @@ class IngestTransaction:
                         "error": str(e)
                     }
             
-            # 使用线程池并行处理（最多 4 个并发）
-            max_workers = min(4, len(prepared_images))
+            # 使用线程池并行处理
+            max_workers = min(MAX_CONCURRENT_INGEST, len(prepared_images))
             logger.info(f"🚀 开始并行入库 {len(prepared_images)} 张图片 (并发数: {max_workers})")
             
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -226,9 +227,9 @@ class IngestTransaction:
             logger.error(f"💥 入库事务失败: {str(e)}", exc_info=True)
             
             # 回滚已在上面执行
-            # 创建补偿任务（如果回滚也失败）
-            if self.milvus_ids or self.minio_paths or self.mysql_records:
-                self.create_compensation_task("rollback_failed", str(e))
+            # TODO: 实现补偿任务系统（使用 Redis/Celery）
+            # if self.milvus_ids or self.minio_paths or self.mysql_records:
+            #     self.create_compensation_task("rollback_failed", str(e))
             
             raise
     
@@ -282,9 +283,9 @@ class IngestTransaction:
         
         if rollback_errors:
             logger.error(f" 部分回滚失败: {'; '.join(rollback_errors)}")
-            # 如果启用补偿机制，创建补偿任务
-            if self.use_compensation:
-                self.create_compensation_task("rollback_partial", '; '.join(rollback_errors))
+            # TODO: 实现补偿任务系统
+            # if self.use_compensation:
+            #     self.create_compensation_task("rollback_partial", '; '.join(rollback_errors))
         else:
             logger.info(f" 事务回滚成功: {self.transaction_id}")
     

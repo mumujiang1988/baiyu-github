@@ -29,7 +29,8 @@ from config.constants import (
     MAX_BATCH_INGEST_SIZE, 
     MAX_BATCH_DELETE_SIZE,
     RATE_LIMIT_PRODUCT_INGEST,
-    RATE_LIMIT_BATCH_INGEST
+    RATE_LIMIT_BATCH_INGEST,
+    MINIO_PATH_PREFIX
 )
 
 logger = logging.getLogger(__name__)
@@ -639,9 +640,8 @@ async def query_orphan_data():
             except Exception as e:
                 logger.warning(f"Failed to query MinIO objects: {str(e)}")
         
-        mysql_image_paths = set([img['image_path'].replace('minio://product-images/', '') 
+        mysql_image_paths = set([img['image_path'].replace(MINIO_PATH_PREFIX, '') 
                                  for img in mysql_images if img['image_path']])
-        minio_object_names = set([obj['object_name'] for obj in minio_objects])
         
         # 4. Find orphans
         # MySQL orphans: images referencing non-existent products
@@ -885,7 +885,7 @@ async def clean_orphan_data(confirm: bool = Form(False)):
                 ))
                 
                 # Get valid image paths from MySQL
-                valid_paths = set([img['image_path'].replace('minio://visual-search/', '') 
+                valid_paths = set([img['image_path'].replace(MINIO_PATH_PREFIX, '') 
                                   for img in mysql_images if img['image_path']])
                 
                 # Find and delete orphan objects
