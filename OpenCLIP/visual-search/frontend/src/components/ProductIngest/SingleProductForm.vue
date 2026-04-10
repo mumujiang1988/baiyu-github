@@ -142,7 +142,7 @@ const handlePicturePreview = (file) => {
   } 
   // 如果是本地文件，创建临时 URL
   else if (file.raw) {
-    const tempUrl = createUrl(file.raw)  // ✅ 使用统一管理器
+    const tempUrl = createUrl(file.raw)  //  使用统一管理器
     previewImageUrl.value = tempUrl
     showImageViewer.value = true
     // 不再需要 setTimeout 清理，由 useBlobUrl 自动管理

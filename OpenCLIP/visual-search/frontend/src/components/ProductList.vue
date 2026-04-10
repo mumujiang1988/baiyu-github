@@ -433,17 +433,17 @@ const loadProducts = async () => {
       products.value = items || []
       total.value = pagination?.total || 0
       
-      logger.log('✅ 产品列表加载成功:', {
+      logger.log(' 产品列表加载成功:', {
         count: products.value.length,
         total: total.value
       })
     } else {
-      logger.warn('⚠️ 响应格式不正确:', response)
+      logger.warn(' 响应格式不正确:', response)
       products.value = []
       total.value = 0
     }
   } catch (error) {
-    logger.error('❌ 加载产品列表失败:', error)
+    logger.error(' 加载产品列表失败:', error)
     handleApiError(error.response || error, '加载失败')
     products.value = []
     total.value = 0
@@ -566,18 +566,17 @@ const handleBatchDelete = async () => {
       return
     }
     
+    // 统一格式：扁平化响应，数据直接在 response 根级别
     if (response.success) {
-      // 统一格式：数据在 response.data 中
-      const result = response.data
-      const successCount = result.success?.length || 0
-      const failedCount = result.failed?.length || 0
-      const totalDeletedImages = result.total_deleted_images || 0
+      const successCount = response.success?.length || 0
+      const failedCount = response.failed?.length || 0
+      const totalDeletedImages = response.total_deleted_images || 0
       
       // 显示详细结果
       let message = `批量删除完成！成功: ${successCount} 个, 失败: ${failedCount} 个, 共删除 ${totalDeletedImages} 张图片`
       
       if (failedCount > 0) {
-        const failedProducts = result.failed.map(f => f.product_code).join(', ')
+        const failedProducts = response.failed.map(f => f.product_code).join(', ')
         message += `\n\n失败产品: ${failedProducts}`
         ElMessage.warning({
           message,

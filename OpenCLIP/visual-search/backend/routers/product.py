@@ -25,6 +25,11 @@ from services.enhanced_ingest import ingest_product_with_transaction
 from services.cache_service import consistency_check_cache, product_list_cache
 from utils.error_handler import ErrorHandler
 from utils.response import build_success_response, build_error_response, paginated_response
+from utils.structured_logger import (
+    log_batch_ingest_event,
+    log_cleanup_event,
+    log_performance_metric
+)
 from config.constants import (
     MAX_BATCH_INGEST_SIZE, 
     MAX_BATCH_DELETE_SIZE,
@@ -172,25 +177,37 @@ async def batch_ingest_products(
             "total_failed_images": 0
         }
         
+        start_time = time.time()
+        
+        # 记录批量入库开始事件（结构化日志）
+        log_batch_ingest_event(
+            logger,
+            event_type="start",
+            product_code="BATCH",
+            status="started",
+            total_products=len(products),
+            remove_bg=remove_bg
+        )
+        
         # 逐个处理产品（复用单个产品入库逻辑）
         for product_info in products:
-            code = product_info.get("code") or product_info.get("product_code")
+            product_code = product_info.get("code") or product_info.get("product_code")
             name = product_info.get("name")
             spec = product_info.get("spec", "")
             category = product_info.get("category", "")
             
-            if not code or not name:
+            if not product_code or not name:
                 results["failed"].append({
-                    "product_code": code,
+                    "product_code": product_code,
                     "error": "缺少必填字段 code 或 name"
                 })
                 continue
             
             # 获取该产品的文件索引
-            file_indices = files_mapping.get(code, [])
+            file_indices = files_mapping.get(product_code, [])
             if not file_indices:
                 results["failed"].append({
-                    "product_code": code,
+                    "product_code": product_code,
                     "error": "未找到对应的图片文件"
                 })
                 continue
@@ -200,48 +217,110 @@ async def batch_ingest_products(
             
             if not product_files:
                 results["failed"].append({
-                    "product_code": code,
+                    "product_code": product_code,
                     "error": "有效的图片文件为空"
                 })
                 continue
             
-            # 保存产品信息（关键步骤，不可省略）
+            #  优化：先处理图片，成功后再保存产品信息
             try:
+                # 步骤 1: 处理图片（外部存储优先）
+                result = await process_single_product_images(product_code, product_files, remove_bg)
+                
+                if result["success_count"] == 0:
+                    raise Exception(f"所有图片入库失败: {'; '.join(result['errors'])}")
+                
+                # 步骤 2: 图片成功后，再保存产品信息
                 product_service.upsert_product(
-                    product_code=code,
+                    product_code=product_code,
                     name=name,
                     spec=spec,
                     category=category
                 )
-            except Exception as e:
-                results["failed"].append({
-                    "product_code": code,
-                    "error": f"保存产品信息失败: {str(e)}"
-                })
-                logger.error(f"批量入库保存产品信息失败 - {code}: {str(e)}")
-                continue
-            
-            # 调用辅助函数处理图片
-            result = await process_single_product_images(code, product_files, remove_bg)
-            
-            if result["success_count"] > 0:
+                
+                # 步骤 3: 验证数据完整性
+                verify_product_integrity(product_code, result["success_count"])
+                
                 results["success"].append({
-                    "product_code": code,
+                    "product_code": product_code,
                     "success_count": result["success_count"],
                     "fail_count": result["fail_count"]
                 })
                 results["total_success_images"] += result["success_count"]
                 results["total_failed_images"] += result["fail_count"]
-            else:
-                results["failed"].append({
-                    "product_code": code,
-                    "error": "所有图片入库失败",
-                    "details": result["errors"]
-                })
+                
+                # 记录成功事件（结构化日志）
+                log_batch_ingest_event(
+                    logger,
+                    event_type="success",
+                    product_code=product_code,
+                    status="success",
+                    success_count=result["success_count"],
+                    fail_count=result["fail_count"]
+                )
+                
+            except Exception as e:
+                # 步骤 4: 失败时清理已写入的图片数据
+                logger.warning(f" 产品 {product_code} 入库失败，开始清理部分数据...")
+                cleanup_failed = False
+                try:
+                    await cleanup_partial_data(product_code)
+                except Exception as cleanup_error:
+                    cleanup_failed = True
+                    logger.error(
+                        f"❌ 清理失败: {product_code}, "
+                        f"原始错误: {str(e)}, "
+                        f"清理错误: {str(cleanup_error)}"
+                    )
+                
+                # 记录失败结果
+                if cleanup_failed:
+                    results["failed"].append({
+                        "product_code": product_code,
+                        "error": f"{str(e)} (清理也失败: {str(cleanup_error)})"
+                    })
+                else:
+                    results["failed"].append({
+                        "product_code": product_code,
+                        "error": str(e)
+                    })
+                
+                # 记录失败事件（结构化日志）
+                log_batch_ingest_event(
+                    logger,
+                    event_type="failure",
+                    product_code=product_code,
+                    status="failed",
+                    error=str(e),
+                    cleanup_status="failed" if cleanup_failed else "success"
+                )
+                
+                logger.error(f"批量入库失败 - {product_code}: {str(e)}")
             
             results["total_images"] += len(product_files)
         
         total_time = int((time.time() - start_time) * 1000)
+        
+        # 记录批量入库完成事件（结构化日志 + 性能指标）
+        log_batch_ingest_event(
+            logger,
+            event_type="complete",
+            product_code="BATCH",
+            status="completed",
+            success_count=len(results["success"]),
+            failed_count=len(results["failed"]),
+            total_images=results["total_images"],
+            duration_ms=total_time
+        )
+        
+        # 记录性能指标
+        log_performance_metric(
+            logger,
+            operation="batch_ingest",
+            duration_ms=total_time,
+            count=len(products),
+            success_rate=len(results["success"]) / len(products) if products else 0
+        )
         
         return build_success_response(
             message=f"批量入库完成: 成功 {len(results['success'])} 个产品, 失败 {len(results['failed'])} 个",
@@ -515,34 +594,34 @@ async def check_data_consistency():
             },
             "mysql_only": [
                 {
-                    "product_code": code,
+                    "product_code": product_code,
                     "issue": "产品在 MySQL 中存在，但 Milvus 和 MinIO 中缺失",
                     "severity": "high"
                 }
-                for code in mysql_only_products
+                for product_code in mysql_only_products
             ],
             "milvus_only": [
                 {
-                    "product_code": code,
+                    "product_code": product_code,
                     "issue": "向量在 Milvus 中存在，但 MySQL 和 MinIO 中缺失",
                     "severity": "high"
                 }
-                for code in milvus_only_products
+                for product_code in milvus_only_products
             ],
             "minio_only": [
                 {
-                    "product_code": code,
+                    "product_code": product_code,
                     "issue": "图片在 MinIO 中存在，但 MySQL 和 Milvus 中缺失",
                     "severity": "medium"
                 }
-                for code in minio_only_products
+                for product_code in minio_only_products
             ],
             "complete_products": [
                 {
-                    "product_code": code,
+                    "product_code": product_code,
                     "status": "complete"
                 }
-                for code in complete_products
+                for product_code in complete_products
             ]
         }
         
@@ -827,16 +906,16 @@ async def clean_orphan_data(confirm: bool = Form(False)):
         mysql_orphan_codes = set([img['product_code'] for img in mysql_images 
                                   if img['product_code'] not in mysql_product_codes])
         
-        for code in mysql_orphan_codes:
+        for product_code in mysql_orphan_codes:
             try:
                 product_service._execute_query(
                     "DELETE FROM product_image WHERE product_code = %s",
-                    (code,)
+                    (product_code,)
                 )
                 cleaned["mysql_count"] += 1
-                logger.info(f" Deleted MySQL orphan: {code}")
+                logger.info(f" Deleted MySQL orphan: {product_code}")
             except Exception as e:
-                logger.error(f" Failed to delete MySQL orphan {code}: {str(e)}")
+                logger.error(f" Failed to delete MySQL orphan {product_code}: {str(e)}")
         
         # 3. Clean Milvus orphans
         milvus_stats = milvus_service.get_stats()
@@ -1107,10 +1186,10 @@ async def batch_delete_products(product_codes: str = Form(...)):
             "total_deleted_images": 0
         }
         
-        for code in codes:
+        for product_code in codes:
             try:
                 # 获取产品信息
-                images = product_service.get_product_images(code)
+                images = product_service.get_product_images(product_code)
                 milvus_ids = [img["milvus_id"] for img in images if img["milvus_id"]]
                 
                 # 1. 先删除 Milvus 向量（带重试）
@@ -1122,17 +1201,17 @@ async def batch_delete_products(product_codes: str = Form(...)):
                     delete_minio_with_retry(image_processor, img["image_path"])
                 
                 # 3. 最后删除 MySQL 记录（不可逆操作放最后）
-                product_service.delete_product(code)
+                product_service.delete_product(product_code)
                 
-                results["success"].append(code)
+                results["success"].append(product_code)
                 results["total_deleted_images"] += len(images)
                 
             except Exception as e:
                 results["failed"].append({
-                    "product_code": code,
+                    "product_code": product_code,
                     "error": str(e)
                 })
-                logger.error(f"批量删除失败 - {code}: {str(e)}")
+                logger.error(f"批量删除失败 - {product_code}: {str(e)}")
         
         return build_success_response(
             message=f"批量删除完成: 成功 {len(results['success'])} 个, 失败 {len(results['failed'])} 个",
@@ -1232,3 +1311,205 @@ async def cleanup_failed_product(product_code: str):
             message=f"清理失败: {str(e)}",
             error_code="CLEANUP_FAILED"
         )
+
+
+# ==================== 辅助函数 ====================
+
+def verify_product_integrity(product_code: str, expected_image_count: int):
+    """
+    验证产品数据完整性
+    
+    验证三端存储的数据一致性：
+    1. MySQL: 产品信息和图片记录存在
+    2. Milvus: 向量数据存在且数量匹配
+    3. MinIO: 图片文件存在
+    
+    Args:
+        product_code: 产品编码
+        expected_image_count: 预期的图片数量
+    
+    Raises:
+        Exception: 如果数据不完整或不一致
+    """
+    from dependencies import get_milvus_service
+    from config.minio_config import get_minio_client
+    
+    product_service = get_product_service()
+    milvus_service = get_milvus_service()
+    
+    # 1. 验证产品信息存在
+    products = product_service._execute_query(
+        "SELECT * FROM product WHERE product_code = %s",
+        (product_code,),
+        dictionary=True
+    )
+    if not products:
+        raise Exception(f"产品信息不存在: {product_code}")
+    
+    # 2. 验证图片记录存在
+    images = product_service._execute_query(
+        "SELECT * FROM product_image WHERE product_code = %s",
+        (product_code,),
+        dictionary=True
+    )
+    if len(images) == 0:
+        raise Exception(f"产品无图片记录: {product_code}")
+    
+    if len(images) != expected_image_count:
+        logger.warning(
+            f"图片数量不匹配: 预期 {expected_image_count}, "
+            f"实际 {len(images)}"
+        )
+    
+    # 3. 验证 Milvus 向量存在（通过查询向量数量）
+    milvus_ids = [img["milvus_id"] for img in images if img.get("milvus_id")]
+    if milvus_ids:
+        try:
+            # 查询这些向量是否都存在
+            vectors = milvus_service.query(
+                expr=f"id in {milvus_ids}",
+                output_fields=["id"],
+                limit=len(milvus_ids)
+            )
+            actual_ids = set([v["id"] for v in vectors])
+            expected_ids = set(milvus_ids)
+            
+            missing_ids = expected_ids - actual_ids
+            if missing_ids:
+                raise Exception(f"Milvus 向量缺失: {missing_ids}")
+            
+            logger.info(f"  Milvus 向量验证通过: {len(vectors)}/{len(milvus_ids)} 个")
+        except Exception as e:
+            logger.error(f"Milvus 向量验证失败: {str(e)}")
+            raise
+    
+    # 4. 验证 MinIO 文件存在
+    try:
+        minio_client = get_minio_client()
+        bucket_name = "product-images"  # TODO: 从配置读取
+        
+        minio_verified = 0
+        for img in images:
+            image_path = img.get("image_path", "")
+            if image_path and image_path.startswith("minio://"):
+                # 提取对象名
+                object_name = image_path.replace("minio://product-images/", "")
+                try:
+                    minio_client.stat_object(bucket_name, object_name)
+                    minio_verified += 1
+                except Exception as e:
+                    raise Exception(f"MinIO 文件不存在: {image_path}, 错误: {str(e)}")
+        
+        logger.info(f"  MinIO 文件验证通过: {minio_verified}/{len(images)} 个")
+    except ImportError:
+        logger.warning("MinIO 客户端未导入，跳过文件验证")
+    except Exception as e:
+        logger.error(f"MinIO 文件验证失败: {str(e)}")
+        raise
+    
+    logger.info(f"✅ 产品 {product_code} 数据完整性验证通过 ({len(images)} 张图片)")
+
+
+async def cleanup_partial_data(product_code: str):
+    """
+    清理部分成功的数据（当批量入库失败时调用）
+    
+    无论是否有图片记录，都会清理产品信息，确保无残留。
+    
+    Args:
+        product_code: 产品编码
+    """
+    from dependencies import get_milvus_service, get_image_processor
+    
+    product_service = get_product_service()
+    milvus_service = get_milvus_service()
+    image_processor = get_image_processor()
+    
+    logger.warning(f"🧹 开始清理产品 {product_code} 的部分数据...")
+    
+    cleanup_errors = []
+    
+    try:
+        # 1. 获取已写入的图片记录
+        images = product_service._execute_query(
+            "SELECT * FROM product_image WHERE product_code = %s",
+            (product_code,),
+            dictionary=True
+        )
+        
+        # 2. 删除 Milvus 向量
+        if images:
+            milvus_ids = [img["milvus_id"] for img in images if img.get("milvus_id")]
+            if milvus_ids:
+                try:
+                    from services.retry_utils import delete_milvus_with_retry
+                    delete_milvus_with_retry(milvus_service, milvus_ids)
+                    logger.info(f" 已清理 Milvus 向量: {len(milvus_ids)} 个")
+                except Exception as e:
+                    cleanup_errors.append(f"Milvus 清理失败: {str(e)}")
+                    logger.error(f" 清理 Milvus 失败: {str(e)}")
+            
+            # 3. 删除 MinIO 图片
+            minio_cleaned = 0
+            for img in images:
+                try:
+                    image_path = img.get("image_path", "")
+                    if image_path:
+                        image_processor.delete_image(image_path)
+                        minio_cleaned += 1
+                except Exception as e:
+                    cleanup_errors.append(f"MinIO 清理失败: {img.get('image_path')}")
+                    logger.warning(f" 清理图片失败: {img.get('image_path', 'unknown')}")
+            
+            if minio_cleaned > 0:
+                logger.info(f" 已清理 MinIO 图片: {minio_cleaned} 个")
+        else:
+            logger.info(f" 无需清理图片：产品 {product_code} 无图片记录")
+        
+        # 4. 删除 MySQL 记录（无论是否有图片，都要清理）
+        try:
+            deleted_images = product_service._execute_update(
+                "DELETE FROM product_image WHERE product_code = %s",
+                (product_code,)
+            )
+            deleted_product = product_service._execute_update(
+                "DELETE FROM product WHERE product_code = %s",
+                (product_code,)
+            )
+            logger.info(f" 已清理 MySQL 记录: {deleted_images} 条图片, {deleted_product} 条产品")
+        except Exception as e:
+            cleanup_errors.append(f"MySQL 清理失败: {str(e)}")
+            logger.error(f" 清理 MySQL 失败: {str(e)}")
+        
+        # 5. 报告清理结果
+        if cleanup_errors:
+            logger.error(f"⚠️ 产品 {product_code} 清理完成，但有 {len(cleanup_errors)} 个错误:")
+            for err in cleanup_errors:
+                logger.error(f"   - {err}")
+            
+            # 记录清理失败事件（结构化日志）
+            log_cleanup_event(
+                logger,
+                product_code=product_code,
+                milvus_count=len(milvus_ids) if images else 0,
+                minio_count=minio_cleaned if images else 0,
+                mysql_count=deleted_images + deleted_product if 'deleted_images' in locals() else 0,
+                status="partial_failure",
+                errors=cleanup_errors
+            )
+        else:
+            logger.info(f"✅ 产品 {product_code} 清理完成")
+            
+            # 记录清理成功事件（结构化日志）
+            log_cleanup_event(
+                logger,
+                product_code=product_code,
+                milvus_count=len(milvus_ids) if images else 0,
+                minio_count=minio_cleaned if images else 0,
+                mysql_count=deleted_images + deleted_product if 'deleted_images' in locals() else 0,
+                status="success"
+            )
+        
+    except Exception as e:
+        logger.error(f"❌ 清理产品 {product_code} 失败: {str(e)}", exc_info=True)
+        raise  # 重新抛出，让调用者知道清理失败

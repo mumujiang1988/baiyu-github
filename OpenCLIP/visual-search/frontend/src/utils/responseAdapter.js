@@ -49,7 +49,7 @@ export function extractData(response) {
   }
   
   // 旧格式已废弃，不再支持
-  logger.warn('⚠️ 检测到旧的嵌套格式响应，请联系后端开发人员更新为扁平格式')
+  logger.warn(' 检测到旧的嵌套格式响应，请联系后端开发人员更新为扁平格式')
   return response
 }
 
@@ -72,7 +72,7 @@ export function extractPaginatedData(response) {
   }
   
   // 旧格式已废弃，不再支持
-  logger.warn('⚠️ 检测到旧的嵌套格式分页响应，请联系后端开发人员更新')
+  logger.warn(' 检测到旧的嵌套格式分页响应，请联系后端开发人员更新')
   return { items: [], pagination: { total: 0, page: 1, page_size: 20, total_pages: 0 } }
 }
 

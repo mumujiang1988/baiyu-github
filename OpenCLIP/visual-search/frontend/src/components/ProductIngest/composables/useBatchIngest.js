@@ -225,7 +225,50 @@ export function useBatchIngest() {
           failCount.value++
           product.status = 'error'
           product.progress = 100
-          product.message = error.message || '入库失败'
+          
+          // 根据HTTP状态码提供友好的错误提示
+          const statusCode = error.response?.status
+          const errorData = error.response?.data
+          let errorMessage = '入库失败'
+          let suggestion = ''
+          
+          if (statusCode === 400) {
+            // 400 Bad Request - 通常是所有图片都是重复的
+            const detail = errorData?.detail || error.message || ''
+            if (detail.includes('duplicate') || detail.includes('重复')) {
+              errorMessage = '所有图片均已存在'
+              suggestion = '该产品的所有图片已在数据库中，无需重复入库'
+            } else {
+              errorMessage = `请求参数错误: ${detail}`
+              suggestion = '请检查产品信息和图片格式是否正确'
+            }
+          } else if (statusCode === 429) {
+            // 429 Too Many Requests - 触发限流
+            errorMessage = '请求过于频繁'
+            suggestion = '系统限流保护中（5次/分钟），请稍后重试或使用"批量重试"功能'
+          } else if (statusCode === 504) {
+            // 504 Gateway Timeout - 网关超时
+            errorMessage = '处理超时'
+            suggestion = '产品图片较多或系统繁忙，建议稍后使用"重试"功能再次尝试'
+          } else if (statusCode === 500) {
+            // 500 Internal Server Error
+            errorMessage = '服务器内部错误'
+            suggestion = '系统异常，请联系管理员或使用"重试"功能'
+          } else {
+            // 其他错误
+            errorMessage = errorData?.detail || error.message || '未知错误'
+            suggestion = '请检查网络连接或稍后重试'
+          }
+          
+          product.message = `${errorMessage}${suggestion ? ' - ' + suggestion : ''}`
+          
+          // 记录详细错误日志
+          logger.error(`[BatchIngest] 产品 ${product.folderName} 入库失败`, {
+            statusCode,
+            errorMessage,
+            suggestion,
+            errorData
+          })
         }
       })
       
@@ -336,8 +379,46 @@ export function useBatchIngest() {
     } catch (error) {
       product.status = 'error'
       product.progress = 100
-      product.message = error.message || '入库失败'
-      ElMessage.error(`${product.folderName} 重试失败: ${error.message}`)
+      
+      // 根据HTTP状态码提供友好的错误提示（与主入库逻辑一致）
+      const statusCode = error.response?.status
+      const errorData = error.response?.data
+      let errorMessage = '入库失败'
+      let suggestion = ''
+      
+      if (statusCode === 400) {
+        const detail = errorData?.detail || error.message || ''
+        if (detail.includes('duplicate') || detail.includes('重复')) {
+          errorMessage = '所有图片均已存在'
+          suggestion = '该产品的所有图片已在数据库中，无需重复入库'
+        } else {
+          errorMessage = `请求参数错误: ${detail}`
+          suggestion = '请检查产品信息和图片格式是否正确'
+        }
+      } else if (statusCode === 429) {
+        errorMessage = '请求过于频繁'
+        suggestion = '系统限流保护中（5次/分钟），请稍后再次重试'
+      } else if (statusCode === 504) {
+        errorMessage = '处理超时'
+        suggestion = '产品图片较多或系统繁忙，建议稍后再次尝试'
+      } else if (statusCode === 500) {
+        errorMessage = '服务器内部错误'
+        suggestion = '系统异常，请联系管理员'
+      } else {
+        errorMessage = errorData?.detail || error.message || '未知错误'
+        suggestion = '请检查网络连接或稍后重试'
+      }
+      
+      product.message = `${errorMessage}${suggestion ? ' - ' + suggestion : ''}`
+      
+      logger.error(`[BatchIngest] 产品 ${product.folderName} 重试失败`, {
+        statusCode,
+        errorMessage,
+        suggestion,
+        errorData
+      })
+      
+      ElMessage.error(`${product.folderName} 重试失败: ${errorMessage}`)
     }
   }
   
@@ -364,11 +445,19 @@ export function useBatchIngest() {
       return
     }
     
-    // 依次重试每个失败的产品
+    // 依次重试每个失败的产品（添加延迟避免触发限流）
+    let retryCount = 0
     for (let i = 0; i < batchResults.value.length; i++) {
       const product = batchResults.value[i]
       if (product.status === 'error') {
         await retryProduct(i)
+        retryCount++
+        
+        // 每5个产品后等待12秒，避免触发429限流（5次/分钟）
+        if (retryCount % 5 === 0 && retryCount < failedProducts.length) {
+          logger.log(`[BatchIngest] 已重试 ${retryCount}/${failedProducts.length} 个产品，等待12秒以避免限流...`)
+          await new Promise(resolve => setTimeout(resolve, 12000))
+        }
       }
     }
     

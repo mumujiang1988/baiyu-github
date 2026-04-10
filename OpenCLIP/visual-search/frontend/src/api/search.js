@@ -1,5 +1,40 @@
 import axios from 'axios'
 
+// 创建 axios 实例，配置默认超时时间
+const apiClient = axios.create({
+  timeout: 60000, // 60秒超时（数据一致性检查可能需要较长时间）
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+// 请求拦截器
+apiClient.interceptors.request.use(
+  config => {
+    // 可以在这里添加 token 等认证信息
+    return config
+  },
+  error => {
+    return Promise.reject(error)
+  }
+)
+
+// 响应拦截器
+apiClient.interceptors.response.use(
+  response => {
+    return response
+  },
+  error => {
+    // 统一处理错误
+    if (error.code === 'ECONNABORTED') {
+      error.message = '请求超时，请稍后重试'
+    } else if (!error.response) {
+      error.message = '网络连接失败，请检查网络或后端服务'
+    }
+    return Promise.reject(error)
+  }
+)
+
 // API 基础路径
 const API_BASE = '/api/v1'
 
@@ -14,7 +49,7 @@ export async function searchImage(file, topK = 10, aggregation = 'max') {
   const formData = new FormData()
   formData.append('file', file)
   
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${API_BASE}/search?top_k=${topK}&aggregation=${aggregation}`,
     formData,
     {
@@ -47,7 +82,7 @@ export async function ingestProduct(productCode, name, files, spec = '', categor
     formData.append('files', file)
   })
   
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${API_BASE}/product/ingest`,
     formData,
     {
@@ -73,7 +108,7 @@ export async function listProducts(category = '', page = 1, pageSize = 20) {
   params.append('page', page)
   params.append('page_size', pageSize)
   
-  const response = await axios.get(`${API_BASE}/products?${params}`)
+  const response = await apiClient.get(`${API_BASE}/products?${params}`)
   return response.data
 }
 
@@ -83,7 +118,7 @@ export async function listProducts(category = '', page = 1, pageSize = 20) {
  * @returns {Promise}
  */
 export async function getProduct(productCode) {
-  const response = await axios.get(`${API_BASE}/product/${productCode}`)
+  const response = await apiClient.get(`${API_BASE}/product/${productCode}`)
   return response.data
 }
 
@@ -106,7 +141,7 @@ export async function updateProduct(productCode, updates = {}) {
     formData.append('category', updates.category)
   }
   
-  const response = await axios.put(
+  const response = await apiClient.put(
     `${API_BASE}/product/${productCode}`,
     formData,
     {
@@ -125,7 +160,7 @@ export async function updateProduct(productCode, updates = {}) {
  * @returns {Promise}
  */
 export async function deleteProduct(productCode) {
-  const response = await axios.delete(`${API_BASE}/product/${productCode}`)
+  const response = await apiClient.delete(`${API_BASE}/product/${productCode}`)
   return response.data
 }
 
@@ -140,7 +175,7 @@ export async function deleteProduct(productCode) {
  * @returns {Promise}
  */
 export async function checkDataConsistency() {
-  const response = await axios.get(`${API_BASE}/products/data-consistency`)
+  const response = await apiClient.get(`${API_BASE}/products/data-consistency`)
   return response.data
 }
 
@@ -153,7 +188,7 @@ export async function batchDeleteProducts(productCodes) {
   const formData = new FormData()
   formData.append('product_codes', productCodes.join(','))
   
-  const response = await axios.delete(`${API_BASE}/products/batch`, {
+  const response = await apiClient.delete(`${API_BASE}/products/batch`, {
     data: formData,
     headers: {
       'Content-Type': 'multipart/form-data'
@@ -182,7 +217,7 @@ export async function searchByText(keyword, category = '', topK = 10) {
   if (category) formData.append('category', category)
   formData.append('top_k', topK)
   
-  const response = await axios.post(
+  const response = await apiClient.post(
     `${API_BASE}/search/text`,
     formData,
     {
@@ -201,7 +236,7 @@ export async function searchByText(keyword, category = '', topK = 10) {
  * @returns {Promise}
  */
 export async function cleanupFailedProduct(productCode) {
-  const response = await axios.post(`${API_BASE}/product/${productCode}/cleanup-failed`)
+  const response = await apiClient.post(`${API_BASE}/product/${productCode}/cleanup-failed`)
   return response.data
 }
 
@@ -210,7 +245,7 @@ export async function cleanupFailedProduct(productCode) {
  * @returns {Promise}
  */
 export async function queryOrphanData() {
-  const response = await axios.get(`${API_BASE}/products/orphan-data`)
+  const response = await apiClient.get(`${API_BASE}/products/orphan-data`)
   return response.data
 }
 
@@ -223,7 +258,7 @@ export async function cleanOrphanData(confirm = false) {
   const formData = new FormData()
   formData.append('confirm', confirm)
   
-  const response = await axios.post(`${API_BASE}/products/clean-orphans`, formData, {
+  const response = await apiClient.post(`${API_BASE}/products/clean-orphans`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -240,7 +275,7 @@ export async function cleanOrphanData(confirm = false) {
 export async function deleteSingleOrphan(type, identifier) {
   // 对于 MinIO，identifier 可能包含 /，需要编码
   const encodedIdentifier = encodeURIComponent(identifier)
-  const response = await axios.delete(`${API_BASE}/products/orphan/${type}/${encodedIdentifier}`)
+  const response = await apiClient.delete(`${API_BASE}/products/orphan/${type}/${encodedIdentifier}`)
   return response.data
 }
 
@@ -250,6 +285,6 @@ export async function deleteSingleOrphan(type, identifier) {
  * @returns {Promise}
  */
 export async function retryProductIngest(productCode) {
-  const response = await axios.post(`${API_BASE}/products/${productCode}/retry`)
+  const response = await apiClient.post(`${API_BASE}/products/${productCode}/retry`)
   return response.data
 }

@@ -15,19 +15,26 @@ MINIO_PATH_PREFIX = f"minio://{MINIO_BUCKET_NAME}/"
 
 # ==================== 批量操作限制 ====================
 
-# 批量入库最大产品数
-MAX_BATCH_INGEST_SIZE = 50
+# 批量入库最大产品数（降低为20以提高稳定性）
+MAX_BATCH_INGEST_SIZE = 20
 
 # 批量删除最大产品数
-MAX_BATCH_DELETE_SIZE = 100
+MAX_BATCH_DELETE_SIZE = 50
 
 # ==================== 并发控制 ====================
 
-# 图片入库最大并发数
-MAX_CONCURRENT_INGEST = int(os.getenv("MAX_CONCURRENT_INGEST", "4"))
+# 图片入库最大并发数（限制范围：1-10）
+_raw_ingest = int(os.getenv("MAX_CONCURRENT_INGEST", "4"))
+MAX_CONCURRENT_INGEST = max(1, min(10, _raw_ingest))
 
-# 图片删除最大并发数
-MAX_CONCURRENT_DELETE = int(os.getenv("MAX_CONCURRENT_DELETE", "2"))
+# 图片删除最大并发数（限制范围：1-10）
+_raw_delete = int(os.getenv("MAX_CONCURRENT_DELETE", "2"))
+MAX_CONCURRENT_DELETE = max(1, min(10, _raw_delete))
+
+# 记录配置值
+import logging
+_logger = logging.getLogger(__name__)
+_logger.info(f"并发配置: INGEST={MAX_CONCURRENT_INGEST}, DELETE={MAX_CONCURRENT_DELETE}")
 
 
 # ==================== 搜索限制 ====================

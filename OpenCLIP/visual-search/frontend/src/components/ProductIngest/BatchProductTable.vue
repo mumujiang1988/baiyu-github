@@ -78,6 +78,24 @@
       }"
     />
 
+    <!-- 错误提示说明 -->
+    <el-alert
+      v-if="batchResults.some(r => r.status === 'error')"
+      title="失败处理建议"
+      type="warning"
+      :closable="false"
+      style="margin-top: 15px"
+    >
+      <template #default>
+        <div style="line-height: 1.8; font-size: 13px">
+          <div><strong>🔄 所有图片均已存在：</strong>无需处理，该产品已入库</div>
+          <div><strong>⏱️ 请求过于频繁：</strong>使用“批量重试”功能，系统会自动控制频率</div>
+          <div><strong>⌛ 处理超时：</strong>稍后点击单个产品的“重试”按钮再次尝试</div>
+          <div><strong>❌ 服务器内部错误：</strong>联系管理员或使用“重试”功能</div>
+        </div>
+      </template>
+    </el-alert>
+
     <!-- 批量入库结果表格 -->
     <el-table 
       v-if="batchResults.length > 0" 
@@ -115,11 +133,30 @@
           <el-tag v-else-if="row.status === 'error'" type="danger">失败</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="消息" min-width="150">
+      <el-table-column label="消息" min-width="250">
         <template #default="{ row }">
-          <span :style="{ color: row.status === 'error' ? '#f56c6c' : '#67c23a' }">
-            {{ row.message || '-' }}
-          </span>
+          <div v-if="row.message" style="line-height: 1.6">
+            <!-- 错误消息分段显示 -->
+            <template v-if="row.status === 'error' && row.message.includes(' - ')">
+              <div :style="{ color: '#f56c6c', fontWeight: 'bold' }">
+                {{ row.message.split(' - ')[0] }}
+              </div>
+              <div :style="{ color: '#909399', fontSize: '12px', marginTop: '4px' }">
+                💡 {{ row.message.split(' - ').slice(1).join(' - ') }}
+              </div>
+            </template>
+            <!-- 成功消息 -->
+            <template v-else-if="row.status === 'success'">
+              <span :style="{ color: '#67c23a' }">✅ {{ row.message }}</span>
+            </template>
+            <!-- 其他消息 -->
+            <template v-else>
+              <span :style="{ color: row.status === 'error' ? '#f56c6c' : '#67c23a' }">
+                {{ row.message }}
+              </span>
+            </template>
+          </div>
+          <span v-else style="color: #909399">-</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="150" align="center" fixed="right">

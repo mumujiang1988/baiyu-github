@@ -223,13 +223,37 @@ export function showLoading(message = '加载中...') {
 
 /**
  * 处理API响应错误
- * @param {Object} response - API响应对象
+ * @param {Object} response - API响应对象或错误对象
  * @param {string} defaultMessage - 默认错误消息
  */
 export function handleApiError(response, defaultMessage = '操作失败') {
-  const message = response?.data?.message || response?.message || defaultMessage
-  const suggestion = response?.data?.suggestion || response?.suggestion
-
+  let message = defaultMessage
+  let suggestion = null
+  
+  // 处理不同的响应格式
+  if (response) {
+    // 情况1: axios 错误对象 (error.response)
+    if (response.data) {
+      message = response.data.message || response.data.detail || defaultMessage
+      suggestion = response.data.suggestion
+    }
+    // 情况2: 后端返回的扁平化响应对象
+    else if (response.message) {
+      message = response.message
+      suggestion = response.suggestion
+    }
+    // 情况3: 网络错误或超时
+    else if (response.code === 'ECONNABORTED' || response.message?.includes('timeout')) {
+      message = '请求超时'
+      suggestion = '服务器响应时间过长，请稍后重试或联系管理员'
+    }
+    else if (response.code === 'ERR_NETWORK' || response.message?.includes('Network Error')) {
+      message = '网络连接失败'
+      suggestion = '请检查网络连接或确认后端服务是否正常运行'
+    }
+  }
+  
+  // 显示错误
   if (suggestion) {
     showErrorWithSuggestion(message, suggestion)
   } else {
