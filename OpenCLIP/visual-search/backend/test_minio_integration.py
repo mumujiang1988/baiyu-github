@@ -20,12 +20,12 @@ def test_health_check():
     print(f"状态: {data['status']}")
     print(f"检查结果:")
     for service, status in data['checks'].items():
-        icon = "✅" if status else "❌"
+        icon = "" if status else ""
         print(f"  {icon} {service}: {status}")
     
     assert data['status'] == 'healthy', "服务不健康"
     assert data['checks']['minio'] == True, "MinIO 未连接"
-    print("\n✅ 健康检查通过\n")
+    print("\n 健康检查通过\n")
 
 
 def test_product_ingest_with_minio():
@@ -38,11 +38,11 @@ def test_product_ingest_with_minio():
     test_image_path = Path(__file__).parent / "test_image.jpg"
     
     if not test_image_path.exists():
-        print("⚠️  测试图片不存在，创建简单测试图片...")
+        print("  测试图片不存在，创建简单测试图片...")
         from PIL import Image
         img = Image.new('RGB', (224, 224), color='red')
         img.save(test_image_path)
-        print(f"✅ 测试图片已创建: {test_image_path}")
+        print(f" 测试图片已创建: {test_image_path}")
     
     # 上传产品
     with open(test_image_path, 'rb') as f:
@@ -66,12 +66,12 @@ def test_product_ingest_with_minio():
     print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
     
     if result.get('success'):
-        print(f"\n✅ 产品入库成功!")
+        print(f"\n 产品入库成功!")
         print(f"   - 成功: {result['success_count']} 张")
         print(f"   - 失败: {result['fail_count']} 张")
         print(f"   - 耗时: {result['ingest_time_ms']}ms")
     else:
-        print(f"\n❌ 产品入库失败: {result.get('message')}")
+        print(f"\n 产品入库失败: {result.get('message')}")
         raise Exception("产品入库失败")
     
     print()
@@ -88,7 +88,7 @@ def test_get_image_from_minio():
     products_data = response.json()
     
     if not products_data.get('products'):
-        print("⚠️  没有测试产品，跳过此测试")
+        print("  没有测试产品，跳过此测试")
         return
     
     product = products_data['products'][0]
@@ -99,7 +99,7 @@ def test_get_image_from_minio():
     product_data = response.json()
     
     if not product_data.get('images'):
-        print("⚠️  产品没有图片，跳过此测试")
+        print("  产品没有图片，跳过此测试")
         return
     
     image_path = product_data['images'][0]['image_path']
@@ -109,12 +109,12 @@ def test_get_image_from_minio():
     response = requests.get(f"{BASE_URL}/api/v1/images/{image_path}")
     
     if response.status_code == 200:
-        print(f"✅ 图片获取成功!")
+        print(f" 图片获取成功!")
         print(f"   - 大小: {len(response.content)} bytes")
         print(f"   - Content-Type: {response.headers.get('Content-Type')}")
         print(f"   - Cache-Control: {response.headers.get('Cache-Control')}")
     else:
-        print(f"❌ 图片获取失败: {response.status_code}")
+        print(f" 图片获取失败: {response.status_code}")
         raise Exception("图片获取失败")
     
     print()
@@ -130,7 +130,7 @@ def test_search_with_minio_images():
     test_image_path = Path(__file__).parent / "test_image.jpg"
     
     if not test_image_path.exists():
-        print("⚠️  测试图片不存在，跳过此测试")
+        print("  测试图片不存在，跳过此测试")
         return
     
     with open(test_image_path, 'rb') as f:
@@ -145,7 +145,7 @@ def test_search_with_minio_images():
     result = response.json()
     
     if result.get('success'):
-        print(f"✅ 搜索成功!")
+        print(f" 搜索成功!")
         print(f"   - 结果数量: {len(result['results'])}")
         print(f"   - 搜索耗时: {result['search_time_ms']}ms")
         
@@ -156,7 +156,7 @@ def test_search_with_minio_images():
             print(f"   - 名称: {top_result['product_name']}")
             print(f"   - 相似度: {top_result['similarity']:.4f}")
     else:
-        print(f"❌ 搜索失败: {result.get('message')}")
+        print(f" 搜索失败: {result.get('message')}")
     
     print()
 
@@ -179,7 +179,7 @@ def main():
         
     except Exception as e:
         print("\n" + "=" * 60)
-        print(f"❌ 测试失败: {str(e)}")
+        print(f" 测试失败: {str(e)}")
         print("=" * 60)
         raise
 

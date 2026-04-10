@@ -427,7 +427,7 @@ async def check_data_consistency():
     cache_key = "data_consistency_check"
     cached_result = consistency_check_cache.get(cache_key)
     if cached_result is not None:
-        logger.info("✅ 使用缓存的一致性检查结果")
+        logger.info(" 使用缓存的一致性检查结果")
         return cached_result
     
     product_service = get_product_service()
@@ -547,7 +547,7 @@ async def check_data_consistency():
         
         # 缓存结果（5分钟）
         consistency_check_cache.set(cache_key, result, ttl=300)
-        logger.info(f"✅ 一致性检查结果已缓存，TTL=300s")
+        logger.info(f" 一致性检查结果已缓存，TTL=300s")
         
         return build_success_response(
             message="数据一致性检查完成",
@@ -581,7 +581,7 @@ async def query_orphan_data():
     cache_key = "orphan_data_query"
     cached_result = consistency_check_cache.get(cache_key)
     if cached_result is not None:
-        logger.info("✅ 使用缓存的孤儿数据查询结果")
+        logger.info(" 使用缓存的孤儿数据查询结果")
         return cached_result
     
     product_service = get_product_service()
@@ -639,7 +639,7 @@ async def query_orphan_data():
             except Exception as e:
                 logger.warning(f"Failed to query MinIO objects: {str(e)}")
         
-        mysql_image_paths = set([img['image_path'].replace('minio://visual-search/', '') 
+        mysql_image_paths = set([img['image_path'].replace('minio://product-images/', '') 
                                  for img in mysql_images if img['image_path']])
         minio_object_names = set([obj['object_name'] for obj in minio_objects])
         
@@ -689,17 +689,24 @@ async def query_orphan_data():
         
         # 缓存结果（5分钟）
         consistency_check_cache.set(cache_key, result, ttl=300)
-        logger.info(f"✅ 孤儿数据查询结果已缓存，TTL=300s")
+        logger.info(f" 孤儿数据查询结果已缓存，TTL=300s")
         
         return build_success_response(
             message="孤儿数据查询完成",
-            **result  # 展开 result 字典
+            mysql_orphans=result["mysql_orphans"],
+            milvus_orphans=result["milvus_orphans"],
+            minio_orphans=result["minio_orphans"],
+            mysql_orphan_details=result["mysql_orphan_details"],
+            milvus_orphan_details=result["milvus_orphan_details"],
+            minio_orphan_details=result["minio_orphan_details"]
         )
         
     except Exception as e:
-        logger.error(f"Orphan data query failed: {str(e)}", exc_info=True)
+        logger.error(f"孤儿数据查询失败: {str(e)}", exc_info=True)
+        import traceback
+        logger.error(f"详细堆栈信息:\n{traceback.format_exc()}")
         return build_error_response(
-            message=f"Query failed: {str(e)}",
+            message=f"查询失败: {str(e)}",
             error_code="ORPHAN_QUERY_FAILED"
         )
 
@@ -827,9 +834,9 @@ async def clean_orphan_data(confirm: bool = Form(False)):
                     (code,)
                 )
                 cleaned["mysql_count"] += 1
-                logger.info(f"✅ Deleted MySQL orphan: {code}")
+                logger.info(f" Deleted MySQL orphan: {code}")
             except Exception as e:
-                logger.error(f"❌ Failed to delete MySQL orphan {code}: {str(e)}")
+                logger.error(f" Failed to delete MySQL orphan {code}: {str(e)}")
         
         # 3. Clean Milvus orphans
         milvus_stats = milvus_service.get_stats()
@@ -863,10 +870,10 @@ async def clean_orphan_data(confirm: bool = Form(False)):
                         cleaned["milvus_count"] += len(batch_ids)
                     
                     milvus_service.collection.flush()
-                    logger.info(f"✅ Deleted {len(orphan_ids)} Milvus orphan vectors")
+                    logger.info(f" Deleted {len(orphan_ids)} Milvus orphan vectors")
                     
             except Exception as e:
-                logger.error(f"❌ Failed to clean Milvus orphans: {str(e)}")
+                logger.error(f" Failed to clean Milvus orphans: {str(e)}")
         
         # 4. Clean MinIO orphans
         if minio_service:
@@ -890,12 +897,12 @@ async def clean_orphan_data(confirm: bool = Form(False)):
                                 obj.object_name
                             )
                             cleaned["minio_count"] += 1
-                            logger.info(f"✅ Deleted MinIO orphan: {obj.object_name}")
+                            logger.info(f" Deleted MinIO orphan: {obj.object_name}")
                         except Exception as e:
-                            logger.error(f"❌ Failed to delete MinIO orphan {obj.object_name}: {str(e)}")
+                            logger.error(f" Failed to delete MinIO orphan {obj.object_name}: {str(e)}")
                             
             except Exception as e:
-                logger.error(f"❌ Failed to clean MinIO orphans: {str(e)}")
+                logger.error(f" Failed to clean MinIO orphans: {str(e)}")
         
         total_cleaned = sum(cleaned.values())
         message = f"清理完成: MySQL {cleaned['mysql_count']} 条, Milvus {cleaned['milvus_count']} 条, MinIO {cleaned['minio_count']} 条"
@@ -905,7 +912,7 @@ async def clean_orphan_data(confirm: bool = Form(False)):
         # 清除相关缓存
         consistency_check_cache.delete("orphan_data_query")
         consistency_check_cache.delete("data_consistency_check")
-        logger.info("✅ 已清除孤儿数据和相关缓存")
+        logger.info(" 已清除孤儿数据和相关缓存")
         
         return build_success_response(
             message=message,
@@ -942,7 +949,7 @@ async def delete_single_orphan(orphan_type: str, identifier: str):
                 "DELETE FROM product_image WHERE product_code = %s",
                 (identifier,)
             )
-            logger.info(f"✅ Deleted MySQL orphan: {identifier}")
+            logger.info(f" Deleted MySQL orphan: {identifier}")
             return build_success_response(
                 message=f"已删除 MySQL 孤儿记录: {identifier}",
                 type="mysql",
@@ -956,7 +963,7 @@ async def delete_single_orphan(orphan_type: str, identifier: str):
                 expr = f"id == {milvus_id}"
                 milvus_service.collection.delete(expr)
                 milvus_service.collection.flush()
-                logger.info(f"✅ Deleted Milvus orphan vector: {milvus_id}")
+                logger.info(f" Deleted Milvus orphan vector: {milvus_id}")
                 return build_success_response(
                     message=f"已删除 Milvus 孤儿向量: {milvus_id}",
                     type="milvus",
@@ -974,7 +981,7 @@ async def delete_single_orphan(orphan_type: str, identifier: str):
                     image_processor.minio_service.bucket_name,
                     object_name
                 )
-                logger.info(f"✅ Deleted MinIO orphan file: {object_name}")
+                logger.info(f" Deleted MinIO orphan file: {object_name}")
                 return build_success_response(
                     message=f"已删除 MinIO 孤儿文件: {object_name}",
                     type="minio",
@@ -1022,9 +1029,9 @@ async def delete_product(product_code: str):
             try:
                 delete_milvus_with_retry(milvus_service, milvus_ids)
                 cleanup_log["milvus"] = True
-                logger.info(f"✅ Milvus 向量删除成功: {len(milvus_ids)} 个")
+                logger.info(f" Milvus 向量删除成功: {len(milvus_ids)} 个")
             except Exception as e:
-                logger.error(f"❌ Milvus 清理失败（已重试3次）: {str(e)}", exc_info=True)
+                logger.error(f" Milvus 清理失败（已重试3次）: {str(e)}", exc_info=True)
                 raise
         else:
             # 没有向量数据，也标记为成功
@@ -1041,18 +1048,18 @@ async def delete_product(product_code: str):
         
         if not storage_errors:
             cleanup_log["storage"] = True
-            logger.info("✅ MinIO 图片删除成功")
+            logger.info(" MinIO 图片删除成功")
         else:
-            logger.warning(f"⚠️ 部分存储文件清理失败: {'; '.join(storage_errors)}")
+            logger.warning(f" 部分存储文件清理失败: {'; '.join(storage_errors)}")
             raise Exception(f"MinIO 删除失败: {'; '.join(storage_errors)}")
 
         # 3. 最后删除 MySQL 记录（不可逆操作放最后）
         try:
             product_service.delete_product(product_code)
             cleanup_log["mysql"] = True
-            logger.info(f"✅ MySQL 记录删除成功: {product_code}")
+            logger.info(f" MySQL 记录删除成功: {product_code}")
         except Exception as e:
-            logger.error(f"❌ MySQL 删除失败: {str(e)}")
+            logger.error(f" MySQL 删除失败: {str(e)}")
             raise
 
         # 检查最终状态
@@ -1176,9 +1183,9 @@ async def cleanup_failed_product(product_code: str):
         if milvus_ids:
             try:
                 delete_milvus_with_retry(milvus_service, milvus_ids)
-                logger.info(f"✅ 已清理 Milvus 向量: {len(milvus_ids)} 个")
+                logger.info(f" 已清理 Milvus 向量: {len(milvus_ids)} 个")
             except Exception as e:
-                logger.warning(f"⚠️ 清理 Milvus 失败: {str(e)}")
+                logger.warning(f" 清理 Milvus 失败: {str(e)}")
         
         # 3. 清理 MinIO 图片
         minio_cleaned = 0
@@ -1187,7 +1194,7 @@ async def cleanup_failed_product(product_code: str):
                 image_processor.delete_image(img["image_path"])
                 minio_cleaned += 1
             except Exception as e:
-                logger.warning(f"⚠️ 清理 MinIO 失败: {str(e)}")
+                logger.warning(f" 清理 MinIO 失败: {str(e)}")
         
         # 4. 清理 MySQL 记录
         try:
@@ -1195,9 +1202,9 @@ async def cleanup_failed_product(product_code: str):
                 "DELETE FROM product_image WHERE product_code = %s",
                 (product_code,)
             )
-            logger.info(f"✅ 已清理 MySQL 记录: {len(existing_images)} 条")
+            logger.info(f" 已清理 MySQL 记录: {len(existing_images)} 条")
         except Exception as e:
-            logger.error(f"❌ 清理 MySQL 失败: {str(e)}")
+            logger.error(f" 清理 MySQL 失败: {str(e)}")
             raise HTTPException(
                 status_code=500,
                 detail=f"清理数据库记录失败: {str(e)}"

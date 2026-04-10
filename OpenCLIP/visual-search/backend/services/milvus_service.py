@@ -54,11 +54,11 @@ class MilvusService:
                     host=host,
                     port=port
                 )
-                logger.info("✅ Milvus 连接成功")
+                logger.info(" Milvus 连接成功")
                 break
             except Exception as e:
                 if attempt < max_retries - 1:
-                    logger.warning(f"⚠️ Milvus 连接失败，{retry_delay}秒后重试 ({attempt + 1}/{max_retries})")
+                    logger.warning(f" Milvus 连接失败，{retry_delay}秒后重试 ({attempt + 1}/{max_retries})")
                     time.sleep(retry_delay)
                 else:
                     raise Exception(f"Milvus 连接失败: {str(e)}")
@@ -125,7 +125,7 @@ class MilvusService:
         
         # 加载集合到内存
         self.collection.load()
-        logger.info("✅ 集合创建完成")
+        logger.info(" 集合创建完成")
     
     def insert(
         self,
@@ -265,13 +265,13 @@ class MilvusService:
         
         # 检查 ids 是否为空
         if not ids:
-            logger.warning("⚠️ 没有需要删除的向量 ID")
+            logger.warning(" 没有需要删除的向量 ID")
             return
         
         expr = f"id in {ids}"
         self.collection.delete(expr)
         self.collection.flush()
-        logger.info(f"✅ 成功删除 {len(ids)} 个向量")
+        logger.info(f" 成功删除 {len(ids)} 个向量")
     
     def delete_by_product(self, product_code: str):
         """
@@ -287,7 +287,7 @@ class MilvusService:
         expr = f'product_code == "{product_code}"'
         self.collection.delete(expr)
         self.collection.flush()
-        logger.info(f"✅ 成功删除产品 {product_code} 的所有向量")
+        logger.info(f" 成功删除产品 {product_code} 的所有向量")
     
     def count(self) -> int:
         """获取向量数量"""

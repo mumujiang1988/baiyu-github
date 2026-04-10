@@ -56,7 +56,7 @@ class ClipService:
                 cache_dir=cache_dir
             )
         except Exception as e:
-            logger.error(f"❌ 模型加载失败: {str(e)}")
+            logger.error(f" 模型加载失败: {str(e)}")
             logger.info("🔄 尝试使用默认配置重新加载...")
             try:
                 # 尝试不指定缓存目录重新加载
@@ -66,7 +66,7 @@ class ClipService:
                     device=self.device
                 )
             except Exception as e2:
-                logger.error(f"❌ 模型加载彻底失败: {str(e2)}")
+                logger.error(f" 模型加载彻底失败: {str(e2)}")
                 raise RuntimeError(f"无法加载OpenCLIP模型: {str(e2)}")
         
         # 设置为评估模式
@@ -77,7 +77,7 @@ class ClipService:
             dummy_input = torch.randn(1, 3, 224, 224).to(self.device)
             dummy_output = self.model.encode_image(dummy_input)
             self.embedding_dim = dummy_output.shape[-1]
-        logger.info(f"✅ 向量维度: {self.embedding_dim}")
+        logger.info(f" 向量维度: {self.embedding_dim}")
     
     def extract_features(self, image: Union[Image.Image, np.ndarray]) -> np.ndarray:
         """

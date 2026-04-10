@@ -74,7 +74,7 @@ class IngestTransaction:
             image_processor = ImageProcessor()
             image_hash = image_processor.compute_hash(image_bytes)
         
-        logger.debug(f"✅ 准备图片完成: {filename}, hash={image_hash[:8]}...")
+        logger.debug(f" 准备图片完成: {filename}, hash={image_hash[:8]}...")
         
         result = {
             "image_hash": image_hash,
@@ -126,7 +126,7 @@ class IngestTransaction:
                 spec=product_info.get("spec"),
                 category=product_info.get("category")
             )
-            logger.info(f"✅ 产品信息保存成功: {self.product_code}")
+            logger.info(f" 产品信息保存成功: {self.product_code}")
             
             # 2. 并行处理所有图片（Milvus + MinIO + MySQL）
             def ingest_single_image(idx, prepared):
@@ -165,7 +165,7 @@ class IngestTransaction:
                         image_size=prepared.get("image_size")
                     )
                     
-                    logger.debug(f"  ✅ 图片 {idx+1}/{len(prepared_images)} 入库成功: {prepared['filename']}")
+                    logger.debug(f"   图片 {idx+1}/{len(prepared_images)} 入库成功: {prepared['filename']}")
                     
                     return {
                         "success": True,
@@ -180,7 +180,7 @@ class IngestTransaction:
                     }
                     
                 except Exception as e:
-                    logger.error(f"❌ 图片 {idx+1} 入库失败: {str(e)}")
+                    logger.error(f" 图片 {idx+1} 入库失败: {str(e)}")
                     return {
                         "success": False,
                         "idx": idx,
@@ -241,7 +241,7 @@ class IngestTransaction:
             product_service: 产品服务
             image_processor: 图片处理器
         """
-        logger.warning(f"⚠️ 开始回滚事务: {self.transaction_id}")
+        logger.warning(f" 开始回滚事务: {self.transaction_id}")
         
         rollback_errors = []
         
@@ -249,10 +249,10 @@ class IngestTransaction:
         try:
             if self.milvus_ids:
                 delete_milvus_with_retry(milvus_service, self.milvus_ids)
-                logger.info(f"  ✅ 回滚 Milvus 向量成功: {len(self.milvus_ids)} 个")
+                logger.info(f"   回滚 Milvus 向量成功: {len(self.milvus_ids)} 个")
         except Exception as e:
             error_msg = f"Milvus 回滚失败: {str(e)}"
-            logger.error(f"  ❌ {error_msg}")
+            logger.error(f"   {error_msg}")
             rollback_errors.append(error_msg)
         
         # 2. 再删除 MinIO 图片（带重试）
@@ -261,10 +261,10 @@ class IngestTransaction:
                 # 从 minio://bucket/path 提取 object_name
                 object_name = path.replace(f"minio://{image_processor.bucket_name}/", "")
                 delete_minio_with_retry(image_processor, object_name)
-            logger.info(f"  ✅ 回滚 MinIO 图片成功: {len(self.minio_paths)} 张")
+            logger.info(f"   回滚 MinIO 图片成功: {len(self.minio_paths)} 张")
         except Exception as e:
             error_msg = f"MinIO 回滚失败: {str(e)}"
-            logger.error(f"  ❌ {error_msg}")
+            logger.error(f"   {error_msg}")
             rollback_errors.append(error_msg)
         
         # 3. 最后删除 MySQL 记录（不可逆操作放最后）
@@ -274,19 +274,19 @@ class IngestTransaction:
                     "DELETE FROM product_image WHERE product_code = %s",
                     (self.product_code,)
                 )
-                logger.info(f"  ✅ 回滚 MySQL 记录成功")
+                logger.info(f"   回滚 MySQL 记录成功")
         except Exception as e:
             error_msg = f"MySQL 回滚失败: {str(e)}"
-            logger.error(f"  ❌ {error_msg}")
+            logger.error(f"   {error_msg}")
             rollback_errors.append(error_msg)
         
         if rollback_errors:
-            logger.error(f"⚠️ 部分回滚失败: {'; '.join(rollback_errors)}")
+            logger.error(f" 部分回滚失败: {'; '.join(rollback_errors)}")
             # 如果启用补偿机制，创建补偿任务
             if self.use_compensation:
                 self.create_compensation_task("rollback_partial", '; '.join(rollback_errors))
         else:
-            logger.info(f"✅ 事务回滚成功: {self.transaction_id}")
+            logger.info(f" 事务回滚成功: {self.transaction_id}")
     
     def create_compensation_task(self, task_type: str, error_msg: str):
         """
@@ -311,10 +311,10 @@ class IngestTransaction:
             compensation_service = CompensationService()
             compensation_service.create_task(task_type, task_data)
             
-            logger.warning(f"⚠️ 已创建补偿任务: {task_type}")
+            logger.warning(f" 已创建补偿任务: {task_type}")
             
         except Exception as e:
-            logger.error(f"❌ 创建补偿任务失败: {str(e)}")
+            logger.error(f" 创建补偿任务失败: {str(e)}")
 
 
 # 为了向后兼容，提供 SimpleIngestTransaction 别名

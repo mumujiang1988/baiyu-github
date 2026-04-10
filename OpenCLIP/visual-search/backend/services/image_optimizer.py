@@ -27,7 +27,8 @@ class ImageOptimizer:
         self,
         image_bytes: bytes,
         max_size: Tuple[int, int] = None,
-        quality: int = None
+        quality: int = None,
+        output_format: str = 'WEBP'
     ) -> bytes:
         """
         压缩图片
@@ -36,6 +37,7 @@ class ImageOptimizer:
             image_bytes: 原始图片字节
             max_size: 最大尺寸 (宽, 高)
             quality: 压缩质量 (1-100)
+            output_format: 输出格式 ('WEBP' 或 'PNG')
             
         Returns:
             压缩后的图片字节
@@ -49,34 +51,48 @@ class ImageOptimizer:
             # 打开图片
             image = Image.open(io.BytesIO(image_bytes))
             
-            # 转换为 RGB（处理 PNG 透明背景）
-            if image.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', image.size, (255, 255, 255))
-                if image.mode == 'P':
-                    image = image.convert('RGBA')
-                background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
-                image = background
+            # 检测是否有透明背景
+            has_transparency = image.mode in ('RGBA', 'LA') or (
+                image.mode == 'P' and 'transparency' in image.info
+            )
+            
+            # 如果输出格式是 WEBP 且有透明背景，保持 RGBA
+            # 如果输出格式是 PNG，保持原有模式
+            if output_format == 'WEBP' and not has_transparency:
+                # 无透明背景：转换为 RGB
+                if image.mode in ('RGBA', 'LA', 'P'):
+                    background = Image.new('RGB', image.size, (255, 255, 255))
+                    if image.mode == 'P':
+                        image = image.convert('RGBA')
+                    background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+                    image = background
+            # 如果有透明背景，保持 RGBA 模式不变
             
             # 缩放图片（如果超过最大尺寸）
             if image.width > max_size[0] or image.height > max_size[1]:
                 image.thumbnail(max_size, Image.LANCZOS)
                 logger.info(f"图片缩放: {image.width}x{image.height}")
             
-            # 压缩保存为 WebP
+            # 压缩保存
             output = io.BytesIO()
-            image.save(
-                output,
-                format='WEBP',
-                quality=quality,
-                method=6  # 最高压缩率
-            )
+            if output_format == 'PNG':
+                # PNG 格式：保持透明度
+                image.save(output, format='PNG', optimize=True)
+            else:
+                # WebP 格式
+                image.save(
+                    output,
+                    format='WEBP',
+                    quality=quality,
+                    method=6  # 最高压缩率
+                )
             
             compressed_bytes = output.getvalue()
             compression_ratio = (1 - len(compressed_bytes) / len(image_bytes)) * 100
             
             logger.info(
                 f"图片压缩完成: {len(image_bytes)} -> {len(compressed_bytes)} bytes "
-                f"(压缩率: {compression_ratio:.1f}%)"
+                f"(格式: {output_format}, 压缩率: {compression_ratio:.1f}%)"
             )
             
             return compressed_bytes
@@ -89,7 +105,8 @@ class ImageOptimizer:
     def generate_thumbnails(
         self,
         image_bytes: bytes,
-        sizes: dict = None
+        sizes: dict = None,
+        output_format: str = 'WEBP'
     ) -> dict:
         """
         生成多种尺寸的缩略图
@@ -97,6 +114,7 @@ class ImageOptimizer:
         Args:
             image_bytes: 原始图片字节
             sizes: 缩略图尺寸配置
+            output_format: 输出格式 ('WEBP' 或 'PNG')
             
         Returns:
             {size_name: thumbnail_bytes}
@@ -110,36 +128,47 @@ class ImageOptimizer:
             # 打开图片
             image = Image.open(io.BytesIO(image_bytes))
             
-            # 转换为 RGB
-            if image.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', image.size, (255, 255, 255))
-                if image.mode == 'P':
-                    image = image.convert('RGBA')
-                background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
-                image = background
+            # 检测是否有透明背景
+            has_transparency = image.mode in ('RGBA', 'LA') or (
+                image.mode == 'P' and 'transparency' in image.info
+            )
+            
+            # 如果输出格式是 WEBP 且无透明背景，转换为 RGB
+            # 如果有透明背景，保持 RGBA
+            if output_format == 'WEBP' and not has_transparency:
+                if image.mode in ('RGBA', 'LA', 'P'):
+                    background = Image.new('RGB', image.size, (255, 255, 255))
+                    if image.mode == 'P':
+                        image = image.convert('RGBA')
+                    background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+                    image = background
+            # 如果有透明背景或输出 PNG，保持原有模式
             
             # 生成各个尺寸的缩略图
             for size_name, (width, height) in sizes.items():
                 thumbnail = image.copy()
                 thumbnail.thumbnail((width, height), Image.LANCZOS)
                 
-                # 保存为 WebP
+                # 保存缩略图
                 output = io.BytesIO()
-                thumbnail.save(
-                    output,
-                    format='WEBP',
-                    quality=80,
-                    method=6
-                )
+                if output_format == 'PNG':
+                    thumbnail.save(output, format='PNG', optimize=True)
+                else:
+                    thumbnail.save(
+                        output,
+                        format='WEBP',
+                        quality=80,
+                        method=6
+                    )
                 
                 thumbnails[size_name] = output.getvalue()
-                logger.debug(f"生成缩略图 {size_name}: {thumbnail.width}x{thumbnail.height}")
             
+            logger.info(f"生成 {len(thumbnails)} 个缩略图 (格式: {output_format})")
             return thumbnails
             
         except Exception as e:
             logger.error(f"生成缩略图失败: {str(e)}", exc_info=True)
-            return {}
+            return thumbnails
     
     def convert_to_webp(
         self,
@@ -220,24 +249,41 @@ class ImageOptimizer:
         }
         
         try:
-            # 1. 压缩图片
-            compressed_bytes = self.compress_image(image_bytes)
+            # 检测是否有透明背景
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(image_bytes))
+            has_transparency = img.mode in ('RGBA', 'LA') or (
+                img.mode == 'P' and 'transparency' in img.info
+            )
+            
+            # 1. 压缩图片（有透明背景时不转换格式）
+            if has_transparency:
+                # 透明背景图片：保持 PNG 格式
+                compressed_bytes = self.compress_image(image_bytes, output_format='PNG')
+                save_filename = filename if filename.endswith('.png') else filename.rsplit('.', 1)[0] + '.png'
+            else:
+                # 无透明背景：转换为 WebP（更小）
+                compressed_bytes = self.compress_image(image_bytes)
+                save_filename = filename.replace('.jpg', '.webp').replace('.png', '.webp')
+            
             result['compressed_size'] = len(compressed_bytes)
             
             # 2. 保存主图
             main_path = image_processor.save_image(
                 compressed_bytes,
                 product_code,
-                filename.replace('.jpg', '.webp').replace('.png', '.webp')
+                save_filename
             )
             result['main_path'] = main_path
             
             # 3. 生成缩略图
             if generate_thumb:
-                thumbnails = self.generate_thumbnails(compressed_bytes)
+                thumbnails = self.generate_thumbnails(compressed_bytes, output_format='PNG' if has_transparency else 'WEBP')
                 
                 for size_name, thumb_bytes in thumbnails.items():
-                    thumb_filename = f"{filename.rsplit('.', 1)[0]}_{size_name}.webp"
+                    ext = '.png' if has_transparency else '.webp'
+                    thumb_filename = f"{filename.rsplit('.', 1)[0]}_{size_name}{ext}"
                     thumb_path = image_processor.save_image(
                         thumb_bytes,
                         product_code,
@@ -247,6 +293,7 @@ class ImageOptimizer:
             
             logger.info(
                 f"图片优化完成: {product_code}/{filename}, "
+                f"格式: {'PNG (透明)' if has_transparency else 'WebP'}, "
                 f"压缩率: {(1 - result['compressed_size']/result['original_size'])*100:.1f}%"
             )
             

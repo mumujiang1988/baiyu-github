@@ -25,7 +25,7 @@ def test_health():
     print(f"\n整体状态: {data['status']}")
     print("\n服务检查结果:")
     for service, status in data['checks'].items():
-        icon = "✅" if status else "❌"
+        icon = "" if status else ""
         print(f"  {icon} {service:10s}: {'正常' if status else '异常'}")
     
     return data['status'] == 'healthy' and data['checks']['minio']
@@ -76,16 +76,16 @@ def test_create_product():
     print(f"   耗时: {result.get('ingest_time_ms')}ms")
     
     if result.get('errors'):
-        print(f"\n⚠️  错误信息:")
+        print(f"\n  错误信息:")
         for error in result['errors']:
             print(f"   - {error}")
     
     success = result.get('success') and result.get('success_count') > 0
     
     if success:
-        print(f"\n✅ 创建产品成功！图片已存储到 MinIO")
+        print(f"\n 创建产品成功！图片已存储到 MinIO")
     else:
-        print(f"\n❌ 创建产品失败")
+        print(f"\n 创建产品失败")
     
     return success
 
@@ -101,7 +101,7 @@ def test_read_product():
     response = requests.get(f"{BASE_URL}/api/v1/product/{product_code}")
     
     if response.status_code != 200:
-        print(f"\n❌ 查询失败: HTTP {response.status_code}")
+        print(f"\n 查询失败: HTTP {response.status_code}")
         return False
     
     data = response.json()
@@ -129,7 +129,7 @@ def test_read_product():
         img_response = requests.get(f"{BASE_URL}/api/v1/images/{image_path}")
         
         if img_response.status_code == 200:
-            print(f"   ✅ 图片访问成功")
+            print(f"    图片访问成功")
             print(f"   大小: {len(img_response.content)} bytes")
             print(f"   Content-Type: {img_response.headers.get('Content-Type')}")
             print(f"   Cache-Control: {img_response.headers.get('Cache-Control')}")
@@ -138,12 +138,12 @@ def test_read_product():
             backend_logs = requests.get(f"{BASE_URL}/health")
             health_data = backend_logs.json()
             if health_data['checks'].get('minio'):
-                print(f"   ✅ 确认: 图片从 MinIO 读取")
+                print(f"    确认: 图片从 MinIO 读取")
         else:
-            print(f"   ❌ 图片访问失败: HTTP {img_response.status_code}")
+            print(f"    图片访问失败: HTTP {img_response.status_code}")
             return False
     
-    print(f"\n✅ 查询产品成功！")
+    print(f"\n 查询产品成功！")
     return True
 
 
@@ -205,10 +205,10 @@ def test_update_product():
     category_updated = verify_data['product'].get('category') == data['category']
     
     if name_updated and spec_updated and category_updated:
-        print(f"\n✅ 更新产品成功！")
+        print(f"\n 更新产品成功！")
         return True
     else:
-        print(f"\n❌ 更新验证失败")
+        print(f"\n 更新验证失败")
         return False
 
 
@@ -243,10 +243,10 @@ def test_list_products():
     )
     
     if test_product:
-        print(f"\n✅ 找到测试产品: {test_product['name']}")
+        print(f"\n 找到测试产品: {test_product['name']}")
         return True
     else:
-        print(f"\n⚠️  未找到测试产品")
+        print(f"\n  未找到测试产品")
         return False
 
 
@@ -257,7 +257,7 @@ def test_delete_product():
     product_code = 'AUDIT_TEST_001'
     
     print(f"\n🗑️  删除产品: {product_code}")
-    print(f"   ⚠️  此操作将删除:")
+    print(f"     此操作将删除:")
     print(f"      - MySQL 中的产品记录")
     print(f"      - MySQL 中的图片记录")
     print(f"      - Milvus 中的向量数据")
@@ -272,7 +272,7 @@ def test_delete_product():
     print(f"   删除图片数: {result.get('deleted_images')}")
     
     if not result.get('success'):
-        print(f"\n❌ 删除失败")
+        print(f"\n 删除失败")
         return False
     
     # 验证删除
@@ -281,9 +281,9 @@ def test_delete_product():
     # 1. 验证 MySQL 中产品已删除
     verify_response = requests.get(f"{BASE_URL}/api/v1/product/{product_code}")
     if verify_response.status_code == 404:
-        print(f"   ✅ MySQL 产品记录已删除")
+        print(f"    MySQL 产品记录已删除")
     else:
-        print(f"   ❌ MySQL 产品记录仍存在")
+        print(f"    MySQL 产品记录仍存在")
         return False
     
     # 2. 验证 MinIO 中图片已删除
@@ -304,15 +304,15 @@ def test_delete_product():
         ))
         
         if len(objects) == 0:
-            print(f"   ✅ MinIO 图片文件已删除")
+            print(f"    MinIO 图片文件已删除")
         else:
-            print(f"   ⚠️  MinIO 中仍有 {len(objects)} 个对象:")
+            print(f"     MinIO 中仍有 {len(objects)} 个对象:")
             for obj in objects:
                 print(f"      - {obj.object_name}")
     except Exception as e:
-        print(f"   ⚠️  无法验证 MinIO 删除状态: {str(e)}")
+        print(f"     无法验证 MinIO 删除状态: {str(e)}")
     
-    print(f"\n✅ 删除产品成功！")
+    print(f"\n 删除产品成功！")
     return True
 
 
@@ -355,11 +355,11 @@ def test_minio_storage_verification():
         else:
             print(f"\nℹ️  MinIO 中暂无对象（可能已被删除）")
         
-        print(f"\n✅ MinIO 存储验证完成")
+        print(f"\n MinIO 存储验证完成")
         return True
         
     except Exception as e:
-        print(f"\n❌ MinIO 验证失败: {str(e)}")
+        print(f"\n MinIO 验证失败: {str(e)}")
         return False
 
 
@@ -383,14 +383,14 @@ def main():
             results['read'] = test_read_product()
         else:
             results['read'] = False
-            print("\n⚠️  跳过查询测试（创建失败）")
+            print("\n  跳过查询测试（创建失败）")
         
         # 测试 4: 更新
         if results['create']:
             results['update'] = test_update_product()
         else:
             results['update'] = False
-            print("\n⚠️  跳过更新测试（创建失败）")
+            print("\n  跳过更新测试（创建失败）")
         
         # 测试 5: 列表
         results['list'] = test_list_products()
@@ -400,7 +400,7 @@ def main():
             results['delete'] = test_delete_product()
         else:
             results['delete'] = False
-            print("\n⚠️  跳过删除测试（创建失败）")
+            print("\n  跳过删除测试（创建失败）")
         
         # 测试 7: MinIO 验证
         results['minio_verify'] = test_minio_storage_verification()
@@ -421,7 +421,7 @@ def main():
         all_passed = True
         for key, name in test_names.items():
             status = results.get(key, False)
-            icon = "✅" if status else "❌"
+            icon = "" if status else ""
             print(f"  {icon} {name:30s}: {'通过' if status else '失败'}")
             if not status:
                 all_passed = False
@@ -430,13 +430,13 @@ def main():
         if all_passed:
             print("  🎉 所有测试通过！MinIO CRUD 功能完全正常！")
         else:
-            print("  ⚠️  部分测试失败，请检查上述错误信息")
+            print("    部分测试失败，请检查上述错误信息")
         print("=" * 70 + "\n")
         
         return all_passed
         
     except Exception as e:
-        print(f"\n❌ 审计过程出错: {str(e)}")
+        print(f"\n 审计过程出错: {str(e)}")
         import traceback
         traceback.print_exc()
         return False

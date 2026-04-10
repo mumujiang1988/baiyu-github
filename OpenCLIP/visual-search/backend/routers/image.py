@@ -31,7 +31,10 @@ async def get_image(image_path: str):
     获取图片（支持 MinIO 和本地存储）
     
     Args:
-        image_path: 图片路径，如 "P001/abc123.webp"
+        image_path: 图片路径，支持多种格式：
+            - minio://bucket/path/file.jpg (完整协议路径)
+            - bucket/path/file.jpg (带 bucket 前缀)
+            - path/file.jpg (纯对象路径)
     
     Returns:
         图片二进制数据
@@ -42,7 +45,27 @@ async def get_image(image_path: str):
     try:
         if minio_service:
             # 从 MinIO 获取图片
-            image_bytes = minio_service.download_image(image_path)
+            # 智能解析路径，移除协议前缀和 bucket 名称
+            object_name = image_path
+            
+            # 1. 移除 minio:// 协议前缀
+            if object_name.startswith('minio://'):
+                # 格式: minio://bucket_name/object_path
+                parts = object_name.split('/', 3)
+                if len(parts) >= 4:
+                    object_name = parts[3]  # 获取 object_path
+                    logger.debug(f"移除协议前缀: {image_path} -> {object_name}")
+                else:
+                    raise HTTPException(status_code=400, detail=f"无效的 MinIO URL 格式: {image_path}")
+            
+            # 2. 如果还包含 bucket 名称前缀，继续移除
+            bucket_prefix = f"{minio_service.bucket_name}/"
+            if object_name.startswith(bucket_prefix):
+                object_name = object_name[len(bucket_prefix):]
+                logger.debug(f"移除 bucket 前缀: {object_name}")
+            
+            logger.debug(f"最终对象名: {object_name}")
+            image_bytes = minio_service.download_image(object_name)
             
             # 根据扩展名确定 content_type
             ext = os.path.splitext(image_path)[1].lower()

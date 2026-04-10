@@ -8,14 +8,14 @@ class Settings(BaseSettings):
     """应用配置"""
     
     # MySQL 配置
-    mysql_host: str = "localhost"
+    mysql_host: str = "mysql"  # Docker 服务名
     mysql_port: int = 3306
     mysql_user: str = "vs_user"
     mysql_password: str = "vs_pass123"
     mysql_db: str = "visual_search"
     
     # Milvus 配置
-    milvus_host: str = "localhost"
+    milvus_host: str = "milvus"  # Docker 服务名
     milvus_port: int = 19530
     
     # OpenCLIP 配置
@@ -23,10 +23,10 @@ class Settings(BaseSettings):
     openclip_pretrained: str = "laion2b_s34b_b79k"
     
     # Rembg 配置
-    rembg_api_url: str = "http://rembg:5000"
+    rembg_api_url: str = "http://rembg:7000"  # Docker 服务名
     
     # MinIO 配置
-    minio_endpoint: str = "minio:9000"
+    minio_endpoint: str = "minio:9000"  # Docker 服务名
     minio_access_key: str = "minioadmin"
     minio_secret_key: str = "minioadmin"
     minio_secure: bool = False

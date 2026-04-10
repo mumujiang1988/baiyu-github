@@ -3,8 +3,8 @@
     <el-card class="main-card">
       <template #header>
         <div class="card-header">
-          <span>产品管理</span>
-          <el-space>
+          <span class="section-title">产品管理</span>
+          <div class="header-actions">
             <el-button type="success" @click="checkConsistency" :loading="checking">
               <el-icon><DataAnalysis /></el-icon>
               数据一致性检查
@@ -26,18 +26,19 @@
               <el-icon><Delete /></el-icon>
               批量删除 ({{ selectedProducts.length }})
             </el-button>
-            <el-form inline>
-              <el-form-item>
-                <el-input v-model="searchCategory" placeholder="分类筛选" clearable @clear="loadProducts" @keyup.enter="loadProducts" />
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="loadProducts">
-                  <el-icon><Search /></el-icon>
-                  查询
-                </el-button>
-              </el-form-item>
-            </el-form>
-          </el-space>
+            <el-input 
+              v-model="searchCategory" 
+              placeholder="分类筛选" 
+              clearable 
+              style="width: 200px"
+              @clear="loadProducts" 
+              @keyup.enter="loadProducts" 
+            />
+            <el-button type="primary" @click="loadProducts">
+              <el-icon><Search /></el-icon>
+              查询
+            </el-button>
+          </div>
         </div>
       </template>
       
@@ -347,6 +348,7 @@
           fit="cover"
           class="product-image"
           :preview-src-list="currentImages.map(img => getImageUrl(img.image_path))"
+          lazy
         >
           <template #error>
             <div class="image-error">
@@ -360,12 +362,18 @@
 </template>
 
 <script setup>
+// 设置组件名称（用于 keep-alive）
+defineOptions({
+  name: 'ProductList'
+})
+
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listProducts, getProduct, deleteProduct as deleteProductApi, checkDataConsistency, queryOrphanData, cleanOrphanData, batchDeleteProducts, deleteSingleOrphan } from '../api/search'
 import { handleApiError } from '../utils/messageHandler'
 import { getImageUrl } from '../utils/imageHelper'
 import { extractPaginatedData, extractData } from '../utils/responseAdapter'
+import { logger } from '../utils/logger'
 
 const products = ref([])
 const loading = ref(false)
@@ -417,7 +425,7 @@ const loadProducts = async () => {
   try {
     const response = await listProducts(searchCategory.value, page.value, pageSize.value)
     
-    console.log('📦 产品列表响应:', response)
+    logger.log('📦 产品列表响应:', response)
     
     if (response && response.success) {
       // 使用响应适配器提取分页数据
@@ -425,17 +433,17 @@ const loadProducts = async () => {
       products.value = items || []
       total.value = pagination?.total || 0
       
-      console.log('✅ 产品列表加载成功:', {
+      logger.log('✅ 产品列表加载成功:', {
         count: products.value.length,
         total: total.value
       })
     } else {
-      console.warn('⚠️ 响应格式不正确:', response)
+      logger.warn('⚠️ 响应格式不正确:', response)
       products.value = []
       total.value = 0
     }
   } catch (error) {
-    console.error('❌ 加载产品列表失败:', error)
+    logger.error('❌ 加载产品列表失败:', error)
     handleApiError(error.response || error, '加载失败')
     products.value = []
     total.value = 0
@@ -552,6 +560,12 @@ const handleBatchDelete = async () => {
     
     const response = await batchDeleteProducts(productCodes)
     
+    // 检查响应是否有效
+    if (!response) {
+      ElMessage.error('批量删除失败：未收到服务器响应')
+      return
+    }
+    
     if (response.success) {
       // 统一格式：数据在 response.data 中
       const result = response.data
@@ -600,9 +614,16 @@ const handleBatchDelete = async () => {
 // Query orphan data
 const queryOrphanDataHandler = async () => {
   queryingOrphan.value = true
+  orphanDataResult.value = null  // 清除旧数据
   
   try {
     const response = await queryOrphanData()
+    
+    // 检查响应是否有效
+    if (!response) {
+      ElMessage.error('查询失败：未收到服务器响应')
+      return
+    }
     
     if (response.success) {
       orphanDataResult.value = response
@@ -810,6 +831,19 @@ onMounted(() => {
   align-items: center;
 }
 
+.card-header .section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E293B;
+  letter-spacing: 0.3px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .consistency-summary {
   padding: 10px 0;
 }
@@ -831,8 +865,13 @@ onMounted(() => {
 .product-image {
   width: 150px;
   height: 150px;
-  border-radius: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  /* 禁用过渡效果，避免闪烁 */
+  transition: none;
 }
+
+/* 完全移除 hover 效果，保持简洁稳定 */
 
 .image-error {
   display: flex;
@@ -843,5 +882,22 @@ onMounted(() => {
   background: #f5f7fa;
   color: #909399;
   font-size: 30px;
+}
+
+/* 优化 Element Plus 图片查看器，防止闪烁 */
+:deep(.el-image-viewer__wrapper) {
+  /* 禁用查看器的过渡动画，避免闪烁 */
+  transition: none !important;
+}
+
+:deep(.el-image-viewer__canvas) {
+  /* 确保图片渲染稳定 */
+  will-change: auto;
+  transition: none !important;
+}
+
+:deep(.el-image-viewer__img) {
+  /* 图片本身也不要有过渡效果 */
+  transition: none !important;
 }
 </style>

@@ -76,6 +76,11 @@
 </template>
 
 <script setup>
+// 设置组件名称（用于 keep-alive）
+defineOptions({
+  name: 'ProductIngest'
+})
+
 import { ref, watch, computed } from 'vue'
 import { InfoFilled } from '@element-plus/icons-vue'
 import SingleProductForm from './SingleProductForm.vue'
@@ -151,6 +156,6 @@ watch(activeTab, (newTab) => {
 
 .suggestion-title .el-icon {
   flex-shrink: 0;
-  color: #409eff;
+  color: #165DFF;
 }
 </style>

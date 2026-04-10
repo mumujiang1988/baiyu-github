@@ -29,17 +29,17 @@ def check_file_structure():
         path = os.path.join(os.path.dirname(__file__), file)
         if os.path.exists(path):
             lines = len(open(path, 'r', encoding='utf-8').readlines())
-            status = "✅" if lines < 500 else "⚠️"
+            status = "" if lines < 500 else ""
             print(f"{status} {file}: {lines} 行")
         else:
-            print(f"❌ {file}: 缺失")
+            print(f" {file}: 缺失")
             missing.append(file)
     
     if missing:
-        print(f"\n❌ 缺少 {len(missing)} 个文件")
+        print(f"\n 缺少 {len(missing)} 个文件")
         return False
     
-    print("\n✅ 所有必需文件存在")
+    print("\n 所有必需文件存在")
     return True
 
 
@@ -55,10 +55,10 @@ def check_main_py_size():
     print(f"main.py 行数: {lines}")
     
     if lines < 200:
-        print(f"✅ 主文件已精简至 {lines} 行（原963行，减少 {100 - (lines/963)*100:.1f}%）")
+        print(f" 主文件已精简至 {lines} 行（原963行，减少 {100 - (lines/963)*100:.1f}%）")
         return True
     else:
-        print(f"⚠️ 主文件仍较大 ({lines} 行)")
+        print(f" 主文件仍较大 ({lines} 行)")
         return False
 
 
@@ -80,9 +80,9 @@ def check_imports():
     all_ok = True
     for imp in required_imports:
         if imp in content:
-            print(f"✅ {imp}")
+            print(f" {imp}")
         else:
-            print(f"❌ 缺少: {imp}")
+            print(f" 缺少: {imp}")
             all_ok = False
     
     return all_ok
@@ -102,9 +102,9 @@ def check_routers():
     all_ok = True
     for router in routers:
         if f"include_router({router})" in content:
-            print(f"✅ {router} 已注册")
+            print(f" {router} 已注册")
         else:
-            print(f"❌ {router} 未注册")
+            print(f" {router} 未注册")
             all_ok = False
     
     return all_ok
@@ -139,7 +139,7 @@ def check_api_endpoints():
     for file, endpoints in expected_endpoints.items():
         filepath = os.path.join(os.path.dirname(__file__), file)
         if not os.path.exists(filepath):
-            print(f"❌ {file}: 文件不存在")
+            print(f" {file}: 文件不存在")
             all_ok = False
             continue
         
@@ -148,9 +148,9 @@ def check_api_endpoints():
         print(f"\n{file}:")
         for endpoint in endpoints:
             if endpoint in content:
-                print(f"  ✅ {endpoint}")
+                print(f"   {endpoint}")
             else:
-                print(f"  ❌ 缺少: {endpoint}")
+                print(f"   缺少: {endpoint}")
                 all_ok = False
     
     return all_ok
@@ -177,19 +177,19 @@ def check_line_limits():
         filepath = os.path.join(os.path.dirname(__file__), file)
         if os.path.exists(filepath):
             lines = len(open(filepath, 'r', encoding='utf-8').readlines())
-            status = "✅" if lines < 500 else "❌"
+            status = "" if lines < 500 else ""
             print(f"{status} {file}: {lines} 行")
             
             if lines >= 500:
                 violations.append((file, lines))
     
     if violations:
-        print(f"\n⚠️  {len(violations)} 个文件超过500行:")
+        print(f"\n  {len(violations)} 个文件超过500行:")
         for file, lines in violations:
             print(f"   - {file}: {lines} 行")
         return False
     
-    print("\n✅ 所有文件均小于500行")
+    print("\n 所有文件均小于500行")
     return True
 
 
@@ -211,7 +211,7 @@ def main():
     print("=" * 60)
     
     for check, result in results.items():
-        status = "✅ 通过" if result else "❌ 失败"
+        status = " 通过" if result else " 失败"
         print(f"{check}: {status}")
     
     all_passed = all(results.values())
@@ -222,7 +222,7 @@ def main():
         print("=" * 60)
         return 0
     else:
-        print("⚠️  部分验证失败，请检查上述问题")
+        print("  部分验证失败，请检查上述问题")
         print("=" * 60)
         return 1
 

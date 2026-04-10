@@ -27,7 +27,7 @@ class ProductService:
         except AttributeError:
             self.connection_pool = pooling.PooledMySQLConnection(pool_name="mysql_pool", pool_size=pool_size, **dbconfig)
 
-        logger.info("✅ MySQL 连接池创建成功")
+        logger.info(" MySQL 连接池创建成功")
 
     def _get_connection(self):
         """获取数据库连接"""
@@ -148,7 +148,7 @@ class ProductService:
             cursor.execute(sql1, (product_code,))
             cursor.execute(sql2, (product_code,))
             conn.commit()
-            logger.info(f"✅ 产品 {product_code} 彻底删除成功")
+            logger.info(f" 产品 {product_code} 彻底删除成功")
         finally:
             cursor.close()
             conn.close()

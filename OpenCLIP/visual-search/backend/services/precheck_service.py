@@ -44,10 +44,10 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
         milvus_service = get_milvus_service()
         if milvus_service and milvus_service.collection:
             checks["milvus_available"] = True
-            logger.debug("✅ Milvus 服务可用")
+            logger.debug(" Milvus 服务可用")
         else:
             checks["errors"].append("Milvus 服务不可用")
-            logger.warning("⚠️ Milvus collection 未初始化")
+            logger.warning(" Milvus collection 未初始化")
     except Exception as e:
         checks["errors"].append(f"Milvus 检查失败: {str(e)}")
         logger.error(f"Milvus 检查失败: {e}")
@@ -57,10 +57,10 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
         minio_service = get_minio_service()
         if minio_service and minio_service.health_check():
             checks["minio_available"] = True
-            logger.debug("✅ MinIO 服务可用")
+            logger.debug(" MinIO 服务可用")
         else:
             checks["errors"].append("MinIO 服务不可用")
-            logger.warning("⚠️ MinIO 健康检查失败")
+            logger.warning(" MinIO 健康检查失败")
     except Exception as e:
         checks["errors"].append(f"MinIO 检查失败: {str(e)}")
         logger.error(f"MinIO 检查失败: {e}")
@@ -70,7 +70,7 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
         product_service = get_product_service()
         product_service._execute_query("SELECT 1")
         checks["mysql_available"] = True
-        logger.debug("✅ MySQL 服务可用")
+        logger.debug(" MySQL 服务可用")
     except Exception as e:
         checks["errors"].append(f"MySQL 检查失败: {str(e)}")
         logger.error(f"MySQL 检查失败: {e}")
@@ -85,12 +85,12 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
             checks["errors"].append(
                 f"以下文件超过 50MB: {', '.join(oversized_files)}"
             )
-            logger.warning(f"⚠️ 存在超大文件: {oversized_files}")
+            logger.warning(f" 存在超大文件: {oversized_files}")
         else:
-            logger.debug(f"✅ 文件大小检查通过: 总计 {total_size/1024/1024:.1f}MB")
+            logger.debug(f" 文件大小检查通过: 总计 {total_size/1024/1024:.1f}MB")
     except Exception as e:
         # 文件大小检查失败不影响入库
-        logger.warning(f"⚠️ 文件大小检查跳过: {str(e)}")
+        logger.warning(f" 文件大小检查跳过: {str(e)}")
     
     checks["passed"] = all([
         checks["milvus_available"],
@@ -99,8 +99,8 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
     ])
     
     if checks["passed"]:
-        logger.info(f"✅ 入库预检查通过: {product_code}, {len(files)} 张图片")
+        logger.info(f" 入库预检查通过: {product_code}, {len(files)} 张图片")
     else:
-        logger.warning(f"❌ 入库预检查失败: {product_code}, 错误: {checks['errors']}")
+        logger.warning(f" 入库预检查失败: {product_code}, 错误: {checks['errors']}")
     
     return checks

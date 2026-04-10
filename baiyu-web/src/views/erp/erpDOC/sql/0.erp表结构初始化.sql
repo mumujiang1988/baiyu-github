@@ -187,7 +187,7 @@ CREATE TABLE `erp_push_relation` (
 
 -- 查看已创建的表
 SELECT '========================================' AS '';
-SELECT '✅ ERP Table Structure Created!' AS message;
+SELECT ' ERP Table Structure Created!' AS message;
 SELECT '========================================' AS '';
 SHOW TABLES LIKE 'erp_%';
 
@@ -247,7 +247,7 @@ DELIMITER ;
 
 -- 查看表结构
 SELECT '========================================' AS '';
-SELECT '✅ ERP Table Structure Verified!' AS message;
+SELECT ' ERP Table Structure Verified!' AS message;
 SELECT '========================================' AS '';
 SHOW TABLES LIKE 'erp_%';
 
@@ -267,8 +267,8 @@ SELECT '========================================' AS '';
 SELECT '🎉 ERP Table Structure Initialization Complete!' AS message;
 SELECT '========================================' AS '';
 SELECT 'Created:' AS summary;
-SELECT '  ✅ 5 core tables (9-field split architecture)' AS tables;
-SELECT '  ✅ Auto-history trigger (supports 9 fields)' AS triggers;
+SELECT '   5 core tables (9-field split architecture)' AS tables;
+SELECT '   Auto-history trigger (supports 9 fields)' AS triggers;
 SELECT '========================================' AS '';
 SELECT 'Note: Menu data should be initialized by separate scripts.' AS note;
 SELECT '========================================' AS '';

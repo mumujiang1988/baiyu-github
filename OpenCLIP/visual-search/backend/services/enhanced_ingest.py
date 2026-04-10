@@ -117,7 +117,7 @@ async def ingest_product_with_transaction(
         
         result = transaction.execute_ingest(prepared_images, product_info)
         
-        logger.info(f"✅ Product {product_code} ingested successfully: {result['ingested_images']} images")
+        logger.info(f" Product {product_code} ingested successfully: {result['ingested_images']} images")
         
         return {
             "success": True,

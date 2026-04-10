@@ -54,9 +54,9 @@ async def process_single_product_images(
         if milvus_ids:
             try:
                 milvus_service.delete(milvus_ids)
-                logger.info(f"✅ 清理 Milvus 向量成功: {len(milvus_ids)} 个")
+                logger.info(f" 清理 Milvus 向量成功: {len(milvus_ids)} 个")
             except Exception as e:
-                logger.error(f"❌ 清理 Milvus 向量失败: {str(e)}")
+                logger.error(f" 清理 Milvus 向量失败: {str(e)}")
                 raise Exception(f"清理旧数据失败: {str(e)}")
         
         # 2. 清理 MinIO（警告但不中断）
@@ -64,7 +64,7 @@ async def process_single_product_images(
             try:
                 image_processor.delete_image(img["image_path"])
             except Exception as e:
-                logger.warning(f"⚠️ 清理图片文件失败: {img['image_path']}: {str(e)}")
+                logger.warning(f" 清理图片文件失败: {img['image_path']}: {str(e)}")
         
         # 3. 清理 MySQL（必须成功）
         try:
@@ -72,9 +72,9 @@ async def process_single_product_images(
                 "DELETE FROM product_image WHERE product_code = %s", 
                 (product_code,)
             )
-            logger.info("✅ 清理 MySQL 图片记录成功")
+            logger.info(" 清理 MySQL 图片记录成功")
         except Exception as e:
-            logger.error(f"❌ 清理 MySQL 记录失败: {str(e)}")
+            logger.error(f" 清理 MySQL 记录失败: {str(e)}")
             raise Exception(f"清理数据库记录失败: {str(e)}")
     
     success_count = 0

@@ -52,7 +52,7 @@ try {
     $configResult = Invoke-MySqlQuery -query $query
     
     if ([string]::IsNullOrWhiteSpace($configResult)) {
-        Write-Host "❌ 未找到模块 [$moduleCode] 的配置数据！" -ForegroundColor Red
+        Write-Host " 未找到模块 [$moduleCode] 的配置数据！" -ForegroundColor Red
         Write-Host ""
         Write-Host "建议：" -ForegroundColor Yellow
         Write-Host "  1. 检查是否已执行初始化 SQL 脚本" -ForegroundColor White
@@ -60,10 +60,10 @@ try {
         exit 1
     }
     
-    Write-Host "✅ 找到配置数据" -ForegroundColor Green
+    Write-Host " 找到配置数据" -ForegroundColor Green
     Write-Host ""
 } catch {
-    Write-Host "❌ 数据库查询失败：$_" -ForegroundColor Red
+    Write-Host " 数据库查询失败：$_" -ForegroundColor Red
     exit 1
 }
 
@@ -91,13 +91,13 @@ try {
     $dateFieldConfig = Invoke-MySqlQuery -query $query
     
     if ([string]::IsNullOrWhiteSpace($dateFieldConfig)) {
-        Write-Host "❌ 未找到 FDate 字段配置！" -ForegroundColor Red
+        Write-Host " 未找到 FDate 字段配置！" -ForegroundColor Red
         Write-Host ""
         Write-Host "可能的原因：" -ForegroundColor Yellow
         Write-Host "  1. search_config 中没有 FDate 字段" -ForegroundColor White
         Write-Host "  2. 字段名可能不是 FDate（检查实际数据库字段）" -ForegroundColor White
     } else {
-        Write-Host "✅ FDate 字段配置存在" -ForegroundColor Green
+        Write-Host " FDate 字段配置存在" -ForegroundColor Green
         
         # 解析 JSON
         try {
@@ -113,49 +113,49 @@ try {
             # 验证 defaultValue
             if ($fieldData.component -eq "daterange") {
                 Write-Host ""
-                Write-Host "✅ 组件类型正确：daterange" -ForegroundColor Green
+                Write-Host " 组件类型正确：daterange" -ForegroundColor Green
                 
                 if ($fieldData.default_value) {
-                    Write-Host "✅ defaultValue 已配置" -ForegroundColor Green
+                    Write-Host " defaultValue 已配置" -ForegroundColor Green
                     
                     # 检查是否为数组格式
                     if ($fieldData.default_value -match '^\[') {
-                        Write-Host "✅ defaultValue 是数组格式" -ForegroundColor Green
+                        Write-Host " defaultValue 是数组格式" -ForegroundColor Green
                         
                         # 检查数组内容
                         if ($fieldData.default_value -match '"2010-01-01"' -and $fieldData.default_value -match '"today"') {
-                            Write-Host "✅ defaultValue 内容正确：[`"2010-01-01`", `"today`"]" -ForegroundColor Green
+                            Write-Host " defaultValue 内容正确：[`"2010-01-01`", `"today`"]" -ForegroundColor Green
                         } else {
-                            Write-Host "⚠️  defaultValue 内容可能不正确" -ForegroundColor Yellow
+                            Write-Host "  defaultValue 内容可能不正确" -ForegroundColor Yellow
                             Write-Host "   期望：[`"2010-01-01`", `"today`"]" -ForegroundColor Gray
                             Write-Host "   实际：$($fieldData.default_value)" -ForegroundColor Gray
                         }
                     } else {
-                        Write-Host "❌ defaultValue 不是数组格式！" -ForegroundColor Red
+                        Write-Host " defaultValue 不是数组格式！" -ForegroundColor Red
                         Write-Host "   期望格式：[`"2010-01-01`", `"today`"]" -ForegroundColor Gray
                     }
                 } else {
-                    Write-Host "❌ defaultValue 未配置！" -ForegroundColor Red
+                    Write-Host " defaultValue 未配置！" -ForegroundColor Red
                 }
                 
                 if ($fieldData.query_operator -eq "between") {
-                    Write-Host "✅ queryOperator 正确：between" -ForegroundColor Green
+                    Write-Host " queryOperator 正确：between" -ForegroundColor Green
                 } else {
-                    Write-Host "❌ queryOperator 不正确，应该是 between" -ForegroundColor Red
+                    Write-Host " queryOperator 不正确，应该是 between" -ForegroundColor Red
                 }
             } else {
-                Write-Host "❌ 组件类型不正确，应该是 daterange" -ForegroundColor Red
+                Write-Host " 组件类型不正确，应该是 daterange" -ForegroundColor Red
                 Write-Host "   当前：$($fieldData.component)" -ForegroundColor Gray
             }
         } catch {
-            Write-Host "⚠️  JSON 解析失败，可能是格式问题" -ForegroundColor Yellow
+            Write-Host "  JSON 解析失败，可能是格式问题" -ForegroundColor Yellow
             Write-Host "   原始数据：$dateFieldConfig" -ForegroundColor Gray
         }
     }
     
     Write-Host ""
 } catch {
-    Write-Host "❌ 查询失败：$_" -ForegroundColor Red
+    Write-Host " 查询失败：$_" -ForegroundColor Red
 }
 
 # 步骤 3：检查前端文件
@@ -170,46 +170,46 @@ $newFileExists = Test-Path $newFile
 
 Write-Host ""
 if ($oldFileExists) {
-    Write-Host "✅ 旧版文件存在：BusinessConfigurable.vue" -ForegroundColor Green
+    Write-Host " 旧版文件存在：BusinessConfigurable.vue" -ForegroundColor Green
     $oldContent = Get-Content $oldFile -Raw
     
     # 检查是否包含 initDateRange 函数
     if ($oldContent -match 'const initDateRange\s*=\s*\([^)]*\)\s*=>') {
-        Write-Host "   ✅ 包含 initDateRange 函数" -ForegroundColor Green
+        Write-Host "    包含 initDateRange 函数" -ForegroundColor Green
         
         # 检查是否包含 daterange 处理逻辑
         if ($oldContent -match 'f\.component\s*===\s*[`"']daterange[`"']') {
-            Write-Host "   ✅ 包含 daterange 组件处理逻辑" -ForegroundColor Green
+            Write-Host "    包含 daterange 组件处理逻辑" -ForegroundColor Green
         } else {
-            Write-Host "   ❌ 缺少 daterange 组件处理逻辑" -ForegroundColor Red
+            Write-Host "    缺少 daterange 组件处理逻辑" -ForegroundColor Red
         }
     }
 } else {
-    Write-Host "❌ 旧版文件不存在：BusinessConfigurable.vue" -ForegroundColor Red
+    Write-Host " 旧版文件不存在：BusinessConfigurable.vue" -ForegroundColor Red
 }
 
 if ($newFileExists) {
-    Write-Host "✅ 新版文件存在：BusinessConfigurable/index.vue" -ForegroundColor Green
+    Write-Host " 新版文件存在：BusinessConfigurable/index.vue" -ForegroundColor Green
     $newContent = Get-Content $newFile -Raw
     
     # 检查是否包含 initDateRange 函数
     if ($newContent -match 'const initDateRange\s*=\s*\([^)]*\)\s*=>') {
-        Write-Host "   ✅ 包含 initDateRange 函数" -ForegroundColor Green
+        Write-Host "    包含 initDateRange 函数" -ForegroundColor Green
         
         # 检查是否只查找 beginDate 和 endDate
         if ($newContent -match 'beginDate.*endDate') {
-            Write-Host "   ⚠️  仅查找 beginDate 和 endDate 字段" -ForegroundColor Yellow
+            Write-Host "     仅查找 beginDate 和 endDate 字段" -ForegroundColor Yellow
             
             # 检查是否有 daterange 处理逻辑
             if ($newContent -match 'f\.component\s*===\s*[`"']daterange[`"']') {
-                Write-Host "   ✅ 也包含 daterange 组件处理逻辑" -ForegroundColor Green
+                Write-Host "    也包含 daterange 组件处理逻辑" -ForegroundColor Green
             } else {
-                Write-Host "   ❌ 缺少 daterange 组件处理逻辑（这是问题所在！）" -ForegroundColor Red
+                Write-Host "    缺少 daterange 组件处理逻辑（这是问题所在！）" -ForegroundColor Red
             }
         }
     }
 } else {
-    Write-Host "❌ 新版文件不存在：BusinessConfigurable/index.vue" -ForegroundColor Red
+    Write-Host " 新版文件不存在：BusinessConfigurable/index.vue" -ForegroundColor Red
 }
 
 Write-Host ""
@@ -230,7 +230,7 @@ foreach ($routeFile in $routeFiles) {
         $routeContent = Get-Content $routeFile -Raw
         
         if ($routeContent -match "/erp/$moduleCode") {
-            Write-Host "   ✅ 找到 $moduleCode 路由配置" -ForegroundColor Green
+            Write-Host "    找到 $moduleCode 路由配置" -ForegroundColor Green
             
             # 提取组件路径
             if ($routeContent -match "component:\s*\(.*?import\(['``](.*?)['``]\)") {
@@ -238,10 +238,10 @@ foreach ($routeFile in $routeFiles) {
                 Write-Host "   📁 组件路径：$componentPath" -ForegroundColor Cyan
                 
                 if ($componentPath -match "BusinessConfigurable/index") {
-                    Write-Host "   ⚠️  使用新版文件（index.vue）" -ForegroundColor Yellow
+                    Write-Host "     使用新版文件（index.vue）" -ForegroundColor Yellow
                     Write-Host "   💡 提示：如果日期配置不生效，请修改 index.vue 的 initDateRange 函数" -ForegroundColor Cyan
                 } elseif ($componentPath -match "BusinessConfigurable(?!/index)") {
-                    Write-Host "   ✅ 使用旧版文件（BusinessConfigurable.vue）" -ForegroundColor Green
+                    Write-Host "    使用旧版文件（BusinessConfigurable.vue）" -ForegroundColor Green
                 }
                 
                 $routeFound = $true
@@ -253,7 +253,7 @@ foreach ($routeFile in $routeFiles) {
 }
 
 if (-not $routeFound) {
-    Write-Host "   ⚠️  未在常见路由文件中找到配置" -ForegroundColor Yellow
+    Write-Host "     未在常见路由文件中找到配置" -ForegroundColor Yellow
 }
 
 Write-Host ""
@@ -313,13 +313,13 @@ Write-Host ""
 if ($newFileExists) {
     $newContent = Get-Content $newFile -Raw
     if ($newContent -match 'beginDate.*endDate' -and $newContent -not match 'f\.component\s*===\s*[`"']daterange[`"']') {
-        Write-Host "❌ 问题确认：使用了 index.vue 但缺少 daterange 处理逻辑" -ForegroundColor Red
+        Write-Host " 问题确认：使用了 index.vue 但缺少 daterange 处理逻辑" -ForegroundColor Red
         Write-Host ""
         Write-Host "这就是为什么日期区间配置 [`"2010-01-01`", `"today`"] 不生效的原因！" -ForegroundColor Yellow
         Write-Host "程序 fallback 到了默认逻辑：本月 1 号 到 今天" -ForegroundColor Yellow
         Write-Host ""
-        Write-Host "✅ 解决方案：按照上面的推荐修复方案修改代码" -ForegroundColor Green
-    Write-Host "✅ 代码看起来正常，问题可能在数据库配置" -ForegroundColor Green
+        Write-Host " 解决方案：按照上面的推荐修复方案修改代码" -ForegroundColor Green
+    Write-Host " 代码看起来正常，问题可能在数据库配置" -ForegroundColor Green
 }
 
 Write-Host ""

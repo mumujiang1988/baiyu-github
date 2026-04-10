@@ -1,104 +1,90 @@
 <template>
   <div id="app">
-    <el-container>
-      <el-header>
-        <div class="header-content">
-          <h1>以图搜品系统</h1>
-          <el-menu mode="horizontal" :default-active="activeMenu" @select="handleMenuSelect">
-            <el-menu-item index="/search">图像检索</el-menu-item>
-            <el-menu-item index="/ingest">产品入库</el-menu-item>
-            <el-menu-item index="/products">产品管理</el-menu-item>
-          </el-menu>
-        </div>
-      </el-header>
-      
-      <el-main>
-        <router-view />
-      </el-main>
+    <el-container class="app-container">
+      <!-- 侧边栏 -->
+      <el-aside width="240px" class="sidebar-wrapper">
+        <SidebarMenu />
+      </el-aside>
+
+      <!-- 主内容区 -->
+      <el-container class="main-container">
+        <!-- 页签栏 -->
+        <TagsView />
+
+        <!-- 内容区 -->
+        <el-main class="main-content">
+          <router-view v-slot="{ Component }">
+            <keep-alive :include="cachedViews">
+              <component :is="Component" :key="route.fullPath" />
+            </keep-alive>
+          </router-view>
+        </el-main>
+      </el-container>
     </el-container>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useTagsViewStore } from '@/stores/tagsView'
+import SidebarMenu from '@/components/Layout/SidebarMenu.vue'
+import TagsView from '@/components/Layout/TagsView.vue'
 
-const router = useRouter()
 const route = useRoute()
-const activeMenu = ref(route.path)
+const tagsViewStore = useTagsViewStore()
 
-// 监听路由变化，同步菜单激活状态
-watch(() => route.path, (newPath) => {
-  activeMenu.value = newPath
+// 缓存的视图列表
+const cachedViews = computed(() => tagsViewStore.cachedViews)
+
+// 初始化：从 localStorage 恢复标签
+onMounted(() => {
+  tagsViewStore.restoreFromStorage()
 })
-
-const handleMenuSelect = (index) => {
-  activeMenu.value = index
-  router.push(index)
-}
 </script>
 
 <style>
-#app {
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  height: 100%;
-  width: 100%;
-}
-
-.el-container {
+.app-container {
   height: 100%;
   display: flex;
+}
+
+/* 侧边栏 - 深 slate 灰 */
+.sidebar-wrapper {
+  height: 100%;
+  background: #1E293B;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* 主容器 */
+.main-container {
+  flex: 1;
+  display: flex;
   flex-direction: column;
+  background: #F5F7FA;
+  min-width: 0;
 }
 
-.el-header {
-  background-color: #409EFF;
-  color: white;
-  padding: 0 20px;
+/* 顶部标签栏 */
+.tags-header {
   height: 60px;
-  flex-shrink: 0;
-}
-
-.header-content {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
-.header-content h1 {
-  margin: 0;
-  font-size: 24px;
-}
-
-.el-menu--horizontal {
-  background-color: transparent;
-  border-bottom: none;
-}
-
-.el-menu--horizontal .el-menu-item {
-  color: white;
-}
-
-.el-menu--horizontal .el-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.el-menu--horizontal .el-menu-item.is-active {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-bottom: 2px solid white;
-}
-
-.el-main {
-  padding: 20px;
-  background-color: #f5f7fa;
-  height: calc(100vh - 60px);
+/* 主内容区 */
+.main-content {
+  flex: 1;
+  padding: 15px;
   overflow-y: auto;
   overflow-x: hidden;
-  flex: 1;
-  min-height: 0;
+  background: #F5F7FA;
 }
 </style>

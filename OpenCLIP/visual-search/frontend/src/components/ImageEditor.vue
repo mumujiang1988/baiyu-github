@@ -19,37 +19,10 @@
             </el-button>
           </el-tooltip>
           
-          <el-tooltip content="旋转" placement="bottom">
-            <el-button 
-              :type="activeTool === 'rotate' ? 'primary' : ''" 
-              @click="setTool('rotate')"
-            >
-              <el-icon><RefreshLeft /></el-icon>
-            </el-button>
-          </el-tooltip>
-          
-          <el-tooltip content="翻转" placement="bottom">
-            <el-button 
-              :type="activeTool === 'flip' ? 'primary' : ''" 
-              @click="setTool('flip')"
-            >
-              <el-icon><ScaleToOriginal /></el-icon>
-            </el-button>
-          </el-tooltip>
-          
-          <el-tooltip content="调整亮度" placement="bottom">
-            <el-button 
-              :type="activeTool === 'brightness' ? 'primary' : ''" 
-              @click="setTool('brightness')"
-            >
-              <el-icon><Sunny /></el-icon>
-            </el-button>
-          </el-tooltip>
-          
           <el-tooltip content="去除背景" placement="bottom">
             <el-button 
               :type="activeTool === 'removeBg' ? 'primary' : ''" 
-              @click="setTool('removeBg')"
+              @click="handleRemoveBgClick"
               :loading="processing"
             >
               <el-icon><MagicStick /></el-icon>
@@ -71,7 +44,7 @@
         <div v-if="activeTool === 'crop'" class="cropper-container">
           <img 
             ref="cropperImgRef"
-            :src="imageUrl" 
+            :src="currentImageUrl" 
             alt="要裁剪的图片"
           />
         </div>
@@ -105,102 +78,21 @@
           </el-form>
         </div>
         
-        <!-- 旋转控制 -->
-        <div v-if="activeTool === 'rotate'" class="control-panel">
-          <el-form label-width="80px" size="small">
-            <el-form-item label="旋转角度">
-              <el-slider 
-                v-model="rotateAngle" 
-                :min="-180" 
-                :max="180"
-                @input="applyRotate"
-              />
-            </el-form-item>
-            <el-form-item>
-              <el-space>
-                <el-button size="small" @click="rotateImage(-90)">-90°</el-button>
-                <el-button size="small" @click="rotateImage(90)">+90°</el-button>
-                <el-button size="small" @click="rotateImage(180)">180°</el-button>
-              </el-space>
-            </el-form-item>
-          </el-form>
-        </div>
-        
-        <!-- 翻转控制 -->
-        <div v-if="activeTool === 'flip'" class="control-panel">
-          <el-space>
-            <el-button @click="flipImage('horizontal')">
-              <el-icon><ScaleToOriginal /></el-icon>
-              水平翻转
-            </el-button>
-            <el-button @click="flipImage('vertical')">
-              <el-icon><Bottom /></el-icon>
-              垂直翻转
-            </el-button>
-          </el-space>
-        </div>
-        
-        <!-- 亮度调节 -->
-        <div v-if="activeTool === 'brightness'" class="control-panel">
-          <el-form label-width="80px" size="small">
-            <el-form-item label="亮度">
-              <el-slider 
-                v-model="brightness" 
-                :min="0" 
-                :max="200"
-                @input="applyFilters"
-              />
-            </el-form-item>
-            <el-form-item label="对比度">
-              <el-slider 
-                v-model="contrast" 
-                :min="0" 
-                :max="200"
-                @input="applyFilters"
-              />
-            </el-form-item>
-            <el-form-item label="饱和度">
-              <el-slider 
-                v-model="saturation" 
-                :min="0" 
-                :max="200"
-                @input="applyFilters"
-              />
-            </el-form-item>
-          </el-form>
-        </div>
-        
         <!-- 去背景控制面板 -->
         <div v-if="activeTool === 'removeBg'" class="control-panel">
-          <el-alert
-            title="AI 智能抠图"
-            type="info"
-            :closable="false"
-            show-icon
-            style="margin-bottom: 15px;"
-          >
-            <template #default>
-              <p>🎨 使用 Rembg AI 模型自动移除图片背景</p>
-              <p style="margin-top: 5px; font-size: 12px; color: #909399;">处理时间约 2-5 秒，请耐心等待</p>
-            </template>
-          </el-alert>
-          
-          <el-button 
-            type="primary" 
-            size="large"
-            @click="removeBackground"
-            :loading="processing"
-            style="width: 100%;"
-          >
-            <el-icon v-if="!processing"><MagicStick /></el-icon>
-            {{ processing ? '正在抠图中...' : '✨ 开始抠图' }}
-          </el-button>
-          
-          <el-divider />
-          
-          <el-text size="small" type="info">
-            💡 提示：抠图后的图片将保留透明背景，适合用于产品展示和检索
-          </el-text>
+          <div v-if="processing" class="processing-status">
+            <el-icon class="is-loading" :size="40"><Loading /></el-icon>
+            <p style="margin-top: 15px; font-size: 16px;">正在智能抠图中...</p>
+            <p style="margin-top: 8px; font-size: 13px; color: #909399;">AI 模型正在分析图片，请稍候</p>
+          </div>
+          <div v-else class="result-status">
+            <el-result icon="success" title="抠图完成">
+              <template #sub-title>
+                <p>背景已成功移除，图片保留透明通道</p>
+                <p style="margin-top: 8px; font-size: 12px; color: #909399;">您可以继续编辑或保存图片</p>
+              </template>
+            </el-result>
+          </div>
         </div>
       </div>
     </div>
@@ -220,10 +112,7 @@
 <script setup>
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
-import { 
-  Crop, RefreshLeft, ScaleToOriginal, Sunny, MagicStick, 
-  Refresh, Check, Bottom
-} from '@element-plus/icons-vue'
+import { Crop, MagicStick, Refresh, Check } from '@element-plus/icons-vue'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 import { API_BASE_URL } from '../config/api'
@@ -248,18 +137,15 @@ const activeTool = ref(null)
 const processing = ref(false)
 const saving = ref(false)
 
+// 当前编辑的图片 URL（抠图后会更新）
+const currentImageUrl = ref('')
+
 const originalImage = ref(null)
 const currentImage = ref(null)
 const ctx = ref(null)
 
 let cropperInstance = null
 
-const rotateAngle = ref(0)
-const flipH = ref(false)
-const flipV = ref(false)
-const brightness = ref(100)
-const contrast = ref(100)
-const saturation = ref(100)
 const aspectRatio = ref(NaN)
 
 watch(() => props.modelValue, (val) => {
@@ -275,6 +161,11 @@ watch(dialogVisible, (val) => {
 
 const loadImage = async () => {
   try {
+    // 清理旧的 URL 对象
+    if (currentImageUrl.value && currentImageUrl.value.startsWith('blob:')) {
+      URL.revokeObjectURL(currentImageUrl.value)
+    }
+    
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.src = props.imageUrl
@@ -283,6 +174,9 @@ const loadImage = async () => {
       img.onload = resolve
       img.onerror = reject
     })
+    
+    // 初始化当前图片 URL
+    currentImageUrl.value = props.imageUrl
     
     originalImage.value = img
     currentImage.value = img
@@ -340,8 +234,21 @@ const confirmCrop = () => {
     return
   }
   
+  // 检测当前图片是否有透明背景
+  const hasTransparency = activeTool.value === 'removeBg'
+  
+  // 获取裁剪区域的数据
+  const cropData = cropperInstance.getData()
+  
+  // 使用原始尺寸进行裁剪，避免缩放导致的失真
   const croppedCanvas = cropperInstance.getCroppedCanvas({
-    fillColor: '#fff',
+    // 如果有透明背景，使用透明填充；否则使用白色
+    fillColor: hasTransparency ? 'transparent' : '#fff',
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high',
+    // 保持原始尺寸，不缩放
+    width: cropData.width,
+    height: cropData.height,
   })
   
   if (!croppedCanvas) {
@@ -352,6 +259,7 @@ const confirmCrop = () => {
   const img = new Image()
   img.onload = () => {
     currentImage.value = img
+    originalImage.value = img // 更新原始图片引用
     
     rotateAngle.value = 0
     flipH.value = false
@@ -389,6 +297,7 @@ const drawImage = () => {
   let width = currentImage.value.width
   let height = currentImage.value.height
   
+  // 计算缩放比例，保持宽高比
   if (width > maxWidth || height > maxHeight) {
     const ratio = Math.min(maxWidth / width, maxHeight / height)
     width *= ratio
@@ -398,18 +307,30 @@ const drawImage = () => {
   canvas.width = width
   canvas.height = height
   
+  // 清空画布，保持透明背景
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   
-  ctx.save()
-  ctx.translate(canvas.width / 2, canvas.height / 2)
-  ctx.rotate((rotateAngle.value * Math.PI) / 180)
-  ctx.scale(flipH.value ? -1 : 1, flipV.value ? -1 : 1)
-  ctx.translate(-canvas.width / 2, -canvas.height / 2)
+  // 绘制图片，保持宽高比，居中显示
+  const imgRatio = currentImage.value.width / currentImage.value.height
+  const canvasRatio = width / height
   
-  ctx.filter = `brightness(${brightness.value}%) contrast(${contrast.value}%) saturate(${saturation.value}%)`
+  let drawWidth, drawHeight, offsetX, offsetY
   
-  ctx.drawImage(currentImage.value, 0, 0, canvas.width, canvas.height)
-  ctx.restore()
+  if (imgRatio > canvasRatio) {
+    // 图片更宽，以宽度为准
+    drawWidth = width
+    drawHeight = width / imgRatio
+    offsetX = 0
+    offsetY = (height - drawHeight) / 2
+  } else {
+    // 图片更高，以高度为准
+    drawHeight = height
+    drawWidth = height * imgRatio
+    offsetX = (width - drawWidth) / 2
+    offsetY = 0
+  }
+  
+  ctx.drawImage(currentImage.value, offsetX, offsetY, drawWidth, drawHeight)
 }
 
 const setTool = (tool) => {
@@ -432,18 +353,16 @@ const setTool = (tool) => {
 }
 
 const resetParams = () => {
-  rotateAngle.value = 0
-  flipH.value = false
-  flipV.value = false
-  brightness.value = 100
-  contrast.value = 100
-  saturation.value = 100
   aspectRatio.value = NaN
 }
 
 const resetImage = () => {
   if (originalImage.value) {
     currentImage.value = originalImage.value
+    
+    // 重置为原始图片 URL
+    currentImageUrl.value = props.imageUrl
+    
     resetParams()
     
     if (cropperInstance) {
@@ -463,26 +382,18 @@ const resetImage = () => {
   }
 }
 
-const applyRotate = () => {
-  drawImage()
-}
-
-const rotateImage = (angle) => {
-  rotateAngle.value += angle
-  drawImage()
-}
-
-const flipImage = (direction) => {
-  if (direction === 'horizontal') {
-    flipH.value = !flipH.value
-  } else {
-    flipV.value = !flipV.value
+// 处理魔法棒按钮点击 - 直接开始抠图
+const handleRemoveBgClick = async () => {
+  if (!currentImage.value) {
+    ElMessage.warning('请先加载图片')
+    return
   }
-  drawImage()
-}
-
-const applyFilters = () => {
-  drawImage()
+  
+  // 设置工具状态
+  activeTool.value = 'removeBg'
+  
+  // 立即开始抠图
+  await removeBackground()
 }
 
 // 调用后端 Rembg 服务去除背景
@@ -532,6 +443,9 @@ const removeBackground = async () => {
       currentImage.value = img
       originalImage.value = img // 更新原始图片引用
       
+      // 更新当前图片 URL（关键修复）
+      currentImageUrl.value = resultUrl
+      
       // 重置所有参数
       resetParams()
       
@@ -550,8 +464,8 @@ const removeBackground = async () => {
         ElMessage.success('背景移除成功')
       })
       
-      // 清理 URL 对象，防止内存泄漏
-      URL.revokeObjectURL(resultUrl)
+      // 注意：不在这里清理 URL 对象，因为 currentImageUrl 还在使用它
+      // 会在关闭对话框或加载新图片时清理
     }
     img.onerror = () => {
       ElMessage.error('抠图后图片加载失败')
@@ -574,11 +488,43 @@ const saveImage = async () => {
   
   try {
     const canvas = canvasRef.value
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+    const ctx = canvas.getContext('2d')
     
-    const response = await fetch(dataUrl)
-    const blob = await response.blob()
-    const file = new File([blob], 'edited-image.jpg', { type: 'image/jpeg' })
+    // 检测画布是否有透明像素
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+    let hasTransparency = false
+    
+    // 检查 alpha 通道（每4个字节中的第4个）
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] < 255) {
+        hasTransparency = true
+        break
+      }
+    }
+    
+    // 如果当前是抠图模式，强制使用 PNG
+    if (activeTool.value === 'removeBg') {
+      hasTransparency = true
+    }
+    
+    let dataUrl, file
+    
+    if (hasTransparency) {
+      // 使用 PNG 格式保留透明背景
+      console.log('检测到透明背景，使用 PNG 格式保存')
+      dataUrl = canvas.toDataURL('image/png')
+      const response = await fetch(dataUrl)
+      const blob = await response.blob()
+      file = new File([blob], 'edited-image.png', { type: 'image/png' })
+    } else {
+      // 使用 JPEG 格式（文件更小）
+      console.log('无透明背景，使用 JPEG 格式保存')
+      dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+      const response = await fetch(dataUrl)
+      const blob = await response.blob()
+      file = new File([blob], 'edited-image.jpg', { type: 'image/jpeg' })
+    }
     
     emit('save', file)
     ElMessage.success('保存成功')
@@ -598,6 +544,12 @@ const handleClose = () => {
   if (cropperInstance) {
     cropperInstance.destroy()
     cropperInstance = null
+  }
+  
+  // 清理 blob URL，防止内存泄漏
+  if (currentImageUrl.value && currentImageUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(currentImageUrl.value)
+    currentImageUrl.value = ''
   }
 }
 
@@ -663,6 +615,16 @@ onBeforeUnmount(() => {
 
 .control-panel {
   max-width: 100%;
+}
+
+.processing-status,
+.result-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
 }
 
 .el-divider--vertical {

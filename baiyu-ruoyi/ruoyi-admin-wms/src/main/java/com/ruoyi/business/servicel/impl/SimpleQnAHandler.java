@@ -127,7 +127,7 @@ public class SimpleQnAHandler implements AIConversationHandler {
 
             // 保存到数据库
             aiConversationMapper.insert(conversationToSave);
-            logger.info("✅ 已保存对话记录: {}", conversationToSave.getSessionId());
+            logger.info(" 已保存对话记录: {}", conversationToSave.getSessionId());
         } catch (Exception e) {
             logger.error("保存对话记录失败", e);
         }

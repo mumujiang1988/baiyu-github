@@ -64,7 +64,7 @@ class DictionaryManager {
         // Group by type
         const groupedDicts = {}
         
-        // ⚠️ No longer put dictTypeList in result, only use dictDataList
+        //  No longer put dictTypeList in result, only use dictDataList
         // Reason: dictTypeList is dictionary type definition, not actual dictionary data
         // Example: { label: '销售人员', value: 'salespersons', type: 'salespersons' } should not appear in dropdown options
         

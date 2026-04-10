@@ -1,15 +1,20 @@
 <template>
   <div class="search-results">
+    <!-- 加载中状态 -->
+    <div v-if="isLoading" class="loading-state">
+      <el-skeleton :rows="3" animated />
+      <el-skeleton :rows="3" animated style="margin-top: 16px" />
+      <el-skeleton :rows="3" animated style="margin-top: 16px" />
+    </div>
+    
     <!-- 结果列表 -->
-    <div v-if="results.length > 0" class="result-list">
+    <div v-else-if="results.length > 0" class="result-list">
       <SearchResultItem
         v-for="(result, index) in results"
         :key="result.product_code"
         :result="result"
         :index="index"
-        @scroll="$emit('scroll', $event)"
         @preview="$emit('preview', $event)"
-        @set-carousel-ref="$emit('setCarouselRef', $event)"
       />
     </div>
     
@@ -67,24 +72,38 @@ defineProps({
     type: String,
     default: 'image',
     validator: (value) => ['image', 'text'].includes(value)
+  },
+  
+  /**
+   * 是否正在加载中
+   */
+  isLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['scroll', 'preview', 'clear', 'setCarouselRef'])
+defineEmits(['preview', 'clear'])
 </script>
 
 <style scoped>
 .search-results {
-  margin-top: 16px;
+  margin-top: 4px; /* 进一步减少上边距 */
 }
 
 .result-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px; /* 进一步减少卡片间距 */
 }
 
 .empty-state {
-  padding: 40px 0;
+  padding: 20px 0; /* 减少空状态内边距 */
+}
+
+.loading-state {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
 }
 </style>

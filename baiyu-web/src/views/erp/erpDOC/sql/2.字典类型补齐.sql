@@ -124,7 +124,7 @@ DROP FUNCTION IF EXISTS fn_snowflake_id;
 
 -- 验证结果
 SELECT '========================================' AS '';
-SELECT '✅ Dictionary Types Created Successfully!' AS message;
+SELECT ' Dictionary Types Created Successfully!' AS message;
 SELECT '========================================' AS '';
 
 SELECT '===== Statistics =====' AS section;

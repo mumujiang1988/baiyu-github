@@ -76,7 +76,7 @@ def delete_milvus_with_retry(milvus_service, milvus_ids: list):
     
     logger.info(f"正在删除 {len(milvus_ids)} 个 Milvus 向量...")
     result = milvus_service.delete(milvus_ids)
-    logger.info(f"✅ Milvus 向量删除成功")
+    logger.info(f" Milvus 向量删除成功")
     return result
 
 
@@ -106,7 +106,7 @@ def insert_milvus_with_retry(milvus_service, product_code: str, embedding, image
     """
     logger.debug(f"正在插入 Milvus 向量: {product_code}")
     milvus_id = milvus_service.insert(product_code, embedding, image_id)
-    logger.debug(f"✅ Milvus 向量插入成功: ID={milvus_id}")
+    logger.debug(f" Milvus 向量插入成功: ID={milvus_id}")
     return milvus_id
 
 
@@ -133,7 +133,7 @@ def delete_minio_with_retry(image_processor, image_path: str):
     """
     logger.debug(f"正在删除 MinIO 图片: {image_path}")
     image_processor.delete_image(image_path)
-    logger.debug(f"✅ MinIO 图片删除成功: {image_path}")
+    logger.debug(f" MinIO 图片删除成功: {image_path}")
 
 
 @retry(
@@ -168,7 +168,7 @@ def save_minio_with_retry(image_processor, image_bytes, object_name: str, conten
         length=len(image_bytes),
         content_type=content_type
     )
-    logger.debug(f"✅ MinIO 图片保存成功: {object_name}")
+    logger.debug(f" MinIO 图片保存成功: {object_name}")
     return result
 
 
@@ -202,5 +202,5 @@ def execute_mysql_with_retry(product_service, sql: str, params: tuple = None):
         result = product_service._execute_update(sql, params)
     else:
         result = product_service._execute_update(sql)
-    logger.debug(f"✅ MySQL 执行成功")
+    logger.debug(f" MySQL 执行成功")
     return result

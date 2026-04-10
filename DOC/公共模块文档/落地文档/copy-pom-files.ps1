@@ -17,7 +17,7 @@ if (Test-Path "$sourceBase\pom.xml") {
     Copy-Item -Path "$sourceBase\pom.xml" -Destination "$targetBase\pom.xml" -Force
     Write-Host "   已复制：pom.xml" -ForegroundColor Green
 } else {
-    Write-Host "  ❌ 源文件不存在：$sourceBase\pom.xml" -ForegroundColor Red
+    Write-Host "   源文件不存在：$sourceBase\pom.xml" -ForegroundColor Red
 }
 
 # 2. 复制 ruoyi-admin-wms/pom.xml
@@ -26,7 +26,7 @@ if (Test-Path "$sourceBase\ruoyi-admin-wms\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-admin-wms\pom.xml" -Destination "$targetBase\ruoyi-admin-wms\pom.xml" -Force
     Write-Host "   已复制：ruoyi-admin-wms/pom.xml" -ForegroundColor Green
 } else {
-    Write-Host "  ❌ 源文件不存在" -ForegroundColor Red
+    Write-Host "   源文件不存在" -ForegroundColor Red
 }
 
 # 3. 复制 ruoyi-common/pom.xml
@@ -35,7 +35,7 @@ if (Test-Path "$sourceBase\ruoyi-common\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-common\pom.xml" -Destination "$targetBase\ruoyi-common\pom.xml" -Force
     Write-Host "   已复制：ruoyi-common/pom.xml" -ForegroundColor Green
 } else {
-    Write-Host "  ❌ 源文件不存在" -ForegroundColor Red
+    Write-Host "   源文件不存在" -ForegroundColor Red
 }
 
 # 4. 复制 ruoyi-common-bom/pom.xml
@@ -74,7 +74,7 @@ if (Test-Path "$sourceBase\ruoyi-modules\pom.xml") {
     Copy-Item -Path "$sourceBase\ruoyi-modules\pom.xml" -Destination "$targetBase\ruoyi-modules\pom.xml" -Force
     Write-Host "   已复制：ruoyi-modules/pom.xml" -ForegroundColor Green
 } else {
-    Write-Host "  ❌ 源文件不存在" -ForegroundColor Red
+    Write-Host "   源文件不存在" -ForegroundColor Red
 }
 
 # 20-23. 复制 ruoyi-modules 子模块

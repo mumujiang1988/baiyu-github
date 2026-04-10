@@ -77,9 +77,13 @@ import { ElMessage, ElImageViewer } from 'element-plus'
 import { Plus, Upload, Refresh, MagicStick } from '@element-plus/icons-vue'
 import { useIngestStore } from '../../stores/ingest'
 import { removeBackground } from '../../api/image'
+import { useBlobUrl } from '../../composables/useBlobUrl'
 
 // 使用 Pinia Store
 const ingestStore = useIngestStore()
+
+// Blob URL 管理
+const { createUrl } = useBlobUrl()
 
 // 表单数据
 const form = reactive({
@@ -138,14 +142,10 @@ const handlePicturePreview = (file) => {
   } 
   // 如果是本地文件，创建临时 URL
   else if (file.raw) {
-    const tempUrl = URL.createObjectURL(file.raw)
+    const tempUrl = createUrl(file.raw)  // ✅ 使用统一管理器
     previewImageUrl.value = tempUrl
     showImageViewer.value = true
-    
-    // 在对话框关闭后清理 URL 对象
-    setTimeout(() => {
-      URL.revokeObjectURL(tempUrl)
-    }, 1000)
+    // 不再需要 setTimeout 清理，由 useBlobUrl 自动管理
   }
 }
 

@@ -36,11 +36,11 @@ echo === 开始 Maven 多线程编译 ===
 mvn clean install -DskipTests -T 16
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ Maven 编译失败
+    echo  Maven 编译失败
     pause
     exit /b 1
 )
-echo ✅ Maven 编译成功！
+echo  Maven 编译成功！
 echo.
 
 :: ========== 阶段 3: 启动后端 ==========

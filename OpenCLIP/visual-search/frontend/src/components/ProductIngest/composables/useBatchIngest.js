@@ -7,6 +7,7 @@ import { ingestProduct } from '../../../api/search'
 import { handleApiError } from '../../../utils/messageHandler'
 import { groupFilesByFolder, parseProductInfo } from '../utils/folderParser'
 import { simulateBatchProductProgress } from '../utils/progressSimulator'
+import { logger } from '../../../utils/logger'
 
 export function useBatchIngest() {
   // 状态
@@ -19,6 +20,9 @@ export function useBatchIngest() {
   // 目录结构配置
   const folderStructure = ref('standard')
   const sceneFolderNames = ref('')
+  
+  // 并发控制配置
+  const CONCURRENCY_LIMIT = 5  // 最多同时处理5个产品
   
   // 页面关闭保护
   const handleBeforeUnload = (e) => {
@@ -51,10 +55,41 @@ export function useBatchIngest() {
     }
   }
   
+  /**
+   * 并发控制处理器
+   * @param {Array} products - 产品列表
+   * @param {Function} processor - 处理函数
+   */
+  async function processWithConcurrency(products, processor) {
+    let index = 0
+    
+    async function worker() {
+      while (index < products.length) {
+        const currentIndex = index++
+        const product = products[currentIndex]
+        
+        // 跳过已经成功的
+        if (product.status === 'success') {
+          continue
+        }
+        
+        try {
+          await processor(product, currentIndex)
+        } catch (error) {
+          // 错误已在 processor 中处理
+        }
+      }
+    }
+    
+    // 启动并发 workers
+    const workers = Array(CONCURRENCY_LIMIT).fill().map(worker)
+    await Promise.all(workers)
+  }
+  
   // 处理批量文件选择
   const handleBatchFileSelect = async (event) => {
     const files = event.target.files
-    console.log('[BatchIngest] 文件选择事件触发', {
+    logger.log('[BatchIngest] 文件选择事件触发', {
       fileCount: files?.length,
       firstFilePath: files?.[0]?.webkitRelativePath
     })
@@ -65,13 +100,13 @@ export function useBatchIngest() {
     }
       
     // 按文件夹分组文件
-    console.log('[BatchIngest] 开始解析文件夹', {
+    logger.log('[BatchIngest] 开始解析文件夹', {
       structure: folderStructure.value,
       sceneNames: sceneFolderNames.value
     })
     const folderMap = groupFilesByFolder(files, folderStructure.value, sceneFolderNames.value)
       
-    console.log('[BatchIngest] 文件夹解析结果', {
+    logger.log('[BatchIngest] 文件夹解析结果', {
       folderCount: folderMap.size,
       folders: Array.from(folderMap.keys())
     })
@@ -87,13 +122,13 @@ export function useBatchIngest() {
       // 检查是否已存在
       const exists = batchResults.value.some(item => item.folderName === folderName)
       if (exists) {
-        console.warn('[BatchIngest] 文件夹已存在，跳过', folderName)
+        logger.warn('[BatchIngest] 文件夹已存在，跳过', folderName)
         continue
       }
         
       // 解析产品信息
       const { productCode, productName, spec, category } = parseProductInfo(folderName)
-      console.log('[BatchIngest] 解析产品信息', {
+      logger.log('[BatchIngest] 解析产品信息', {
         folderName,
         productCode,
         productName,
@@ -154,12 +189,8 @@ export function useBatchIngest() {
     failCount.value = 0
     
     try {
-      for (const product of batchResults.value) {
-        // 跳过已经成功的
-        if (product.status === 'success') {
-          continue
-        }
-        
+      // 使用并发控制处理所有产品
+      await processWithConcurrency(batchResults.value, async (product) => {
         // 更新当前处理项的状态
         product.status = 'processing'
         product.progress = 0
@@ -196,7 +227,7 @@ export function useBatchIngest() {
           product.progress = 100
           product.message = error.message || '入库失败'
         }
-      }
+      })
       
       // 显示结果
       if (failCount.value === 0) {

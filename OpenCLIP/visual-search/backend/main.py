@@ -76,11 +76,11 @@ def create_app() -> FastAPI:
         try:
             # 初始化所有服务
             init_services()
-            logger.info("✅ 所有服务初始化成功")
+            logger.info(" 所有服务初始化成功")
             
         except Exception as e:
-            logger.error(f"❌ 服务初始化失败: {str(e)}", exc_info=True)
-            logger.warning("⚠️ 应用将在受限模式下运行（部分功能不可用）")
+            logger.error(f" 服务初始化失败: {str(e)}", exc_info=True)
+            logger.warning(" 应用将在受限模式下运行（部分功能不可用）")
     
     # 根路径
     @app.get("/")

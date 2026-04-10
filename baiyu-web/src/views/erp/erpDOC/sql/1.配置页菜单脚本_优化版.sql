@@ -33,8 +33,8 @@ SET @existing_menu_count := (
 
 SELECT 
   CASE 
-    WHEN @existing_menu_count > 0 THEN '⚠️  WARNING: ERP menu already exists. Old data will be cleaned.'
-    ELSE '✅ INFO: No existing ERP menu. Will create new menus.'
+    WHEN @existing_menu_count > 0 THEN '  WARNING: ERP menu already exists. Old data will be cleaned.'
+    ELSE ' INFO: No existing ERP menu. Will create new menus.'
   END AS status_check;
 
 -- ============================================
@@ -93,7 +93,7 @@ DROP FUNCTION IF EXISTS fn_snowflake_id;
 DELIMITER $$
 CREATE FUNCTION fn_snowflake_id() RETURNS bigint
     NOT DETERMINISTIC
-    NO SQL  -- ✅ 修正：函数不访问数据库表
+    NO SQL  --  修正：函数不访问数据库表
 BEGIN
     -- 使用简化版的雪花算法，生成 19 位 ID
     -- 格式：时间戳 (13 位毫秒) + 随机数 (6 位)
@@ -170,7 +170,7 @@ BEGIN
     BEGIN
         ROLLBACK;
         SELECT '========================================' AS '';
-        SELECT '❌ ERROR: Menu creation failed! Transaction rolled back.' AS error_message;
+        SELECT ' ERROR: Menu creation failed! Transaction rolled back.' AS error_message;
         SELECT '========================================' AS '';
         RESIGNAL;
     END;
@@ -182,7 +182,7 @@ BEGIN
     SET @erp_parent_id := fn_snowflake_id();
     INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, remark, create_by, create_time)
     SELECT @erp_parent_id, 'ERP 业务菜单', 0, 5, 'business', '', 0, 0, 'M', 1, 1, '', 'system', 'ERP 业务菜单目录', 'admin', NOW()
-    WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE BINARY menu_name = 'ERP 业务菜单' AND parent_id = 0);  -- ✅ 增加 parent_id 限制
+    WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE BINARY menu_name = 'ERP 业务菜单' AND parent_id = 0);  --  增加 parent_id 限制
     
     -- 3.4 创建公共配置管理菜单
     SET @config_menu_id := fn_snowflake_id();
@@ -250,7 +250,7 @@ BEGIN
             SELECT v_menu_id, v_module_name, @erp_parent_id, v_order_num, v_path, 'erp/pageTemplate/configurable/BusinessConfigurable/index', 
                    CONCAT('{"moduleCode":"', v_module_code, '"}'), 0, 0, 'C', 1, 1, 
                    CONCAT(v_perm_prefix, ':query'), v_icon, 'admin', NOW(), '', NULL, v_remark
-            WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE BINARY menu_name = v_module_name AND parent_id = @erp_parent_id);  -- ✅ 增加 parent_id 限制
+            WHERE NOT EXISTS (SELECT 1 FROM sys_menu WHERE BINARY menu_name = v_module_name AND parent_id = @erp_parent_id);  --  增加 parent_id 限制
             
             -- 清空并重新填充临时表
             DELETE FROM tmp_business_buttons;
@@ -265,7 +265,7 @@ BEGIN
             FROM tmp_business_buttons t
             WHERE NOT EXISTS (SELECT 1 FROM sys_menu s WHERE BINARY s.menu_name = BINARY t.menu_name AND s.parent_id = v_menu_id);
             
-            -- ⚠️ 关键优化：每次循环后延迟 1 毫秒，确保时间戳不同
+            --  关键优化：每次循环后延迟 1 毫秒，确保时间戳不同
             -- 避免同一毫秒内生成多个 ID 导致随机数碰撞
             DO SLEEP(0.001);
         END LOOP;
@@ -295,7 +295,7 @@ DROP TEMPORARY TABLE IF EXISTS tmp_button_templates;
 
 -- 4.2 验证结果
 SELECT '========================================' AS '';
-SELECT '✅ ERP Menu Created Successfully!' AS message;
+SELECT ' ERP Menu Created Successfully!' AS message;
 SELECT '========================================' AS '';
 
 SELECT '===== Parent Menu =====' AS section;
@@ -324,8 +324,8 @@ SELECT '========================================' AS '';
 SELECT 
   @@FOREIGN_KEY_CHECKS AS foreign_key_checks_enabled,
   CASE 
-    WHEN @@FOREIGN_KEY_CHECKS = 1 THEN '✅ Foreign key checks are enabled'
-    ELSE '⚠️ WARNING: Foreign key checks are disabled!'
+    WHEN @@FOREIGN_KEY_CHECKS = 1 THEN ' Foreign key checks are enabled'
+    ELSE ' WARNING: Foreign key checks are disabled!'
   END AS fk_status;
 
 -- 4.4 简化版统计
@@ -339,5 +339,5 @@ SELECT
    WHERE p.parent_id = @erp_parent_id AND s.menu_type = 'F') AS total_button_count;
 
 SELECT '========================================' AS '';
-SELECT '✅ All checks passed!' AS final_check;
+SELECT ' All checks passed!' AS final_check;
 SELECT '========================================' AS '';

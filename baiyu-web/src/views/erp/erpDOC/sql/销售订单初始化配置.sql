@@ -597,7 +597,7 @@ INSERT INTO `erp_page_config` (
 -- ============================================
 
 SELECT '========================================' AS '';
-SELECT '✅ 销售订单配置导入成功（字典重构版）！' AS '';
+SELECT ' 销售订单配置导入成功（字典重构版）！' AS '';
 SELECT '========================================' AS '';
 
 SELECT 
@@ -633,11 +633,11 @@ WHERE module_code = 'saleorder';
 SELECT '========================================' AS '';
 SELECT '✨ 字典配置升级说明（v3.3）：' AS '';
 SELECT '========================================' AS '';
-SELECT '  ✅ 字典命名：统一使用 snake_case（order_status, f_document_status）' AS upgrade1;
-SELECT '  ✅ 字典来源：统一使用 /erp/engine/dict/all API' AS upgrade2;
-SELECT '  ✅ 移除配置：普通字典和静态字典从 dict_config 移除' AS upgrade3;
-SELECT '  ✅ 保留配置：仅保留需要特殊处理的字典（salespersons, customers, materials, nation）' AS upgrade4;
-SELECT '  ✅ 默认值修正：使用实际值而非显示标签（currency: "1", trade_way: "6191b13c997848"）' AS upgrade5;
+SELECT '   字典命名：统一使用 snake_case（order_status, f_document_status）' AS upgrade1;
+SELECT '   字典来源：统一使用 /erp/engine/dict/all API' AS upgrade2;
+SELECT '   移除配置：普通字典和静态字典从 dict_config 移除' AS upgrade3;
+SELECT '   保留配置：仅保留需要特殊处理的字典（salespersons, customers, materials, nation）' AS upgrade4;
+SELECT '   默认值修正：使用实际值而非显示标签（currency: "1", trade_way: "6191b13c997848"）' AS upgrade5;
 SELECT '========================================' AS '';
 SELECT '下一步操作：' AS '';
 SELECT '  后续将添加：' AS note1;

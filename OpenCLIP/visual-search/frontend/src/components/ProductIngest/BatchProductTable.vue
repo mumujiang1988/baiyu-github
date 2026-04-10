@@ -70,7 +70,7 @@
       multiple
       style="display: none"
       @change="(event) => {
-        console.log('[BatchProductTable] File input change event triggered', {
+        logger.log('[BatchProductTable] File input change event triggered', {
           filesCount: event.target?.files?.length,
           firstFile: event.target?.files?.[0]?.webkitRelativePath
         });
@@ -192,6 +192,7 @@
 import { useBatchIngest } from './composables/useBatchIngest'
 import { Setting, FolderOpened, Upload, Delete, Loading, Refresh } from '@element-plus/icons-vue'
 import { FOLDER_STRUCTURE_OPTIONS } from './constants'
+import { logger } from '../../utils/logger'
 
 // 使用 Composable 管理批量入库逻辑
 const {

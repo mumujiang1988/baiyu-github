@@ -790,22 +790,22 @@ const loadSubTablesByBillNo = async (billNo) => {
       entryList.value = results.entry.data
       currentDetailRow.value.entryList = results.entry.data
       console.error('[loadSubTablesByBillNo] Entry data loaded:', results.entry.data.length, 'records')
-      console.log('  ✅ entryList:', entryList.value)
-      console.log('  ✅ currentDetailRow.entryList:', currentDetailRow.value.entryList)
+      console.log('   entryList:', entryList.value)
+      console.log('   currentDetailRow.entryList:', currentDetailRow.value.entryList)
     } else {
-      console.warn('⚠️ [loadSubTablesByBillNo] results.entry 不存在')
+      console.warn(' [loadSubTablesByBillNo] results.entry 不存在')
     }
     
     if (results.cost) {
       costData.value = results.cost.data[0] || {}
       currentDetailRow.value.costData = results.cost.data[0] || {}
       console.error('[loadSubTablesByBillNo] Cost data loaded')
-      console.log('  ✅ costData:', costData.value)
+      console.log('   costData:', costData.value)
     } else {
-      console.warn('⚠️ [loadSubTablesByBillNo] results.cost 不存在')
+      console.warn(' [loadSubTablesByBillNo] results.cost 不存在')
     }
     
-    console.log('\n✅ [loadSubTablesByBillNo] 明细数据加载完成')
+    console.log('\n [loadSubTablesByBillNo] 明细数据加载完成')
     console.log('  final entryList:', entryList.value?.length || 0, '条')
     console.log('  final costData:', costData.value ? '有数据' : '空')
   } catch (error) {
@@ -1098,12 +1098,12 @@ const initDateRange = () => {
   const searchFields = parsedConfig.search?.fields || []
   console.log('📋 [initDateRange] searchFields:', searchFields)
   
-  // ✅ 方案 1：处理 daterange 类型的单个字段（如 FDate）
+  //  方案 1：处理 daterange 类型的单个字段（如 FDate）
   const dateRangeField = searchFields.find(f => f.component === 'daterange' && f.defaultValue)
   console.log('🔍 [initDateRange] dateRangeField found:', dateRangeField)
   
   if (dateRangeField) {
-    console.log('✅ [initDateRange] 找到 daterange 字段:', dateRangeField.field)
+    console.log(' [initDateRange] 找到 daterange 字段:', dateRangeField.field)
     console.log('📦 [initDateRange] defaultValue:', dateRangeField.defaultValue)
     console.log('📦 [initDateRange] defaultValue isArray:', Array.isArray(dateRangeField.defaultValue))
     console.log('📦 [initDateRange] defaultValue length:', dateRangeField.defaultValue?.length)
@@ -1119,17 +1119,17 @@ const initDateRange = () => {
     console.log('⏰ [initDateRange] 结束日期结果:', endDate)
     
     if (startDate && endDate) {
-      console.log('✅ [initDateRange] 设置日期范围:', [startDate, endDate])
+      console.log(' [initDateRange] 设置日期范围:', [startDate, endDate])
       dateRange.value = [startDate, endDate]
       queryParams.value.beginDate = startDate
       queryParams.value.endDate = endDate
-      console.log('✅ [initDateRange] ========== 日期初始化完成 ==========')
+      console.log(' [initDateRange] ========== 日期初始化完成 ==========')
       return
     } else {
-      console.warn('❌ [initDateRange] 日期解析失败，startDate 或 endDate 为 null')
+      console.warn(' [initDateRange] 日期解析失败，startDate 或 endDate 为 null')
     }
   } else {
-    console.log('⚠️ [initDateRange] 不满足 daterange 条件，尝试方案 2')
+    console.log(' [initDateRange] 不满足 daterange 条件，尝试方案 2')
   }
   
   // 方案 2：处理 beginDate + endDate 两个独立字段（兼容旧逻辑）
@@ -1151,10 +1151,10 @@ const initDateRange = () => {
   
   // Use configured default values if available, otherwise use "current month 1st to today"
   if (beginDateValue && endDateValue) {
-    console.log('✅ [方案 2] 使用配置的 beginDate + endDate:', [beginDateValue, endDateValue])
+    console.log(' [方案 2] 使用配置的 beginDate + endDate:', [beginDateValue, endDateValue])
     dateRange.value = [beginDateValue, endDateValue]
   } else {
-    console.warn('⚠️ [方案 2] beginDate 或 endDate 为空，执行 fallback 逻辑')
+    console.warn(' [方案 2] beginDate 或 endDate 为空，执行 fallback 逻辑')
     console.warn('📋 [fallback] beginDateValue:', beginDateValue)
     console.warn('📋 [fallback] endDateValue:', endDateValue)
     // Fallback: 1st of current month to today
@@ -1162,7 +1162,7 @@ const initDateRange = () => {
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const fallbackStart = dayjs(firstDayOfMonth).format('YYYY-MM-DD')
     const fallbackEnd = dayjs(now).format('YYYY-MM-DD')
-    console.warn(`❌ [fallback] 使用默认值：[${fallbackStart}, ${fallbackEnd}]`)
+    console.warn(` [fallback] 使用默认值：[${fallbackStart}, ${fallbackEnd}]`)
     dateRange.value = [
       fallbackStart,
       fallbackEnd
@@ -1172,7 +1172,7 @@ const initDateRange = () => {
   console.log('📋 [initDateRange] 最终 dateRange.value:', dateRange.value)
   console.log('📋 [initDateRange] 最终 queryParams.beginDate:', queryParams.value.beginDate)
   console.log('📋 [initDateRange] 最终 queryParams.endDate:', queryParams.value.endDate)
-  console.log('✅ [initDateRange] ========== 日期初始化完成 ==========')
+  console.log(' [initDateRange] ========== 日期初始化完成 ==========')
 }
 
 /**
@@ -1184,7 +1184,7 @@ const parseDynamicDate = (value) => {
   console.log(`🕒 [parseDynamicDate] 输入值：${value}`)
   
   if (!value) {
-    console.log('❌ [parseDynamicDate] 值为空，返回 null')
+    console.log(' [parseDynamicDate] 值为空，返回 null')
     return null
   }
   
@@ -1193,7 +1193,7 @@ const parseDynamicDate = (value) => {
   // Dynamic value: today
   if (value === 'today') {
     const result = dayjs(today).format('YYYY-MM-DD')
-    console.log(`✅ [parseDynamicDate] 'today' -> ${result}`)
+    console.log(` [parseDynamicDate] 'today' -> ${result}`)
     return result
   }
   
@@ -1202,7 +1202,7 @@ const parseDynamicDate = (value) => {
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
     const result = dayjs(yesterday).format('YYYY-MM-DD')
-    console.log(`✅ [parseDynamicDate] 'yesterday' -> ${result}`)
+    console.log(` [parseDynamicDate] 'yesterday' -> ${result}`)
     return result
   }
   
@@ -1210,7 +1210,7 @@ const parseDynamicDate = (value) => {
   if (value === 'monthStart') {
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
     const result = dayjs(monthStart).format('YYYY-MM-DD')
-    console.log(`✅ [parseDynamicDate] 'monthStart' -> ${result}`)
+    console.log(` [parseDynamicDate] 'monthStart' -> ${result}`)
     return result
   }
   
@@ -1218,14 +1218,14 @@ const parseDynamicDate = (value) => {
   if (value === 'yearStart') {
     const yearStart = new Date(today.getFullYear(), 0, 1)
     const result = dayjs(yearStart).format('YYYY-MM-DD')
-    console.log(`✅ [parseDynamicDate] 'yearStart' -> ${result}`)
+    console.log(` [parseDynamicDate] 'yearStart' -> ${result}`)
     return result
   }
   
   // Fixed date: try to parse as YYYY-MM-DD format
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/
   if (dateRegex.test(value)) {
-    console.log(`✅ [parseDynamicDate] 固定日期格式 '${value}' -> ${value}`)
+    console.log(` [parseDynamicDate] 固定日期格式 '${value}' -> ${value}`)
     return value
   }
   
@@ -1233,11 +1233,11 @@ const parseDynamicDate = (value) => {
   const parsed = dayjs(value)
   if (parsed.isValid()) {
     const result = parsed.format('YYYY-MM-DD')
-    console.log(`✅ [parseDynamicDate] 解析成功 '${value}' -> ${result}`)
+    console.log(` [parseDynamicDate] 解析成功 '${value}' -> ${result}`)
     return result
   }
   
-  console.warn(`❌ [parseDynamicDate] 无法解析的值：${value}`)
+  console.warn(` [parseDynamicDate] 无法解析的值：${value}`)
   return null
 }
 
@@ -1308,7 +1308,7 @@ const handleViewDetail = async (row) => {
       console.error('[成本暂估页签 - handleViewDetail] 调用 loadSubTablesByBillNo')
       await loadSubTablesByBillNo(billNoValue)
     } else {
-      console.error('[成本暂估页签 - handleViewDetail] ⚠️ 警告：billNoValue 为空')
+      console.error('[成本暂估页签 - handleViewDetail]  警告：billNoValue 为空')
     }
      
     const hasEntryData = entryList.value && entryList.value.length > 0
@@ -1731,7 +1731,7 @@ const searchNations = async (keyword) => {
   
   nationSearchLoading.value = true
   try {
-    // ✅ 从配置中获取国家字典的配置
+    //  从配置中获取国家字典的配置
     const dictConfig = BusinessTemplate.value.dictionaryConfig?.dictionaries?.nation
     
     if (dictConfig && dictConfig.type === 'remote') {
@@ -1791,7 +1791,7 @@ const preloadDictionaries = async () => {
         }
       }
       
-      console.log('✅ 字典加载完成，缺失的字典:', missingDicts)
+      console.log(' 字典加载完成，缺失的字典:', missingDicts)
     }
     
     // 步骤 4: 标记字典加载完成

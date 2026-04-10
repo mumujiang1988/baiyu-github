@@ -1,6 +1,7 @@
 /**
  * 文件夹解析工具
  */
+import { logger } from '../../../utils/logger'
 
 /**
  * 解析文件路径，提取产品文件夹名称
@@ -74,7 +75,7 @@ export function parseProductInfo(folderName) {
 export function groupFilesByFolder(files, structure, sceneNames = '') {
   const folderMap = new Map()
   
-  console.log('[FolderParser] 开始分组文件', {
+  logger.log('[FolderParser] 开始分组文件', {
     totalFiles: files.length,
     structure,
     sceneNames
@@ -93,7 +94,7 @@ export function groupFilesByFolder(files, structure, sceneNames = '') {
     const folderName = extractFolderName(file, structure, sceneNames)
     if (!folderName) {
       skippedNoFolder++
-      console.log('[FolderParser] 跳过文件（无法提取文件夹名）', {
+      logger.log('[FolderParser] 跳过文件（无法提取文件夹名）', {
         path: file.webkitRelativePath,
         structure,
         pathParts: file.webkitRelativePath.split('/')
@@ -108,7 +109,7 @@ export function groupFilesByFolder(files, structure, sceneNames = '') {
     folderMap.get(folderName).push(file)
   }
   
-  console.log('[FolderParser] 分组完成', {
+  logger.log('[FolderParser] 分组完成', {
     folderCount: folderMap.size,
     skippedNonImage,
     skippedNoFolder,
