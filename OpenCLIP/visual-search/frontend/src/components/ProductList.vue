@@ -17,6 +17,15 @@
               <el-icon><Warning /></el-icon>
               孤儿数据查询
             </el-button>
+            <el-button 
+              type="danger" 
+              @click="handleBatchDelete"
+              :disabled="selectedProducts.length === 0"
+              :loading="batchDeleting"
+            >
+              <el-icon><Delete /></el-icon>
+              批量删除 ({{ selectedProducts.length }})
+            </el-button>
             <el-form inline>
               <el-form-item>
                 <el-input v-model="searchCategory" placeholder="分类筛选" clearable @clear="loadProducts" @keyup.enter="loadProducts" />
@@ -227,7 +236,13 @@
         </template>
       </el-alert>
       
-      <el-table :data="products" v-loading="loading" stripe>
+      <el-table 
+        :data="products" 
+        v-loading="loading" 
+        stripe
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" />
         <el-table-column prop="product_code" label="产品编码" width="150" />
         <el-table-column prop="name" label="产品名称" min-width="200" />
         <el-table-column prop="spec" label="规格" width="150" />
@@ -283,22 +298,12 @@
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right" align="center">
+        <el-table-column label="操作" width="180" fixed="right" align="center">
           <template #default="{ row }">
             <el-space :size="8">
               <el-button type="primary" size="small" @click="viewProduct(row)" link>
                 <el-icon><View /></el-icon>
                 查看
-              </el-button>
-              <el-button 
-                type="warning" 
-                size="small" 
-                @click="handleRetry(row.product_code)"
-                :loading="retrying && retryingProductCode === row.product_code"
-                link
-              >
-                <el-icon><RefreshRight /></el-icon>
-                重试
               </el-button>
               <el-button type="danger" size="small" @click="deleteProduct(row)" link>
                 <el-icon><Delete /></el-icon>
@@ -315,8 +320,8 @@
         :total="total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="loadProducts"
-        @current-change="loadProducts"
+        @update:current-page="loadProducts"
+        @update:page-size="handlePageSizeChange"
         style="margin-top: 20px; justify-content: flex-end"
       />
     </el-card>
@@ -357,10 +362,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listProducts, getProduct, deleteProduct as deleteProductApi, checkDataConsistency, queryOrphanData, cleanOrphanData } from '../api/search'
+import { listProducts, getProduct, deleteProduct as deleteProductApi, checkDataConsistency, queryOrphanData, cleanOrphanData, batchDeleteProducts, deleteSingleOrphan } from '../api/search'
 import { handleApiError } from '../utils/messageHandler'
 import { getImageUrl } from '../utils/imageHelper'
-import { useRetry } from './ProductIngest/composables/useRetry'
+import { extractPaginatedData, extractData } from '../utils/responseAdapter'
 
 const products = ref([])
 const loading = ref(false)
@@ -368,6 +373,10 @@ const page = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const searchCategory = ref('')
+
+// 批量删除相关状态
+const selectedProducts = ref([])
+const batchDeleting = ref(false)
 
 const detailVisible = ref(false)
 const currentProduct = ref(null)
@@ -381,10 +390,6 @@ const consistencyResult = ref(null)
 const queryingOrphan = ref(false)
 const orphanDataResult = ref(null)
 const cleaningOrphan = ref(false)
-
-// Retry functionality
-const { retrying, handleRetry: retryIngest } = useRetry()
-const retryingProductCode = ref(null)
 
 // 计算是否有问题
 const hasIssues = computed(() => {
@@ -412,15 +417,38 @@ const loadProducts = async () => {
   try {
     const response = await listProducts(searchCategory.value, page.value, pageSize.value)
     
-    if (response.success) {
-      products.value = response.products
-      total.value = response.total
+    console.log('📦 产品列表响应:', response)
+    
+    if (response && response.success) {
+      // 使用响应适配器提取分页数据
+      const { items, pagination } = extractPaginatedData(response)
+      products.value = items || []
+      total.value = pagination?.total || 0
+      
+      console.log('✅ 产品列表加载成功:', {
+        count: products.value.length,
+        total: total.value
+      })
+    } else {
+      console.warn('⚠️ 响应格式不正确:', response)
+      products.value = []
+      total.value = 0
     }
   } catch (error) {
+    console.error('❌ 加载产品列表失败:', error)
     handleApiError(error.response || error, '加载失败')
+    products.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
+}
+
+// Handle page size change
+const handlePageSizeChange = (newPageSize) => {
+  // 当页面大小改变时，重置到第一页
+  page.value = 1
+  loadProducts()
 }
 
 const checkConsistency = async () => {
@@ -430,10 +458,10 @@ const checkConsistency = async () => {
     const response = await checkDataConsistency()
     
     if (response.success) {
-      consistencyResult.value = response.data
+      consistencyResult.value = response
       
       // 显示统计信息
-      const summary = response.data.summary
+      const summary = response.summary
       ElMessage.success(
         `检查完成！完整产品: ${summary.complete_products}, ` +
         `残缺产品: ${summary.mysql_only_count + summary.milvus_only_count + summary.minio_only_count}`
@@ -453,8 +481,10 @@ const viewProduct = async (row) => {
     const response = await getProduct(row.product_code)
     
     if (response.success) {
-      currentProduct.value = response.product
-      currentImages.value = response.images
+      // 使用响应适配器提取数据
+      const data = extractData(response)
+      currentProduct.value = data.product
+      currentImages.value = data.images || []
       detailVisible.value = true
     }
   } catch (error) {
@@ -491,18 +521,80 @@ const deleteProduct = async (row) => {
   }
 }
 
-// Handle retry for failed product
-const handleRetry = async (productCode) => {
-  retryingProductCode.value = productCode
+// Handle selection change
+const handleSelectionChange = (selection) => {
+  selectedProducts.value = selection
+}
+
+// Handle batch delete
+const handleBatchDelete = async () => {
+  if (selectedProducts.value.length === 0) {
+    ElMessage.warning('请先选择要删除的产品')
+    return
+  }
   
-  const success = await retryIngest(productCode, () => {
-    // Reload products after successful retry
-    loadProducts()
-    // Clear consistency check result
-    consistencyResult.value = null
-  })
+  const productCodes = selectedProducts.value.map(p => p.product_code)
+  const productNames = selectedProducts.value.map(p => p.name).join(', ')
   
-  retryingProductCode.value = null
+  try {
+    await ElMessageBox.confirm(
+      `确定要批量删除以下 ${selectedProducts.value.length} 个产品吗？\n\n${productNames}\n\n此操作将同时删除这些产品的所有图片和向量数据，且不可恢复。`,
+      '批量删除确认',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        distinguishCancelAndClose: true
+      }
+    )
+    
+    batchDeleting.value = true
+    
+    const response = await batchDeleteProducts(productCodes)
+    
+    if (response.success) {
+      // 统一格式：数据在 response.data 中
+      const result = response.data
+      const successCount = result.success?.length || 0
+      const failedCount = result.failed?.length || 0
+      const totalDeletedImages = result.total_deleted_images || 0
+      
+      // 显示详细结果
+      let message = `批量删除完成！成功: ${successCount} 个, 失败: ${failedCount} 个, 共删除 ${totalDeletedImages} 张图片`
+      
+      if (failedCount > 0) {
+        const failedProducts = result.failed.map(f => f.product_code).join(', ')
+        message += `\n\n失败产品: ${failedProducts}`
+        ElMessage.warning({
+          message,
+          duration: 8000,
+          showClose: true
+        })
+      } else {
+        ElMessage.success({
+          message,
+          duration: 5000
+        })
+      }
+      
+      // 清空选择
+      selectedProducts.value = []
+      
+      // 刷新列表
+      loadProducts()
+      
+      // 清除一致性检查结果
+      consistencyResult.value = null
+    } else {
+      handleApiError(response, '批量删除失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      handleApiError(error.response || error, '批量删除失败')
+    }
+  } finally {
+    batchDeleting.value = false
+  }
 }
 
 // Query orphan data
@@ -513,12 +605,12 @@ const queryOrphanDataHandler = async () => {
     const response = await queryOrphanData()
     
     if (response.success) {
-      orphanDataResult.value = response.data
+      orphanDataResult.value = response
       
       const total = 
-        (response.data.mysql_orphans || 0) +
-        (response.data.milvus_orphans || 0) +
-        (response.data.minio_orphans || 0)
+        (response.mysql_orphans || 0) +
+        (response.milvus_orphans || 0) +
+        (response.minio_orphans || 0)
       
       if (total === 0) {
         ElMessage.success('未发现孤儿数据')
@@ -553,11 +645,30 @@ const deleteOrphanRecord = async (type, row) => {
       type: 'warning'
     })
     
-    // TODO: Implement actual deletion API call
-    ElMessage.info('删除功能待实现')
+    // Determine identifier
+    let identifier = ''
+    if (type === 'mysql') {
+      identifier = row.product_code
+    } else if (type === 'milvus') {
+      identifier = String(row.milvus_id)
+    } else if (type === 'minio') {
+      identifier = row.object_name
+    }
     
-    // After deletion, re-query
-    // await queryOrphanDataHandler()
+    // Call API
+    const response = await deleteSingleOrphan(type, identifier)
+    
+    if (response.success) {
+      ElMessage.success(response.message)
+      
+      // Re-query orphan data
+      await queryOrphanDataHandler()
+      
+      // Refresh product list
+      loadProducts()
+    } else {
+      handleApiError(response, '删除失败')
+    }
     
   } catch (error) {
     if (error !== 'cancel') {
@@ -568,29 +679,78 @@ const deleteOrphanRecord = async (type, row) => {
 
 // Clean all orphan data
 const cleanAllOrphanData = async () => {
+  if (!orphanDataResult.value) {
+    ElMessage.warning('请先查询孤儿数据')
+    return
+  }
+  
+  const { mysql_orphans, milvus_orphans, minio_orphans } = orphanDataResult.value
+  const total = (mysql_orphans || 0) + (milvus_orphans || 0) + (minio_orphans || 0)
+  
+  if (total === 0) {
+    ElMessage.info('没有孤儿数据需要清理')
+    return
+  }
+  
   try {
+    // Step 1: Get preview from backend
+    const previewResponse = await cleanOrphanData(false)
+    
+    if (!previewResponse.requires_confirmation) {
+      // Backend returned old format, use directly
+      await executeCleanOrphans()
+      return
+    }
+    
+    // Show confirmation dialog with preview data
+    const { mysql_count, milvus_count, minio_count, total: previewTotal } = previewResponse.orphan_summary
+    
     await ElMessageBox.confirm(
-      '确定要批量清理所有孤儿数据吗？此操作不可恢复！\n\n将清理：\n- MySQL 中引用不存在产品的图片记录\n- Milvus 中没有对应 MySQL 记录的向量\n- MinIO 中没有对应 MySQL 记录的图片文件',
-      '批量清理确认',
+      `即将清理以下孤儿数据，此操作不可恢复！\n\n` +
+      `- MySQL: ${mysql_count} 条\n` +
+      `- Milvus: ${milvus_count} 条\n` +
+      `- MinIO: ${minio_count} 个文件\n\n` +
+      `总计: ${previewTotal} 条`,
+      '确认清理孤儿数据',
       {
         confirmButtonText: '确定清理',
         cancelButtonText: '取消',
-        type: 'error',
+        type: 'warning',
         distinguishCancelAndClose: true
       }
     )
     
-    cleaningOrphan.value = true
+    // Step 2: Execute cleanup
+    await executeCleanOrphans()
     
-    const response = await cleanOrphanData()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      handleApiError(error.response || error, '获取预览失败')
+    }
+  }
+}
+
+// Helper function to execute cleanup
+async function executeCleanOrphans() {
+  cleaningOrphan.value = true
+  
+  try {
+    const response = await cleanOrphanData(true)
     
     if (response.success) {
       const { mysql_count, milvus_count, minio_count } = response.cleaned
-      const total = mysql_count + milvus_count + minio_count
+      const cleanedTotal = mysql_count + milvus_count + minio_count
+      
+      // 显示详细结果
+      let message = response.message
+      if (cleanedTotal > 0) {
+        message += `\n\n实际清理：\n- MySQL: ${mysql_count} 条\n- Milvus: ${milvus_count} 条\n- MinIO: ${minio_count} 条`
+      }
       
       ElMessage.success({
-        message: response.message,
-        duration: 5000
+        message,
+        duration: 8000,
+        showClose: true
       })
       
       // 重新查询孤儿数据
@@ -603,9 +763,7 @@ const cleanAllOrphanData = async () => {
     }
     
   } catch (error) {
-    if (error !== 'cancel' && error !== 'close') {
-      handleApiError(error.response || error, '清理失败')
-    }
+    handleApiError(error.response || error, '清理失败')
   } finally {
     cleaningOrphan.value = false
   }

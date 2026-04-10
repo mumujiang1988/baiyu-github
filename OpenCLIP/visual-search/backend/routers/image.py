@@ -12,6 +12,7 @@ from dependencies import (
     get_rembg_service,
     get_minio_service
 )
+from config.constants import RATE_LIMIT_REMBG
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ async def get_image(image_path: str):
 # ==================== 背景移除 ====================
 
 @router.post("/rembg/remove")
-@limiter.limit("5/minute")
+@limiter.limit(RATE_LIMIT_REMBG)
 async def remove_background(request: Request, file: UploadFile = File(...)):
     """
     移除图片背景（单独调用）

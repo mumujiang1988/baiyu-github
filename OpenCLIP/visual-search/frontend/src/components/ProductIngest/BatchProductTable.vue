@@ -10,7 +10,11 @@
       </template>
       <el-form :inline="true" size="small">
         <el-form-item label="目录层级">
-          <el-select v-model="folderStructure" style="width: 200px" @change="handleStructureChange">
+          <el-select 
+            v-model="folderStructure" 
+            style="width: 200px" 
+            @change="handleStructureChange"
+          >
             <el-option 
               v-for="opt in FOLDER_STRUCTURE_OPTIONS" 
               :key="opt.value"
@@ -65,7 +69,13 @@
       directory
       multiple
       style="display: none"
-      @change="handleBatchFileSelect"
+      @change="(event) => {
+        console.log('[BatchProductTable] File input change event triggered', {
+          filesCount: event.target?.files?.length,
+          firstFile: event.target?.files?.[0]?.webkitRelativePath
+        });
+        handleBatchFileSelect(event);
+      }"
     />
 
     <!-- 批量入库结果表格 -->
@@ -112,8 +122,19 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="100" align="center" fixed="right">
+      <el-table-column label="操作" width="150" align="center" fixed="right">
         <template #default="{ row, $index }">
+          <el-button 
+            v-if="row.status === 'error'"
+            type="primary" 
+            size="small" 
+            link
+            @click="retryProduct($index)"
+            :disabled="batchSubmitting"
+          >
+            <el-icon><Refresh /></el-icon>
+            重试
+          </el-button>
           <el-button 
             type="danger" 
             size="small" 
@@ -150,17 +171,29 @@
         </el-tag>
       </el-descriptions-item>
     </el-descriptions>
+    
+    <!-- 批量重试按钮 -->
+    <div v-if="failCount > 0" style="margin-top: 15px; text-align: center;">
+      <el-button 
+        type="warning" 
+        size="default"
+        @click="retryAllFailed"
+        :disabled="batchSubmitting"
+        :loading="batchSubmitting"
+      >
+        <el-icon><Refresh /></el-icon>
+        重试所有失败项 ({{ failCount }})
+      </el-button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { Setting, FolderOpened, Upload, Delete, Loading } from '@element-plus/icons-vue'
-import { useIngestStore } from '../../stores/ingest'
+import { useBatchIngest } from './composables/useBatchIngest'
+import { Setting, FolderOpened, Upload, Delete, Loading, Refresh } from '@element-plus/icons-vue'
 import { FOLDER_STRUCTURE_OPTIONS } from './constants'
 
-const ingestStore = useIngestStore()
-
-// 解构 store 中的状态和方法
+// 使用 Composable 管理批量入库逻辑
 const {
   batchInputRef,
   batchSubmitting,
@@ -175,8 +208,10 @@ const {
   startBatchIngest,
   clearBatchProducts,
   removeProduct,
+  retryProduct,  // 单个重试
+  retryAllFailed,  // 批量重试
   handleStructureChange
-} = ingestStore
+} = useBatchIngest()
 </script>
 
 <style scoped>

@@ -226,6 +226,7 @@ import {
 } from '@element-plus/icons-vue'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
+import { API_BASE_URL } from '../config/api'
 
 const props = defineProps({
   modelValue: {
@@ -510,7 +511,7 @@ const removeBackground = async () => {
     formData.append('file', blob, 'image.png')
     
     // 调用后端 API
-    const response = await fetch('http://localhost:8000/api/v1/rembg/remove', {
+    const response = await fetch(`${API_BASE_URL}/api/v1/rembg/remove`, {
       method: 'POST',
       body: formData
     })
@@ -548,9 +549,13 @@ const removeBackground = async () => {
         drawImage()
         ElMessage.success('背景移除成功')
       })
+      
+      // 清理 URL 对象，防止内存泄漏
+      URL.revokeObjectURL(resultUrl)
     }
     img.onerror = () => {
       ElMessage.error('抠图后图片加载失败')
+      URL.revokeObjectURL(resultUrl)
     }
     img.src = resultUrl
     

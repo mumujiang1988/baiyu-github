@@ -77,7 +77,7 @@ class RembgService:
         original_filename: str
     ) -> str:
         """
-        移除背景并保存图片
+        移除背景并保存图片到 MinIO
         
         Args:
             image_bytes: 原始图片字节数据
@@ -85,7 +85,7 @@ class RembgService:
             original_filename: 原始文件名
             
         Returns:
-            保存后的图片相对路径
+            MinIO object_name (格式: product_code/filename)
         """
         try:
             # 1. 调用 Rembg 抠图
@@ -93,24 +93,22 @@ class RembgService:
             
             # 2. 生成新文件名（添加 _nobg 后缀）
             name_without_ext = os.path.splitext(original_filename)[0]
-            ext = os.path.splitext(original_filename)[1] or '.png'
             new_filename = f"{name_without_ext}_nobg.png"  # 统一使用 PNG 格式保留透明通道
             
-            # 3. 保存图片到存储目录
+            # 3. 使用 ImageProcessor 保存到 MinIO
             from services.image_processor import ImageProcessor
             processor = ImageProcessor()
             
-            product_dir = os.path.join(processor.storage_root, product_code)
-            os.makedirs(product_dir, exist_ok=True)
+            # 调用 save_image 方法，会自动使用 MinIO 或本地存储
+            object_name = processor.save_image(
+                image_bytes=transparent_bytes,
+                product_code=product_code,
+                filename=new_filename
+            )
             
-            save_path = os.path.join(product_dir, new_filename)
-            with open(save_path, 'wb') as f:
-                f.write(transparent_bytes)
+            logger.info(f"抠图后图片已保存: {object_name}")
             
-            relative_path = os.path.join(product_code, new_filename)
-            logger.info(f"抠图后图片已保存: {relative_path}")
-            
-            return relative_path
+            return object_name
             
         except Exception as e:
             logger.error(f"移除背景并保存失败: {str(e)}", exc_info=True)

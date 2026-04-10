@@ -123,9 +123,20 @@ class MinioService:
         删除 MinIO 中的图片
         
         Args:
-            object_name: 对象名称
+            object_name: 对象名称（可以是完整URL或纯路径）
         """
         try:
+            # 如果包含 minio:// 前缀，提取纯路径
+            if object_name.startswith('minio://'):
+                # 格式: minio://bucket_name/object_path
+                # 提取 bucket_name 后面的部分
+                parts = object_name.split('/', 3)
+                if len(parts) >= 4:
+                    object_name = parts[3]  # 获取 object_path
+                else:
+                    logger.warning(f"无效的 MinIO URL 格式: {object_name}")
+                    return
+            
             self.client.remove_object(self.bucket_name, object_name)
             logger.info(f"图片删除成功: {object_name}")
         except S3Error as e:

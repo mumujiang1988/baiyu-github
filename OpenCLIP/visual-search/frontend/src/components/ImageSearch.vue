@@ -47,46 +47,20 @@
             </div>
             
             <!-- 检索配置 -->
-            <div class="search-config">
-              <el-form label-width="70px" size="small">
-                <el-form-item label="返回数量">
-                  <el-input-number v-model="topK" :min="1" :max="50" style="width: 100%" />
-                </el-form-item>
-                <el-form-item label="聚合策略">
-                  <el-select v-model="aggregation" style="width: 100%">
-                    <el-option label="最大相似度" value="max" />
-                    <el-option label="平均相似度" value="avg" />
-                  </el-select>
-                </el-form-item>
-              </el-form>
-            </div>
+            <SearchConfig 
+              v-model:topK="topK" 
+              v-model:aggregation="aggregation"
+            />
             
             <!-- 分隔线 -->
             <el-divider content-position="center">或</el-divider>
             
             <!-- 文本搜索区域 -->
-            <div class="text-search-section">
-              <div class="section-header">
-                <span class="section-title">文本搜索</span>
-              </div>
-              
-              <el-input
-                v-model="textKeyword"
-                placeholder="输入产品名称、规格或编码"
-                size="default"
-                clearable
-                @keyup.enter="handleTextSearch"
-              >
-                <template #prefix>
-                  <el-icon><Search /></el-icon>
-                </template>
-                <template #append>
-                  <el-button type="primary" @click="handleTextSearch" :loading="textSearching">
-                    搜索
-                  </el-button>
-                </template>
-              </el-input>
-            </div>
+            <TextSearch
+              v-model:keyword="textKeyword"
+              :loading="textSearching"
+              @search="handleTextSearch"
+            />
           </div>
         </el-col>
         
@@ -98,82 +72,16 @@
               <el-tag v-if="searchResults.length > 0" type="success">{{ searchResults.length }} 个，{{ searchTime }}ms</el-tag>
             </div>
         
-            <div v-if="searchResults.length > 0" class="result-list">
-              <div 
-                v-for="(result, index) in searchResults" 
-                :key="result.product_code" 
-                class="product-card"
-              >
-                <!-- 左侧：产品信息 -->
-                <div class="product-info-section">
-                  <!-- 排名徽章 -->
-                  <div class="rank-badge">
-                    <span :class="['rank-number', index === 0 ? 'rank-first' : (index < 3 ? 'rank-top3' : '')]">
-                      {{ index + 1 }}
-                    </span>
-                  </div>
-                  
-                  <!-- 产品编码和名称并排 -->
-                  <div class="product-info-row">
-                    <div class="product-code">{{ result.product_code }}</div>
-                    <div class="product-name">{{ result.product_name || '未命名产品' }}</div>
-                  </div>
-                  
-                  <!-- 匹配度 -->
-                  <div class="similarity-section">
-                    <div class="similarity-header">
-                      <span class="similarity-label">匹配度</span>
-                      <span class="similarity-percent" :style="{ color: getSimilarityColor(result.similarity) }">
-                        {{ Math.round(result.similarity * 100) }}%
-                      </span>
-                    </div>
-                    <el-progress
-                      :percentage="Math.round(result.similarity * 100)"
-                      :color="getSimilarityColor(result.similarity)"
-                      :stroke-width="8"
-                      :show-text="false"
-                    />
-                  </div>
-                </div>
-                
-                <!-- 右侧：图片轮播 -->
-                <div class="image-carousel-wrapper">
-                  <button 
-                    v-if="result.image_paths.length > 1"
-                    class="carousel-btn carousel-left" 
-                    @click="scrollCarousel(index, -1)"
-                  >
-                    <el-icon><ArrowLeft /></el-icon>
-                  </button>
-                  
-                  <div class="image-carousel" :ref="el => setCarouselRef(el, index)">
-                    <img 
-                      v-for="(imgPath, imgIndex) in result.image_paths" 
-                      :key="imgIndex"
-                      :src="getImageUrl(imgPath)"
-                      class="carousel-image"
-                      @click="previewImages(result.image_paths, imgIndex)"
-                    />
-                  </div>
-                  
-                  <button 
-                    v-if="result.image_paths.length > 1"
-                    class="carousel-btn carousel-right" 
-                    @click="scrollCarousel(index, 1)"
-                  >
-                    <el-icon><ArrowRight /></el-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 空状态提示 -->
-            <div v-else class="empty-state">
-              <el-empty 
-                :description="searchMode === 'image' ? '请上传图片开始检索' : '请输入关键词开始搜索'" 
-                :image-size="120" 
-              />
-            </div>
+            <!-- 使用子组件展示结果 -->
+            <SearchResults
+              :results="searchResults"
+              :has-searched="hasSearched"
+              :search-mode="searchMode"
+              @scroll="handleCarouselScroll"
+              @preview="handleImagePreview"
+              @clear="clearImage"
+              @set-carousel-ref="handleSetCarouselRef"
+            />
           </div>
         </el-col>
       </el-row>
@@ -197,14 +105,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { UploadFilled, Search, Delete, ArrowLeft, ArrowRight, Edit } from '@element-plus/icons-vue'
+/**
+ * 图像检索主组件
+ * 
+ * 职责：
+ * - 管理搜索状态和配置
+ * - 协调子组件交互
+ * - 处理文件上传和图片编辑
+ */
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ElMessage, ElImageViewer } from 'element-plus'
+import { UploadFilled, Search, Delete, Edit } from '@element-plus/icons-vue'
 import { searchImage, searchByText } from '../api/search'
 import { showSuccess, handleApiError } from '../utils/messageHandler'
 import { getImageUrl } from '../utils/imageHelper'
-import { ElImageViewer } from 'element-plus'
+import { CAROUSEL_SCROLL_STEP, TEXT_SEARCH } from '../constants/search'
 import ImageEditor from './ImageEditor.vue'
+
+// 导入子组件
+import SearchConfig from './ImageSearch/SearchConfig.vue'
+import TextSearch from './ImageSearch/TextSearch.vue'
+import SearchResults from './ImageSearch/SearchResults.vue'
 
 // 数据
 const previewImage = ref('')
@@ -214,7 +135,6 @@ const searchResults = ref([])
 const searchTime = ref(0)
 const topK = ref(10)
 const aggregation = ref('max')
-const carouselRefs = ref({})
 const showImageViewer = ref(false)
 const currentImageList = ref([])
 const currentImageIndex = ref(0)
@@ -224,6 +144,10 @@ const showImageEditor = ref(false)
 const textKeyword = ref('')
 const textSearching = ref(false)
 const searchMode = ref('image') // 'image' | 'text'
+const hasSearched = ref(false)  // 是否已执行过搜索
+
+// 轮播引用管理
+const carouselRefs = ref({})
 
 // 处理文件选择
 const handleFileChange = (file) => {
@@ -242,6 +166,7 @@ const clearImage = () => {
   previewImage.value = ''
   selectedFile.value = null
   searchResults.value = []
+  hasSearched.value = false  // 重置搜索状态
 }
 
 // 打开图片编辑器
@@ -276,56 +201,98 @@ const handleSearch = async () => {
   }
   
   searching.value = true
+  searchMode.value = 'image'  // 设置为图像检索模式
+  hasSearched.value = true  // 标记已搜索
   
   try {
+    const startTime = Date.now()
     const response = await searchImage(selectedFile.value, topK.value, aggregation.value)
     
+    searchTime.value = Date.now() - startTime
+    
     if (response.success) {
-      searchResults.value = response.results
-      searchTime.value = response.search_time_ms
+      searchResults.value = response.results || []
       showSuccess(response.message)
     } else {
       handleApiError(response, '检索失败')
+      searchResults.value = []
     }
   } catch (error) {
     handleApiError(error.response || error, '检索失败')
+    searchResults.value = []
   } finally {
     searching.value = false
   }
 }
 
-
-
-// 获取图片URL
-// const getImageUrl = (path) => {
-//   return `/api/v1/images/${path}`
-// }
-
-// 相似度颜色
-const getSimilarityColor = (similarity) => {
-  if (similarity >= 0.8) return '#67C23A'
-  if (similarity >= 0.6) return '#E6A23C'
-  return '#F56C6C'
-}
-
-// 设置轮播引用
-const setCarouselRef = (el, index) => {
-  if (el) {
-    carouselRefs.value[index] = el
+// 执行文本搜索
+const handleTextSearch = async () => {
+  const keyword = textKeyword.value.trim()
+  
+  // 前端验证
+  if (!keyword) {
+    ElMessage.warning('请输入搜索关键词')
+    return
+  }
+  
+  if (keyword.length > TEXT_SEARCH.MAX_KEYWORD_LENGTH) {
+    ElMessage.warning(`关键词过长，请缩短至${TEXT_SEARCH.MAX_KEYWORD_LENGTH}字符以内`)
+    return
+  }
+  
+  // 过滤危险字符（简单防护）
+  const sanitizedKeyword = keyword.replace(TEXT_SEARCH.DANGEROUS_CHARS, '')
+  
+  textSearching.value = true
+  searchMode.value = 'text'
+  hasSearched.value = true
+  
+  try {
+    const startTime = Date.now()
+    const response = await searchByText(sanitizedKeyword, '', topK.value)
+    
+    searchTime.value = Date.now() - startTime
+    
+    if (response.success) {
+      searchResults.value = response.results || []
+      showSuccess(response.message)
+    } else {
+      handleApiError(response, '搜索失败')
+      searchResults.value = []
+    }
+  } catch (error) {
+    handleApiError(error.response || error, '搜索失败')
+    searchResults.value = []
+  } finally {
+    textSearching.value = false
   }
 }
 
-// 滚动轮播
-const scrollCarousel = (index, direction) => {
+// 处理轮播滚动（由子组件事件触发）
+const handleCarouselScroll = ({ index, direction }) => {
   const carousel = carouselRefs.value[index]
   if (carousel) {
-    const scrollAmount = 180
-    carousel.scrollLeft += direction * scrollAmount
+    carousel.scrollLeft += direction * CAROUSEL_SCROLL_STEP
   }
 }
 
-// 预览图片
-const previewImages = (imagePaths, currentIndex) => {
+// 设置轮播引用（由子组件事件触发）
+const handleSetCarouselRef = ({ el, index }) => {
+  if (el) {
+    carouselRefs.value[index] = el
+  } else {
+    // 清理无效引用，防止内存泄漏
+    delete carouselRefs.value[index]
+  }
+}
+
+// 监听搜索结果变化，清空旧的轮播引用
+watch(searchResults, () => {
+  carouselRefs.value = {}
+})
+
+// 处理图片预览（由子组件事件触发）
+const handleImagePreview = ({ imagePaths, currentIndex }) => {
   currentImageList.value = imagePaths.map(path => getImageUrl(path))
   currentImageIndex.value = currentIndex
   showImageViewer.value = true
@@ -448,217 +415,11 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.search-config {
-  padding: 10px 0;
-  border-top: 1px solid #EBEEF5;
+.text-search-section {
+  margin-top: 15px;
 }
 
-.result-card {
-  margin-top: 20px;
+.text-search-section .section-header {
+  margin-bottom: 12px;
 }
-
-.result-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;  /* 使用 flex 而不是固定高度 */
-  overflow-y: auto;
-  min-height: 0;  /* 允许收缩 */
-}
-
-.product-card {
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e4e7ed;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  transition: all 0.3s;
-}
-
-.product-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border-color: #c0c4cc;
-}
-
-/* 左侧产品信息 */
-.product-info-section {
-  flex-shrink: 0;
-  width: 180px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  position: relative;
-  padding-top: 24px;
-  padding-left: 8px;
-}
-
-.rank-badge {
-  position: absolute;
-  top: -20px;
-  left: 0px;
-  z-index: 10;
-}
-
-.rank-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: 50%;
-  backdrop-filter: blur(4px);
-}
-
-.rank-first {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  box-shadow: 0 2px 12px rgba(255, 107, 107, 0.5);
-}
-
-.rank-top3 {
-  background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%);
-  box-shadow: 0 2px 12px rgba(255, 165, 2, 0.5);
-}
-
-/* 产品信息行 */
-.product-info-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-
-.product-code {
-  font-size: 12px;
-  color: #909399;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.product-name {
-  font-size: 14px;
-  color: #303133;
-  font-weight: 600;
-  line-height: 1.4;
-  word-break: break-word;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.similarity-section {
-  margin-top: 4px;
-}
-
-.similarity-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.similarity-label {
-  font-size: 13px;
-  color: #606266;
-  font-weight: 500;
-}
-
-.similarity-percent {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* 右侧图片轮播 */
-.image-carousel-wrapper {
-  flex: 1;
-  position: relative;
-  padding: 8px 44px;
-  min-height: 200px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
-
-.image-carousel {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 8px 4px;
-  width: 100%;
-}
-
-.image-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.carousel-image {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: all 0.3s;
-  border: 2px solid transparent;
-}
-
-.carousel-image:hover {
-  transform: scale(1.05);
-  border-color: #409EFF;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-}
-
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  transition: all 0.3s;
-}
-
-.carousel-btn:hover {
-  background: rgba(0, 0, 0, 0.7);
-  transform: translateY(-50%) scale(1.1);
-}
-
-.carousel-left {
-  left: 8px;
-}
-
-.carousel-right {
-  right: 8px;
-}
-
-
-
-.empty-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-
-
 </style>

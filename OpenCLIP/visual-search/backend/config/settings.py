@@ -38,6 +38,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"  # 忽略 .env 中未定义的字段
 
 
 # 全局配置实例

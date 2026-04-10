@@ -39,7 +39,7 @@ export async function searchImage(file, topK = 10, aggregation = 'max') {
 export async function ingestProduct(productCode, name, files, spec = '', category = '') {
   const formData = new FormData()
   formData.append('product_code', productCode)
-  formData.append('name', name)
+  formData.append('name', name || '')  // 允许空名称
   if (spec) formData.append('spec', spec)
   if (category) formData.append('category', category)
   
@@ -88,6 +88,38 @@ export async function getProduct(productCode) {
 }
 
 /**
+ * 更新产品信息
+ * @param {string} productCode - 产品编码
+ * @param {Object} updates - 要更新的字段 { name?, spec?, category? }
+ * @returns {Promise}
+ */
+export async function updateProduct(productCode, updates = {}) {
+  const formData = new FormData()
+  
+  if (updates.name !== undefined) {
+    formData.append('name', updates.name)
+  }
+  if (updates.spec !== undefined) {
+    formData.append('spec', updates.spec)
+  }
+  if (updates.category !== undefined) {
+    formData.append('category', updates.category)
+  }
+  
+  const response = await axios.put(
+    `${API_BASE}/product/${productCode}`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  )
+  
+  return response.data
+}
+
+/**
  * 删除产品
  * @param {string} productCode - 产品编码
  * @returns {Promise}
@@ -99,12 +131,9 @@ export async function deleteProduct(productCode) {
 
 /**
  * 获取系统统计
- * @returns {Promise}
+ * @deprecated 未使用，已移除 (2026-04-09)
  */
-export async function getStats() {
-  const response = await axios.get(`${API_BASE}/stats`)
-  return response.data
-}
+// export async function getStats() { ... } // 已删除
 
 /**
  * 检查数据一致性
@@ -136,34 +165,9 @@ export async function batchDeleteProducts(productCodes) {
 
 /**
  * 批量产品入库
- * @param {Object[]} products - 产品信息数组
- * @param {Object} filesMap - 文件映射 {productCode: [fileIndex1, fileIndex2]}
- * @param {File[]} files - 所有图片文件
- * @param {boolean} removeBg - 是否移除背景
- * @returns {Promise}
+ * @deprecated 未使用，当前使用逐个入库方式 (2026-04-09)
  */
-export async function batchIngestProducts(products, filesMap, files, removeBg = false) {
-  const formData = new FormData()
-  formData.append('products_json', JSON.stringify(products))
-  formData.append('files_map', JSON.stringify(filesMap))
-  formData.append('remove_bg', removeBg)
-  
-  files.forEach(file => {
-    formData.append('files', file)
-  })
-  
-  const response = await axios.post(
-    `${API_BASE}/products/batch-ingest`,
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    }
-  )
-  
-  return response.data
-}
+// export async function batchIngestProducts(...) { ... } // 已删除
 
 /**
  * 文本关键词搜索
@@ -192,12 +196,12 @@ export async function searchByText(keyword, category = '', topK = 10) {
 }
 
 /**
- * 重试失败的产品入库
+ * 清理失败产品的残留数据
  * @param {string} productCode - 产品编码
  * @returns {Promise}
  */
-export async function retryProductIngest(productCode) {
-  const response = await axios.post(`${API_BASE}/product/${productCode}/retry`)
+export async function cleanupFailedProduct(productCode) {
+  const response = await axios.post(`${API_BASE}/product/${productCode}/cleanup-failed`)
   return response.data
 }
 
@@ -211,51 +215,41 @@ export async function queryOrphanData() {
 }
 
 /**
- * 清理所有孤儿数据
+ * 清理所有孤儿数据（两步确认）
+ * @param {boolean} confirm - 是否确认执行清理
  * @returns {Promise}
  */
-export async function cleanOrphanData() {
-  const response = await axios.post(`${API_BASE}/products/clean-orphans`)
+export async function cleanOrphanData(confirm = false) {
+  const formData = new FormData()
+  formData.append('confirm', confirm)
+  
+  const response = await axios.post(`${API_BASE}/products/clean-orphans`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
   return response.data
 }
 
 /**
- * 图像+文本组合搜索
- * @param {Object} params - 搜索参数
- * @param {File|null} params.file - 查询图片（可选）
- * @param {string} params.keyword - 搜索关键词（可选）
- * @param {string} params.category - 分类筛选（可选）
- * @param {number} params.topK - 返回数量
- * @param {number} params.imageWeight - 图像权重 (0-1)
- * @param {number} params.textWeight - 文本权重 (0-1)
+ * 删除单个孤儿数据
+ * @param {string} type - 孤儿类型 (mysql, milvus, minio)
+ * @param {string} identifier - 标识符
  * @returns {Promise}
  */
-export async function hybridSearch({
-  file = null,
-  keyword = '',
-  category = '',
-  topK = 10,
-  imageWeight = 0.7,
-  textWeight = 0.3
-}) {
-  const formData = new FormData()
-  
-  if (file) formData.append('file', file)
-  if (keyword) formData.append('keyword', keyword)
-  if (category) formData.append('category', category)
-  formData.append('top_k', topK)
-  formData.append('image_weight', imageWeight)
-  formData.append('text_weight', textWeight)
-  
-  const response = await axios.post(
-    `${API_BASE}/search/hybrid`,
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    }
-  )
-  
+export async function deleteSingleOrphan(type, identifier) {
+  // 对于 MinIO，identifier 可能包含 /，需要编码
+  const encodedIdentifier = encodeURIComponent(identifier)
+  const response = await axios.delete(`${API_BASE}/products/orphan/${type}/${encodedIdentifier}`)
+  return response.data
+}
+
+/**
+ * 重试产品入库（清除现有数据并允许重新上传）
+ * @param {string} productCode - 产品编码
+ * @returns {Promise}
+ */
+export async function retryProductIngest(productCode) {
+  const response = await axios.post(`${API_BASE}/products/${productCode}/retry`)
   return response.data
 }

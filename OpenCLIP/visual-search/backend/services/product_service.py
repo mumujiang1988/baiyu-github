@@ -62,8 +62,12 @@ class ProductService:
 
     # ==================== Product Operations ====================
 
-    def upsert_product(self, product_code: str, name: str, spec: Optional[str] = None, category: Optional[str] = None):
+    def upsert_product(self, product_code: str, name: Optional[str] = None, spec: Optional[str] = None, category: Optional[str] = None):
         """创建或更新产品"""
+        # 如果 name 为空，使用 product_code 作为默认名称
+        if not name:
+            name = product_code
+        
         sql = """
         INSERT INTO product (product_code, name, spec, category)
         VALUES (%s, %s, %s, %s)
@@ -74,6 +78,38 @@ class ProductService:
             updated_at = NOW()
         """
         self._execute_update(sql, (product_code, name, spec, category))
+
+    def update_product(self, product_code: str, **kwargs):
+        """
+        更新产品信息（只更新提供的字段）
+        
+        Args:
+            product_code: 产品编码
+            **kwargs: 要更新的字段 (name, spec, category)
+        """
+        if not kwargs:
+            return
+        
+        # 构建动态 SQL
+        set_clauses = []
+        values = []
+        
+        for field in ['name', 'spec', 'category']:
+            if field in kwargs:
+                set_clauses.append(f"{field} = %s")
+                values.append(kwargs[field])
+        
+        if not set_clauses:
+            return
+        
+        # 添加 updated_at
+        set_clauses.append("updated_at = NOW()")
+        
+        # 添加 WHERE 条件的值
+        values.append(product_code)
+        
+        sql = f"UPDATE product SET {', '.join(set_clauses)} WHERE product_code = %s"
+        self._execute_update(sql, tuple(values))
 
     def get_product(self, product_code: str) -> Optional[Dict]:
         """获取产品信息"""

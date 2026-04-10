@@ -16,6 +16,8 @@ from dependencies import (
     get_image_processor
 )
 from utils.error_handler import ErrorHandler
+from utils.response import build_success_response, build_error_response
+from config.constants import MIN_SEARCH_TOP_K, MAX_SEARCH_TOP_K, RATE_LIMIT_IMAGE_SEARCH, RATE_LIMIT_TEXT_SEARCH
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,7 @@ class SearchResponse(BaseModel):
 # ==================== 图像检索 ====================
 
 @router.post("/search", response_model=SearchResponse)
-@limiter.limit("10/minute")
+@limiter.limit(RATE_LIMIT_IMAGE_SEARCH)
 async def search_image(
     request: Request,
     file: UploadFile = File(...),
@@ -68,8 +70,8 @@ async def search_image(
         相似产品列表
     """
     # 参数验证
-    if not (1 <= top_k <= 100):
-        raise HTTPException(status_code=400, detail="top_k 必须在 1-100 之间")
+    if not (MIN_SEARCH_TOP_K <= top_k <= MAX_SEARCH_TOP_K):
+        raise HTTPException(status_code=400, detail=f"top_k 必须在 {MIN_SEARCH_TOP_K}-{MAX_SEARCH_TOP_K} 之间")
     if aggregation not in ["max", "avg"]:
         raise HTTPException(status_code=400, detail="aggregation 必须是 max 或 avg")
 
@@ -139,7 +141,7 @@ async def search_image(
 # ==================== 文本搜索 ====================
 
 @router.post("/search/text")
-@limiter.limit("20/minute")
+@limiter.limit(RATE_LIMIT_TEXT_SEARCH)
 async def search_by_text(
     request: Request,
     keyword: str = Form(...),
@@ -229,191 +231,22 @@ async def search_by_text(
                 result_count=len(results)
             )
         
-        return {
-            "success": True,
-            "message": f"找到 {len(results)} 个产品",
-            "results": results,
-            "search_time_ms": search_time,
-            "keyword": keyword,
-            "keywords": keywords
-        }
+        # 统一响应格式：与图像检索保持一致
+        return build_success_response(
+            message=f"找到 {len(results)} 个产品",
+            results=results,
+            keyword=keyword,
+            keywords=keywords,
+            search_time_ms=search_time
+        )
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"文本搜索失败: {str(e)}", exc_info=True)
-        return {
-            "success": False,
-            "message": ErrorHandler.format_error(error=e, context="文本搜索")
-        }
+        return build_error_response(
+            message=ErrorHandler.format_error(error=e, context="文本搜索"),
+            error_code="TEXT_SEARCH_FAILED"
+        )
 
 
-# ==================== 组合搜索 ====================
-
-@router.post("/search/hybrid")
-@limiter.limit("10/minute")
-async def hybrid_search(
-    request: Request,
-    file: Optional[UploadFile] = File(None),
-    keyword: Optional[str] = Form(None),
-    category: Optional[str] = Form(None),
-    top_k: int = Form(10),
-    image_weight: float = Form(0.7),  # 图像权重
-    text_weight: float = Form(0.3)    # 文本权重
-):
-    """
-    图像+文本组合搜索
-    
-    Args:
-        file: 查询图片（可选）
-        keyword: 搜索关键词（可选）
-        category: 分类筛选
-        top_k: 返回数量
-        image_weight: 图像相似度权重 (0-1)
-        text_weight: 文本匹配权重 (0-1)
-    """
-    import jieba
-    
-    clip_service = get_clip_service()
-    milvus_service = get_milvus_service()
-    product_service = get_product_service()
-    image_processor = get_image_processor()
-    
-    start_time = time.time()
-    
-    try:
-        if not file and not keyword:
-            raise HTTPException(status_code=400, detail="请提供图片或关键词至少一项")
-        
-        image_results = []
-        text_results = []
-        
-        # 1. 图像搜索
-        if file:
-            image_bytes = await file.read()
-            processed_image = image_processor.preprocess(image_bytes)
-            embedding = clip_service.extract_features(processed_image)
-            
-            raw_results = milvus_service.search(embedding=embedding, top_k=top_k * 2)
-            
-            if raw_results:
-                aggregated = product_service.aggregate_results(raw_results, aggregation="max", top_k=top_k)
-                image_results = aggregated
-        
-        # 2. 文本搜索
-        if keyword:
-            keywords = list(jieba.cut(keyword.strip()))
-            keywords = [kw.strip() for kw in keywords if kw.strip() and len(kw) > 1]
-            
-            if keywords:
-                like_pattern = f"%{keywords[0]}%"
-                if category:
-                    sql = """
-                        SELECT DISTINCT p.product_code, p.name, p.spec, p.category
-                        FROM product p
-                        WHERE p.status = 1 AND p.category = %s
-                        AND (p.name LIKE %s OR p.spec LIKE %s OR p.product_code LIKE %s)
-                        LIMIT %s
-                    """
-                    params = (category, like_pattern, like_pattern, like_pattern, top_k * 2)
-                else:
-                    sql = """
-                        SELECT DISTINCT p.product_code, p.name, p.spec, p.category
-                        FROM product p
-                        WHERE p.status = 1
-                        AND (p.name LIKE %s OR p.spec LIKE %s OR p.product_code LIKE %s)
-                        LIMIT %s
-                    """
-                    params = (like_pattern, like_pattern, like_pattern, top_k * 2)
-                
-                products = product_service._execute_query(sql, params, dictionary=True)
-                
-                for product in products:
-                    text_results.append({
-                        "product_code": product['product_code'],
-                        "product_name": product['name'],
-                        "spec": product.get('spec'),
-                        "category": product.get('category'),
-                        "similarity": 1.0,
-                        "image_paths": []
-                    })
-        
-        # 3. 合并结果（加权融合）
-        merged_results = {}
-        
-        # 添加图像结果
-        for result in image_results:
-            code = result['product_code']
-            merged_results[code] = {
-                **result,
-                'image_score': result['similarity'],
-                'text_score': 0.0,
-                'final_score': result['similarity'] * image_weight
-            }
-        
-        # 添加/更新文本结果
-        for result in text_results:
-            code = result['product_code']
-            if code in merged_results:
-                # 已存在，更新分数
-                merged_results[code]['text_score'] = 1.0
-                merged_results[code]['final_score'] = (
-                    merged_results[code]['image_score'] * image_weight +
-                    1.0 * text_weight
-                )
-            else:
-                # 新增
-                merged_results[code] = {
-                    **result,
-                    'image_score': 0.0,
-                    'text_score': 1.0,
-                    'final_score': 1.0 * text_weight
-                }
-                # 获取图片
-                images = product_service.get_product_images(code)
-                merged_results[code]['image_paths'] = [img['image_path'] for img in images]
-        
-        # 按最终分数排序
-        sorted_results = sorted(
-            merged_results.values(),
-            key=lambda x: x['final_score'],
-            reverse=True
-        )[:top_k]
-        
-        # 格式化输出
-        final_results = []
-        for result in sorted_results:
-            final_results.append({
-                "product_code": result['product_code'],
-                "product_name": result['product_name'],
-                "spec": result.get('spec'),
-                "category": result.get('category'),
-                "similarity": result['final_score'],
-                "image_score": result['image_score'],
-                "text_score": result['text_score'],
-                "image_paths": result.get('image_paths', [])
-            })
-        
-        search_time = int((time.time() - start_time) * 1000)
-        
-        return {
-            "success": True,
-            "message": f"组合搜索完成: 找到 {len(final_results)} 个产品",
-            "results": final_results,
-            "search_time_ms": search_time,
-            "has_image": file is not None,
-            "has_keyword": keyword is not None,
-            "weights": {
-                "image": image_weight,
-                "text": text_weight
-            }
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"组合搜索失败: {str(e)}", exc_info=True)
-        return {
-            "success": False,
-            "message": ErrorHandler.format_error(error=e, context="组合搜索")
-        }

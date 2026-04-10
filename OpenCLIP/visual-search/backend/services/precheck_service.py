@@ -29,7 +29,6 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
             "milvus_available": bool,
             "minio_available": bool,
             "mysql_available": bool,
-            "disk_space_sufficient": bool,
             "errors": []
         }
     """
@@ -37,7 +36,6 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
         "milvus_available": False,
         "minio_available": False,
         "mysql_available": False,
-        "disk_space_sufficient": False,
         "errors": []
     }
     
@@ -77,30 +75,27 @@ def precheck_ingest(product_code: str, files: List[UploadFile]) -> dict:
         checks["errors"].append(f"MySQL 检查失败: {str(e)}")
         logger.error(f"MySQL 检查失败: {e}")
     
-    # 4. 检查磁盘空间
+    # 4. 检查上传文件大小（可选）
     try:
-        storage_path = "/app/storage"
-        usage = shutil.disk_usage(storage_path)
-        # 假设每张图 10MB，预留 20% 空间
-        required_space = len(files) * 10 * 1024 * 1024 * 1.2
-        if usage.free > required_space:
-            checks["disk_space_sufficient"] = True
-            logger.debug(f"✅ 磁盘空间充足: 剩余 {usage.free/1024/1024:.1f}MB")
-        else:
+        total_size = sum(file.size for file in files if file.size)
+        max_single_size = 50 * 1024 * 1024  # 50MB
+        
+        oversized_files = [f.filename for f in files if f.size and f.size > max_single_size]
+        if oversized_files:
             checks["errors"].append(
-                f"磁盘空间不足: 需要 {required_space/1024/1024:.1f}MB, "
-                f"剩余 {usage.free/1024/1024:.1f}MB"
+                f"以下文件超过 50MB: {', '.join(oversized_files)}"
             )
-            logger.warning(f"⚠️ 磁盘空间不足")
+            logger.warning(f"⚠️ 存在超大文件: {oversized_files}")
+        else:
+            logger.debug(f"✅ 文件大小检查通过: 总计 {total_size/1024/1024:.1f}MB")
     except Exception as e:
-        checks["errors"].append(f"磁盘空间检查失败: {str(e)}")
-        logger.error(f"磁盘空间检查失败: {e}")
+        # 文件大小检查失败不影响入库
+        logger.warning(f"⚠️ 文件大小检查跳过: {str(e)}")
     
     checks["passed"] = all([
         checks["milvus_available"],
         checks["minio_available"],
-        checks["mysql_available"],
-        checks["disk_space_sufficient"]
+        checks["mysql_available"]
     ])
     
     if checks["passed"]:

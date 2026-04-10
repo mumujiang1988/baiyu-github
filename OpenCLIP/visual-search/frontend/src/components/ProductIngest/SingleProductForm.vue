@@ -23,6 +23,7 @@
         :auto-upload="false"
         :on-change="handleFileChange"
         :on-remove="handleFileRemove"
+        :on-preview="handlePicturePreview"
         :file-list="fileList"
         accept="image/*"
         list-type="picture-card"
@@ -51,7 +52,7 @@
     </el-form-item>
     
     <el-form-item>
-      <el-button type="primary" @click="handleSubmit" :loading="submitting" :disabled="progress > 0 && progress < 100">
+      <el-button type="primary" @click="handleSubmit" :loading="submitting">
         <el-icon><Upload /></el-icon>
         {{ submitting ? '入库中...' : '提交入库' }}
       </el-button>
@@ -60,33 +61,20 @@
         重置
       </el-button>
     </el-form-item>
-
-    <!-- 进度条 -->
-    <el-form-item v-if="progress > 0 && progress < 100">
-      <div class="progress-container">
-        <div class="progress-info">
-          <span class="progress-text">正在处理图片 {{ currentImageIndex }} / {{ totalImages }}</span>
-          <span class="progress-percent">{{ progress.toFixed(2) }}%</span>
-        </div>
-        <el-progress
-          :percentage="progress"
-          :status="progressStatus"
-          :stroke-width="20"
-          :text-inside="true"
-        />
-        <div class="progress-detail">
-          <el-icon class="loading-icon"><Loading /></el-icon>
-          <span>{{ progressDetail }}</span>
-        </div>
-      </div>
-    </el-form-item>
   </el-form>
+
+  <!-- 图片预览器 -->
+  <el-image-viewer
+    v-if="showImageViewer"
+    :url-list="[previewImageUrl]"
+    @close="showImageViewer = false"
+  />
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus, Upload, Refresh, Loading, MagicStick } from '@element-plus/icons-vue'
+import { ElMessage, ElImageViewer } from 'element-plus'
+import { Plus, Upload, Refresh, MagicStick } from '@element-plus/icons-vue'
 import { useIngestStore } from '../../stores/ingest'
 import { removeBackground } from '../../api/image'
 
@@ -107,6 +95,10 @@ const submitting = ref(false)
 const removingBg = ref(false)
 const formRef = ref(null)
 const uploadRef = ref(null)
+
+// 图片预览
+const showImageViewer = ref(false)
+const previewImageUrl = ref('')
 
 // 表单验证规则
 const FORM_RULES = {
@@ -135,6 +127,26 @@ const handleFileChange = (file, files) => {
 // 处理文件移除
 const handleFileRemove = (file, files) => {
   fileList.value = files
+}
+
+// 处理图片预览
+const handlePicturePreview = (file) => {
+  // 如果文件已经有 URL（上传后），直接使用
+  if (file.url) {
+    previewImageUrl.value = file.url
+    showImageViewer.value = true
+  } 
+  // 如果是本地文件，创建临时 URL
+  else if (file.raw) {
+    const tempUrl = URL.createObjectURL(file.raw)
+    previewImageUrl.value = tempUrl
+    showImageViewer.value = true
+    
+    // 在对话框关闭后清理 URL 对象
+    setTimeout(() => {
+      URL.revokeObjectURL(tempUrl)
+    }, 1000)
+  }
 }
 
 // 提交表单

@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 from config import settings
 from dependencies import init_services, clip_service, milvus_service, minio_service
 from routers import search_router, product_router, image_router
-from services.transaction_service import cleanup_old_temp_files
 from middleware import http_exception_handler, validation_exception_handler
 
 
@@ -73,15 +72,11 @@ def create_app() -> FastAPI:
     # 注册启动事件
     @app.on_event("startup")
     async def startup_event():
-        """应用启动时初始化所有服务并清理临时文件"""
+        """应用启动时初始化所有服务"""
         try:
-            # 1. 初始化所有服务
+            # 初始化所有服务
             init_services()
             logger.info("✅ 所有服务初始化成功")
-            
-            # 2. 清理过期临时文件
-            cleanup_old_temp_files(max_age_hours=24)
-            logger.info("✅ 过期临时文件已清理")
             
         except Exception as e:
             logger.error(f"❌ 服务初始化失败: {str(e)}", exc_info=True)

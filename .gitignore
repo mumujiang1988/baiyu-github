@@ -114,3 +114,7 @@ baiyu-ruoyi/ruoyi-modules/ruoyi-erp-api/nul
 /OpenCLIP/visual-search/backend/storage/images
 /OpenCLIP/visual-search/frontend/node_modules
 *.pyc
+/OpenCLIP/visual-search/frontend/dist
+*.pyc
+*.md
+/OpenCLIP/visual-search/backend/models_cache

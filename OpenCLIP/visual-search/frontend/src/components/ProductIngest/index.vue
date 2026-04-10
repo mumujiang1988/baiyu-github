@@ -83,21 +83,18 @@ import BatchProductTable from './BatchProductTable.vue'
 import { useIngestStore } from '../../stores/ingest'
 import { TAB_CONFIG } from './constants'
 
-// 使用 Pinia Store
+// 使用 Pinia Store（仅用于单产品入库结果）
 const ingestStore = useIngestStore()
 
 // 页签控制
 const activeTab = ref(TAB_CONFIG.SINGLE)
 
-// 从 Store 中获取结果
+// 从 Store 中获取单产品入库结果
 const ingestResult = computed(() => ingestStore.activeResult)
 
 // 监听页签切换
 watch(activeTab, (newTab) => {
   ingestStore.switchTab(newTab)
-  if (newTab === TAB_CONFIG.BATCH) {
-    // 切换到批量入库页签时的逻辑（如果需要）
-  }
 })
 </script>
 

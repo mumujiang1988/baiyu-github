@@ -22,7 +22,15 @@ from services.precheck_service import precheck_ingest
 from services.retry_utils import delete_milvus_with_retry, delete_minio_with_retry
 from services.transaction_service import IngestTransaction
 from services.enhanced_ingest import ingest_product_with_transaction
+from services.cache_service import consistency_check_cache, product_list_cache
 from utils.error_handler import ErrorHandler
+from utils.response import build_success_response, build_error_response, paginated_response
+from config.constants import (
+    MAX_BATCH_INGEST_SIZE, 
+    MAX_BATCH_DELETE_SIZE,
+    RATE_LIMIT_PRODUCT_INGEST,
+    RATE_LIMIT_BATCH_INGEST
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +44,11 @@ limiter = Limiter(key_func=get_remote_address)
 # ==================== 单个产品入库 ====================
 
 @router.post("/product/ingest")
-@limiter.limit("5/minute")
+@limiter.limit(RATE_LIMIT_PRODUCT_INGEST)
 async def ingest_product(
     request: Request,
     product_code: str = Form(...),
-    name: str = Form(...),
+    name: Optional[str] = Form(None),
     spec: Optional[str] = Form(None),
     category: Optional[str] = Form(None),
     files: List[UploadFile] = File(...),
@@ -90,13 +98,12 @@ async def ingest_product(
         )
         
         elapsed = time.time() - start_time
-        return {
-            "success": True,
-            "message": f"产品 {product_code} 入库成功",
-            "product_code": product_code,
-            "ingested_images": result["ingested_images"],
-            "elapsed_seconds": round(elapsed, 2)
-        }
+        return build_success_response(
+            message=f"产品 {product_code} 入库成功",
+            product_code=product_code,
+            ingested_images=result["ingested_images"],
+            elapsed_seconds=round(elapsed, 2)
+        )
 
     except HTTPException:
         raise  # 让全局异常处理器处理
@@ -105,7 +112,7 @@ async def ingest_product(
 # ==================== 批量产品入库 ====================
 
 @router.post("/products/batch-ingest")
-@limiter.limit("2/minute")
+@limiter.limit(RATE_LIMIT_BATCH_INGEST)
 async def batch_ingest_products(
     request: Request,
     products_json: str = Form(...),
@@ -141,8 +148,8 @@ async def batch_ingest_products(
         if not isinstance(products, list) or len(products) == 0:
             raise HTTPException(status_code=400, detail="products_json 必须是非空数组")
         
-        if len(products) > 50:
-            raise HTTPException(status_code=400, detail="单次最多导入50个产品")
+        if len(products) > MAX_BATCH_INGEST_SIZE:
+            raise HTTPException(status_code=400, detail=f"单次最多导入{MAX_BATCH_INGEST_SIZE}个产品")
         
         # 入库前预检查（检查所有产品的文件）
         total_files = len(files)
@@ -235,12 +242,11 @@ async def batch_ingest_products(
         
         total_time = int((time.time() - start_time) * 1000)
         
-        return {
-            "success": True,
-            "message": f"批量入库完成: 成功 {len(results['success'])} 个产品, 失败 {len(results['failed'])} 个",
-            "results": results,
-            "total_time_ms": total_time
-        }
+        return build_success_response(
+            message=f"批量入库完成: 成功 {len(results['success'])} 个产品, 失败 {len(results['failed'])} 个",
+            results=results,
+            total_time_ms=total_time
+        )
         
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="JSON 格式错误")
@@ -248,7 +254,10 @@ async def batch_ingest_products(
         raise
     except Exception as e:
         logger.error(f"批量入库异常: {str(e)}", exc_info=True)
-        return {"success": False, "message": ErrorHandler.format_error(error=e, context="批量产品入库")}
+        return build_error_response(
+            message=ErrorHandler.format_error(error=e, context="批量产品入库"),
+            error_code="BATCH_INGEST_FAILED"
+        )
 
 
 # ==================== 产品查询 ====================
@@ -263,7 +272,69 @@ async def get_product(product_code: str):
         raise HTTPException(status_code=404, detail="产品不存在")
 
     images = product_service.get_product_images(product_code)
-    return {"success": True, "product": product, "images": images}
+    return build_success_response(
+        message="获取产品详情成功",
+        product=product,
+        images=images
+    )
+
+
+@router.put("/product/{product_code}")
+async def update_product(
+    product_code: str,
+    name: Optional[str] = Form(None),
+    spec: Optional[str] = Form(None),
+    category: Optional[str] = Form(None)
+):
+    """
+    更新产品信息
+    
+    Args:
+        product_code: 产品编码（路径参数）
+        name: 产品名称（可选）
+        spec: 规格（可选）
+        category: 分类（可选）
+    
+    Returns:
+        更新结果
+    """
+    product_service = get_product_service()
+    
+    # 验证产品存在
+    product = product_service.get_product(product_code)
+    if not product:
+        raise HTTPException(status_code=404, detail=f"产品 {product_code} 不存在")
+    
+    # 构建更新字段
+    updates = {}
+    if name is not None:
+        updates['name'] = name
+    if spec is not None:
+        updates['spec'] = spec
+    if category is not None:
+        updates['category'] = category
+    
+    if not updates:
+        raise HTTPException(
+            status_code=400, 
+            detail="请提供至少一个要更新的字段（name, spec, category）"
+        )
+    
+    # 执行更新
+    try:
+        product_service.update_product(product_code, **updates)
+        
+        return build_success_response(
+            message=f"产品 {product_code} 信息更新成功",
+            product_code=product_code,
+            updated_fields=list(updates.keys())
+        )
+    except Exception as e:
+        logger.error(f"更新产品信息失败: {str(e)}", exc_info=True)
+        return build_error_response(
+            message=f"更新失败: {str(e)}",
+            error_code="UPDATE_PRODUCT_FAILED"
+        )
 
 
 @router.get("/products")
@@ -314,7 +385,13 @@ async def list_products(category: Optional[str] = None, page: int = 1, page_size
             'data_status': data_status
         })
 
-    return {"success": True, "products": enriched_products, "total": total, "page": page, "page_size": page_size}
+    return paginated_response(
+        items=enriched_products,
+        total=total,
+        page=page,
+        page_size=page_size,
+        message="查询产品列表成功"
+    )
 
 
 @router.get("/stats")
@@ -327,7 +404,10 @@ async def get_stats():
         "image_count": product_service.count_images(),
         "search_count": product_service.count_searches()
     }
-    return {"success": True, "stats": stats}
+    return build_success_response(
+        message="获取系统统计成功",
+        stats=stats
+    )
 
 
 @router.get("/products/data-consistency")
@@ -343,6 +423,13 @@ async def check_data_consistency():
             "complete_products": [...] # 完整的产品（三个存储都有）
         }
     """
+    # 尝试从缓存获取
+    cache_key = "data_consistency_check"
+    cached_result = consistency_check_cache.get(cache_key)
+    if cached_result is not None:
+        logger.info("✅ 使用缓存的一致性检查结果")
+        return cached_result
+    
     product_service = get_product_service()
     milvus_service = get_milvus_service()
     minio_service = get_minio_service()
@@ -458,11 +545,21 @@ async def check_data_consistency():
             ]
         }
         
-        return {"success": True, "data": result}
+        # 缓存结果（5分钟）
+        consistency_check_cache.set(cache_key, result, ttl=300)
+        logger.info(f"✅ 一致性检查结果已缓存，TTL=300s")
+        
+        return build_success_response(
+            message="数据一致性检查完成",
+            **result  # 展开 result 字典
+        )
         
     except Exception as e:
         logger.error(f"数据一致性检查失败: {str(e)}", exc_info=True)
-        return {"success": False, "message": f"检查失败: {str(e)}"}
+        return build_error_response(
+            message=f"检查失败: {str(e)}",
+            error_code="CONSISTENCY_CHECK_FAILED"
+        )
 
 
 @router.get("/products/orphan-data")
@@ -480,6 +577,13 @@ async def query_orphan_data():
             "minio_orphan_details": [...]
         }
     """
+    # 尝试从缓存获取
+    cache_key = "orphan_data_query"
+    cached_result = consistency_check_cache.get(cache_key)
+    if cached_result is not None:
+        logger.info("✅ 使用缓存的孤儿数据查询结果")
+        return cached_result
+    
     product_service = get_product_service()
     milvus_service = get_milvus_service()
     minio_service = get_minio_service()
@@ -583,34 +687,115 @@ async def query_orphan_data():
             "minio_orphan_details": minio_orphan_details
         }
         
-        return {"success": True, "data": result}
+        # 缓存结果（5分钟）
+        consistency_check_cache.set(cache_key, result, ttl=300)
+        logger.info(f"✅ 孤儿数据查询结果已缓存，TTL=300s")
+        
+        return build_success_response(
+            message="孤儿数据查询完成",
+            **result  # 展开 result 字典
+        )
         
     except Exception as e:
         logger.error(f"Orphan data query failed: {str(e)}", exc_info=True)
-        return {"success": False, "message": f"Query failed: {str(e)}"}
+        return build_error_response(
+            message=f"Query failed: {str(e)}",
+            error_code="ORPHAN_QUERY_FAILED"
+        )
 
 
 @router.post("/products/clean-orphans")
-async def clean_orphan_data():
+async def clean_orphan_data(confirm: bool = Form(False)):
     """
     Clean all orphan data across MySQL, Milvus, and MinIO
     
+    Two-step confirmation mechanism:
+    1. First call (confirm=false): Returns preview of what will be deleted
+    2. Second call (confirm=true): Executes the cleanup
+    
     Returns:
-        {
-            "success": true,
-            "message": "Cleanup completed",
-            "cleaned": {
-                "mysql_count": number,
-                "milvus_count": number,
-                "minio_count": number
-            }
-        }
+        Step 1: { requires_confirmation: true, orphan_summary: {...} }
+        Step 2: { success: true, message: "...", cleaned: {...} }
     """
     product_service = get_product_service()
     milvus_service = get_milvus_service()
     minio_service = get_minio_service()
     image_processor = get_image_processor()
     
+    # Step 1: Return preview if not confirmed
+    if not confirm:
+        try:
+            # Query orphan data (reuse logic from query_orphan_data)
+            mysql_products = product_service._execute_query(
+                "SELECT DISTINCT product_code FROM product",
+                dictionary=True
+            )
+            mysql_product_codes = set([p['product_code'] for p in mysql_products])
+            
+            mysql_images = product_service._execute_query(
+                "SELECT * FROM product_image",
+                dictionary=True
+            )
+            
+            # Count MySQL orphans
+            mysql_orphan_codes = set([img['product_code'] for img in mysql_images 
+                                      if img['product_code'] not in mysql_product_codes])
+            
+            # Count Milvus orphans
+            milvus_stats = milvus_service.get_stats()
+            milvus_vector_count = milvus_stats.get('vector_count', 0)
+            milvus_orphan_count = 0
+            
+            if milvus_vector_count > 0 and milvus_service.collection:
+                try:
+                    milvus_service.collection.load()
+                    results = milvus_service.collection.query(
+                        expr="id >= 0",
+                        output_fields=["id", "product_code"],
+                        limit=milvus_vector_count
+                    )
+                    
+                    valid_product_codes = set([img['product_code'] for img in mysql_images])
+                    milvus_orphan_count = len([v for v in results 
+                                              if v['product_code'] not in valid_product_codes])
+                except Exception:
+                    pass
+            
+            # Count MinIO orphans
+            minio_orphan_count = 0
+            if minio_service:
+                try:
+                    objects = list(minio_service.client.list_objects(
+                        minio_service.bucket_name,
+                        recursive=True
+                    ))
+                    
+                    valid_paths = set([img['image_path'].replace('minio://visual-search/', '') 
+                                      for img in mysql_images if img['image_path']])
+                    
+                    minio_orphan_count = len([obj for obj in objects 
+                                             if obj.object_name not in valid_paths])
+                except Exception:
+                    pass
+            
+            return build_success_response(
+                message="请确认清理操作",
+                requires_confirmation=True,
+                orphan_summary={
+                    "mysql_count": len(mysql_orphan_codes),
+                    "milvus_count": milvus_orphan_count,
+                    "minio_count": minio_orphan_count,
+                    "total": len(mysql_orphan_codes) + milvus_orphan_count + minio_orphan_count
+                }
+            )
+        except Exception as e:
+            logger.error(f"Failed to query orphan preview: {str(e)}", exc_info=True)
+            return build_error_response(
+                message=f"查询预览失败: {str(e)}",
+                error_code="ORPHAN_PREVIEW_FAILED"
+            )
+    
+    # Step 2: Execute cleanup (original logic)
     cleaned = {
         "mysql_count": 0,
         "milvus_count": 0,
@@ -717,15 +902,97 @@ async def clean_orphan_data():
         
         logger.info(f"🎉 Orphan data cleanup completed: {message}")
         
-        return {
-            "success": True,
-            "message": message,
-            "cleaned": cleaned
-        }
+        # 清除相关缓存
+        consistency_check_cache.delete("orphan_data_query")
+        consistency_check_cache.delete("data_consistency_check")
+        logger.info("✅ 已清除孤儿数据和相关缓存")
+        
+        return build_success_response(
+            message=message,
+            cleaned=cleaned
+        )
         
     except Exception as e:
         logger.error(f"Orphan data cleanup failed: {str(e)}", exc_info=True)
-        return {"success": False, "message": f"Cleanup failed: {str(e)}"}
+        return build_error_response(
+            message=ErrorHandler.format_error(error=e, context="清理孤儿数据"),
+            error_code="CLEAN_ORPHANS_FAILED"
+        )
+
+
+# ==================== 单个孤儿数据删除 ====================
+
+@router.delete("/products/orphan/{orphan_type}/{identifier}")
+async def delete_single_orphan(orphan_type: str, identifier: str):
+    """
+    Delete a single orphan record
+    
+    Args:
+        orphan_type: Type of orphan (mysql, milvus, minio)
+        identifier: Identifier (product_code for mysql/milvus, object_name for minio)
+    """
+    product_service = get_product_service()
+    milvus_service = get_milvus_service()
+    image_processor = get_image_processor()
+    
+    try:
+        if orphan_type == "mysql":
+            # Delete MySQL orphan image records
+            product_service._execute_query(
+                "DELETE FROM product_image WHERE product_code = %s",
+                (identifier,)
+            )
+            logger.info(f"✅ Deleted MySQL orphan: {identifier}")
+            return build_success_response(
+                message=f"已删除 MySQL 孤儿记录: {identifier}",
+                type="mysql",
+                identifier=identifier
+            )
+            
+        elif orphan_type == "milvus":
+            # Delete Milvus orphan vector by ID
+            milvus_id = int(identifier)
+            if milvus_service.collection:
+                expr = f"id == {milvus_id}"
+                milvus_service.collection.delete(expr)
+                milvus_service.collection.flush()
+                logger.info(f"✅ Deleted Milvus orphan vector: {milvus_id}")
+                return build_success_response(
+                    message=f"已删除 Milvus 孤儿向量: {milvus_id}",
+                    type="milvus",
+                    identifier=milvus_id
+                )
+            else:
+                raise HTTPException(status_code=500, detail="Milvus collection not initialized")
+                
+        elif orphan_type == "minio":
+            # Delete MinIO orphan file
+            if image_processor.minio_service:
+                # identifier is the full object name
+                object_name = identifier
+                image_processor.minio_service.client.remove_object(
+                    image_processor.minio_service.bucket_name,
+                    object_name
+                )
+                logger.info(f"✅ Deleted MinIO orphan file: {object_name}")
+                return build_success_response(
+                    message=f"已删除 MinIO 孤儿文件: {object_name}",
+                    type="minio",
+                    identifier=object_name
+                )
+            else:
+                raise HTTPException(status_code=500, detail="MinIO service not available")
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid orphan type: {orphan_type}")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete orphan {orphan_type}/{identifier}: {str(e)}", exc_info=True)
+        return build_error_response(
+            message=ErrorHandler.format_error(error=e, context=f"删除孤儿数据 ({orphan_type})"),
+            error_code="DELETE_ORPHAN_FAILED"
+        )
 
 
 # ==================== 产品删除 ====================
@@ -736,6 +1003,14 @@ async def delete_product(product_code: str):
     milvus_service = get_milvus_service()
     product_service = get_product_service()
     image_processor = get_image_processor()
+    
+    # 前置检查：验证产品是否存在
+    product = product_service.get_product(product_code)
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail=f"产品 {product_code} 不存在"
+        )
     
     cleanup_log = {"milvus": False, "storage": False, "mysql": False}
     try:
@@ -784,16 +1059,18 @@ async def delete_product(product_code: str):
         all_cleaned = all(cleanup_log.values())
         message = f"产品 {product_code} 删除成功" if all_cleaned else f"产品 {product_code} 部分删除成功，请检查日志"
         
-        return {
-            "success": all_cleaned,
-            "message": message,
-            "deleted_images": len(images),
-            "cleanup_status": cleanup_log
-        }
+        return build_success_response(
+            message=message,
+            deleted_images=len(images),
+            cleanup_status=cleanup_log
+        )
 
     except Exception as e:
         logger.error(f"删除产品异常: {str(e)}", exc_info=True)
-        return {"success": False, "message": ErrorHandler.format_error(error=e, context="删除产品")}
+        return build_error_response(
+            message=ErrorHandler.format_error(error=e, context="删除产品"),
+            error_code="DELETE_PRODUCT_FAILED"
+        )
 
 
 @router.delete("/products/batch")
@@ -814,8 +1091,8 @@ async def batch_delete_products(product_codes: str = Form(...)):
         if not codes:
             raise HTTPException(status_code=400, detail="请提供至少一个产品编码")
         
-        if len(codes) > 100:
-            raise HTTPException(status_code=400, detail="单次最多删除100个产品")
+        if len(codes) > MAX_BATCH_DELETE_SIZE:
+            raise HTTPException(status_code=400, detail=f"单次最多删除{MAX_BATCH_DELETE_SIZE}个产品")
         
         results = {
             "success": [],
@@ -850,95 +1127,101 @@ async def batch_delete_products(product_codes: str = Form(...)):
                 })
                 logger.error(f"批量删除失败 - {code}: {str(e)}")
         
-        return {
-            "success": True,
-            "message": f"批量删除完成: 成功 {len(results['success'])} 个, 失败 {len(results['failed'])} 个",
-            "results": results
-        }
+        return build_success_response(
+            message=f"批量删除完成: 成功 {len(results['success'])} 个, 失败 {len(results['failed'])} 个",
+            **results  # 展开 results 字典
+        )
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"批量删除异常: {str(e)}", exc_info=True)
-        return {"success": False, "message": ErrorHandler.format_error(error=e, context="批量删除产品")}
+        return build_error_response(
+            message=ErrorHandler.format_error(error=e, context="批量删除产品"),
+            error_code="BATCH_DELETE_FAILED"
+        )
 
 
 # ==================== 重试接口 ====================
 
-@router.post("/{product_code}/retry")
-async def retry_product_ingest(product_code: str):
+@router.post("/product/{product_code}/cleanup-failed")
+async def cleanup_failed_product(product_code: str):
     """
-    Retry failed product ingestion
+    清理失败产品的残留数据
     
-    This endpoint allows manual retry of products that failed during ingestion.
-    It will clean up any partial data and re-ingest from scratch.
+    当产品入库失败时，可能产生孤儿数据。此接口用于清理这些残留数据，
+    以便用户可以重新上传该产品。
     
     Args:
-        product_code: Product code to retry
+        product_code: 产品编码
     
     Returns:
-        Success/failure status
+        清理结果和下一步操作提示
     """
     try:
-        logger.info(f"🔄 Retrying product ingestion: {product_code}")
+        logger.info(f"🧹 清理失败产品的残留数据: {product_code}")
         
-        # 1. Clean up any partial data
+        # 1. 检查是否有残留数据
         existing_images = product_service.get_product_images(product_code)
-        if existing_images:
-            logger.info(f"Cleaning up partial data for {product_code}")
-            
-            # Delete Milvus vectors
-            milvus_ids = [img["milvus_id"] for img in existing_images if img["milvus_id"]]
-            if milvus_ids:
-                try:
-                    delete_milvus_with_retry(milvus_service, milvus_ids)
-                    logger.info(f"✅ Cleaned Milvus vectors: {len(milvus_ids)}")
-                except Exception as e:
-                    logger.warning(f"⚠️ Failed to clean Milvus: {str(e)}")
-            
-            # Delete MinIO images
-            for img in existing_images:
-                try:
-                    image_processor.delete_image(img["image_path"])
-                except Exception as e:
-                    logger.warning(f"⚠️ Failed to clean MinIO: {str(e)}")
-            
-            # Delete MySQL records
-            try:
-                product_service._execute_update(
-                    "DELETE FROM product_image WHERE product_code = %s",
-                    (product_code,)
-                )
-                logger.info("✅ Cleaned MySQL records")
-            except Exception as e:
-                logger.error(f"❌ Failed to clean MySQL: {str(e)}")
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"清理失败数据失败: {str(e)}"
-                )
-        
-        # 2. Check if product info exists
-        product_info = product_service.get_product_by_code(product_code)
-        if not product_info:
-            raise HTTPException(
-                status_code=404,
-                detail=f"产品 {product_code} 不存在，无法重试。请重新上传。"
+        if not existing_images:
+            return build_success_response(
+                message=f"产品 {product_code} 没有残留数据",
+                product_code=product_code,
+                has_orphan_data=False,
+                next_step="re-upload"
             )
         
-        logger.info(f"✅ Cleanup completed, ready for re-ingestion")
+        # 2. 清理 Milvus 向量
+        milvus_ids = [img["milvus_id"] for img in existing_images if img["milvus_id"]]
+        if milvus_ids:
+            try:
+                delete_milvus_with_retry(milvus_service, milvus_ids)
+                logger.info(f"✅ 已清理 Milvus 向量: {len(milvus_ids)} 个")
+            except Exception as e:
+                logger.warning(f"⚠️ 清理 Milvus 失败: {str(e)}")
         
-        return {
-            "success": True,
-            "message": f"产品 {product_code} 清理完成，请重新上传图片",
-            "product_code": product_code,
-            "action": "cleanup_completed"
-        }
+        # 3. 清理 MinIO 图片
+        minio_cleaned = 0
+        for img in existing_images:
+            try:
+                image_processor.delete_image(img["image_path"])
+                minio_cleaned += 1
+            except Exception as e:
+                logger.warning(f"⚠️ 清理 MinIO 失败: {str(e)}")
+        
+        # 4. 清理 MySQL 记录
+        try:
+            product_service._execute_update(
+                "DELETE FROM product_image WHERE product_code = %s",
+                (product_code,)
+            )
+            logger.info(f"✅ 已清理 MySQL 记录: {len(existing_images)} 条")
+        except Exception as e:
+            logger.error(f"❌ 清理 MySQL 失败: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"清理数据库记录失败: {str(e)}"
+            )
+        
+        # 5. 返回清理结果
+        return build_success_response(
+            message=f"产品 {product_code} 的残留数据已清理完成",
+            product_code=product_code,
+            has_orphan_data=True,
+            cleaned_summary={
+                "milvus_count": len(milvus_ids),
+                "minio_count": minio_cleaned,
+                "mysql_count": len(existing_images)
+            },
+            next_step="re-upload",
+            next_step_message="请重新上传该产品的图片"
+        )
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"重试失败: {str(e)}", exc_info=True)
-        return {
-            "success": False,
-            "message": f"重试失败: {str(e)}"
-        }
+        logger.error(f"清理失败产品数据异常: {str(e)}", exc_info=True)
+        return build_error_response(
+            message=f"清理失败: {str(e)}",
+            error_code="CLEANUP_FAILED"
+        )

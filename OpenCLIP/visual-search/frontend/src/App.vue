@@ -5,35 +5,36 @@
         <div class="header-content">
           <h1>以图搜品系统</h1>
           <el-menu mode="horizontal" :default-active="activeMenu" @select="handleMenuSelect">
-            <el-menu-item index="search">图像检索</el-menu-item>
-            <el-menu-item index="text-search">文本搜索</el-menu-item>
-            <el-menu-item index="ingest">产品入库</el-menu-item>
-            <el-menu-item index="products">产品管理</el-menu-item>
+            <el-menu-item index="/search">图像检索</el-menu-item>
+            <el-menu-item index="/ingest">产品入库</el-menu-item>
+            <el-menu-item index="/products">产品管理</el-menu-item>
           </el-menu>
         </div>
       </el-header>
       
       <el-main>
-        <ImageSearch v-if="activeMenu === 'search'" />
-        <TextSearch v-if="activeMenu === 'text-search'" />
-        <ProductIngest v-if="activeMenu === 'ingest'" />
-        <ProductList v-if="activeMenu === 'products'" />
+        <router-view />
       </el-main>
     </el-container>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ImageSearch from './components/ImageSearch.vue'
-import TextSearch from './components/TextSearch.vue'
-import ProductIngest from './components/ProductIngest/index.vue'
-import ProductList from './components/ProductList.vue'
+import { ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-const activeMenu = ref('search')
+const router = useRouter()
+const route = useRoute()
+const activeMenu = ref(route.path)
+
+// 监听路由变化，同步菜单激活状态
+watch(() => route.path, (newPath) => {
+  activeMenu.value = newPath
+})
 
 const handleMenuSelect = (index) => {
   activeMenu.value = index
+  router.push(index)
 }
 </script>
 
