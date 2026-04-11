@@ -140,16 +140,20 @@ export function useSingleIngest() {
           progressStatus.value = 'exception'
           progressDetail.value = '入库失败'
           
-          // Show retry option
+          // 提取错误摘要用于重试对话框
+          const errorSummary = extractErrorSummary(uploadResponse.detail || uploadResponse.message)
+          
+          // Show retry option with error details
           setTimeout(async () => {
             try {
               await ElMessageBox.confirm(
-                `产品 ${form.product_code} 入库失败，是否重试？`,
+                `产品 ${form.product_code} 入库失败\n\n${errorSummary}\n\n是否重试？`,
                 '重试提示',
                 {
                   confirmButtonText: '重试',
                   cancelButtonText: '取消',
-                  type: 'warning'
+                  type: 'warning',
+                  dangerouslyUseHTMLString: false
                 }
               )
               // Reset form for retry
@@ -165,16 +169,21 @@ export function useSingleIngest() {
         progressStatus.value = 'exception'
         progressDetail.value = '入库失败'
         
+        // 提取错误摘要
+        const errorData = error.response?.data
+        const errorSummary = extractErrorSummary(errorData?.detail || error.message)
+        
         // Show retry option for exceptions too
         setTimeout(async () => {
           try {
             await ElMessageBox.confirm(
-              `产品 ${form.product_code} 入库失败，是否重试？`,
+              `产品 ${form.product_code} 入库失败\n\n${errorSummary}\n\n是否重试？`,
               '重试提示',
               {
                 confirmButtonText: '重试',
                 cancelButtonText: '取消',
-                type: 'warning'
+                type: 'warning',
+                dangerouslyUseHTMLString: false
               }
             )
             // Reset form for retry
@@ -209,6 +218,16 @@ export function useSingleIngest() {
     totalImages.value = 0
     progressStatus.value = ''
     progressDetail.value = '准备上传...'
+  }
+  
+  // 提取错误摘要(取前2行)
+  const extractErrorSummary = (detail) => {
+    if (!detail) return '未知错误'
+    
+    const lines = detail.split('\n').filter(line => line.trim())
+    // 取前2行作为摘要
+    const summary = lines.slice(0, 2).join('\n')
+    return summary || '未知错误'
   }
   
   return {

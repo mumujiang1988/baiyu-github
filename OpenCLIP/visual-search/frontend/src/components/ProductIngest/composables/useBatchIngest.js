@@ -150,6 +150,9 @@ export function useBatchIngest() {
     batchSubmitting.value = true
     watchSubmitting()  // 添加页面关闭保护
     
+    // 生成批次ID
+    const batchId = `batch_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`
+    
     // 重置统计
     successCount.value = 0
     failCount.value = 0
@@ -197,7 +200,8 @@ export function useBatchIngest() {
             product.imageFiles, 
             product.spec, 
             product.category,
-            onUploadProgress  // 传入进度回调
+            onUploadProgress,  // 传入进度回调
+            batchId            // 传入批次ID
           )
           
           // API返回后直接设置为100%
@@ -231,15 +235,15 @@ export function useBatchIngest() {
           let suggestion = ''
           
           if (statusCode === 400) {
-            // 400 Bad Request - 通常是所有图片都是重复的
+            // 400 Bad Request - 显示后端返回的完整错误信息
             const detail = errorData?.detail || error.message || ''
-            if (detail.includes('duplicate') || detail.includes('重复')) {
-              errorMessage = '所有图片均已存在'
-              suggestion = '该产品的所有图片已在数据库中，无需重复入库'
-            } else {
-              errorMessage = `请求参数错误: ${detail}`
-              suggestion = '请检查产品信息和图片格式是否正确'
-            }
+            
+            // 直接使用后端返回的详细错误信息
+            errorMessage = '入库失败'
+            suggestion = detail  // 保留完整的错误详情
+            
+            // 记录详细错误日志
+            logger.error(`[BatchIngest] 产品 ${product.folderName} 入库失败 - 详细错误:`, detail)
           } else if (statusCode === 429) {
             // 429 Too Many Requests - 触发限流
             errorMessage = '请求过于频繁'
@@ -258,7 +262,29 @@ export function useBatchIngest() {
             suggestion = '请检查网络连接或稍后重试'
           }
           
-          product.message = `${errorMessage}${suggestion ? ' - ' + suggestion : ''}`
+          product.message = errorMessage
+          
+          // 如果有详细建议,在控制台输出
+          if (suggestion && suggestion !== detail) {
+            logger.warn(`[BatchIngest] 建议: ${suggestion}`)
+          }
+          
+          // 对于400错误,弹出详细错误对话框
+          if (statusCode === 400 && detail) {
+            // 延迟弹出,避免阻塞批量处理
+            setTimeout(() => {
+              ElMessageBox.alert(
+                `<div style="white-space: pre-wrap; line-height: 1.6; font-size: 13px;">${detail}</div>`,
+                `产品 ${product.folderName} 入库失败`,
+                {
+                  dangerouslyUseHTMLString: true,
+                  confirmButtonText: '知道了',
+                  type: 'error',
+                  customClass: 'ingest-error-dialog'
+                }
+              )
+            }, 100)
+          }
           
           // 记录详细错误日志
           logger.error(`[BatchIngest] 产品 ${product.folderName} 入库失败`, {

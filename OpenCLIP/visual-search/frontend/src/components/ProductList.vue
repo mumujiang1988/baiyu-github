@@ -367,7 +367,7 @@ defineOptions({
   name: 'ProductList'
 })
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listProducts, getProduct, deleteProduct as deleteProductApi, checkDataConsistency, queryOrphanData, cleanOrphanData, batchDeleteProducts, deleteSingleOrphan } from '../api/search'
 import { handleApiError } from '../utils/messageHandler'
@@ -579,49 +579,98 @@ const handleBatchDelete = async () => {
     
     batchDeleting.value = true
     
-    const response = await batchDeleteProducts(productCodes)
+    // 创建进度对话框
+    const total = productCodes.length
+    let successCount = 0
+    let failedCount = 0
+    const failedProducts = []
     
-    // 检查响应是否有效
-    if (!response) {
-      ElMessage.error('批量删除失败：未收到服务器响应')
-      return
-    }
+    const progressMessage = ElMessage({
+      message: h('div', { style: 'text-align: center; padding: 10px;' }, [
+        h('div', { style: 'margin-bottom: 12px; font-weight: bold; font-size: 14px;' }, '正在批量删除产品...'),
+        h('el-progress', {
+          percentage: 0,
+          status: 'success',
+          strokeWidth: 20,
+          textInside: true
+        }),
+        h('div', { 
+          style: 'margin-top: 8px; font-size: 12px; color: #909399;'
+        }, `进度: 0/${total}`)
+      ]),
+      duration: 0, // 不自动关闭
+      showClose: false,
+      customClass: 'batch-delete-progress',
+      offset: 100
+    })
     
-    // 统一格式：扁平化响应，数据直接在 response 根级别
-    if (response.success) {
-      const successCount = response.success?.length || 0
-      const failedCount = response.failed?.length || 0
-      const totalDeletedImages = response.total_deleted_images || 0
+    // 逐个删除产品
+    for (let i = 0; i < productCodes.length; i++) {
+      const productCode = productCodes[i]
+      const productName = selectedProducts.value[i]?.name || productCode
       
-      // 显示详细结果
-      let message = `批量删除完成！成功: ${successCount} 个, 失败: ${failedCount} 个, 共删除 ${totalDeletedImages} 张图片`
-      
-      if (failedCount > 0) {
-        const failedProducts = response.failed.map(f => f.product_code).join(', ')
-        message += `\n\n失败产品: ${failedProducts}`
-        ElMessage.warning({
-          message,
-          duration: 8000,
-          showClose: true
-        })
-      } else {
-        ElMessage.success({
-          message,
-          duration: 5000
-        })
+      try {
+        // 调用单个删除接口
+        const response = await deleteProductApi(productCode)
+        
+        if (response && response.success) {
+          successCount++
+        } else {
+          failedCount++
+          failedProducts.push(productCode)
+          logger.error(`删除产品失败: ${productCode}`, response)
+        }
+      } catch (error) {
+        failedCount++
+        failedProducts.push(productCode)
+        logger.error(`删除产品异常: ${productCode}`, error)
       }
       
-      // 清空选择
-      selectedProducts.value = []
+      // 更新进度条
+      const current = i + 1
+      const percent = Math.round((current / total) * 100)
       
-      // 刷新列表
-      loadProducts()
+      // 直接更新 DOM
+      const progressBar = document.querySelector('.batch-delete-progress .el-progress-bar__inner')
+      const progressText = document.querySelector('.batch-delete-progress div:last-child')
       
-      // 清除一致性检查结果
-      consistencyResult.value = null
-    } else {
-      handleApiError(response, '批量删除失败')
+      if (progressBar) {
+        progressBar.style.width = `${percent}%`
+      }
+      if (progressText) {
+        progressText.textContent = `进度: ${current}/${total} (${percent}%) - 成功: ${successCount}, 失败: ${failedCount}`
+      }
     }
+    
+    // 关闭进度对话框
+    progressMessage.close()
+    
+    // 显示最终结果
+    let message = `批量删除完成！成功: ${successCount} 个, 失败: ${failedCount} 个`
+    
+    if (failedCount > 0) {
+      message += `\n\n失败产品: ${failedProducts.join(', ')}`
+      ElMessage.warning({
+        message,
+        duration: 8000,
+        showClose: true
+      })
+    } else {
+      ElMessage.success({
+        message,
+        duration: 5000
+      })
+    }
+    
+    // 清空选择
+    selectedProducts.value = []
+    
+    // 刷新列表
+    loadProducts()
+    
+    // 清除一致性检查结果
+    consistencyResult.value = null
+    
   } catch (error) {
     if (error !== 'cancel' && error !== 'close') {
       handleApiError(error.response || error, '批量删除失败')

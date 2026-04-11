@@ -11,6 +11,11 @@
         <el-tab-pane label="批量入库" name="batch">
           <BatchProductTable />
         </el-tab-pane>
+
+        <!-- 入库日志页签 -->
+        <el-tab-pane label="入库日志" name="logs">
+          <IngestLogs />
+        </el-tab-pane>
       </el-tabs>
     
       <!-- 入库结果 -->
@@ -85,6 +90,7 @@ import { ref, watch, computed } from 'vue'
 import { InfoFilled } from '@element-plus/icons-vue'
 import SingleProductForm from './SingleProductForm.vue'
 import BatchProductTable from './BatchProductTable.vue'
+import IngestLogs from './IngestLogs.vue'
 import { useIngestStore } from '../../stores/ingest'
 import { TAB_CONFIG } from './constants'
 

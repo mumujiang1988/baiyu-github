@@ -45,6 +45,64 @@ router = APIRouter(prefix="/api/v1", tags=["产品"])
 limiter = Limiter(key_func=get_remote_address)
 
 
+def log_ingest_result(batch_id: str, product_code: str, product_name: str, status: str, error_message: Optional[str] = None):
+    """记录入库结果到数据库"""
+    from dependencies import get_product_service
+    product_service = get_product_service()
+    
+    sql = """
+    INSERT INTO ingest_batch_log (batch_id, product_code, product_name, status, error_message)
+    VALUES (%s, %s, %s, %s, %s)
+    """
+    try:
+        product_service._execute_update(sql, (batch_id, product_code, product_name, status, error_message))
+    except Exception as e:
+        logger.error(f"写入入库日志失败: {e}")
+
+@router.get("/ingest/logs")
+async def get_ingest_logs(
+    batch_id: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 20
+):
+    """查询入库日志"""
+    from dependencies import get_product_service
+    product_service = get_product_service()
+    
+    conditions = []
+    params = []
+    
+    if batch_id:
+        conditions.append("batch_id = %s")
+        params.append(batch_id)
+    
+    # 注意：where_clause 只包含硬编码的 SQL 片段，不包含用户输入
+    # 实际的值通过 params 参数化传递，防止 SQL 注入
+    where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+    
+    # 统计总数
+    count_sql = f"SELECT COUNT(*) as total FROM ingest_batch_log{where_clause}"
+    count_result = product_service._execute_query(count_sql, tuple(params), dictionary=True)
+    total = count_result[0]['total'] if count_result else 0
+    
+    # 分页查询
+    offset = (page - 1) * page_size
+    query_sql = f"""
+    SELECT id, batch_id, product_code, product_name, status, error_message, created_at
+    FROM ingest_batch_log{where_clause}
+    ORDER BY created_at DESC
+    LIMIT %s OFFSET %s
+    """
+    logs = product_service._execute_query(query_sql, tuple(params) + (page_size, offset), dictionary=True)
+    
+    return {
+        "success": True,
+        "data": logs,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
+
 # ==================== 单个产品入库 ====================
 
 @router.post("/product/ingest")
@@ -125,7 +183,8 @@ async def batch_ingest_products(
     products_json: str = Form(...),
     files_map: str = Form(...),
     files: List[UploadFile] = File(...),
-    remove_bg: bool = Form(False)
+    remove_bg: bool = Form(False),
+    batch_id: Optional[str] = Form(None)
 ):
     """
     批量产品入库接口
@@ -135,8 +194,13 @@ async def batch_ingest_products(
         files_map: JSON 对象，如 {"P001":[0,1],"P002":[2]} 表示 P001 对应 files[0]和files[1]
         files: 所有图片文件列表
         remove_bg: 是否移除背景
+        batch_id: 批次ID (可选，不传则自动生成)
     """
     import json
+    import uuid
+    
+    if not batch_id:
+        batch_id = f"batch_{uuid.uuid4().hex[:12]}"
     
     clip_service = get_clip_service()
     milvus_service = get_milvus_service()
@@ -198,29 +262,47 @@ async def batch_ingest_products(
             category = product_info.get("category", "")
             
             if not product_code or not name:
+                error_msg = "缺少必填字段 code 或 name"
                 results["failed"].append({
                     "product_code": product_code,
-                    "error": "缺少必填字段 code 或 name"
+                    "error": error_msg
                 })
+                # 记录日志
+                try:
+                    log_ingest_result(batch_id, product_code or "UNKNOWN", name or "UNKNOWN", "failed", error_msg)
+                except Exception as log_err:
+                    logger.error(f"记录日志失败: {log_err}")
                 continue
             
             # 获取该产品的文件索引
             file_indices = files_mapping.get(product_code, [])
             if not file_indices:
+                error_msg = "未找到对应的图片文件"
                 results["failed"].append({
                     "product_code": product_code,
-                    "error": "未找到对应的图片文件"
+                    "error": error_msg
                 })
+                # 记录日志
+                try:
+                    log_ingest_result(batch_id, product_code, name or "UNKNOWN", "failed", error_msg)
+                except Exception as log_err:
+                    logger.error(f"记录日志失败: {log_err}")
                 continue
             
             # 提取该产品的文件
             product_files = [files[idx] for idx in file_indices if idx < len(files)]
             
             if not product_files:
+                error_msg = "有效的图片文件为空"
                 results["failed"].append({
                     "product_code": product_code,
-                    "error": "有效的图片文件为空"
+                    "error": error_msg
                 })
+                # 记录日志
+                try:
+                    log_ingest_result(batch_id, product_code, name or "UNKNOWN", "failed", error_msg)
+                except Exception as log_err:
+                    logger.error(f"记录日志失败: {log_err}")
                 continue
             
             #  优化：先处理图片，成功后再保存产品信息
@@ -249,6 +331,12 @@ async def batch_ingest_products(
                 })
                 results["total_success_images"] += result["success_count"]
                 results["total_failed_images"] += result["fail_count"]
+                
+                # 记录成功日志到数据库
+                try:
+                    log_ingest_result(batch_id, product_code, name, "success", None)
+                except Exception as log_err:
+                    logger.error(f"记录成功日志失败: {product_code}, error: {str(log_err)}")
                 
                 # 记录成功事件（结构化日志）
                 log_batch_ingest_event(
@@ -285,6 +373,12 @@ async def batch_ingest_products(
                         "product_code": product_code,
                         "error": str(e)
                     })
+                
+                # 记录失败日志到数据库
+                try:
+                    log_ingest_result(batch_id, product_code, name, "failed", str(e))
+                except Exception as log_err:
+                    logger.error(f"记录失败日志失败: {product_code}, error: {str(log_err)}")
                 
                 # 记录失败事件（结构化日志）
                 log_batch_ingest_event(

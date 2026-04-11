@@ -235,12 +235,14 @@ export function handleApiError(response, defaultMessage = '操作失败') {
     // 情况1: axios 错误对象 (error.response)
     if (response.data) {
       message = response.data.message || response.data.detail || defaultMessage
-      suggestion = response.data.suggestion
+      // 优先使用后端返回的suggestion
+      suggestion = response.data.suggestion || null
     }
     // 情况2: 后端返回的扁平化响应对象
     else if (response.message) {
       message = response.message
-      suggestion = response.suggestion
+      // 优先使用后端返回的suggestion
+      suggestion = response.suggestion || null
     }
     // 情况3: 网络错误或超时
     else if (response.code === 'ECONNABORTED' || response.message?.includes('timeout')) {
@@ -255,8 +257,10 @@ export function handleApiError(response, defaultMessage = '操作失败') {
   
   // 显示错误
   if (suggestion) {
+    // 优先使用后端返回的详细建议
     showErrorWithSuggestion(message, suggestion)
   } else {
+    // 如果没有suggestion,使用智能解析
     showError(message)
   }
 }

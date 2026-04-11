@@ -72,12 +72,13 @@ export async function searchImage(file, topK = 10, aggregation = 'max') {
  * @param {Function} onProgress - 上传进度回调 (progressEvent) => void
  * @returns {Promise}
  */
-export async function ingestProduct(productCode, name, files, spec = '', category = '', onProgress = null) {
+export async function ingestProduct(productCode, name, files, spec = '', category = '', onProgress = null, batchId = null) {
   const formData = new FormData()
   formData.append('product_code', productCode)
   formData.append('name', name || '')  // 允许空名称
   if (spec) formData.append('spec', spec)
   if (category) formData.append('category', category)
+  if (batchId) formData.append('batch_id', batchId)
   
   files.forEach(file => {
     formData.append('files', file)
