@@ -101,6 +101,11 @@ async def ingest_product(
         )
         
         elapsed = time.time() - start_time
+        
+        # 清除产品列表缓存（因为新增了产品）
+        product_list_cache.invalidate_pattern("product_list:")
+        logger.info(f" 已清除产品列表缓存 (新增产品: {product_code})")
+        
         return build_success_response(
             message=f"产品 {product_code} 入库成功",
             product_code=product_code,
@@ -318,6 +323,11 @@ async def batch_ingest_products(
             success_rate=len(results["success"]) / len(products) if products else 0
         )
         
+        # 清除产品列表缓存（因为新增了产品）
+        if results["success"]:
+            product_list_cache.invalidate_pattern("product_list:")
+            logger.info(f" 已清除产品列表缓存 (批量入库 {len(results['success'])} 个产品)")
+        
         return build_success_response(
             message=f"批量入库完成: 成功 {len(results['success'])} 个产品, 失败 {len(results['failed'])} 个",
             results=results,
@@ -400,6 +410,10 @@ async def update_product(
     try:
         product_service.update_product(product_code, **updates)
         
+        # 清除产品列表缓存（因为产品信息已变更）
+        product_list_cache.invalidate_pattern("product_list:")
+        logger.info(f" 已清除产品列表缓存 (更新产品: {product_code})")
+        
         return build_success_response(
             message=f"产品 {product_code} 信息更新成功",
             product_code=product_code,
@@ -415,7 +429,7 @@ async def update_product(
 
 @router.get("/products")
 async def list_products(category: Optional[str] = None, page: int = 1, page_size: int = 20):
-    """Product list query with full database information"""
+    """Product list query with full database information - 优化版：批量查询+内存缓存"""
     product_service = get_product_service()
     
     if page < 1:
@@ -423,16 +437,42 @@ async def list_products(category: Optional[str] = None, page: int = 1, page_size
     if not (1 <= page_size <= 100):
         raise HTTPException(status_code=400, detail="page_size 必须在 1-100 之间")
 
+    # 生成缓存键（包含分类、页码、每页数量）
+    cache_key = f"product_list:{category or 'all'}:{page}:{page_size}"
+    
+    # 尝试从缓存获取
+    cached_result = product_list_cache.get(cache_key)
+    if cached_result is not None:
+        logger.info(f"📦 使用缓存的产品列表数据: {cache_key}")
+        return cached_result
+
+    # 1. 获取产品列表 (1次查询)
     products = product_service.list_products(category=category, page=page, page_size=page_size)
     total = product_service.count_products(category=category)
     
-    # Enrich each product with additional info
+    # 2. 批量获取所有产品的图片信息 (1次查询，替代N次)
+    product_codes = [p['product_code'] for p in products]
+    all_images_map = {}
+    
+    if product_codes:
+        # 批量查询所有产品的图片
+        placeholders = ','.join(['%s'] * len(product_codes))
+        sql = f"SELECT * FROM product_image WHERE product_code IN ({placeholders}) ORDER BY created_at"
+        all_images = product_service._execute_query(sql, tuple(product_codes), dictionary=True)
+        
+        # 构建产品编码 -> 图片列表的映射
+        from collections import defaultdict
+        images_by_product = defaultdict(list)
+        for img in all_images:
+            images_by_product[img['product_code']].append(img)
+        
+        all_images_map = dict(images_by_product)
+    
+    # 3. 组装 enriched 数据 (内存操作，无数据库查询)
     enriched_products = []
     for product in products:
         product_code = product['product_code']
-        
-        # Get image count from MySQL
-        images = product_service.get_product_images(product_code)
+        images = all_images_map.get(product_code, [])
         image_count = len(images)
         
         # Get Milvus IDs
@@ -461,13 +501,19 @@ async def list_products(category: Optional[str] = None, page: int = 1, page_size
             'data_status': data_status
         })
 
-    return paginated_response(
+    result = paginated_response(
         items=enriched_products,
         total=total,
         page=page,
         page_size=page_size,
         message="查询产品列表成功"
     )
+    
+    # 缓存结果（5分钟）
+    product_list_cache.set(cache_key, result, ttl=300)
+    logger.info(f"💾 缓存产品列表数据: {cache_key}, 产品数: {len(enriched_products)}")
+    
+    return result
 
 
 @router.get("/stats")
@@ -1031,6 +1077,13 @@ async def delete_single_orphan(orphan_type: str, identifier: str):
                 (identifier,)
             )
             logger.info(f" Deleted MySQL orphan: {identifier}")
+            
+            # 清除相关缓存
+            consistency_check_cache.delete("data_consistency_check")
+            consistency_check_cache.delete("orphan_data_query")
+            product_list_cache.invalidate_pattern("product_list:")
+            logger.info(" 已清除孤儿数据和产哨列表缓存")
+            
             return build_success_response(
                 message=f"已删除 MySQL 孤儿记录: {identifier}",
                 type="mysql",
@@ -1045,6 +1098,12 @@ async def delete_single_orphan(orphan_type: str, identifier: str):
                 milvus_service.collection.delete(expr)
                 milvus_service.collection.flush()
                 logger.info(f" Deleted Milvus orphan vector: {milvus_id}")
+                
+                # 清除相关缓存
+                consistency_check_cache.delete("data_consistency_check")
+                consistency_check_cache.delete("orphan_data_query")
+                logger.info(" 已清除孤儿数据缓存")
+                
                 return build_success_response(
                     message=f"已删除 Milvus 孤儿向量: {milvus_id}",
                     type="milvus",
@@ -1063,6 +1122,12 @@ async def delete_single_orphan(orphan_type: str, identifier: str):
                     object_name
                 )
                 logger.info(f" Deleted MinIO orphan file: {object_name}")
+                
+                # 清除相关缓存
+                consistency_check_cache.delete("data_consistency_check")
+                consistency_check_cache.delete("orphan_data_query")
+                logger.info(" 已清除孤儿数据缓存")
+                
                 return build_success_response(
                     message=f"已删除 MinIO 孤儿文件: {object_name}",
                     type="minio",
@@ -1147,6 +1212,14 @@ async def delete_product(product_code: str):
         all_cleaned = all(cleanup_log.values())
         message = f"产品 {product_code} 删除成功" if all_cleaned else f"产品 {product_code} 部分删除成功，请检查日志"
         
+        # 清除数据一致性检查和孤儿数据查询缓存
+        consistency_check_cache.delete("data_consistency_check")
+        consistency_check_cache.delete("orphan_data_query")
+        
+        # 清除产品列表缓存（所有分页和分类）
+        product_list_cache.invalidate_pattern("product_list:")
+        logger.info(" 已清除数据一致性检查和产哨列表缓存")
+        
         return build_success_response(
             message=message,
             deleted_images=len(images),
@@ -1214,6 +1287,14 @@ async def batch_delete_products(product_codes: str = Form(...)):
                     "error": str(e)
                 })
                 logger.error(f"批量删除失败 - {product_code}: {str(e)}")
+        
+        # 清除数据一致性检查和孤儿数据查询缓存
+        consistency_check_cache.delete("data_consistency_check")
+        consistency_check_cache.delete("orphan_data_query")
+        
+        # 清除产品列表缓存（所有分页和分类）
+        product_list_cache.invalidate_pattern("product_list:")
+        logger.info(f" 已清除数据一致性检查和产哨列表缓存 (批量删除 {len(results['success'])} 个产品)")
         
         return build_success_response(
             message=f"批量删除完成: 成功 {len(results['success'])} 个, 失败 {len(results['failed'])} 个",
@@ -1292,6 +1373,13 @@ async def cleanup_failed_product(product_code: str):
             )
         
         # 5. 返回清理结果
+        
+        # 清除相关缓存（因为清理了残留数据）
+        consistency_check_cache.delete("data_consistency_check")
+        consistency_check_cache.delete("orphan_data_query")
+        product_list_cache.invalidate_pattern("product_list:")
+        logger.info(f" 已清除孤儿数据和产哨列表缓存 (清理失败产品: {product_code})")
+        
         return build_success_response(
             message=f"产品 {product_code} 的残留数据已清理完成",
             product_code=product_code,
