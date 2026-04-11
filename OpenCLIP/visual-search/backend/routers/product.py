@@ -33,8 +33,6 @@ from utils.structured_logger import (
 from config.constants import (
     MAX_BATCH_INGEST_SIZE, 
     MAX_BATCH_DELETE_SIZE,
-    RATE_LIMIT_PRODUCT_INGEST,
-    RATE_LIMIT_BATCH_INGEST,
     MINIO_PATH_PREFIX
 )
 
@@ -50,7 +48,6 @@ limiter = Limiter(key_func=get_remote_address)
 # ==================== 单个产品入库 ====================
 
 @router.post("/product/ingest")
-@limiter.limit(RATE_LIMIT_PRODUCT_INGEST)
 async def ingest_product(
     request: Request,
     product_code: str = Form(...),
@@ -118,7 +115,6 @@ async def ingest_product(
 # ==================== 批量产品入库 ====================
 
 @router.post("/products/batch-ingest")
-@limiter.limit(RATE_LIMIT_BATCH_INGEST)
 async def batch_ingest_products(
     request: Request,
     products_json: str = Form(...),
@@ -692,16 +688,19 @@ async def query_orphan_data():
                 milvus_service.collection.load()
                 results = milvus_service.collection.query(
                     expr="id >= 0",
-                    output_fields=["id", "product_code"],
+                    output_fields=["id", "product_code"],  # 必须包含 id 和 product_code
                     limit=milvus_vector_count
                 )
                 milvus_vectors = results
+                logger.info(f" 从 Milvus 查询到 {len(milvus_vectors)} 个向量")
             except Exception as e:
                 logger.warning(f"Failed to query Milvus vectors: {str(e)}")
+                milvus_vectors = []  # 确保失败时为空列表
         
-        milvus_product_codes = set([v['product_code'] for v in milvus_vectors])
-        milvus_ids_in_db = set([img['milvus_id'] for img in mysql_images if img['milvus_id']])
-        milvus_ids_in_milvus = set([v['id'] for v in milvus_vectors])
+        # 安全提取字段,避免 KeyError
+        milvus_product_codes = set([v.get('product_code', '') for v in milvus_vectors if v.get('product_code')])
+        milvus_ids_in_db = set([img['milvus_id'] for img in mysql_images if img.get('milvus_id')])
+        milvus_ids_in_milvus = set([v.get('id') for v in milvus_vectors if v.get('id') is not None])
         
         # 3. Get MinIO objects
         minio_objects = []
@@ -719,42 +718,45 @@ async def query_orphan_data():
             except Exception as e:
                 logger.warning(f"Failed to query MinIO objects: {str(e)}")
         
-        mysql_image_paths = set([img['image_path'].replace(MINIO_PATH_PREFIX, '') 
-                                 for img in mysql_images if img['image_path']])
+        mysql_image_paths = set([
+            img.get('image_path', '').replace(MINIO_PATH_PREFIX, '') 
+            for img in mysql_images 
+            if img.get('image_path')
+        ])
         
         # 4. Find orphans
         # MySQL orphans: images referencing non-existent products
         mysql_orphan_details = [
             {
-                "product_code": img['product_code'],
-                "name": img['name'] or 'Unknown',
-                "image_path": img['image_path'],
+                "product_code": img.get('product_code', 'Unknown'),
+                "name": img.get('name') or 'Unknown',
+                "image_path": img.get('image_path', ''),
                 "reason": "Product not found in product table"
             }
             for img in mysql_images
-            if img['product_code'] not in mysql_product_codes
+            if img.get('product_code') and img['product_code'] not in mysql_product_codes
         ]
         
         # Milvus orphans: vectors not referenced by any MySQL record
         milvus_orphan_details = [
             {
-                "product_code": v['product_code'],
-                "milvus_id": v['id'],
+                "product_code": v.get('product_code', 'Unknown'),
+                "milvus_id": v.get('id', 0),
                 "reason": "No corresponding MySQL record"
             }
             for v in milvus_vectors
-            if v['id'] not in milvus_ids_in_db
+            if v.get('id') is not None and v['id'] not in milvus_ids_in_db
         ]
         
         # MinIO orphans: files not referenced by any MySQL record
         minio_orphan_details = [
             {
-                "object_name": obj['object_name'],
-                "size": obj['size'],
+                "object_name": obj.get('object_name', ''),
+                "size": obj.get('size', 0),
                 "reason": "No corresponding MySQL record"
             }
             for obj in minio_objects
-            if obj['object_name'] not in mysql_image_paths
+            if obj.get('object_name') and obj['object_name'] not in mysql_image_paths
         ]
         
         result = {

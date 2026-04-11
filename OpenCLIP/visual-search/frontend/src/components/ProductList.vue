@@ -465,19 +465,40 @@ const checkConsistency = async () => {
   try {
     const response = await checkDataConsistency()
     
-    if (response.success) {
+    logger.log('📊 数据一致性检查原始响应:', response)
+    logger.log('  - response类型:', typeof response)
+    logger.log('  - response.success:', response?.success)
+    logger.log('  - response keys:', Object.keys(response || {}))
+    
+    if (!response) {
+      ElMessage.error('检查失败：未收到服务器响应')
+      return
+    }
+    
+    // 兼容两种格式: {success: true, ...} 和 直接的业务数据
+    const isSuccess = response.success === true || (response.summary && !response.message?.includes('失败'))
+    
+    if (isSuccess) {
       consistencyResult.value = response
       
       // 显示统计信息
-      const summary = response.summary
+      const summary = response.summary || {}
       ElMessage.success(
-        `检查完成！完整产品: ${summary.complete_products}, ` +
-        `残缺产品: ${summary.mysql_only_count + summary.milvus_only_count + summary.minio_only_count}`
+        `检查完成！完整产品: ${summary.complete_products || 0}, ` +
+        `残缺产品: ${(summary.mysql_only_count || 0) + (summary.milvus_only_count || 0) + (summary.minio_only_count || 0)}`
       )
     } else {
+      logger.error('❌ 数据一致性检查失败:', response)
       handleApiError(response, '检查失败')
     }
   } catch (error) {
+    logger.error('❌ 数据一致性检查异常:', error)
+    logger.error('  错误详情:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      data: error.response?.data
+    })
     handleApiError(error.response || error, '检查失败')
   } finally {
     checking.value = false
@@ -618,13 +639,21 @@ const queryOrphanDataHandler = async () => {
   try {
     const response = await queryOrphanData()
     
+    logger.log('🔍 孤儿数据查询原始响应:', response)
+    logger.log('  - response类型:', typeof response)
+    logger.log('  - response.success:', response?.success)
+    logger.log('  - response keys:', Object.keys(response || {}))
+    
     // 检查响应是否有效
     if (!response) {
       ElMessage.error('查询失败：未收到服务器响应')
       return
     }
     
-    if (response.success) {
+    // 兼容两种格式: {success: true, ...} 和 直接的业务数据
+    const isSuccess = response.success === true || (response.mysql_orphans !== undefined && !response.message?.includes('失败'))
+    
+    if (isSuccess) {
       orphanDataResult.value = response
       
       const total = 
@@ -638,9 +667,17 @@ const queryOrphanDataHandler = async () => {
         ElMessage.warning(`发现 ${total} 条孤儿数据`)
       }
     } else {
+      logger.error('❌ 孤儿数据查询失败:', response)
       handleApiError(response, '查询失败')
     }
   } catch (error) {
+    logger.error('❌ 孤儿数据查询异常:', error)
+    logger.error('  错误详情:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      data: error.response?.data
+    })
     handleApiError(error.response || error, '查询失败')
   } finally {
     queryingOrphan.value = false

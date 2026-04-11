@@ -55,11 +55,11 @@ RATE_LIMIT_IMAGE_SEARCH = "10/minute"
 # 文本搜索限流
 RATE_LIMIT_TEXT_SEARCH = "20/minute"
 
-# 单产品入库限流
-RATE_LIMIT_PRODUCT_INGEST = "5/minute"
+# 单产品入库限流（已移除，改为串行处理）
+# RATE_LIMIT_PRODUCT_INGEST = "5/minute"
 
-# 批量入库限流
-RATE_LIMIT_BATCH_INGEST = "2/minute"
+# 批量入库限流（已移除，改为串行处理）
+# RATE_LIMIT_BATCH_INGEST = "2/minute"
 
 # 背景移除限流
 RATE_LIMIT_REMBG = "5/minute"

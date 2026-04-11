@@ -6,7 +6,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ingestProduct } from '../../../api/search'
 import { handleApiError } from '../../../utils/messageHandler'
 import { groupFilesByFolder, parseProductInfo } from '../utils/folderParser'
-import { simulateBatchProductProgress } from '../utils/progressSimulator'
 import { logger } from '../../../utils/logger'
 
 export function useBatchIngest() {
@@ -20,9 +19,6 @@ export function useBatchIngest() {
   // 目录结构配置
   const folderStructure = ref('standard')
   const sceneFolderNames = ref('')
-  
-  // 并发控制配置
-  const CONCURRENCY_LIMIT = 5  // 最多同时处理5个产品
   
   // 页面关闭保护
   const handleBeforeUnload = (e) => {
@@ -55,37 +51,7 @@ export function useBatchIngest() {
     }
   }
   
-  /**
-   * 并发控制处理器
-   * @param {Array} products - 产品列表
-   * @param {Function} processor - 处理函数
-   */
-  async function processWithConcurrency(products, processor) {
-    let index = 0
     
-    async function worker() {
-      while (index < products.length) {
-        const currentIndex = index++
-        const product = products[currentIndex]
-        
-        // 跳过已经成功的
-        if (product.status === 'success') {
-          continue
-        }
-        
-        try {
-          await processor(product, currentIndex)
-        } catch (error) {
-          // 错误已在 processor 中处理
-        }
-      }
-    }
-    
-    // 启动并发 workers
-    const workers = Array(CONCURRENCY_LIMIT).fill().map(worker)
-    await Promise.all(workers)
-  }
-  
   // 处理批量文件选择
   const handleBatchFileSelect = async (event) => {
     const files = event.target.files
@@ -189,20 +155,52 @@ export function useBatchIngest() {
     failCount.value = 0
     
     try {
-      // 使用并发控制处理所有产品
-      await processWithConcurrency(batchResults.value, async (product) => {
+      // 串行处理所有产品（一次只处理一个）
+      for (let i = 0; i < batchResults.value.length; i++) {
+        const product = batchResults.value[i]
+        
+        // 跳过已成功的产品
+        if (product.status === 'success') {
+          continue
+        }
+        
         // 更新当前处理项的状态
         product.status = 'processing'
         product.progress = 0
         
+        logger.log(`[BatchIngest] 开始处理产品 ${i + 1}/${batchResults.value.length}: ${product.folderName}`)
+        
         try {
-          // 同时执行进度模拟和实际上传
-          const [response] = await Promise.all([
-            ingestProduct(product.productCode, product.productName, product.imageFiles, product.spec, product.category),
-            simulateBatchProductProgress(product)
-          ])
+          // 计算总文件大小（用于显示上传进度）
+          const totalSize = product.imageFiles.reduce((sum, file) => sum + file.size, 0)
+          let uploadedSize = 0
           
-          // 完成进度
+          // 创建进度回调函数
+          const onUploadProgress = (progressEvent) => {
+            if (progressEvent.total) {
+              // 计算上传进度百分比 (0-30% 为上传阶段)
+              const uploadPercent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              // 映射到 0-30% 的范围
+              product.progress = Math.round(uploadPercent * 0.3)
+              
+              // 更新已上传大小
+              uploadedSize = progressEvent.loaded
+              
+              logger.log(`[BatchIngest] ${product.folderName} 上传进度: ${product.progress}% (${uploadedSize}/${totalSize})`)
+            }
+          }
+          
+          // 调用API，传入进度回调
+          const response = await ingestProduct(
+            product.productCode, 
+            product.productName, 
+            product.imageFiles, 
+            product.spec, 
+            product.category,
+            onUploadProgress  // 传入进度回调
+          )
+          
+          // API返回后直接设置为100%
           product.progress = 100
           
           // 更新表格中的状态（扁平格式：直接访问字段）
@@ -270,7 +268,7 @@ export function useBatchIngest() {
             errorData
           })
         }
-      })
+      }
       
       // 显示结果
       if (failCount.value === 0) {

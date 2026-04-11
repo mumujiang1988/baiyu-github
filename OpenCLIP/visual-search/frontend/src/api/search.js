@@ -69,9 +69,10 @@ export async function searchImage(file, topK = 10, aggregation = 'max') {
  * @param {File[]} files - 图片文件列表
  * @param {string} spec - 规格
  * @param {string} category - 分类
+ * @param {Function} onProgress - 上传进度回调 (progressEvent) => void
  * @returns {Promise}
  */
-export async function ingestProduct(productCode, name, files, spec = '', category = '') {
+export async function ingestProduct(productCode, name, files, spec = '', category = '', onProgress = null) {
   const formData = new FormData()
   formData.append('product_code', productCode)
   formData.append('name', name || '')  // 允许空名称
@@ -82,14 +83,21 @@ export async function ingestProduct(productCode, name, files, spec = '', categor
     formData.append('files', file)
   })
   
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+  
+  // 如果提供了进度回调，添加到配置中
+  if (onProgress && typeof onProgress === 'function') {
+    config.onUploadProgress = onProgress
+  }
+  
   const response = await apiClient.post(
     `${API_BASE}/product/ingest`,
     formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    }
+    config
   )
   
   return response.data
