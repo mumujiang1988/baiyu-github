@@ -134,7 +134,9 @@ INSERT INTO tmp_business_modules VALUES
 ('saleorder', '销售订单管理', 17, 'erp/salesorder', 'shopping', 'erp:saleorder', '销售订单管理页面'),
 ('purchasequotation', '采购报价单管理', 18, 'erp/purchasequotation', 'list', 'erp:purchasequotation', '采购报价单管理页面'),
 ('deliverynotice', '发货通知单管理', 19, 'erp/deliverynotice', 'message', 'erp:deliverynotice', '发货通知单管理页面'),
-('saloutbound', '销售出库单管理', 20, 'erp/saloutbound', 'list', 'erp:saloutbound', '销售出库单管理页面');
+('saloutbound', '销售出库单管理', 20, 'erp/saloutbound', 'list', 'erp:saloutbound', '销售出库单管理页面'),
+('receivable', '应收单管理', 21, 'erp/receivable', 'money', 'erp:receivable', '应收单管理页面'),
+('payable', '应付单管理', 22, 'erp/payable', 'money', 'erp:payable', '应付单管理页面');
 
 -- 2.3 按钮权限配置表
 CREATE TEMPORARY TABLE IF NOT EXISTS tmp_button_templates (
