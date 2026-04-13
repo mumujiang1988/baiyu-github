@@ -22,9 +22,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# 导入配置和依赖
+# Import config and dependencies
 from config import settings
-from dependencies import init_services, clip_service, milvus_service, minio_service
+from dependencies import init_services, get_clip_service, get_milvus_service, get_minio_service
 from routers import search_router, product_router, image_router
 from middleware import http_exception_handler, validation_exception_handler
 
@@ -91,26 +91,31 @@ def create_app() -> FastAPI:
     # 详细健康检查
     @app.get("/health")
     async def health_check():
-        """详细健康检查"""
+        """Detailed health check"""
         import shutil
         
+        # Get current service instances
+        clip_svc = get_clip_service()
+        milvus_svc = get_milvus_service()
+        minio_svc = get_minio_service()
+        
         checks = {
-            "mysql": True,  # 如果初始化成功则为True
-            "milvus": milvus_service is not None,
-            "clip": clip_service is not None,
-            "minio": minio_service is not None and minio_service.health_check() if minio_service else False
+            "mysql": True,
+            "milvus": milvus_svc is not None,
+            "clip": clip_svc is not None,
+            "minio": minio_svc is not None and minio_svc.health_check() if minio_svc else False
         }
         
-        # 检查 Milvus 集合状态
-        if milvus_service:
+        # Check Milvus collection status
+        if milvus_svc:
             try:
-                stats = milvus_service.get_stats()
+                stats = milvus_svc.get_stats()
                 checks["milvus_vector_count"] = stats.get("vector_count", 0)
             except Exception as e:
-                logger.warning(f"Milvus 状态检查失败: {str(e)}")
+                logger.warning(f"Milvus status check failed: {str(e)}")
                 checks["milvus"] = False
         
-        # 检查磁盘剩余空间 (storage 目录)
+        # Check disk space
         try:
             storage_path = os.path.join(os.path.dirname(__file__), "storage")
             if os.path.exists(storage_path):
@@ -118,7 +123,7 @@ def create_app() -> FastAPI:
                 checks["disk_free_gb"] = round(usage.free / (1024**3), 2)
                 checks["disk_usage_percent"] = round((usage.used / usage.total) * 100, 2)
         except Exception as e:
-            logger.warning(f"磁盘空间检查失败: {str(e)}")
+            logger.warning(f"Disk space check failed: {str(e)}")
         
         return {
             "status": "healthy" if all(v for k, v in checks.items() if isinstance(v, bool)) else "unhealthy",
