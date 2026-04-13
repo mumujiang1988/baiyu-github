@@ -8,6 +8,9 @@ import './assets/global.css'
 import App from './App.vue'
 import router from './router'
 
+// 输出编译时间日志
+console.log(`📦 Frontend Build Time: ${__BUILD_TIME__}`)
+
 const app = createApp(App)
 const pinia = createPinia()
 

@@ -261,14 +261,6 @@ const confirmCrop = () => {
     currentImage.value = img
     originalImage.value = img // 更新原始图片引用
     
-    // 重置所有参数
-    rotateAngle.value = 0
-    flipH.value = false
-    flipV.value = false
-    brightness.value = 100
-    contrast.value = 100
-    saturation.value = 100
-    
     // 销毁 cropper 实例
     if (cropperInstance) {
       cropperInstance.destroy()
@@ -593,13 +585,17 @@ onBeforeUnmount(() => {
 }
 
 .cropper-container {
-  width: 100%;
   max-width: 800px;
+  max-height: 400px;
+  margin: 0 auto;
 }
 
 .cropper-container img {
-  max-width: 100%;
   display: block;
+  max-width: none !important;
+  max-height: none !important;
+  width: auto !important;
+  height: auto !important;
 }
 
 .canvas {

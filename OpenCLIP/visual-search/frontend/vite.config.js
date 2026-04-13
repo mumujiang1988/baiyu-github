@@ -12,7 +12,32 @@ export default defineConfig(({ mode }) => {
   console.log(`🔧 后端代理地址: ${backendUrl}`)
   
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      {
+        name: 'build-time-inject',
+        config() {
+          // 获取东八区时间 (UTC+8)
+          const now = new Date()
+          const utc8Time = new Date(now.getTime() + (8 * 60 * 60 * 1000))
+          const buildTime = utc8Time.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          })
+          
+          return {
+            define: {
+              __BUILD_TIME__: JSON.stringify(buildTime)
+            }
+          }
+        }
+      }
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src')
