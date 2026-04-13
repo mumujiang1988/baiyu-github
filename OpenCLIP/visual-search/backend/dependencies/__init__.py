@@ -1,6 +1,3 @@
-"""
-依赖注入模块 - 管理服务实例
-"""
 import logging
 from services.clip_service import ClipService
 from services.milvus_service import MilvusService
@@ -13,8 +10,6 @@ from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-
-# 全局服务实例
 clip_service = None
 milvus_service = None
 product_service = None
@@ -102,35 +97,28 @@ def init_services():
 
 
 def get_clip_service():
-    """获取 CLIP 服务实例"""
     return clip_service
 
 
 def get_milvus_service():
-    """获取 Milvus 服务实例"""
     return milvus_service
 
 
 def get_product_service():
-    """获取产品服务实例"""
     return product_service
 
 
 def get_image_processor():
-    """获取图片处理器实例"""
     return image_processor
 
 
 def get_rembg_service():
-    """获取 Rembg 服务实例"""
     return rembg_service
 
 
 def get_minio_service():
-    """获取 MinIO 服务实例"""
     return minio_service
 
 
 def get_image_optimizer():
-    """获取图片优化器实例"""
     return image_optimizer
