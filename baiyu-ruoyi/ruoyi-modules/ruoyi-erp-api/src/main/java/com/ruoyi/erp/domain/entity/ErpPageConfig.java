@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 公共配置表实体类
+ * ERP Page Configuration Table Entity
  * 
  * @author JMH
  * @date 2026-03-22
@@ -22,134 +22,134 @@ public class ErpPageConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 主键 ID
+     * Primary key ID
      */
     @TableId(value = "config_id", type = IdType.AUTO)
     private Long configId;
 
     /**
-     * 模块编码 (如 saleOrder/deliveryOrder)
+     * Module code (e.g., saleOrder/deliveryOrder)
      */
     @TableField("module_code")
     private String moduleCode;
 
     /**
-     * 配置名称
+     * Configuration name
      */
     @TableField("config_name")
     private String configName;
 
     /**
-     * 配置类型 (PAGE=页面配置/DICT=字典配置/PUSH=下推配置/APPROVAL=审批配置)
+     * Configuration type (PAGE=page configuration/DICT=dictionary configuration/PUSH=push configuration/APPROVAL=approval configuration)
      */
     @TableField("config_type")
     private String configType;
 
     /**
-     * 页面基础配置 (page.json)
+     * Page base configuration (page.json)
      */
     @TableField("page_config")
     private String pageConfig;
 
     /**
-     * 表单 UI 组件配置 (form.json)
+     * Form UI component configuration (form.json)
      */
     @TableField("form_config")
     private String formConfig;
 
     /**
-     * 表格查询配置 (table.json)
+     * Table query configuration (table.json)
      */
     @TableField("table_config")
     private String tableConfig;
 
     /**
-     * 查询表单配置 (search.json)
+     * Search form configuration (search.json)
      */
     @TableField("search_config")
     private String searchConfig;
 
     /**
-     * 按钮操作配置 (action.json)
+     * Button operation configuration (action.json)
      */
     @TableField("action_config")
     private String actionConfig;
 
     /**
-     * API接口配置 (api.json)
+     * API interface configuration (api.json)
      */
     @TableField("api_config")
     private String apiConfig;
 
     /**
-     * 字典数据源配置 (dict.json)
+     * Dictionary data source configuration (dict.json)
      */
     @TableField("dict_config")
     private String dictConfig;
 
     /**
-     * 业务规则配置 (config.json)
+     * Business rule configuration (config.json)
      */
     @TableField("business_config")
     private String businessConfig;
 
     /**
-     * 详情页配置 (detail.json)
+     * Detail page configuration (detail.json)
      */
     @TableField("detail_config")
     private String detailConfig;
 
     /**
-     * 版本号 (每次更新 +1)
+     * Version number (incremented by 1 on each update)
      */
     @TableField("version")
     private Integer version;
 
     /**
-     * 状态 (1 正常 0 停用)
+     * Status (1 active 0 inactive)
      */
     @TableField("status")
     private String status;
 
     /**
-     * 是否公共配置 (1 是 0 否)
+     * Is public configuration (1 yes 0 no)
      */
     @TableField("is_public")
     private String isPublic;
 
     /**
-     * 父配置 ID(用于继承)
+     * Parent configuration ID (for inheritance)
      */
     @TableField("parent_config_id")
     private Long parentConfigId;
 
     /**
-     * 备注
+     * Remark
      */
     @TableField("remark")
     private String remark;
 
     /**
-     * 创建者
+     * Creator
      */
     @TableField(value = "create_by", fill = FieldFill.INSERT)
     private String createBy;
 
     /**
-     * 创建时间
+     * Create time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
-     * 更新者
+     * Updater
      */
     @TableField(value = "update_by", fill = FieldFill.UPDATE)
     private String updateBy;
 
     /**
-     * 更新时间
+     * Update time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "update_time", fill = FieldFill.UPDATE)

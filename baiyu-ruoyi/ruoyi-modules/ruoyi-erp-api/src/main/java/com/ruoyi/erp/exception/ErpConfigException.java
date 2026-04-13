@@ -3,7 +3,7 @@ package com.ruoyi.erp.exception;
 import lombok.Getter;
 
 /**
- * ERP 配置化业务异常
+ * ERP Configuration Business Exception
  * 
  * @author JMH
  * @date 2026-03-24
@@ -12,12 +12,12 @@ import lombok.Getter;
 public class ErpConfigException extends RuntimeException {
     
     /**
-     * 模块编码
+     * Module code
      */
     private final String moduleCode;
     
     /**
-     * 错误码
+     * Error code
      */
     private final String errorCode;
     

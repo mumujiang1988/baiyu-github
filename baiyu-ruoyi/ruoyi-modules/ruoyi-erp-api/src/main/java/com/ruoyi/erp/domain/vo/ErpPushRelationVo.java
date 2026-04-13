@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 下推关系配置视图对象 erp_push_relation
+ * ERP Push Relation Configuration View Object erp_push_relation
  *
  * @author JMH
  * @date 2026-03-22
@@ -27,83 +27,83 @@ public class ErpPushRelationVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 关系 ID
+     * Relation ID
      */
-    @ExcelProperty(value = "关系 ID")
+    @ExcelProperty(value = "Relation ID")
     private Long relationId;
 
     /**
-     * 源模块编码
+     * Source module code
      */
-    @ExcelProperty(value = "源模块编码")
+    @ExcelProperty(value = "Source Module Code")
     private String sourceModule;
 
     /**
-     * 目标模块编码
+     * Target module code
      */
-    @ExcelProperty(value = "目标模块编码")
+    @ExcelProperty(value = "Target Module Code")
     private String targetModule;
 
     /**
-     * 关系名称
+     * Relation name
      */
-    @ExcelProperty(value = "关系名称")
+    @ExcelProperty(value = "Relation Name")
     private String relationName;
 
     /**
-     * 字段映射规则 (JSON)
+     * Field mapping rules (JSON)
      */
-    @ExcelProperty(value = "字段映射规则")
+    @ExcelProperty(value = "Field Mapping Rules")
     private String mappingRules;
 
     /**
-     * 数据转换规则 (JSON)
+     * Data transformation rules (JSON)
      */
-    @ExcelProperty(value = "数据转换规则")
+    @ExcelProperty(value = "Data Transformation Rules")
     private String transformationRules;
 
     /**
-     * 数据校验规则 (JSON)
+     * Data validation rules (JSON)
      */
-    @ExcelProperty(value = "数据校验规则")
+    @ExcelProperty(value = "Data Validation Rules")
     private String validationRules;
 
     /**
-     * 并发控制策略
+     * Concurrency control strategy
      */
-    @ExcelProperty(value = "并发控制策略")
+    @ExcelProperty(value = "Concurrency Control Strategy")
     private String concurrencyControl;
 
     /**
-     * 是否启用事务
+     * Is transaction enabled
      */
-    @ExcelProperty(value = "是否启用事务", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Transaction Enabled", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_yes_no")
     private String transactionEnabled;
 
     /**
-     * 状态
+     * Status
      */
-    @ExcelProperty(value = "状态", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Status", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_normal_disable")
     private String status;
 
     /**
-     * 版本号
+     * Version number
      */
-    @ExcelProperty(value = "版本号")
+    @ExcelProperty(value = "Version Number")
     private Integer version;
 
     /**
-     * 创建时间
+     * Create time
      */
-    @ExcelProperty(value = "创建时间")
+    @ExcelProperty(value = "Create Time")
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
-    @ExcelProperty(value = "更新时间")
+    @ExcelProperty(value = "Update Time")
     private LocalDateTime updateTime;
 
 }

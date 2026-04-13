@@ -141,7 +141,7 @@ public class ErpEngineController {
                 if (tableDataInfo.getRows() != null && !tableDataInfo.getRows().isEmpty()) {
                     log.info("💰 [成本表查询] 第一行数据：{}", tableDataInfo.getRows().get(0));
                 } else {
-                    log.warn("💰 [成本表查询]  警告：返回数据为空！请检查 SQL 配置或数据库连接");
+                    log.warn("💰 [成本表查询] ⚠️ 警告：返回数据为空！请检查 SQL 配置或数据库连接");
                 }
             }
             

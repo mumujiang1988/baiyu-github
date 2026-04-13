@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 审批流程配置视图对象 erp_approval_flow
+ * ERP Approval Flow Configuration View Object erp_approval_flow
  *
  * @author JMH
  * @date 2026-03-22
@@ -27,52 +27,52 @@ public class ErpApprovalFlowVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 流程 ID
+     * Flow ID
      */
-    @ExcelProperty(value = "流程 ID")
+    @ExcelProperty(value = "Flow ID")
     private Long flowId;
 
     /**
-     * 模块编码
+     * Module code
      */
-    @ExcelProperty(value = "模块编码")
+    @ExcelProperty(value = "Module Code")
     private String moduleCode;
 
     /**
-     * 流程名称
+     * Flow name
      */
-    @ExcelProperty(value = "流程名称")
+    @ExcelProperty(value = "Flow Name")
     private String flowName;
 
     /**
-     * 流程定义 (JSON)
+     * Flow definition (JSON)
      */
-    @ExcelProperty(value = "流程定义")
+    @ExcelProperty(value = "Flow Definition")
     private String flowDefinition;
 
     /**
-     * 当前版本号
+     * Current version number
      */
-    @ExcelProperty(value = "当前版本号")
+    @ExcelProperty(value = "Current Version")
     private Integer currentVersion;
 
     /**
-     * 是否激活
+     * Is active
      */
-    @ExcelProperty(value = "是否激活", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Is Active", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_yes_no")
     private String isActive;
 
     /**
-     * 创建时间
+     * Create time
      */
-    @ExcelProperty(value = "创建时间")
+    @ExcelProperty(value = "Create Time")
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
-    @ExcelProperty(value = "更新时间")
+    @ExcelProperty(value = "Update Time")
     private LocalDateTime updateTime;
 
 }

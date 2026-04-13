@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * ERP 配置历史业务对象 erp_page_config_history
+ * ERP Configuration History Business Object erp_page_config_history
  *
  * @author JMH
  * @date 2026-03-22
@@ -20,51 +20,51 @@ import lombok.EqualsAndHashCode;
 public class ErpPageConfigHistoryBo extends BaseEntity {
 
     /**
-     * 历史记录 ID
+     * History record ID
      */
     private Long historyId;
 
     /**
-     * 配置 ID
+     * Configuration ID
      */
-    @NotBlank(message = "配置 ID 不能为空")
+    @NotBlank(message = "Configuration ID cannot be empty")
     private Long configId;
 
     /**
-     * 模块编码
+     * Module code
      */
-    @NotBlank(message = "模块编码不能为空")
-    @Size(min = 0, max = 50, message = "模块编码长度不能超过{max}个字符")
+    @NotBlank(message = "Module code cannot be empty")
+    @Size(min = 0, max = 50, message = "Module code length cannot exceed {max} characters")
     private String moduleCode;
 
     /**
-     * 配置类型
+     * Configuration type
      */
-    @NotBlank(message = "配置类型不能为空")
+    @NotBlank(message = "Configuration type cannot be empty")
     private String configType;
 
     /**
-     * 版本号
+     * Version number
      */
-    @NotBlank(message = "版本号不能为空")
+    @NotBlank(message = "Version number cannot be empty")
     private Integer version;
 
     /**
-     * 完整的 JSON 配置
+     * Complete JSON configuration
      */
-    @NotBlank(message = "配置内容不能为空")
+    @NotBlank(message = "Configuration content cannot be empty")
     private String configContent;
 
     /**
-     * 变更原因
+     * Change reason
      */
-    @Size(min = 0, max = 500, message = "变更原因长度不能超过{max}个字符")
+    @Size(min = 0, max = 500, message = "Change reason length cannot exceed {max} characters")
     private String changeReason;
 
     /**
-     * 变更类型
+     * Change type
      */
-    @NotBlank(message = "变更类型不能为空")
+    @NotBlank(message = "Change type cannot be empty")
     private String changeType;
 
 }

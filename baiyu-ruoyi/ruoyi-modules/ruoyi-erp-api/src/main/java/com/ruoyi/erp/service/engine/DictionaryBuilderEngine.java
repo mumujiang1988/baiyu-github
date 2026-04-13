@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 字典构建器引擎 - 构建器模式
+ * Dictionary Builder Engine - Builder Pattern
  * 
  * @author JMH
  * @date 2026-03-25
@@ -40,7 +40,7 @@ public class DictionaryBuilderEngine {
     
     public DictionaryBuilderEngine buildStatic(String name, List<Map<String, Object>> options) {
         dictionaryCache.put(name, new DictionaryCache(options, Long.MAX_VALUE));
-        log.info(" 构建静态字典：{}, 共 {} 条", name, options.size());
+        log.info(" Built static dictionary: {}, total {} items", name, options.size());
         return this;
     }
     
@@ -50,7 +50,7 @@ public class DictionaryBuilderEngine {
         cacheConfig.putAll(config);
         
         dictionaryCache.put(name, new DictionaryCache(null, DEFAULT_TTL));
-        log.info(" 构建动态字典：{}", name);
+        log.info(" Built dynamic dictionary: {}", name);
         return this;
     }
     
@@ -60,7 +60,7 @@ public class DictionaryBuilderEngine {
         cacheConfig.putAll(config);
         
         dictionaryCache.put(name, new DictionaryCache(new ArrayList<>(), DEFAULT_TTL));
-        log.info(" 构建远程搜索字典：{}", name);
+        log.info(" Built remote search dictionary: {}", name);
         return this;
     }
     
@@ -69,25 +69,25 @@ public class DictionaryBuilderEngine {
         DictionaryCache cache = dictionaryCache.get(name);
         
         if (cache == null) {
-            log.warn(" 字典不存在：{}", name);
+            log.warn(" Dictionary not found: {}", name);
             return new ArrayList<>();
         }
         
         if (cache.data != null && !cache.isExpired()) {
-            log.debug("💾 使用缓存字典：{}", name);
+            log.debug("💾 Using cached dictionary: {}", name);
             return cache.data;
         }
         
         try {
-            log.info("🌐 加载字典：{}", name);
+            log.info("🌐 Loading dictionary: {}", name);
             List<Map<String, Object>> data = loader.load();
             
             dictionaryCache.put(name, new DictionaryCache(data, cache.ttl));
-            log.info(" 字典加载成功：{}, 共 {} 条", name, data.size());
+            log.info(" Dictionary loaded successfully: {}, total {} items", name, data.size());
             
             return data;
         } catch (Exception e) {
-            log.error("字典加载失败：{}", name, e);
+            log.error("Dictionary loading failed: {}", name, e);
             cache.error = e.getMessage();
             return new ArrayList<>();
         }
@@ -98,20 +98,20 @@ public class DictionaryBuilderEngine {
         DictionaryCache cache = dictionaryCache.get(name);
         
         if (cache == null) {
-            log.warn(" 字典不存在：{}", name);
+            log.warn(" Dictionary not found: {}", name);
             return new ArrayList<>();
         }
         
         try {
-            log.info("搜索字典：{}, 关键词：{}", name, keyword);
+            log.info("Searching dictionary: {}, keyword: {}", name, keyword);
             List<Map<String, Object>> data = searcher.search(keyword);
             
             dictionaryCache.put(name, new DictionaryCache(data, cache.ttl));
-            log.info(" 字典搜索成功：{}, 共 {} 条", name, data.size());
+            log.info(" Dictionary search successful: {}, total {} items", name, data.size());
             
             return data;
         } catch (Exception e) {
-            log.error("字典搜索失败：{}", name, e);
+            log.error("Dictionary search failed: {}", name, e);
             return new ArrayList<>();
         }
     }
@@ -130,7 +130,7 @@ public class DictionaryBuilderEngine {
             cache.loaded = false;
             cache.data = null;
             cache.timestamp = 0;
-            log.info("已清除字典缓存：{}", name);
+            log.info("Cleared dictionary cache: {}", name);
         }
     }
     
@@ -140,7 +140,7 @@ public class DictionaryBuilderEngine {
             cache.data = null;
             cache.timestamp = 0;
         });
-        log.info("已清除所有字典缓存");
+        log.info("Cleared all dictionary caches");
     }
     
     public Map<String, Object> getStatus(String name) {

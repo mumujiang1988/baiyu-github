@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 下推关系配置表实体类
+ * ERP Push Relation Configuration Table Entity
  * 
  * @author JMH
  * @date 2026-03-22
@@ -22,81 +22,81 @@ public class ErpPushRelation implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 关系 ID
+     * Relation ID
      */
     @TableId(value = "relation_id", type = IdType.AUTO)
     private Long relationId;
 
     /**
-     * 源模块编码
+     * Source module code
      */
     @TableField("source_module")
     private String sourceModule;
 
     /**
-     * 目标模块编码
+     * Target module code
      */
     @TableField("target_module")
     private String targetModule;
 
     /**
-     * 关系名称
+     * Relation name
      */
     @TableField("relation_name")
     private String relationName;
 
     /**
-     * 字段映射规则 (JSON)
+     * Field mapping rules (JSON)
      */
     @TableField("mapping_rules")
     private String mappingRules;
 
     /**
-     * 数据转换规则 (JSON)
+     * Data transformation rules (JSON)
      */
     @TableField("transformation_rules")
     private String transformationRules;
 
     /**
-     * 数据校验规则 (JSON)
+     * Data validation rules (JSON)
      */
     @TableField("validation_rules")
     private String validationRules;
 
     /**
-     * 并发控制策略 (optimistic/pessimistic)
+     * Concurrency control strategy (optimistic/pessimistic)
      */
     @TableField("concurrency_control")
     private String concurrencyControl;
 
     /**
-     * 是否启用事务
+     * Is transaction enabled
      */
     @TableField("transaction_enabled")
     private String transactionEnabled;
 
     /**
-     * 状态 (1 启用 0 停用)
+     * Status (1 enabled 0 disabled)
      */
     @TableField("status")
     private String status;
 
     /**
-     * 版本号 (乐观锁)
+     * Version number (optimistic lock)
      */
     @Version
     @TableField("version")
     private Integer version;
 
     /**
-     * 创建时间
+     * Create time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "update_time", fill = FieldFill.UPDATE)

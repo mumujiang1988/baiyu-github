@@ -135,9 +135,9 @@ onMounted(() => {
 
       <!-- Search form -->
       <el-form :model="queryParams" :inline="true" label-width="80px" class="search-form">
-        <el-row :gutter="12">
-          <el-col :span="6">
-            <el-form-item label="模块编码">
+        <el-row :gutter="8">
+          <el-col :span="4">
+            <el-form-item label="模块编码" style="margin-bottom: 8px;">
               <el-input
                 v-model="queryParams.moduleCode"
                 placeholder="请输入模块编码"
@@ -148,8 +148,8 @@ onMounted(() => {
             </el-form-item>
           </el-col>
           
-          <el-col :span="6">
-            <el-form-item label="配置名称">
+          <el-col :span="4">
+            <el-form-item label="配置名称" style="margin-bottom: 8px;">
               <el-input
                 v-model="queryParams.configName"
                 placeholder="请输入配置名称"
@@ -160,8 +160,8 @@ onMounted(() => {
             </el-form-item>
           </el-col>
           
-          <el-col :span="6">
-            <el-form-item label="配置类型">
+          <el-col :span="4">
+            <el-form-item label="配置类型" style="margin-bottom: 8px;">
               <el-select
                 v-model="queryParams.configType"
                 placeholder="请选择配置类型"
@@ -175,8 +175,8 @@ onMounted(() => {
             </el-form-item>
           </el-col>
           
-          <el-col :span="6">
-            <el-form-item label="状态">
+          <el-col :span="4">
+            <el-form-item label="状态" style="margin-bottom: 8px;">
               <el-select
                 v-model="queryParams.status"
                 placeholder="请选择状态"
@@ -188,16 +188,16 @@ onMounted(() => {
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-        
-        <el-row>
-          <el-col :span="24" style="text-align: right;">
-            <el-button type="primary" icon="Search" @click="handleQuery">
-              搜索
-            </el-button>
-            <el-button icon="Refresh" @click="resetQuery">
-              重置
-            </el-button>
+          
+          <el-col :span="8" style="text-align: right;">
+            <el-form-item style="margin-bottom: 8px;">
+              <el-button type="primary" icon="Search" @click="handleQuery">
+                搜索
+              </el-button>
+              <el-button icon="Refresh" @click="resetQuery">
+                重置
+              </el-button>
+            </el-form-item>
           </el-col>
         </el-row>
       </el-form>
@@ -338,11 +338,11 @@ onMounted(() => {
 }
 
 .search-form {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   
   :deep(.el-form-item) {
     margin-right: 0;
-    margin-bottom: 12px;
+    margin-bottom: 0;
   }
   
   :deep(.el-form-item__label) {

@@ -227,7 +227,7 @@ const handleBeforeClose = (done) => {
 </script>
 
 <style scoped>
-/*  Use parent global styles */
+/* ✅ Use parent global styles */
 
 /* Drawer loading */
 .drawer-loading {

@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 审批历史记录视图对象 erp_approval_history
+ * ERP Approval History View Object erp_approval_history
  *
  * @author JMH
  * @date 2026-03-22
@@ -25,57 +25,57 @@ public class ErpApprovalHistoryVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 历史记录 ID
+     * History record ID
      */
-    @ExcelProperty(value = "历史记录 ID")
+    @ExcelProperty(value = "History ID")
     private Long historyId;
 
     /**
-     * 单据 ID
+     * Bill ID
      */
-    @ExcelProperty(value = "单据 ID")
+    @ExcelProperty(value = "Bill ID")
     private Long billId;
 
     /**
-     * 模块编码
+     * Module code
      */
-    @ExcelProperty(value = "模块编码")
+    @ExcelProperty(value = "Module Code")
     private String moduleCode;
 
     /**
-     * 流程 ID
+     * Flow ID
      */
-    @ExcelProperty(value = "流程 ID")
+    @ExcelProperty(value = "Flow ID")
     private Long flowId;
 
     /**
-     * 当前步骤
+     * Current step
      */
-    @ExcelProperty(value = "当前步骤")
+    @ExcelProperty(value = "Current Step")
     private Integer currentStep;
 
     /**
-     * 审批人 ID
+     * Approver ID
      */
-    @ExcelProperty(value = "审批人 ID")
+    @ExcelProperty(value = "Approver ID")
     private String approverId;
 
     /**
-     * 审批动作
+     * Approval action
      */
-    @ExcelProperty(value = "审批动作")
+    @ExcelProperty(value = "Approval Action")
     private String approvalAction;
 
     /**
-     * 审批意见
+     * Approval opinion
      */
-    @ExcelProperty(value = "审批意见")
+    @ExcelProperty(value = "Approval Opinion")
     private String approvalOpinion;
 
     /**
-     * 审批时间
+     * Approval time
      */
-    @ExcelProperty(value = "审批时间")
+    @ExcelProperty(value = "Approval Time")
     private LocalDateTime approvalTime;
 
 }

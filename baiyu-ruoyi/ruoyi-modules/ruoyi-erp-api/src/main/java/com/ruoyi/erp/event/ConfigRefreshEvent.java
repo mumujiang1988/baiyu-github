@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * 配置刷新事件
+ * Configuration Refresh Event
  * 
  * @author JMH
  * @date 2026-03-26
@@ -13,21 +13,21 @@ import org.springframework.context.ApplicationEvent;
 public class ConfigRefreshEvent extends ApplicationEvent {
     
     /**
-     * 模块编码
+     * Module code
      */
     private final String moduleCode;
     
     /**
-     * 新版本号
+     * New version number
      */
     private final Integer version;
     
     /**
-     * 构造函数
+     * Constructor
      * 
-     * @param source 事件源
-     * @param moduleCode 模块编码
-     * @param version 新版本号
+     * @param source Event source
+     * @param moduleCode Module code
+     * @param version New version number
      */
     public ConfigRefreshEvent(Object source, String moduleCode, Integer version) {
         super(source);

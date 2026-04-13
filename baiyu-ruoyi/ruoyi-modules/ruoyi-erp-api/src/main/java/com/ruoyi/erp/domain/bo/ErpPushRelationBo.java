@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * ERP 下推关系配置业务对象 erp_push_relation
+ * ERP Push Relation Configuration Business Object erp_push_relation
  *
  * @author JMH
  * @date 2026-03-22
@@ -20,58 +20,58 @@ import lombok.EqualsAndHashCode;
 public class ErpPushRelationBo extends BaseEntity {
 
     /**
-     * 关系 ID
+     * Relation ID
      */
     private Long relationId;
 
     /**
-     * 源模块编码
+     * Source module code
      */
-    @NotBlank(message = "源模块编码不能为空")
-    @Size(min = 0, max = 50, message = "源模块编码长度不能超过{max}个字符")
+    @NotBlank(message = "Source module code cannot be empty")
+    @Size(min = 0, max = 50, message = "Source module code length cannot exceed {max} characters")
     private String sourceModule;
 
     /**
-     * 目标模块编码
+     * Target module code
      */
-    @NotBlank(message = "目标模块编码不能为空")
-    @Size(min = 0, max = 50, message = "目标模块编码长度不能超过{max}个字符")
+    @NotBlank(message = "Target module code cannot be empty")
+    @Size(min = 0, max = 50, message = "Target module code length cannot exceed {max} characters")
     private String targetModule;
 
     /**
-     * 关系名称
+     * Relation name
      */
-    @NotBlank(message = "关系名称不能为空")
-    @Size(min = 0, max = 100, message = "关系名称长度不能超过{max}个字符")
+    @NotBlank(message = "Relation name cannot be empty")
+    @Size(min = 0, max = 100, message = "Relation name length cannot exceed {max} characters")
     private String relationName;
 
     /**
-     * 字段映射规则 (JSON)
+     * Field mapping rules (JSON)
      */
     private String mappingRules;
 
     /**
-     * 数据转换规则 (JSON)
+     * Data transformation rules (JSON)
      */
     private String transformationRules;
 
     /**
-     * 数据校验规则 (JSON)
+     * Data validation rules (JSON)
      */
     private String validationRules;
 
     /**
-     * 并发控制策略
+     * Concurrency control strategy
      */
     private String concurrencyControl;
 
     /**
-     * 是否启用事务
+     * Is transaction enabled
      */
     private String transactionEnabled;
 
     /**
-     * 状态
+     * Status
      */
     private String status;
 

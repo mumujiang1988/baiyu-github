@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * ERP 审批流程配置业务对象 erp_approval_flow
+ * ERP Approval Flow Configuration Business Object erp_approval_flow
  *
  * @author JMH
  * @date 2026-03-22
@@ -20,37 +20,37 @@ import lombok.EqualsAndHashCode;
 public class ErpApprovalFlowBo extends BaseEntity {
 
     /**
-     * 流程 ID
+     * Flow ID
      */
     private Long flowId;
 
     /**
-     * 模块编码
+     * Module code
      */
-    @NotBlank(message = "模块编码不能为空")
-    @Size(min = 0, max = 50, message = "模块编码长度不能超过{max}个字符")
+    @NotBlank(message = "Module code cannot be empty")
+    @Size(min = 0, max = 50, message = "Module code length cannot exceed {max} characters")
     private String moduleCode;
 
     /**
-     * 流程名称
+     * Flow name
      */
-    @NotBlank(message = "流程名称不能为空")
-    @Size(min = 0, max = 100, message = "流程名称长度不能超过{max}个字符")
+    @NotBlank(message = "Flow name cannot be empty")
+    @Size(min = 0, max = 100, message = "Flow name length cannot exceed {max} characters")
     private String flowName;
 
     /**
-     * 流程定义 (JSON)
+     * Flow definition (JSON)
      */
-    @NotBlank(message = "流程定义不能为空")
+    @NotBlank(message = "Flow definition cannot be empty")
     private String flowDefinition;
 
     /**
-     * 当前版本号
+     * Current version number
      */
     private Integer currentVersion;
 
     /**
-     * 是否激活
+     * Is active
      */
     private String isActive;
 

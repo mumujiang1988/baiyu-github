@@ -246,7 +246,7 @@ class ERPConfigParser {
           tabs: (formConfig.formTabs.tabs || []).map(tab => {
             // 开发环境警告：未显式指定 type
             if (!tab.type && process.env.NODE_ENV === 'development') {
-              console.warn(` [配置规范] formTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'form'。建议显式指定以避免歧义。`)
+              console.warn(`⚠️ [配置规范] formTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'form'。建议显式指定以避免歧义。`)
             }
             return {
               ...tab,
@@ -273,7 +273,7 @@ class ERPConfigParser {
           tabs: (formConfig.formTabs.tabs || []).map(tab => {
             // 开发环境警告：未显式指定 type
             if (!tab.type && process.env.NODE_ENV === 'development') {
-              console.warn(` [配置规范] formTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'form'。建议显式指定以避免歧义。`)
+              console.warn(`⚠️ [配置规范] formTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'form'。建议显式指定以避免歧义。`)
             }
             return {
               ...tab,
@@ -306,7 +306,7 @@ class ERPConfigParser {
         tabs: (detailConfig.detail.tabs || []).map(tab => {
           // 开发环境警告：未显式指定 type
           if (!tab.type && process.env.NODE_ENV === 'development') {
-            console.warn(` [配置规范] detailTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'table'。建议显式指定以避免歧义。`)
+            console.warn(`⚠️ [配置规范] detailTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'table'。建议显式指定以避免歧义。`)
           }
           return {
             ...tab,
@@ -336,7 +336,7 @@ class ERPConfigParser {
         tabs: (drawerConfig.tabs || []).map(tab => {
           // 开发环境警告：未显式指定 type
           if (!tab.type && process.env.NODE_ENV === 'development') {
-            console.warn(` [配置规范] drawerTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'table'。建议显式指定以避免歧义。`)
+            console.warn(`⚠️ [配置规范] drawerTabs.${tab.name} 未显式指定 type 字段，将使用默认值 'table'。建议显式指定以避免歧义。`)
           }
           return {
             ...tab,
@@ -396,7 +396,7 @@ class ERPConfigParser {
 
     //  强制使用新构建器模式
     if (!dictionaryConfig.builder?.enabled) {
-      //  记录到日志而不是警告
+      // ✅ 记录到日志而不是警告
       console.log('ℹ️ Dictionary builder not enabled - please set dictionaryConfig.builder.enabled = true')
       return
     }

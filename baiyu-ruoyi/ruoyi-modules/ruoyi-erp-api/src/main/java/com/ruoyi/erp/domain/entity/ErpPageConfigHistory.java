@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 配置历史表实体类
+ * ERP Configuration History Table Entity
  * 
  * @author JMH
  * @date 2026-03-22
@@ -22,103 +22,103 @@ public class ErpPageConfigHistory implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 历史记录 ID
+     * History record ID
      */
     @TableId(value = "history_id", type = IdType.AUTO)
     private Long historyId;
 
     /**
-     * 配置 ID(关联 erp_page_config)
+     * Configuration ID (related to erp_page_config)
      */
     @TableField("config_id")
     private Long configId;
 
     /**
-     * 模块编码
+     * Module code
      */
     @TableField("module_code")
     private String moduleCode;
 
     /**
-     * 配置类型
+     * Configuration type
      */
     @TableField("config_type")
     private String configType;
 
     /**
-     * 版本号
+     * Version number
      */
     @TableField("version")
     private Integer version;
 
     /**
-     * 页面配置快照 (page.json)
+     * Page configuration snapshot (page.json)
      */
     @TableField("page_config")
     private String pageConfig;
 
     /**
-     * 表单配置快照 (form.json)
+     * Form configuration snapshot (form.json)
      */
     @TableField("form_config")
     private String formConfig;
 
     /**
-     * 表格配置快照 (table.json)
+     * Table configuration snapshot (table.json)
      */
     @TableField("table_config")
     private String tableConfig;
 
     /**
-     * 搜索配置快照 (search.json)
+     * Search configuration snapshot (search.json)
      */
     @TableField("search_config")
     private String searchConfig;
 
     /**
-     * 按钮配置快照 (action.json)
+     * Button configuration snapshot (action.json)
      */
     @TableField("action_config")
     private String actionConfig;
 
     /**
-     * 字典配置快照 (dict.json)
+     * Dictionary configuration snapshot (dict.json)
      */
     @TableField("dict_config")
     private String dictConfig;
 
     /**
-     * API 接口配置快照 (api.json)
+     * API interface configuration snapshot (api.json)
      */
     @TableField("api_config")
     private String apiConfig;
 
     /**
-     * 业务配置快照 (config.json)
+     * Business configuration snapshot (config.json)
      */
     @TableField("business_config")
     private String businessConfig;
 
     /**
-     * 变更原因
+     * Change reason
      */
     @TableField("change_reason")
     private String changeReason;
 
     /**
-     * 变更类型 (ADD/UPDATE/DELETE/ROLLBACK)
+     * Change type (ADD/UPDATE/DELETE/ROLLBACK)
      */
     @TableField("change_type")
     private String changeType;
 
     /**
-     * 创建者
+     * Creator
      */
     @TableField(value = "create_by", fill = FieldFill.INSERT)
     private String createBy;
 
     /**
-     * 创建时间
+     * Create time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "create_time", fill = FieldFill.INSERT)

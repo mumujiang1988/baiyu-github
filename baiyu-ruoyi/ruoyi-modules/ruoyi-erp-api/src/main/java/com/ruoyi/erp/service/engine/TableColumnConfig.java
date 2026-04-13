@@ -3,7 +3,7 @@ package com.ruoyi.erp.service.engine;
 import lombok.Data;
 
 /**
- * 表格列配置
+ * Table Column Configuration
  * 
  * @author JMH
  * @date 2026-03-24
@@ -12,67 +12,67 @@ import lombok.Data;
 public class TableColumnConfig {
     
     /**
-     * 字段名 (prop)
+     * Field name (prop)
      */
     private String prop;
     
     /**
-     * 列标题 (label)
+     * Column title (label)
      */
     private String label;
     
     /**
-     * 数据类型 (text/tag/link/image/checkbox)
+     * Data type (text/tag/link/image/checkbox)
      */
     private String dataType;
     
     /**
-     * 显示类型 (renderType, 同 dataType)
+     * Display type (renderType, same as dataType)
      */
     private String renderType;
     
     /**
-     * 字典类型 (用于字典翻译)
+     * Dictionary type (for dictionary translation)
      */
     private String dictType;
     
     /**
-     * 格式化函数 (formatter)
+     * Format function (formatter)
      */
     private String formatter;
     
     /**
-     * 是否固定 (fixed: left/right/true)
+     * Whether fixed (fixed: left/right/true)
      */
     private String fixed;
     
     /**
-     * 列宽 (width)
+     * Column width (width)
      */
     private Integer width;
     
     /**
-     * 最小列宽 (minWidth)
+     * Minimum column width (minWidth)
      */
     private Integer minWidth;
     
     /**
-     * 是否可排序 (sortable)
+     * Whether sortable (sortable)
      */
     private Boolean sortable;
     
     /**
-     * 是否隐藏 (hidden)
+     * Whether hidden (hidden)
      */
     private Boolean hidden;
     
     /**
-     * 对齐方式 (align: left/center/right)
+     * Alignment (align: left/center/right)
      */
     private String align;
     
     /**
-     * 虚拟字段标识
+     * Virtual field flag
      */
     private Boolean virtualField;
 }

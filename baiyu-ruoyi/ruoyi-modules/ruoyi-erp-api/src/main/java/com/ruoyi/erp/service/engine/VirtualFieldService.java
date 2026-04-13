@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 虚拟字段配置
+ * Virtual Field Service
  * 
  * @author JMH
  * @date 2026-03-24
@@ -36,7 +36,7 @@ public class VirtualFieldService {
             try {
                 resolveSingleConfig(dataList, config);
             } catch (Exception e) {
-                log.error("解析虚拟字段 {} 失败：{}", config.getName(), e.getMessage());
+                log.error("Failed to resolve virtual field {}: {}", config.getName(), e.getMessage());
             }
         }
         
@@ -97,7 +97,7 @@ public class VirtualFieldService {
                     needQueryValues.add(value);
                 }
             }
-            log.debug("虚拟字段缓存命中：{}/{}", result.size(), sourceValues.size());
+            log.debug("Virtual field cache hit: {}/{}", result.size(), sourceValues.size());
         } else {
             needQueryValues.addAll(sourceValues);
         }
@@ -121,11 +121,11 @@ public class VirtualFieldService {
                     }
                 }
                 
-                log.debug("虚拟字段数据库查询：{} 条记录", queryResult.size());
+                log.debug("Virtual field database query: {} records", queryResult.size());
             } catch (Exception e) {
                 throw new VirtualFieldException(
                     tableName, 
-                    "查询基础资料失败：" + e.getMessage(), 
+                    "Failed to query base data: " + e.getMessage(), 
                     e
                 );
             }

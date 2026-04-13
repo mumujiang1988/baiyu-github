@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 审批流程配置表实体类
+ * ERP Approval Flow Configuration Table Entity
  * 
  * @author JMH
  * @date 2026-03-22
@@ -22,50 +22,50 @@ public class ErpApprovalFlow implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 流程 ID
+     * Flow ID
      */
     @TableId(value = "flow_id", type = IdType.AUTO)
     private Long flowId;
 
     /**
-     * 模块编码
+     * Module code
      */
     @TableField("module_code")
     private String moduleCode;
 
     /**
-     * 流程名称
+     * Flow name
      */
     @TableField("flow_name")
     private String flowName;
 
     /**
-     * 流程定义 (JSON，包含节点、条件、角色等)
+     * Flow definition (JSON, including nodes, conditions, roles, etc.)
      */
     @TableField("flow_definition")
     private String flowDefinition;
 
     /**
-     * 当前版本号
+     * Current version number
      */
     @TableField("current_version")
     private Integer currentVersion;
 
     /**
-     * 是否激活
+     * Is active
      */
     @TableField("is_active")
     private String isActive;
 
     /**
-     * 创建时间
+     * Create time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "update_time", fill = FieldFill.UPDATE)

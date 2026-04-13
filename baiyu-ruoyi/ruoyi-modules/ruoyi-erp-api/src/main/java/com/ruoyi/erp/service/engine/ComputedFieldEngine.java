@@ -11,7 +11,7 @@ import java.math.RoundingMode;
 import java.util.*;
 
 /**
- * 计算字段配置实体
+ * Computed Field Engine
  * 
  * @author JMH
  * @date 2026-03-24
@@ -44,14 +44,14 @@ public class ComputedFieldEngine {
                 
                 result.put(config.getTargetField(), value);
                 
-                log.debug("计算字段 {} = {}", config.getTargetField(), value);
+                log.debug("Computed field {} = {}", config.getTargetField(), value);
                 
             } catch (Exception e) {
-                log.error("计算字段 {} 失败：{}", config.getTargetField(), e.getMessage());
+                log.error("Failed to compute field {}: {}", config.getTargetField(), e.getMessage());
                 throw new ComputedFieldException(
                     config.getTargetField(), 
                     config.getFormula(), 
-                    "计算失败：" + e.getMessage(),
+                    "Calculation failed: " + e.getMessage(),
                     e
                 );
             }
@@ -94,7 +94,7 @@ public class ComputedFieldEngine {
         String[] parts = fieldPath.split("\\.");
         
         if (parts.length != 2) {
-            throw new IllegalArgumentException("SUM 函数格式错误，应为：SUM(list.field)");
+            throw new IllegalArgumentException("SUM function format error, should be: SUM(list.field)");
         }
         
         String listField = parts[0];
@@ -128,7 +128,7 @@ public class ComputedFieldEngine {
         String[] parts = fieldPath.split("\\.");
         
         if (parts.length != 2) {
-            throw new IllegalArgumentException("AVG 函数格式错误，应为：AVG(list.field)");
+            throw new IllegalArgumentException("AVG function format error, should be: AVG(list.field)");
         }
         
         String listField = parts[0];
@@ -176,7 +176,7 @@ public class ComputedFieldEngine {
         String[] parts = fieldPath.split("\\.");
         
         if (parts.length != 2) {
-            throw new IllegalArgumentException("MAX 函数格式错误，应为：MAX(list.field)");
+            throw new IllegalArgumentException("MAX function format error, should be: MAX(list.field)");
         }
         
         String listField = parts[0];
@@ -213,7 +213,7 @@ public class ComputedFieldEngine {
         String[] parts = fieldPath.split("\\.");
         
         if (parts.length != 2) {
-            throw new IllegalArgumentException("MIN 函数格式错误，应为：MIN(list.field)");
+            throw new IllegalArgumentException("MIN function format error, should be: MIN(list.field)");
         }
         
         String listField = parts[0];
@@ -258,7 +258,7 @@ public class ComputedFieldEngine {
             
             return calculateSimpleExpression(evaluatedExpr);
         } catch (Exception e) {
-            throw new RuntimeException("表达式计算失败：" + expression, e);
+            throw new RuntimeException("Expression calculation failed: " + expression, e);
         }
     }
     
@@ -269,7 +269,7 @@ public class ComputedFieldEngine {
         if (parenStart >= 0) {
             int parenEnd = expression.indexOf(')', parenStart);
             if (parenEnd < 0) {
-                throw new IllegalArgumentException("括号不匹配");
+                throw new IllegalArgumentException("Parentheses mismatch");
             }
             
             String before = expression.substring(0, parenStart);
@@ -320,7 +320,7 @@ public class ComputedFieldEngine {
             BigDecimal left = calculateSimpleExpression(expression.substring(0, divideIndex));
             BigDecimal right = calculateSimpleExpression(expression.substring(divideIndex + 1));
             if (right.compareTo(BigDecimal.ZERO) == 0) {
-                throw new ArithmeticException("除数不能为零");
+                throw new ArithmeticException("Divisor cannot be zero");
             }
             return left.divide(right, 10, RoundingMode.HALF_UP);
         }
@@ -328,7 +328,7 @@ public class ComputedFieldEngine {
         try {
             return new BigDecimal(expression);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("无法解析数字：" + expression);
+            throw new IllegalArgumentException("Cannot parse number: " + expression);
         }
     }
     

@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 公共配置视图对象 erp_page_config
+ * ERP Page Configuration View Object erp_page_config
  *
  * @author JMH
  * @date 2026-03-22
@@ -27,126 +27,126 @@ public class ErpPageConfigVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 主键 ID
+     * Primary key ID
      */
-    @ExcelProperty(value = "主键 ID")
+    @ExcelProperty(value = "Primary Key ID")
     private Long configId;
 
     /**
-     * 模块编码
+     * Module code
      */
-    @ExcelProperty(value = "模块编码")
+    @ExcelProperty(value = "Module Code")
     private String moduleCode;
 
     /**
-     * 配置名称
+     * Configuration name
      */
-    @ExcelProperty(value = "配置名称")
+    @ExcelProperty(value = "Configuration Name")
     private String configName;
 
     /**
-     * 配置类型
+     * Configuration type
      */
-    @ExcelProperty(value = "配置类型", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Configuration Type", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "erp_config_type")
     private String configType;
 
     /**
-     * 页面基础配置 (page.json)
+     * Page base configuration (page.json)
      */
-    @ExcelProperty(value = "页面配置")
+    @ExcelProperty(value = "Page Configuration")
     private String pageConfig;
 
     /**
-     * 表单 UI 组件配置 (form.json)
+     * Form UI component configuration (form.json)
      */
-    @ExcelProperty(value = "表单配置")
+    @ExcelProperty(value = "Form Configuration")
     private String formConfig;
 
     /**
-     * 表格查询配置 (table.json)
+     * Table query configuration (table.json)
      */
-    @ExcelProperty(value = "表格配置")
+    @ExcelProperty(value = "Table Configuration")
     private String tableConfig;
 
     /**
-     * 查询表单配置 (search.json)
+     * Search form configuration (search.json)
      */
-    @ExcelProperty(value = "搜索配置")
+    @ExcelProperty(value = "Search Configuration")
     private String searchConfig;
 
     /**
-     * 按钮操作配置 (action.json)
+     * Button operation configuration (action.json)
      */
-    @ExcelProperty(value = "按钮配置")
+    @ExcelProperty(value = "Button Configuration")
     private String actionConfig;
 
     /**
-     * 字典数据源配置 (dict.json)
+     * Dictionary data source configuration (dict.json)
      */
-    @ExcelProperty(value = "字典配置")
+    @ExcelProperty(value = "Dictionary Configuration")
     private String dictConfig;
 
     /**
-     * API 接口配置 (api.json)
+     * API interface configuration (api.json)
      */
-    @ExcelProperty(value = "API 配置")
+    @ExcelProperty(value = "API Configuration")
     private String apiConfig;
 
     /**
-     * 业务规则配置 (config.json)
+     * Business rule configuration (config.json)
      */
-    @ExcelProperty(value = "业务配置")
+    @ExcelProperty(value = "Business Configuration")
     private String businessConfig;
 
     /**
-     * 详情页配置 (detail.json)
+     * Detail page configuration (detail.json)
      */
-    @ExcelProperty(value = "详情配置")
+    @ExcelProperty(value = "Detail Configuration")
     private String detailConfig;
 
     /**
-     * 版本号
+     * Version number
      */
-    @ExcelProperty(value = "版本号")
+    @ExcelProperty(value = "Version Number")
     private Integer version;
 
     /**
-     * 状态
+     * Status
      */
-    @ExcelProperty(value = "状态", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Status", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_normal_disable")
     private String status;
 
     /**
-     * 是否公共配置
+     * Is public configuration
      */
-    @ExcelProperty(value = "是否公共", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Is Public", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_yes_no")
     private String isPublic;
 
     /**
-     * 父配置 ID
+     * Parent configuration ID
      */
-    @ExcelProperty(value = "父配置 ID")
+    @ExcelProperty(value = "Parent Config ID")
     private Long parentConfigId;
 
     /**
-     * 备注
+     * Remark
      */
-    @ExcelProperty(value = "备注")
+    @ExcelProperty(value = "Remark")
     private String remark;
 
     /**
-     * 创建时间
+     * Create time
      */
-    @ExcelProperty(value = "创建时间")
+    @ExcelProperty(value = "Create Time")
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
-    @ExcelProperty(value = "更新时间")
+    @ExcelProperty(value = "Update Time")
     private LocalDateTime updateTime;
 
 }

@@ -173,7 +173,7 @@ const getDictOptions = (dictName, staticOptions = null, required = false) => {
   
   if (!dataFromManager || dataFromManager.length === 0) {
     if (required) {
-      //  记录到日志而不是警告
+      // ✅ 记录到日志而不是警告
       console.log(`[BusinessSearch] ℹ️ Required dictionary '${dictName}' data is empty - this may affect form functionality`)
     }
     return []
@@ -225,7 +225,7 @@ const handleAction = (handlerName) => {
 </script>
 
 <style scoped>
-/*  Use parent global styles */
+/* ✅ Use parent global styles */
 
 /* Page header */
 .page-header {

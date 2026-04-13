@@ -3,7 +3,7 @@ package com.ruoyi.erp.service.engine;
 import lombok.Data;
 
 /**
- * 计算字段配置
+ * Computed Field Configuration
  * 
  * @author JMH
  * @date 2026-03-24
@@ -12,30 +12,30 @@ import lombok.Data;
 public class ComputedFieldConfig {
     
     /**
-     * 目标字段名
+     * Target field name
      */
     private String targetField;
     
     /**
-     * 计算公式
-     * 支持：SUM(list.field), AVG(list.field), COUNT(list), MAX(list.field), MIN(list.field)
-     * 以及四则运算：+ - * /
+     * Calculation formula
+     * Support: SUM(list.field), AVG(list.field), COUNT(list), MAX(list.field), MIN(list.field)
+     * And arithmetic operations: + - * /
      */
     private String formula;
     
     /**
-     * 触发事件 (用于前端实时计算)
-     * 例如：entryListChange, costChange, priceChange 等
+     * Trigger event (for frontend real-time calculation)
+     * For example: entryListChange, costChange, priceChange, etc.
      */
     private String trigger;
     
     /**
-     * 小数精度，默认 2 位
+     * Decimal precision, default 2 digits
      */
     private Integer precision = 2;
     
     /**
-     * 计算说明
+     * Calculation description
      */
     private String description;
 }

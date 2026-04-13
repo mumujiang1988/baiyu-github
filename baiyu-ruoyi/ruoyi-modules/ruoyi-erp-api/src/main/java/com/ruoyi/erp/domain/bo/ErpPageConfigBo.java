@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * ERP 公共配置业务对象 erp_page_config
+ * ERP Page Configuration Business Object erp_page_config
  *
  * @author JMH
  * @date 2026-03-22
@@ -20,105 +20,105 @@ import lombok.EqualsAndHashCode;
 public class ErpPageConfigBo extends BaseEntity {
 
     /**
-     * 主键 ID
+     * Primary key ID
      */
     private Long configId;
 
     /**
-     * 模块编码 (如 saleOrder/deliveryOrder)
+     * Module code (e.g., saleOrder/deliveryOrder)
      */
-    @NotBlank(message = "模块编码不能为空")
-    @Size(min = 0, max = 50, message = "模块编码长度不能超过{max}个字符")
+    @NotBlank(message = "Module code cannot be empty")
+    @Size(min = 0, max = 50, message = "Module code length cannot exceed {max} characters")
     private String moduleCode;
 
     /**
-     * 配置名称
+     * Configuration name
      */
-    @NotBlank(message = "配置名称不能为空")
-    @Size(min = 0, max = 100, message = "配置名称长度不能超过{max}个字符")
+    @NotBlank(message = "Configuration name cannot be empty")
+    @Size(min = 0, max = 100, message = "Configuration name length cannot exceed {max} characters")
     private String configName;
 
     /**
-     * 配置类型 (PAGE=页面配置/DICT=字典配置/PUSH=下推配置/APPROVAL=审批配置)
+     * Configuration type (PAGE=page configuration/DICT=dictionary configuration/PUSH=push configuration/APPROVAL=approval configuration)
      */
-    @NotBlank(message = "配置类型不能为空")
+    @NotBlank(message = "Configuration type cannot be empty")
     private String configType;
 
     /**
-     * 页面基础配置 (page.json)
+     * Page base configuration (page.json)
      */
     private String pageConfig;
 
     /**
-     * 表单 UI 组件配置 (form.json)
+     * Form UI component configuration (form.json)
      */
     private String formConfig;
 
     /**
-     * 表格查询配置 (table.json)
+     * Table query configuration (table.json)
      */
     private String tableConfig;
 
     /**
-     * 查询表单配置 (search.json)
+     * Search form configuration (search.json)
      */
     private String searchConfig;
 
     /**
-     * 按钮操作配置 (action.json)
+     * Button operation configuration (action.json)
      */
     private String actionConfig;
 
     /**
-     * API接口配置 (api.json)
+     * API interface configuration (api.json)
      */
     private String apiConfig;
 
     /**
-     * 字典数据源配置 (dict.json)
+     * Dictionary data source configuration (dict.json)
      */
     private String dictConfig;
 
     /**
-     * 业务规则配置 (config.json)
+     * Business rule configuration (config.json)
      */
     private String businessConfig;
 
     /**
-     * 详情页配置 (detail.json)
+     * Detail page configuration (detail.json)
      */
     private String detailConfig;
 
     /**
-     * 版本号 (每次更新 +1)
+     * Version number (incremented by 1 on each update)
      */
     private Integer version;
 
     /**
-     * 状态 (1 正常 0 停用)
+     * Status (1 active 0 inactive)
      */
     private String status;
 
     /**
-     * 是否公共配置 (1 是 0 否)
+     * Is public configuration (1 yes 0 no)
      */
     private String isPublic;
 
     /**
-     * 父配置 ID(用于继承)
+     * Parent configuration ID (for inheritance)
      */
     private Long parentConfigId;
 
     /**
-     * 备注
+     * Remark
      */
-    @Size(min = 0, max = 500, message = "备注长度不能超过{max}个字符")
+    @Size(min = 0, max = 500, message = "Remark length cannot exceed {max} characters")
     private String remark;
 
     /**
-     * 变更原因（用于版本更新时记录）
+     * Change reason (used to record during version updates)
      */
-    @Size(min = 0, max = 500, message = "变更原因长度不能超过{max}个字符")
+    @Size(min = 0, max = 500, message = "Change reason length cannot exceed {max} characters")
     private String changeReason;
 
 }

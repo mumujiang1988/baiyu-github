@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
- * 虚拟字段配置
+ * Virtual Field Configuration
  * 
  * @author JMH
  * @date 2026-03-24
@@ -13,47 +13,47 @@ import lombok.Data;
 public class VirtualFieldConfig {
     
     /**
-     * 虚拟字段名
+     * Virtual field name
      */
     private String name;
     
     /**
-     * 源字段名 (关联字段)
+     * Source field name (related field)
      */
     @JsonProperty("sourceField")
     private String sourceField;
     
     /**
-     * 源数据表
+     * Source data table
      */
     @JsonProperty("sourceTable")
     private String sourceTable;
     
     /**
-     * 显示字段名
+     * Display field name
      */
     @JsonProperty("sourceDisplayField")
     private String sourceDisplayField;
     
     /**
-     * 显示类型：text/link/tag
+     * Display type: text/link/tag
      */
     @JsonProperty("displayType")
     private String displayType = "text";
     
     /**
-     * 是否缓存
+     * Whether cacheable
      */
     private Boolean cacheable = true;
     
     /**
-     * 显示配置 (用于 link/tag 类型的额外配置)
+     * Display configuration (extra configuration for link/tag types)
      */
     @JsonProperty("displayConfig")
     private Object displayConfig;
     
     /**
-     * 说明
+     * Description
      */
     private String description;
 }

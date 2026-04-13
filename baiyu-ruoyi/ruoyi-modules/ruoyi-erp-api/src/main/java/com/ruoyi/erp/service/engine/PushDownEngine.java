@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * 下推引擎
+ * Push Down Engine
  * @author JMH
  * @date 2026-03-22
  */
@@ -24,7 +24,7 @@ public class PushDownEngine {
         
         if (sourceData == null || mappingConfig == null) {
             result.setSuccess(false);
-            result.setMessage("源单数据或映射配置为空");
+            result.setMessage("Source data or mapping configuration is empty");
             return result;
         }
 
@@ -86,12 +86,12 @@ public class PushDownEngine {
 
             result.setData(targetData);
             result.setSuccess(true);
-            result.setMessage("下推成功");
+            result.setMessage("Push down successful");
 
         } catch (Exception e) {
-            log.error("下推执行失败", e);
+            log.error("Push down execution failed", e);
             result.setSuccess(false);
-            result.setMessage("下推失败：" + e.getMessage());
+            result.setMessage("Push down failed: " + e.getMessage());
         }
 
         return result;
@@ -139,7 +139,7 @@ public class PushDownEngine {
                 Object result = evaluateFormula(formula, targetData, context);
                 targetData.put(targetField, result);
             } catch (Exception e) {
-                log.error("公式计算失败：{}", formula, e);
+                log.error("Formula calculation failed: {}", formula, e);
             }
         }
     }
@@ -158,7 +158,7 @@ public class PushDownEngine {
             return evaluateSimpleFormula(formula, allContext);
 
         } catch (Exception e) {
-            log.error("公式执行失败：{}", formula, e);
+            log.error("Formula execution failed: {}", formula, e);
             return null;
         }
     }
@@ -181,7 +181,7 @@ public class PushDownEngine {
                         double numValue = Double.parseDouble(value.toString());
                         matcher.appendReplacement(sb, String.valueOf(numValue));
                     } catch (NumberFormatException e) {
-                        log.warn("变量 {} 的值不是数值: {}", varName, value);
+                        log.warn("Variable {} value is not numeric: {}", varName, value);
                         matcher.appendReplacement(sb, "0");
                     }
                 }
@@ -199,7 +199,7 @@ public class PushDownEngine {
         try {
             return new SimpleCalculator().calculate(expression);
         } catch (Exception e) {
-            log.error("表达式计算失败: {}", expression, e);
+            log.error("Expression calculation failed: {}", expression, e);
             return null;
         }
     }
@@ -249,7 +249,7 @@ public class PushDownEngine {
                 } else if (eat('/')) {
                     double divisor = parseFactor();
                     if (Math.abs(divisor) < 1e-10) {
-                        throw new ArithmeticException("除数不能为零");
+                        throw new ArithmeticException("Divisor cannot be zero");
                     }
                     x /= divisor;
                 } else {

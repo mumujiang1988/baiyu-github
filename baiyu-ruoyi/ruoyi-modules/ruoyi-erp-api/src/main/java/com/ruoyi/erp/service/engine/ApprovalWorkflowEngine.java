@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 审批流程引擎(安全加固版)
- * 解析和执行审批流程配置
- * 使用Aviator表达式引擎替代ScriptEngine,提升安全性
+ * Approval Workflow Engine (Security Enhanced Edition)
+ * Parse and execute approval workflow configuration
+ * Use Aviator expression engine instead of ScriptEngine, enhance security
  * 
  * @author JMH
  * @date 2026-03-22
@@ -40,7 +40,7 @@ public class ApprovalWorkflowEngine {
             }
 
         } catch (Exception e) {
-            log.error("获取审批步骤失败", e);
+            log.error("Failed to get approval step", e);
         }
 
         return null;
@@ -61,7 +61,7 @@ public class ApprovalWorkflowEngine {
             return Boolean.parseBoolean(result.toString());
 
         } catch (Exception e) {
-            log.error("条件表达式执行失败：{}", condition, e);
+            log.error("Condition expression execution failed: {}", condition, e);
             return false;
         }
     }
@@ -203,7 +203,7 @@ public class ApprovalWorkflowEngine {
             }
 
         } catch (Exception e) {
-            log.error("检查用户审批权限失败", e);
+            log.error("Failed to check user approval permission", e);
             return false;
         }
 
@@ -245,7 +245,7 @@ public class ApprovalWorkflowEngine {
         
         if (workflow == null || workflow.isEmpty()) {
             result.setSuccess(false);
-            result.setMessage("未找到审批流程配置");
+            result.setMessage("Approval workflow configuration not found");
             return result;
         }
 
@@ -253,13 +253,13 @@ public class ApprovalWorkflowEngine {
             ApprovalStep currentStep = getCurrentStep(workflow, billData);
             if (currentStep == null) {
                 result.setSuccess(false);
-                result.setMessage("未找到匹配的审批步骤");
+                result.setMessage("No matching approval step found");
                 return result;
             }
 
             if (!canUserAudit(currentStep, context.getUserId(), context.getUserRoles())) {
                 result.setSuccess(false);
-                result.setMessage("无审批权限");
+                result.setMessage("No approval permission");
                 return result;
             }
 
@@ -268,27 +268,27 @@ public class ApprovalWorkflowEngine {
                 case "APPROVE":
                 case "AUDIT":
                     result.setSuccess(true);
-                    result.setMessage("审批通过");
+                    result.setMessage("Approved");
                     result.setNextStep(getNextStep(workflow, currentStep));
                     break;
                     
                 case "REJECT":
                     result.setSuccess(true);
-                    result.setMessage("已驳回");
+                    result.setMessage("Rejected");
                     result.setRejected(true);
                     break;
                     
                 default:
                     result.setSuccess(false);
-                    result.setMessage("未知的审批动作：" + action);
+                    result.setMessage("Unknown approval action: " + action);
             }
 
             result.setCurrentStep(currentStep);
-            log.info("审批执行成功，moduleCode: {}, action: {}, step: {}", 
+            log.info("Approval executed successfully, moduleCode: {}, action: {}, step: {}", 
                 context.getModuleCode(), action, currentStep.getStep());
 
         } catch (Exception e) {
-            log.error("审批执行失败", e);
+            log.error("Approval execution failed", e);
             result.setSuccess(false);
             result.setMessage("审批失败：" + e.getMessage());
         }

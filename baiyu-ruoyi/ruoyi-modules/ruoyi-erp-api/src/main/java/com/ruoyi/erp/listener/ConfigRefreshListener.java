@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
- * 配置刷新事件监听器
+ * Configuration Refresh Event Listener
  * 
  * @author JMH
  * @date 2026-03-26
@@ -17,21 +17,21 @@ import org.springframework.stereotype.Component;
 public class ConfigRefreshListener {
     
     /**
-     * 监听配置刷新事件
+     * Listen to configuration refresh event
      * 
-     * @param event 配置刷新事件
+     * @param event Configuration refresh event
      */
     @Async
     @EventListener(ConfigRefreshEvent.class)
     public void handleConfigRefresh(ConfigRefreshEvent event) {
-        log.info("📢 收到配置刷新事件，moduleCode: {}, version: {}", 
+        log.info("📢 Received configuration refresh event, moduleCode: {}, version: {}", 
             event.getModuleCode(), event.getVersion());
         
-        // TODO: 可以在这里添加其他需要处理逻辑
-        // 例如：
-        // 1. 通知其他系统配置已变更
-        // 2. 更新搜索引擎索引
-        // 3. 触发配置审计日志
-        // 4. 同步到其他节点
+        // TODO: Can add other processing logic here
+        // For example:
+        // 1. Notify other systems of configuration changes
+        // 2. Update search engine index
+        // 3. Trigger configuration audit log
+        // 4. Synchronize to other nodes
     }
 }

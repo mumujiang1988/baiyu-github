@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 /**
- * ERP 审批历史记录业务对象 erp_approval_history
+ * ERP Approval History Business Object erp_approval_history
  *
  * @author JMH
  * @date 2026-03-22
@@ -21,50 +21,50 @@ import java.time.LocalDateTime;
 public class ErpApprovalHistoryBo extends BaseEntity {
 
     /**
-     * 历史记录 ID
+     * History record ID
      */
     private Long historyId;
 
     /**
-     * 单据 ID
+     * Bill ID
      */
     @NotBlank(message = "单据 ID 不能为空")
     private Long billId;
 
     /**
-     * 模块编码
+     * Module code
      */
     @NotBlank(message = "模块编码不能为空")
     private String moduleCode;
 
     /**
-     * 流程 ID
+     * Flow ID
      */
     private Long flowId;
 
     /**
-     * 当前步骤
+     * Current step
      */
     private Integer currentStep;
 
     /**
-     * 审批人 ID
+     * Approver ID
      */
     private String approverId;
 
     /**
-     * 审批动作
+     * Approval action
      */
     @NotBlank(message = "审批动作不能为空")
     private String approvalAction;
 
     /**
-     * 审批意见
+     * Approval opinion
      */
     private String approvalOpinion;
     
     /**
-     * 审批时间
+     * Approval time
      */
     private LocalDateTime approvalTime;
 

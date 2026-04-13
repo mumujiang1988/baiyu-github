@@ -961,7 +961,7 @@ const getApiMethod = async (methodType) => {
 const initDateRange = () => {
   const searchFields = parsedConfig.search?.fields || []
   
-  //  优先处理 daterange 类型的单个字段（如 FDate）
+  // ✅ 优先处理 daterange 类型的单个字段（如 FDate）
   const dateRangeField = searchFields.find(f => 
     f.component === 'daterange' && 
     f.defaultValue && 

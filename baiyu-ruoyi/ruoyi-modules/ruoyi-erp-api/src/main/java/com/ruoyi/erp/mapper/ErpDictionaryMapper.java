@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ERP 字典 Mapper - 无 UNION 纯净版 
+ * ERP 字典 Mapper  
  */
 @Mapper
 public interface ErpDictionaryMapper {
@@ -174,7 +174,7 @@ public interface ErpDictionaryMapper {
      */
     @Select("SELECT " +
             "  u.nick_name AS label, " +  // 显示标签（人名）
-            "  u.k3_key AS value, " +  //  使用 k3_key（金蝶 K3 编码）作为 value
+            "  u.k3_key AS value, " +  // 使用 k3_key（金蝶 K3 编码）作为 value
             "  'users' AS type, " +
             "  u.user_name AS userName, " +  // 登录账号
             "  d.dept_name AS departmentName, " +  // 部门名称

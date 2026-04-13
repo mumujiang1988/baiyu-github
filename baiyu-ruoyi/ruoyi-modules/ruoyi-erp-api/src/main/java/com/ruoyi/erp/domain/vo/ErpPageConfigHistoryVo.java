@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * ERP 配置历史视图对象 erp_page_config_history
+ * ERP Configuration History View Object erp_page_config_history
  *
  * @author JMH
  * @date 2026-03-22
@@ -27,65 +27,65 @@ public class ErpPageConfigHistoryVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 历史记录 ID
+     * History record ID
      */
-    @ExcelProperty(value = "历史记录 ID")
+    @ExcelProperty(value = "History ID")
     private Long historyId;
 
     /**
-     * 配置 ID
+     * Configuration ID
      */
-    @ExcelProperty(value = "配置 ID")
+    @ExcelProperty(value = "Configuration ID")
     private Long configId;
 
     /**
-     * 模块编码
+     * Module code
      */
-    @ExcelProperty(value = "模块编码")
+    @ExcelProperty(value = "Module Code")
     private String moduleCode;
 
     /**
-     * 配置类型
+     * Configuration type
      */
-    @ExcelProperty(value = "配置类型", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Configuration Type", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "erp_config_type")
     private String configType;
 
     /**
-     * 版本号
+     * Version number
      */
-    @ExcelProperty(value = "版本号")
+    @ExcelProperty(value = "Version Number")
     private Integer version;
 
     /**
-     * 完整的 JSON 配置
+     * Complete JSON configuration
      */
-    @ExcelProperty(value = "配置内容")
+    @ExcelProperty(value = "Configuration Content")
     private String configContent;
 
     /**
-     * 变更原因
+     * Change reason
      */
-    @ExcelProperty(value = "变更原因")
+    @ExcelProperty(value = "Change Reason")
     private String changeReason;
 
     /**
-     * 变更类型
+     * Change type
      */
-    @ExcelProperty(value = "变更类型", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "Change Type", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "erp_change_type")
     private String changeType;
 
     /**
-     * 创建者
+     * Creator
      */
-    @ExcelProperty(value = "创建者")
+    @ExcelProperty(value = "Creator")
     private String createBy;
 
     /**
-     * 创建时间
+     * Create time
      */
-    @ExcelProperty(value = "创建时间")
+    @ExcelProperty(value = "Create Time")
     private LocalDateTime createTime;
 
 }

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * ERP 缓存调试接口
+ * ERP Cache Debugging Interface
  */
 @RequiredArgsConstructor
 @RestController
@@ -14,29 +14,29 @@ import org.springframework.web.bind.annotation.*;
 public class ErpCacheController {
 
     /**
-     * 清理 ERP 配置缓存
+     * Clear ERP configuration cache
      */
     @DeleteMapping("/clear/{moduleCode}")
     public R<Void> clearConfigCache(@PathVariable String moduleCode) {
         CacheUtils.evict(CacheNames.ERP_CONFIG, moduleCode);
-        return R.ok("缓存已清理：" + moduleCode);
+        return R.ok("Cache cleared: " + moduleCode);
     }
 
     /**
-     * 获取缓存值
+     * Get cached value
      */
     @GetMapping("/get/{moduleCode}")
     public R<String> getConfigCache(@PathVariable String moduleCode) {
         String cacheValue = CacheUtils.get(CacheNames.ERP_CONFIG, moduleCode);
-        return R.ok(cacheValue != null ? cacheValue : "缓存不存在");
+        return R.ok(cacheValue != null ? cacheValue : "Cache does not exist");
     }
 
     /**
-     * 清理所有 ERP 配置缓存
+     * Clear all ERP configuration caches
      */
     @DeleteMapping("/clear-all")
     public R<Void> clearAllConfigCache() {
         CacheUtils.clear(CacheNames.ERP_CONFIG);
-        return R.ok("所有 ERP 配置缓存已清理");
+        return R.ok("All ERP configuration caches cleared");
     }
 }

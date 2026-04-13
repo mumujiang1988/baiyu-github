@@ -1,7 +1,7 @@
 package com.ruoyi.erp.exception;
 
 /**
- * 虚拟字段异常
+ * Virtual Field Exception
  * 
  * @author JMH
  * @date 2026-03-24

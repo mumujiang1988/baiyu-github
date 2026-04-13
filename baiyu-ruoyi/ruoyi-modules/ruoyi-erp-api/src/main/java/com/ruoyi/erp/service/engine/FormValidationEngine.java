@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 表单验证引擎
- * 根据配置验证表单数据
+ * Form Validation Engine
+ * Validate form data based on configuration
  * 
  * @author JMH
  * @date 2026-03-22
@@ -43,20 +43,20 @@ public class FormValidationEngine {
 
                 Object value = formData.get(field);
 
-                // 执行验证规则
+                // Execute validation rule
                 boolean passed = validateRule(field, value, ruleType, rule);
                 
                 if (!passed) {
-                    result.addError(field, StringUtils.defaultString(message, field + " 验证失败"));
+                    result.addError(field, StringUtils.defaultString(message, field + " validation failed"));
                 }
             }
 
             result.setValid(result.getErrors().isEmpty());
 
         } catch (Exception e) {
-            log.error("表单验证执行失败", e);
+            log.error("Form validation execution failed", e);
             result.setValid(false);
-            result.addError("system", "验证系统异常：" + e.getMessage());
+            result.addError("system", "Validation system exception: " + e.getMessage());
         }
 
         return result;
@@ -212,7 +212,7 @@ public class FormValidationEngine {
     }
 
     /**
-     * 验证结果类
+     * Validation Result Class
      */
     public static class ValidationResult {
         private boolean valid;
