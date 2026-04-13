@@ -141,19 +141,20 @@ export function useSingleIngest() {
           progressDetail.value = '入库失败'
           
           // 提取错误摘要用于重试对话框
-          const errorSummary = extractErrorSummary(uploadResponse.detail || uploadResponse.message)
+          const errorSummary = extractErrorSummary(uploadResponse.message || uploadResponse.detail || '未知错误')
           
           // Show retry option with error details
           setTimeout(async () => {
             try {
               await ElMessageBox.confirm(
-                `产品 ${form.product_code} 入库失败\n\n${errorSummary}\n\n是否重试？`,
+                `产品 ${form.product_code} 入库失败\n\n${uploadResponse.message || '未知错误'}\n\n是否重试？`,
                 '重试提示',
                 {
                   confirmButtonText: '重试',
                   cancelButtonText: '取消',
                   type: 'warning',
-                  dangerouslyUseHTMLString: false
+                  dangerouslyUseHTMLString: false,
+                  customClass: 'error-detail-dialog'
                 }
               )
               // Reset form for retry
@@ -171,19 +172,20 @@ export function useSingleIngest() {
         
         // 提取错误摘要
         const errorData = error.response?.data
-        const errorSummary = extractErrorSummary(errorData?.detail || error.message)
+        const errorSummary = extractErrorSummary(errorData?.message || errorData?.detail || error.message || '未知错误')
         
         // Show retry option for exceptions too
         setTimeout(async () => {
           try {
             await ElMessageBox.confirm(
-              `产品 ${form.product_code} 入库失败\n\n${errorSummary}\n\n是否重试？`,
+              `产品 ${form.product_code} 入库失败\n\n${errorData?.message || errorData?.detail || error.message || '未知错误'}\n\n是否重试？`,
               '重试提示',
               {
                 confirmButtonText: '重试',
                 cancelButtonText: '取消',
                 type: 'warning',
-                dangerouslyUseHTMLString: false
+                dangerouslyUseHTMLString: false,
+                customClass: 'error-detail-dialog'
               }
             )
             // Reset form for retry
@@ -220,13 +222,13 @@ export function useSingleIngest() {
     progressDetail.value = '准备上传...'
   }
   
-  // 提取错误摘要(取前2行)
+  // 提取错误摘要(取前3行)
   const extractErrorSummary = (detail) => {
     if (!detail) return '未知错误'
     
     const lines = detail.split('\n').filter(line => line.trim())
-    // 取前2行作为摘要
-    const summary = lines.slice(0, 2).join('\n')
+    // 取前3行作为摘要，显示更多详细信息
+    const summary = lines.slice(0, 3).join('\n')
     return summary || '未知错误'
   }
   

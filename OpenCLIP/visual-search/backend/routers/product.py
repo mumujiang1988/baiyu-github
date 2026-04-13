@@ -160,6 +160,18 @@ async def ingest_product(
         
         elapsed = time.time() - start_time
         
+        # 记录入库成功日志
+        try:
+            log_ingest_result(
+                batch_id=f"single_{product_code}_{int(start_time)}",
+                product_code=product_code,
+                product_name=name or product_code,
+                status="success",
+                error_message=None
+            )
+        except Exception as log_err:
+            logger.error(f"记录入库日志失败: {str(log_err)}")
+        
         # 清除产品列表缓存（因为新增了产品）
         product_list_cache.invalidate_pattern("product_list:")
         logger.info(f" 已清除产品列表缓存 (新增产品: {product_code})")
@@ -171,7 +183,18 @@ async def ingest_product(
             elapsed_seconds=round(elapsed, 2)
         )
 
-    except HTTPException:
+    except HTTPException as e:
+        # 记录入库失败日志
+        try:
+            log_ingest_result(
+                batch_id=f"single_{product_code}_{int(start_time)}",
+                product_code=product_code,
+                product_name=name or product_code,
+                status="failed",
+                error_message=str(e.detail) if hasattr(e, 'detail') else str(e)
+            )
+        except Exception as log_err:
+            logger.error(f"记录失败日志失败: {str(log_err)}")
         raise  # 让全局异常处理器处理
 
 
@@ -608,6 +631,28 @@ async def list_products(category: Optional[str] = None, page: int = 1, page_size
     logger.info(f"💾 缓存产品列表数据: {cache_key}, 产品数: {len(enriched_products)}")
     
     return result
+
+
+@router.get("/products/codes")
+async def get_all_product_codes():
+    """获取所有已入库的产品编码列表 - 用于批量入库时检测重复"""
+    product_service = get_product_service()
+    
+    try:
+        # 查询所有产品编码
+        sql = "SELECT DISTINCT product_code FROM product ORDER BY product_code"
+        results = product_service._execute_query(sql, dictionary=True)
+        
+        product_codes = [row['product_code'] for row in results]
+        
+        return build_success_response(
+            message=f"获取产品编码列表成功，共 {len(product_codes)} 个产品",
+            product_codes=product_codes,
+            count=len(product_codes)
+        )
+    except Exception as e:
+        logger.error(f"获取产品编码列表失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取产品编码列表失败: {str(e)}")
 
 
 @router.get("/stats")

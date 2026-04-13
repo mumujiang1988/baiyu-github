@@ -297,3 +297,12 @@ export async function retryProductIngest(productCode) {
   const response = await apiClient.post(`${API_BASE}/products/${productCode}/retry`)
   return response.data
 }
+
+/**
+ * 获取所有已入库的产品编码列表
+ * @returns {Promise<{success: boolean, product_codes: string[], count: number}>}
+ */
+export async function getAllProductCodes() {
+  const response = await apiClient.get(`${API_BASE}/products/codes`)
+  return response.data
+}

@@ -261,6 +261,7 @@ const confirmCrop = () => {
     currentImage.value = img
     originalImage.value = img // 更新原始图片引用
     
+    // 重置所有参数
     rotateAngle.value = 0
     flipH.value = false
     flipV.value = false
@@ -268,11 +269,13 @@ const confirmCrop = () => {
     contrast.value = 100
     saturation.value = 100
     
+    // 销毁 cropper 实例
     if (cropperInstance) {
       cropperInstance.destroy()
       cropperInstance = null
     }
     
+    // 关键修复：先取消工具状态，再在 nextTick 中重新绘制
     activeTool.value = null
     
     nextTick(() => {
@@ -429,7 +432,7 @@ const removeBackground = async () => {
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.detail || '抠图失败')
+      throw new Error(errorData.message || errorData.detail || '抠图失败')
     }
     
     // 获取抠图后的图片

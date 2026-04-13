@@ -43,6 +43,15 @@
         导入产品
       </el-button>
       <el-button 
+        type="warning" 
+        size="large" 
+        @click="cleanDuplicateProducts" 
+        :disabled="batchResults.length === 0 || batchSubmitting"
+      >
+        <el-icon><Filter /></el-icon>
+        重复清理
+      </el-button>
+      <el-button 
         type="success" 
         size="large" 
         @click="startBatchIngest" 
@@ -53,7 +62,7 @@
         {{ batchSubmitting ? '入库中...' : '产品入库' }}
       </el-button>
       <el-button 
-        type="warning" 
+        type="danger" 
         size="large" 
         @click="clearBatchProducts" 
         :disabled="batchResults.length === 0 || batchSubmitting"
@@ -227,7 +236,7 @@
 
 <script setup>
 import { useBatchIngest } from './composables/useBatchIngest'
-import { Setting, FolderOpened, Upload, Delete, Loading, Refresh } from '@element-plus/icons-vue'
+import { Setting, FolderOpened, Upload, Delete, Loading, Refresh, Filter } from '@element-plus/icons-vue'
 import { FOLDER_STRUCTURE_OPTIONS } from './constants'
 import { logger } from '../../utils/logger'
 
@@ -248,7 +257,8 @@ const {
   removeProduct,
   retryProduct,  // 单个重试
   retryAllFailed,  // 批量重试
-  handleStructureChange
+  handleStructureChange,
+  cleanDuplicateProducts  // 重复清理
 } = useBatchIngest()
 </script>
 

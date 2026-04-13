@@ -149,7 +149,7 @@ export function showError(message, options = {}) {
     return ElNotification({
       title: errorConfig.title,
       message: `
-        <div style="margin-bottom: 8px;">${message}</div>
+        <div style="margin-bottom: 8px; white-space: pre-line;">${message}</div>
         <div style="color: #409eff; font-size: 13px;">
           <strong>💡 ${errorConfig.suggestion}</strong>
         </div>
@@ -157,6 +157,18 @@ export function showError(message, options = {}) {
       type: errorConfig.type,
       dangerouslyUseHTMLString: true,
       duration: 6000,
+      ...options
+    })
+  }
+
+  // 如果消息包含换行符，使用通知以便更好显示
+  if (message && message.includes('\n')) {
+    return ElNotification({
+      title: '操作失败',
+      message: `<div style="white-space: pre-line;">${message}</div>`,
+      type: 'error',
+      dangerouslyUseHTMLString: true,
+      duration: 8000,
       ...options
     })
   }
@@ -234,17 +246,23 @@ export function handleApiError(response, defaultMessage = '操作失败') {
   if (response) {
     // 情况1: axios 错误对象 (error.response)
     if (response.data) {
+      // 优先使用扁平格式的 message 字段，兼容 detail 字段
       message = response.data.message || response.data.detail || defaultMessage
       // 优先使用后端返回的suggestion
       suggestion = response.data.suggestion || null
     }
-    // 情况2: 后端返回的扁平化响应对象
+    // 情况2: 后端返回的扁平化响应对象（直接在根级别）
     else if (response.message) {
       message = response.message
       // 优先使用后端返回的suggestion
       suggestion = response.suggestion || null
     }
-    // 情况3: 网络错误或超时
+    // 情况3: HTTP异常 detail 字段（FastAPI 标准格式）
+    else if (response.detail) {
+      message = response.detail
+      suggestion = null
+    }
+    // 情况4: 网络错误或超时
     else if (response.code === 'ECONNABORTED' || response.message?.includes('timeout')) {
       message = '请求超时'
       suggestion = '服务器响应时间过长，请稍后重试或联系管理员'

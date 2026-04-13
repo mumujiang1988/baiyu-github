@@ -44,7 +44,11 @@
           <span v-else class="text-muted">-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="created_at" label="入库时间" width="180" />
+      <el-table-column prop="created_at" label="入库时间" width="180">
+        <template #default="{ row }">
+          {{ formatTime(row.created_at) }}
+        </template>
+      </el-table-column>
     </el-table>
 
     <!-- 分页 -->
@@ -66,10 +70,16 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 
+// 创建 axios 实例（不设置 baseURL，直接使用完整路径）
 const apiClient = axios.create({
-  baseURL: '/api/v1',
-  timeout: 30000
+  timeout: 60000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 })
+
+// API基础路径
+const API_BASE = '/api/v1'
 
 const logs = ref([])
 const loading = ref(false)
@@ -84,7 +94,8 @@ const fetchLogs = async () => {
       page_size: pagination.pageSize,
       ...(filters.batchId && { batch_id: filters.batchId })
     }
-    const res = await apiClient.get('/api/v1/ingest/logs', { params })
+    // 使用完整的API路径
+    const res = await apiClient.get(`${API_BASE}/ingest/logs`, { params })
     if (res.data.success) {
       logs.value = res.data.data
       pagination.total = res.data.total
@@ -112,6 +123,24 @@ const handleReset = () => {
 const truncateText = (text, len) => {
   if (!text) return ''
   return text.length > len ? text.substring(0, len) + '...' : text
+}
+
+// 格式化时间为东八区（北京时间）
+const formatTime = (utcTime) => {
+  if (!utcTime) return '-'
+  
+  // 创建Date对象（自动识别UTC时间）
+  const date = new Date(utcTime)
+  
+  // 转换为东八区时间（UTC+8）
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 onMounted(() => {

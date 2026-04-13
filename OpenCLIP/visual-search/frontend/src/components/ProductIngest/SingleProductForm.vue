@@ -227,7 +227,7 @@ const removeBackgroundForAllImages = async () => {
     
     ElMessage.success(`已为 ${fileList.value.length} 张图片移除背景`)
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail || '抠图失败')
+    ElMessage.error(error.response?.data?.message || error.response?.data?.detail || '抠图失败')
   } finally {
     removingBg.value = false
   }
@@ -287,5 +287,18 @@ const removeBackgroundForAllImages = async () => {
   to {
     transform: rotate(360deg);
   }
+}
+</style>
+
+<style>
+/* 全局样式：错误详情对话框 */
+.error-detail-dialog {
+  max-width: 600px !important;
+}
+
+.error-detail-dialog .el-message-box__message {
+  white-space: pre-line !important;
+  line-height: 1.6 !important;
+  text-align: left !important;
 }
 </style>

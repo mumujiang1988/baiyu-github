@@ -2,8 +2,8 @@
  * 批量入库逻辑
  */
 import { ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { ingestProduct } from '../../../api/search'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ingestProduct, getAllProductCodes } from '../../../api/search'
 import { handleApiError } from '../../../utils/messageHandler'
 import { groupFilesByFolder, parseProductInfo } from '../utils/folderParser'
 import { logger } from '../../../utils/logger'
@@ -227,63 +227,59 @@ export function useBatchIngest() {
           failCount.value++
           product.status = 'error'
           product.progress = 100
-          
+                  
           // 根据HTTP状态码提供友好的错误提示
           const statusCode = error.response?.status
           const errorData = error.response?.data
+          // 提取详细错误信息（在所有分支中使用）
+          const detail = errorData?.message || errorData?.detail || error.message || ''
           let errorMessage = '入库失败'
           let suggestion = ''
-          
+                  
           if (statusCode === 400) {
             // 400 Bad Request - 显示后端返回的完整错误信息
-            const detail = errorData?.detail || error.message || ''
-            
             // 直接使用后端返回的详细错误信息
             errorMessage = '入库失败'
             suggestion = detail  // 保留完整的错误详情
-            
+                    
             // 记录详细错误日志
             logger.error(`[BatchIngest] 产品 ${product.folderName} 入库失败 - 详细错误:`, detail)
           } else if (statusCode === 429) {
             // 429 Too Many Requests - 触发限流
             errorMessage = '请求过于频繁'
-            suggestion = '系统限流保护中（5次/分钟），请稍后重试或使用"批量重试"功能'
+            suggestion = '系统限流保护中（5次/分钟），请稍后重试或使用“批量重试”功能'
           } else if (statusCode === 504) {
             // 504 Gateway Timeout - 网关超时
             errorMessage = '处理超时'
-            suggestion = '产品图片较多或系统繁忙，建议稍后使用"重试"功能再次尝试'
+            suggestion = '产品图片较多或系统繁忙，建议稍后使用“重试”功能再次尝试'
           } else if (statusCode === 500) {
             // 500 Internal Server Error
             errorMessage = '服务器内部错误'
-            suggestion = '系统异常，请联系管理员或使用"重试"功能'
+            suggestion = '系统异常，请联系管理员或使用“重试”功能'
           } else {
             // 其他错误
-            errorMessage = errorData?.detail || error.message || '未知错误'
+            errorMessage = detail || '未知错误'
             suggestion = '请检查网络连接或稍后重试'
           }
-          
+                  
           product.message = errorMessage
-          
+                  
           // 如果有详细建议,在控制台输出
           if (suggestion && suggestion !== detail) {
             logger.warn(`[BatchIngest] 建议: ${suggestion}`)
           }
-          
-          // 对于400错误,弹出详细错误对话框
+                  
+          // 对于400错误,使用非阻塞的通知显示详细信息（不阻塞循环）
           if (statusCode === 400 && detail) {
-            // 延迟弹出,避免阻塞批量处理
-            setTimeout(() => {
-              ElMessageBox.alert(
-                `<div style="white-space: pre-wrap; line-height: 1.6; font-size: 13px;">${detail}</div>`,
-                `产品 ${product.folderName} 入库失败`,
-                {
-                  dangerouslyUseHTMLString: true,
-                  confirmButtonText: '知道了',
-                  type: 'error',
-                  customClass: 'ingest-error-dialog'
-                }
-              )
-            }, 100)
+            // 使用ElNotification而非ElMessageBox.alert，避免阻塞循环
+            ElNotification({
+              title: `产品 ${product.folderName} 入库失败`,
+              message: `<div style="white-space: pre-wrap; line-height: 1.6; font-size: 13px; max-height: 300px; overflow-y: auto;">${detail}</div>`,
+              type: 'error',
+              dangerouslyUseHTMLString: true,
+              duration: 8000,  // 8秒后自动关闭
+              position: 'top-right'
+            })
           }
           
           // 记录详细错误日志
@@ -411,7 +407,7 @@ export function useBatchIngest() {
       let suggestion = ''
       
       if (statusCode === 400) {
-        const detail = errorData?.detail || error.message || ''
+        const detail = errorData?.message || errorData?.detail || error.message || ''
         if (detail.includes('duplicate') || detail.includes('重复')) {
           errorMessage = '所有图片均已存在'
           suggestion = '该产品的所有图片已在数据库中，无需重复入库'
@@ -429,7 +425,7 @@ export function useBatchIngest() {
         errorMessage = '服务器内部错误'
         suggestion = '系统异常，请联系管理员'
       } else {
-        errorMessage = errorData?.detail || error.message || '未知错误'
+        errorMessage = errorData?.message || errorData?.detail || error.message || '未知错误'
         suggestion = '请检查网络连接或稍后重试'
       }
       
@@ -507,6 +503,78 @@ export function useBatchIngest() {
     }
   }
   
+  // 重复清理功能：对比导入的产品和已入库的产品编码，清理重复项
+  const cleanDuplicateProducts = async () => {
+    if (batchResults.value.length === 0) {
+      ElMessage.warning('请先导入产品')
+      return
+    }
+    
+    try {
+      // 显示加载状态
+      const loadingMsg = ElMessage({
+        message: '正在获取已入库产品列表...',
+        type: 'info',
+        duration: 0
+      })
+      
+      // 获取所有已入库的产品编码
+      const response = await getAllProductCodes()
+      loadingMsg.close()
+      
+      if (!response.success || !response.product_codes) {
+        ElMessage.error('获取已入库产品列表失败')
+        return
+      }
+      
+      const existingCodes = new Set(response.product_codes)
+      logger.log('[BatchIngest] 已入库产品编码数量:', existingCodes.size)
+      
+      // 找出重复的产品
+      const duplicates = []
+      batchResults.value.forEach((product, index) => {
+        if (existingCodes.has(product.productCode)) {
+          duplicates.push({ index, product })
+        }
+      })
+      
+      if (duplicates.length === 0) {
+        ElMessage.success('✅ 没有发现重复产品，可以安全入库')
+        return
+      }
+      
+      // 显示确认对话框
+      const duplicateList = duplicates.map(d => 
+        `- ${d.product.folderName} (${d.product.productCode})`
+      ).join('\n')
+      
+      await ElMessageBox.confirm(
+        `发现 ${duplicates.length} 个重复产品，将从列表中移除：\n\n${duplicateList}\n\n是否继续清理？`,
+        '重复清理确认',
+        {
+          confirmButtonText: '清理重复项',
+          cancelButtonText: '取消',
+          type: 'warning',
+          dangerouslyUseHTMLString: false
+        }
+      )
+      
+      // 从后往前删除，避免索引变化
+      for (let i = duplicates.length - 1; i >= 0; i--) {
+        const { index } = duplicates[i]
+        batchResults.value.splice(index, 1)
+      }
+      
+      ElMessage.success(`✅ 已清理 ${duplicates.length} 个重复产品，剩余 ${batchResults.value.length} 个产品待入库`)
+      
+    } catch (error) {
+      if (error !== 'cancel') {
+        logger.error('[BatchIngest] 重复清理失败:', error)
+        handleApiError(error.response || error, '重复清理失败')
+      }
+    }
+  }
+  
   return {
     // 状态
     batchInputRef,
@@ -526,6 +594,7 @@ export function useBatchIngest() {
     removeProduct,
     retryProduct,  // 单个重试
     retryAllFailed,  // 批量重试
-    handleStructureChange
+    handleStructureChange,
+    cleanDuplicateProducts  // 重复清理
   }
 }
