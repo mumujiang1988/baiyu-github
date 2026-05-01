@@ -1,0 +1,9 @@
+node_modules/
+target/
+dist/
+logs/
+tmp/
+.idea/
+.vscode/
+*.log 
+backup/
